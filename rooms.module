@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * @file
+ * Provides basic underlying functionality and configuration options used
+ * by all Rooms modules
+ */
+
+
+/**
+ * Implements hook_permission().
+ */
+function rooms_permission() {
+  $permissions = array(
+    'configure rooms' => array(
+      'title' => t('Configure rooms settings'),
+      'description' => t('Allus users to configure rooms settings'),
+      'restrict access' => TRUE,
+    ),
+  );
+
+  return $permissions;
+}

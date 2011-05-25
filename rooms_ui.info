@@ -1,0 +1,8 @@
+name = Rooms UI
+description = Interface support to the Rooms family of modules.
+core = 7.x
+version = 1.x-dev
+
+package = Rooms
+
+dependencies[] = rooms

@@ -1,0 +1,34 @@
+<?php
+
+/**
+ * @file
+ * Testing for the rooms suite of modules 
+ */
+
+
+/**
+ * Implements hook_menu().
+ */
+function rooms_test_menu() {
+  $items = array();
+
+  
+  $items['admin/rooms/test/test1'] = array(
+    'title' => 'Rooms Test',
+    'description' => 'Testing stuff for rooms',
+    'page callback' => 'rooms_test_fire',
+		'type' => MENU_NORMAL_ITEM,
+    'access arguments' => array('access administration pages'),
+  );
+
+  return $items;
+}
+
+
+
+function rooms_test_fire(){
+	
+	dpm(rooms_room_get_types());
+	
+	return 'hello';
+}

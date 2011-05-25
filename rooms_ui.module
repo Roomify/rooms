@@ -1,0 +1,49 @@
+<?php
+
+/**
+ * @file
+ * Interface support to the Rooms family of modules.
+ */
+
+
+/**
+ * Implements hook_menu().
+ */
+function rooms_ui_menu() {
+  $items = array();
+
+  // Top level "Store" container.
+  $items['admin/rooms'] = array(
+    'title' => 'Rooms',
+    'description' => 'Administer your rooms.',
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('access administration pages'),
+    'file path' => drupal_get_path('module', 'system'),
+    'file' => 'system.admin.inc',
+    'weight' => -7,
+  );
+  $items['admin/rooms/config'] = array(
+    'title' => 'Configuration',
+    'description' => 'Configure settings and business rules for Rooms management.',
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 10,
+    'file path' => drupal_get_path('module', 'system'),
+    'file' => 'system.admin.inc',
+  );
+  $items['admin/rooms/test'] = array(
+    'title' => 'Test',
+    'description' => 'Test for Rooms',
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 9,
+    'file path' => drupal_get_path('module', 'system'),
+    'file' => 'system.admin.inc',
+  );
+  
+
+
+  return $items;
+}
