@@ -1,0 +1,242 @@
+<?php
+
+/**
+ * @file
+ * Install for Rooms Availability module - sets up the main Rooms Availability
+ * table
+ */
+
+
+/**
+ * Implements hook_schema().
+ */
+function rooms_availability_schema() {
+  $schema = array();
+
+  $schema['rooms_availability'] = array(
+    'description' => 'The main table holiding availability information',
+    'fields' => array(
+      'rooms_room_id' => array(
+        'description' => 'Identifier for a room.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'year' => array(
+        'description' => 'The calendar year for which this availability row is relevant',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'month' => array(
+        'description' => 'The month for which this availability row is relevant',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '1' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '2' => array(
+        'description' => 'Month Day 2',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '3' => array(
+        'description' => 'Month Day 3',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '4' => array(
+        'description' => 'Month Day 4',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '5' => array(
+        'description' => 'Month Day 5',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '6' => array(
+        'description' => 'Month Day 6',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '7' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '8' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '9' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '10' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '11' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '12' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '13' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '14' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '15' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '16' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '17' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '18' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '19' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '20' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '21' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '22' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '23' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '24' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '25' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '26' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '27' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '28' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '29' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '30' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      '31' => array(
+        'description' => 'Month Day 1',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+    ),
+    'indexes' => array(
+      'rooms_room_id' => array('rooms_room_id'),
+      'year' => array('year'),
+      'month' => array('month'),
+    ),
+    'unique keys' =>  array (
+      'month_key' => array('rooms_room_id', 'year', 'month'),
+    ),
+    'foreign keys' => array(
+      'rooms_room_id' => array(
+        'table' => 'rooms_room',
+        'columns' => array('rooms_room_id' => 'rooms_room_id'),
+      ),
+    ),
+  );
+
+  
+  return $schema;
+}
