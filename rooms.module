@@ -14,7 +14,7 @@ function rooms_permission() {
   $permissions = array(
     'configure rooms' => array(
       'title' => t('Configure rooms settings'),
-      'description' => t('Allus users to configure rooms settings'),
+      'description' => t('Allows users to configure rooms settings'),
       'restrict access' => TRUE,
     ),
   );
