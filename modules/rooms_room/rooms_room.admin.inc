@@ -2,7 +2,11 @@
 
 /**
  * @file
- * Room editing UI.
+ * Rooms editing UI.
+ *
+ * We make very little use of the EntityAPI interface for this - preferring instead to use
+ * views. That offers more flexibility to change a UI that will, more often than not,
+ * be end-user facing.
  */
 
 /**
@@ -11,31 +15,44 @@
 class RoomsRoomUIController extends EntityDefaultUIController {
 
   /**
-   * Overrides hook_menu() defaults.
+   * Overrides hook_menu() defaults. Main reason for doing this is that
+   * parent class hook_menu() is optimized for entity type administration.
    */
   public function hook_menu() {
-    $items = parent::hook_menu();
     
-    $items[$this->path]['description'] = 'Manage rooms.';
+    $items = array();
+    $id_count = count(explode('/', $this->path));
+    $wildcard = isset($this->entityInfo['admin ui']['menu wildcard']) ? $this->entityInfo['admin ui']['menu wildcard'] : '%' . $this->entityType;
+
+    $items[$this->path] = array(
+      'title' => 'Rooms',
+      'description' => 'Add edit and update rooms.',
+      'page callback' => 'system_admin_menu_block_page',
+      'access arguments' => array('access administration pages'),
+      'file path' => drupal_get_path('module', 'system'),
+      'file' => 'system.admin.inc',
+      //'type' => MENU_NORMAL_ITEM,
+      'weight' => 1,
+    );
+        
+    // Change the add page menu to multiple types of entities
+    $items[$this->path . '/add'] = array(
+      'title' => 'Add a Room',
+      'description' => 'Add a new Room',
+      'page callback'  => 'rooms_room_add_page',
+      'access callback'  => 'rooms_room_access',
+      'access arguments' => array('edit'),
+      'type' => MENU_NORMAL_ITEM,
+      'weight' => 20,
+      'file' => 'rooms_room.admin.inc',
+      'file path' => drupal_get_path('module', $this->entityInfo['module'])
+
+    );
     
-    // Change the overview menu type for the list of rooms_rooms.
-    $items[$this->basePath()]['type'] = MENU_LOCAL_TASK;
-    
-    // Change the add page menu to handle more types of entities
-    $items[$this->basePath() . '/add']['title'] = 'Add a Room';
-    $items[$this->basePath() . '/add']['description'] = 'Add a new Room';
-    $items[$this->basePath() . '/add']['page callback']  = 'rooms_room_add_page';
-    $items[$this->basePath() . '/add']['access callback']  = 'rooms_room_access';
-    $items[$this->basePath() . '/add']['access arguments'] = array('edit');
-    $items[$this->basePath() . '/add']['type'] = MENU_NORMAL_ITEM;
-    $items[$this->basePath() . '/add']['weight'] = 20;
-    unset($items[$this->basePath() . '/add']['title callback']);
-    unset($items[$this->basePath() . '/add']['title arguments']);
-    
-    // Add menu items for each type of entity.
+    // Add menu items to add each different type of room.
     foreach (rooms_room_get_types() as $type) {
-      $items[$this->basePath() . '/add/' . $type->type] = array(
-        'title' => 'Add ' . $type->type,
+      $items[$this->path . '/add/' . $type->type] = array(
+        'title' => 'Add ' . $type->label,
         'page callback' => 'rooms_room_form_wrapper',
         'page arguments' => array(rooms_room_create(array('type' => $type->type))),
         'access callback' => 'rooms_room_access',
@@ -44,37 +61,54 @@ class RoomsRoomUIController extends EntityDefaultUIController {
         'file path' => drupal_get_path('module', $this->entityInfo['module'])
       );
     }
-    
-    //Add menu items for editing
-    unset($items['admin/rooms/rooms/manage/%rooms_room']);
-    $items['admin/rooms/rooms/room/%rooms_room'] = array(
-      //'title callback' => 'rooms_room_title',
-      //'title arguments' => array(3),
+
+    // Loading and editing Rooms entities
+    $items[$this->path . '/room/' . $wildcard] = array(
       'page callback' => 'rooms_room_form_wrapper',
-      'page arguments' => array(4),
+      'page arguments' => array($id_count + 1),
       'access callback' => 'rooms_room_access',
-      'access arguments' => array('edit', 4),
+      'access arguments' => array('edit', $id_count + 1),
       'weight' => 0,
       'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
       'file' => 'rooms_room.admin.inc',
       'file path' => drupal_get_path('module', $this->entityInfo['module'])
     );
-    $items['admin/rooms/rooms/room/%rooms_room/edit'] = array(
-    'title' => 'Edit',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -10,
-    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
-  );
-    //dpm($items, "Rooms Menu");
+    $items[$this->path . '/room/' . $wildcard . '/edit'] = array(
+      'title' => 'Edit',
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'weight' => -10,
+      'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+    );
+    
+    $items[$this->path . '/room/' . $wildcard . '/delete'] = array(
+      'title' => 'Delete',
+      'page callback' => 'rooms_room_delete_form_wrapper',
+      'page arguments' => array($id_count + 1),
+      'access callback' => 'rooms_room_access',
+      'access arguments' => array('edit', $id_count + 1),
+      'type' => MENU_LOCAL_TASK,
+      'context' => MENU_CONTEXT_INLINE,
+      'weight' => 10,
+      'file' => 'rooms_room.admin.inc',
+      'file path' => drupal_get_path('module', $this->entityInfo['module'])
+    );
+    
+    // Menu item for viewing rooms
+    $items['room/' . $wildcard] = array(
+      //'title' => 'Title',
+      'title callback' => 'rooms_room_page_title',
+      'title arguments' => array(1),
+      'page callback' => 'rooms_room_page_view',
+      'page arguments' => array(1),
+      'access callback' => 'rooms_room_access',
+      'access arguments' => array('view', 1),
+      'type' => MENU_CALLBACK,
+    );
+    dpm($items);
+    dpm($this->path);
     return $items;
   }
   
-  /**
-   * Gives us the base path on which to "hang" the entity functionality
-   */ 
-  protected function basePath() {
-    return 'admin/rooms/rooms';
-  }
   
   /**
    * Create the markup for the add Room Entities page within the class
@@ -96,106 +130,59 @@ class RoomsRoomUIController extends EntityDefaultUIController {
 
 
 /**
- * Form callback wrapper: create or edit a rooms_room.
+ * Form callback wrapper: create or edit a Room.
  *
- * @param $rooms_room
- *   The rooms_room object being edited by this form.
+ * @param $room
+ *   The Rooms object being edited by this form.
  *
  * @see rooms_room_edit_form()
  */
-function rooms_room_form_wrapper($rooms_room) {
+function rooms_room_form_wrapper($room) {
   // Add the breadcrumb for the form's location.
   rooms_room_set_breadcrumb();
-
-  return drupal_get_form('rooms_room_edit_form', $rooms_room);
+  return drupal_get_form('rooms_room_edit_form', $room);
 }
 
 
 /**
- * Form callback: create or edit a rooms_room.
+ * Form callback wrapper: delete a room.
  *
- * @param $rooms_room
- *   The rooms_room object to edit or for a create form an empty rooms_room object
- *     with only a rooms_room type defined.
+ * @param $room
+ *   The room object being edited by this form.
+ *
+ * @see rooms_room_edit_form()
+ */
+function rooms_room_delete_form_wrapper($room) {
+  // Add the breadcrumb for the form's location.
+  //rooms_room_set_breadcrumb();
+  return drupal_get_form('rooms_room_delete_form', $room);
+}
+
+
+/**
+ * Form callback: create or edit a room.
+ *
+ * @param $room
+ *   The Room object to edit or for a create form an empty room object
+ *     with only a room type defined.
  */
 function rooms_room_edit_form($form, &$form_state, $room) {
   // Add the default field elements.
   $form['name'] = array(
     '#type' => 'textfield',
     '#title' => t('Room Name'),
-    //'#default_value' => $rooms_room->title,
+    '#default_value' => isset($room->name) ? $room->name : '',
     '#maxlength' => 255,
     '#required' => TRUE,
     '#weight' => -5,
-    '#default_value' => isset($room->name) ? $room->name : '',
   );
   
   $form['data']['#tree'] = TRUE;
-  $form['data']['status'] = array(
+  $form['data']['extra_data'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Bookable'),
-    '#description' => t('To remove room from bookable rooms uncheck'),
-    '#default_value' => isset($room->data['status']) ? $room->data['status'] : 1,
+    '#title' => t('An interesting room switch'),
+    '#default_value' => isset($room->data['extra_data']) ? $room->data['extra_data'] : 1,
   );
-
-  $form['data']['sleeps'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($room->data['sleeps']) ? $room->data['sleeps'] : 1,
-    '#title' => t('Sleeps'),
-  );
-
-
-  $form['data']['bed_arrangement'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Bed Arrangement'),
-    //'#description' => t('Describe bed arrangements'),
-  );
-
-  $form['data']['bed_arrangement']['singles'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($room->data['bed_arrangement']['singles']) ? $room->data['bed_arrangement']['singles'] : '',
-    '#title' => t('Single Beds'),
-  );
-
-  $form['data']['bed_arrangement']['doubles'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($room->data['bed_arrangement']['doubles']) ? $room->data['bed_arrangement']['doubles'] : '',
-    '#title' => t('Double Beds'),
-  );
-  
-  $form['data']['bed_arrangement']['cot_available'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Cot available'),
-    '#default_value' => isset($room->data['bed_arrangement']['cot_available']) ? $room->data['bed_arrangement']['cot_available'] : 0,
-  );
-  
-   $form['data']['pricing'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Pricing'),
-    //'#description' => t('Describe bed arrangements'),
-  );
-
-  $form['data']['pricing']['baseprice'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($room->data['pricing']['baseprice']) ? $room->data['pricing']['baseprice'] : '',
-    '#title' => t('Base Price'),
-    '#description' =>  t('The default price to use when nothing else is set'),
-  );
-
-  $form['data']['pricing']['singlediscount'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($room->data['pricing']['singlediscount']) ? $room->data['pricing']['singlediscount'] : '',
-    '#title' => t('Discount for single occupancy'),
-    '#postfix' => '%',
-  );
-
-
-
 
   // Add the field related form elements.
   $form_state['rooms_room'] = $room;
@@ -217,9 +204,19 @@ function rooms_room_edit_form($form, &$form_state, $room) {
 
   $form['actions']['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Save room'),
+    '#value' => t('Save Room'),
     '#submit' => $submit + array('rooms_room_edit_form_submit'),
   );
+  
+  if (!empty($room->name)) {
+    $form['actions']['delete'] = array(
+      '#type' => 'submit',
+      '#value' => t('Delete room'),
+      '#suffix' => l(t('Cancel'), 'admin/rooms/rooms'),
+      '#submit' => $submit + array('rooms_room_form_submit_delete'),
+      '#weight' => 45,
+    );
+  }
 
   // We append the validate handler to #validate in case a form callback_wrapper
   // is used to add validate handlers earlier.
@@ -227,8 +224,9 @@ function rooms_room_edit_form($form, &$form_state, $room) {
   return $form;
 }
 
+
 /**
- * Form API validate callback for the rooms_room form
+ * Form API validate callback for the room form
  */
 function rooms_room_edit_form_validate(&$form, &$form_state) {
   $room = $form_state['rooms_room'];
@@ -237,27 +235,81 @@ function rooms_room_edit_form_validate(&$form, &$form_state) {
   field_attach_form_validate('rooms_room', $room, $form, $form_state);
 }
 
+
 /**
- * Form API submit callback for the rooms_room form.
+ * Form API submit callback for the Room form.
+ * 
+ * @todo remove hard-coded link
  */
 function rooms_room_edit_form_submit(&$form, &$form_state) {
   
   $room = entity_ui_controller('rooms_room')->entityFormSubmitBuildEntity($form, $form_state);
-  // Save and go back.
+  // Save the Room and go back to the list of rooms
+  
+  // Add in created and changed times.
+  if ($room->is_new = isset($room->is_new) ? $room->is_new : 0){
+    $room->created = time();
+  }
+
+  $room->changed = time();
+  
   $room->save();
   $form_state['redirect'] = 'admin/rooms/rooms';
 }
 
 /**
  * Form API submit callback for the delete button.
+ * 
+ * @todo Remove hard-coded path
  */
-function rooms_room_edit_form_submit_delete(&$form, &$form_state) {
-  $form_state['redirect'] = 'admin/rooms/rooms/manage/' . $form_state['rooms_room']->type . '/delete';
+function rooms_room_form_submit_delete(&$form, &$form_state) {
+  $form_state['redirect'] = 'admin/rooms/rooms/room/' . $form_state['rooms']->room_id . '/delete';
 }
 
 
 /**
- * Page to add Room Entities.
+ * Form callback: confirmation form for deleting a room.
+ *
+ * @param $room
+ *   The room to delete
+ *
+ * @see confirm_form()
+ */
+function rooms_room_delete_form($form, &$form_state, $room) {
+  $form_state['rooms_room'] = $room;
+
+  $form['#submit'][] = 'rooms_room_delete_form_submit';
+
+  $form = confirm_form($form,
+    t('Are you sure you want to delete Room %name?', array('%name' => $room->name)),
+    'admin/rooms/rooms/room',
+    '<p>' . t('This action cannot be undone.') . '</p>',
+    t('Delete'),
+    t('Cancel'),
+    'confirm'
+  );
+  
+  return $form;
+}
+
+/**
+ * Submit callback for room_delete_form
+ */
+function rooms_room_delete_form_submit($form, &$form_state) {
+  $room = $form_state['rooms_room'];
+
+  rooms_room_delete($room);
+
+  drupal_set_message(t('The room %name has been deleted.', array('%name' => $room->name)));
+  watchdog('rooms', 'Deleted room %name.', array('%name' => $room->name));
+
+  $form_state['redirect'] = 'admin/rooms/rooms';
+}
+
+
+
+/**
+ * Page to add Rooms
  *
  * @todo Pass this through a proper theme function
  */
@@ -268,7 +320,7 @@ function rooms_room_add_page() {
 
 
 /**
- * Displays the list of available rooms_room types for rooms_room creation.
+ * Displays the list of available room types for orom creation.
  *
  * @ingroup themeable
  */
@@ -276,7 +328,7 @@ function theme_rooms_room_add_list($variables) {
   $content = $variables['content'];
   $output = '';
   if ($content) {
-    $output = '<dl class="rooms_room-type-list">';
+    $output = '<dl class="room-type-list">';
     foreach ($content as $item) {
       $output .= '<dt>' . l($item['title'], $item['href']) . '</dt>';
       $output .= '<dd>' . filter_xss_admin($item['description']) . '</dd>';
@@ -284,11 +336,11 @@ function theme_rooms_room_add_list($variables) {
     $output .= '</dl>';
   }
   else {
-    if (user_access('administer rooms_room types')) {
-      $output = '<p>' . t('You have not created any room types yet. Go to the <a href="@create-rooms_room-type">rooms_room type creation page</a> to add a new rooms_room type.', array('@create-rooms_room-type' => url('admin/rooms/room_types/add'))) . '</p>';
+    if (user_access('administer room types')) {
+      $output = '<p>' . t('Rooms cannot be added because you have not created any room types yet. Go to the <a href="@create-room-type">room type creation page</a> to add a new room type.', array('@create-room-type' => url('admin/rooms/room_types/add'))) . '</p>';
     }
     else {
-      $output = '<p>' . t('No rooms_room types have been created yet for you to use.') . '</p>';
+      $output = '<p>' . t('No room types have been created yet for you to use.') . '</p>';
     }
   }
 
@@ -300,7 +352,7 @@ function theme_rooms_room_add_list($variables) {
 
 
 /**
- * Sets the breadcrumb for administrative rooms_room pages.
+ * Sets the breadcrumb for administrative rooms pages.
  */
 function rooms_room_set_breadcrumb() {
   $breadcrumb = array(

@@ -1,15 +1,18 @@
-name = Rooms Management
-description = Set up and manage Rooms
+name = Rooms Room
+description = Create and manage rooms
 core = 7.x
-version = 1.x-dev
 
 package = Rooms
 
+version = 1.x-dev
+
 dependencies[] = entity
 dependencies[] = views
-dependencies[] = rooms
-
 
 files[] = rooms_room.admin.inc
 files[] = rooms_room_type.admin.inc
 files[] = views/rooms_room.views.inc
+files[] = views/rooms_room_handler_link_field.inc
+files[] = views/rooms_room_handler_delete_link_field.inc
+files[] = views/rooms_room_handler_edit_link_field.inc
+files[] = views/rooms_room_handler_room_operations_field.inc

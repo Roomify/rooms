@@ -1,0 +1,72 @@
+
+/* Undo Drupal default theme link colors */
+.fc-content a:link,
+.fc-content a:visited {
+  color: #fff;
+  text-decoration: none;
+}
+
+/* Reset FullCalendar generic style */
+.fc-event,
+.fc-agenda .fc-event-time,
+.fc-event a {
+  border-style: none;
+  background-color: transparent;
+  color: inherit;
+}
+
+/* Set FullCalendar default style */
+.fc-event-default,
+.fc-event-default .fc-event-time,
+.fc-event-default a {
+  border-color: #36c;
+  border-style: solid;
+  background-color: #36c;
+  color: #fff;
+}
+
+/* Styling for updated message */
+.fullcalendar-status {
+  background: #ecf8f4;
+  border: 1px solid #fff;
+  color: #687;
+  display: none;
+  margin: 0 0 10px 0;
+  padding: 15px;
+  text-align: center;
+}
+.fullcalendar-status-close {
+  text-transform: lowercase;
+}
+
+.fc table {
+  margin: 0;
+}
+
+table.fc-header {
+  margin-bottom: 10px;
+}
+
+.fc-header tr {
+  background-color: transparent;
+}
+
+.fc-header-title {
+  text-align: center;
+}
+
+.fc-header tbody,
+.fc-header th,
+.fc-header td {
+  border: 0;
+}
+
+.fc-header .fc-state-default,
+.fc-header .ui-state-default {
+  margin-bottom: 0;
+}
+
+/* Hide plain text events when javascript is enabled */
+html.js .fullcalendar-content {
+  display: none;
+}

@@ -1,0 +1,199 @@
+<?php
+
+/**
+ * @file
+ * Manages availability for Rooms and displaying dates on the jquery FullCalendar
+ * plugin
+ */
+
+
+/**
+ * The default path to the FullCalendar plugin.
+ */
+define('FULLCALENDAR_PATH', 'sites/all/libraries/fullcalendar');
+
+/**
+ * The minimum supported version of the FullCalendar plugin.
+ */
+define('FULLCALENDAR_MIN_PLUGIN_VERSION', '1.4.10');
+
+
+/**
+ * Implements hook_library().
+ */
+function rooms_availability_library() {
+  $libraries['rooms_fullcalendar'] = array(
+    'title' => 'Rooms FullCalendar',
+    'website' => 'http://arshaw.com/fullcalendar',
+    'version' => FULLCALENDAR_MIN_PLUGIN_VERSION,
+    'js' => array(
+      rooms_availability_fullcalendar_get_js_path() => array(),
+      variable_get('rooms_fullcalendar_path', FULLCALENDAR_PATH) . '/gcal.js' => array(),
+    ),
+    'css' => array(
+      variable_get('rooms_fullcalendar_path', FULLCALENDAR_PATH) . '/fullcalendar.css' => array(
+        'type' => 'file',
+        'media' => 'screen',
+      ),
+      drupal_get_path('module', 'rooms_availability') . '/css/fullcalendar.theme.css' => array(
+        'type' => 'file',
+        'media' => 'screen',
+      ),
+    ),
+    'dependencies' => array(
+      array('system', 'ui.draggable'),
+      array('system', 'ui.droppable'),
+      array('system', 'ui.resizable'),
+      array('system', 'effects.highlight'),
+    ),
+  );
+  return $libraries;
+}
+
+
+/**
+ * Implements hook_permission().
+ */
+function rooms_availability_permission() {
+  $permissions = array(
+    'manage room availablity' => array(
+      'title' => t('manage rooms availability'),
+      'description' => t('Allows users to manage availability settings for Rooms'),
+      'restrict access' => TRUE,
+    ),
+  );
+  return $permissions;
+}
+
+
+/**
+ * Implements hook_menu().
+ */
+function rooms_availability_menu() {
+  $items  =  array();
+  
+  $items['admin/rooms/rooms/room/%room/availability'] = array(
+    'title' => 'Room Availability',
+    'page callback' =>  'rooms_availability_page',
+    'page arguments' => array(4),
+    'access callback' => 'rooms_availability_access',
+    'access arguments' => array(1),
+    'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+    'weight' => '20',
+  );
+  
+  $items['admin/rooms/rooms/room/ajax/%room/%action/%year/%month'] = array(
+    'title' =>  'Availability Event',
+    'page callback' => 'rooms_availability_event',
+    'page arguments' => array(5,6,7,8),
+    'access callback' => 'rooms_availability_access',
+    'access arguments' => array(1),
+    'type' => MENU_CALLBACK,
+  );
+
+
+  $items['admin/rooms/rooms/room/ajax/test'] = array(
+    'title' =>  'Availability Event Test',
+    'page callback' => 'rooms_availability_event_test',
+    'access arguments' => array('manage rooms availability'),
+    'type' => MENU_CALLBACK,
+  );
+  
+  return $items;
+}
+
+
+function room_load($room_id){
+  $room = rooms_room_load($room_id);
+  dpm($room);
+  return $room;
+}
+
+
+/**
+ * Room availability access callback
+ * @todo check unauthorised access for calendar js
+ */ 
+function rooms_availability_access($rooms_room) {
+  if (user_access('manage room availability')) {
+    return TRUE;
+  }
+  return 'FALSE';
+}
+
+
+/**
+ * Callback for admin/rooms/rooms/room/%room/availability - builds availability
+ * page by adding calendar and pulling events from availability table.
+ * 
+ */
+function rooms_availability_page(RoomsRoom $rooms_room) {
+  drupal_add_library('rooms_availability', 'rooms_fullcalendar');
+  drupal_add_js(drupal_get_path('module', 'rooms_availability') . '/js/rooms_availability.js');
+  drupal_add_js(array('roomId' => $rooms_room->room_id), 'setting');
+  $output = theme('rooms_availability', array('hello', 'goodbye'));
+  return $output;  
+}
+
+
+/** 
+ * Callback Test for json
+ */
+function rooms_availability_event_test() {
+ 
+  $year = date('Y');
+	$month = date('m');
+
+	echo  drupal_json_encode(array(
+	
+		array(
+			'id' => 111,
+			'title' => "Event1",
+			'start' => "$year-$month-10",
+			'url' => "http://istos.it/"
+		),
+		
+		array(
+			'id' => 222,
+			'title' => "Event2",
+			'start' => "$year-$month-20",
+			'end' => "$year-$month-22",
+			'url' => "http://istos.it/"
+		)
+	
+	));
+  
+  //return $result;
+}
+
+ 
+
+/**
+ * Implement rooms_availability_theme().
+ */
+function rooms_availability_theme() {
+  return array(
+    'rooms_availability' => array(
+      'variables' => array('variable1', 'variable2'),
+      'template' => 'rooms_availability'
+    )
+  );
+}
+
+
+/**
+ * Returns the path to the FullCalendar plugin.
+ */
+function rooms_availability_fullcalendar_get_js_path() {
+  $fullcalendar_file = array('none' => 'fullcalendar.js', 'min' => 'fullcalendar.min.js');
+  return variable_get('rooms_fullcalendar_path', FULLCALENDAR_PATH) . '/' . $fullcalendar_file[variable_get('rooms_fullcalendar_compression_type', 'min')];
+}
+
+
+
+
+
+
+
+

@@ -7,3 +7,4 @@ package = Rooms
 
 dependencies[] = rooms
 dependencies[] = rooms_room
+dependencies[] = libraries

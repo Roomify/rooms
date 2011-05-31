@@ -1,8 +1,46 @@
 <?php
 
 /**
- * Views for the default rooms UI.
+ * @file
+ * Providing extra functionality for the Room UI via views.
  */
+
+
+/**
+ * Implements hook_views_data()
+ */
+function rooms_room_views_data_alter(&$data) { 
+  $data['room']['link_room'] = array(
+    'field' => array(
+      'title' => t('Link'),
+      'help' => t('Provide a link to the room.'),
+      'handler' => 'rooms_room_handler_link_field',
+    ),
+  );
+  $data['room']['edit_room'] = array(
+    'field' => array(
+      'title' => t('Edit Link'),
+      'help' => t('Provide a link to the edit form for the room.'),
+      'handler' => 'rooms_room_handler_edit_link_field',
+    ),
+  );
+  $data['room']['delete_room'] = array(
+    'field' => array(
+      'title' => t('Delete Link'),
+      'help' => t('Provide a link to delete the room.'),
+      'handler' => 'rooms_room_handler_delete_link_field',
+    ),
+  );
+  // This content of this field are decided based on the menu structure that
+  // follows rooms/room/%room_id/op
+  $data['room']['operations'] = array(
+    'field' => array(
+      'title' => t('Operations links'),
+      'help' => t('Display all operations available for this room.'),
+      'handler' => 'rooms_room_handler_room_operations_field',
+    ),
+  );
+}
 
 
 /**
@@ -10,13 +48,12 @@
  */
 function rooms_room_views_default_views() {
   $views = array();
-  
+
   $view = new view;
-  
   $view->name = 'rooms';
   $view->description = 'A list of all rooms';
   $view->tag = 'rooms';
-  $view->base_table = 'rooms_room';
+  $view->base_table = 'room';
   $view->human_name = 'Rooms';
   $view->core = 7;
   $view->api_version = '3.0-alpha1';
@@ -62,9 +99,28 @@ function rooms_room_views_default_views() {
   $handler->display->display_options['empty']['area']['label'] = 'Empty ';
   $handler->display->display_options['empty']['area']['empty'] = FALSE;
   $handler->display->display_options['empty']['area']['content'] = 'No rooms have been created yet';
+  /* Field: Room: Room ID */
+  $handler->display->display_options['fields']['room_id']['id'] = 'room_id';
+  $handler->display->display_options['fields']['room_id']['table'] = 'room';
+  $handler->display->display_options['fields']['room_id']['field'] = 'room_id';
+  $handler->display->display_options['fields']['room_id']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['room_id']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['room_id']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['room_id']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['room_id']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['room_id']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['room_id']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['room_id']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['room_id']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['room_id']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['room_id']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['room_id']['element_label_colon'] = 1;
+  $handler->display->display_options['fields']['room_id']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['room_id']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['room_id']['empty_zero'] = 0;
   /* Field: Room: Name */
   $handler->display->display_options['fields']['name']['id'] = 'name';
-  $handler->display->display_options['fields']['name']['table'] = 'rooms_room';
+  $handler->display->display_options['fields']['name']['table'] = 'room';
   $handler->display->display_options['fields']['name']['field'] = 'name';
   $handler->display->display_options['fields']['name']['alter']['alter_text'] = 0;
   $handler->display->display_options['fields']['name']['alter']['make_link'] = 0;
@@ -81,60 +137,53 @@ function rooms_room_views_default_views() {
   $handler->display->display_options['fields']['name']['element_default_classes'] = 1;
   $handler->display->display_options['fields']['name']['hide_empty'] = 0;
   $handler->display->display_options['fields']['name']['empty_zero'] = 0;
-  /* Field: Room: Room ID */
-  $handler->display->display_options['fields']['rooms_room_id']['id'] = 'rooms_room_id';
-  $handler->display->display_options['fields']['rooms_room_id']['table'] = 'rooms_room';
-  $handler->display->display_options['fields']['rooms_room_id']['field'] = 'rooms_room_id';
-  $handler->display->display_options['fields']['rooms_room_id']['label'] = 'Edit';
-  $handler->display->display_options['fields']['rooms_room_id']['alter']['alter_text'] = 1;
-  $handler->display->display_options['fields']['rooms_room_id']['alter']['text'] = '<a href="/admin/rooms/rooms/room/[rooms_room_id]/edit">edit</a>';
-  $handler->display->display_options['fields']['rooms_room_id']['alter']['make_link'] = 0;
-  $handler->display->display_options['fields']['rooms_room_id']['alter']['absolute'] = 0;
-  $handler->display->display_options['fields']['rooms_room_id']['alter']['external'] = 0;
-  $handler->display->display_options['fields']['rooms_room_id']['alter']['replace_spaces'] = 0;
-  $handler->display->display_options['fields']['rooms_room_id']['alter']['trim'] = 0;
-  $handler->display->display_options['fields']['rooms_room_id']['alter']['nl2br'] = 0;
-  $handler->display->display_options['fields']['rooms_room_id']['alter']['word_boundary'] = 1;
-  $handler->display->display_options['fields']['rooms_room_id']['alter']['ellipsis'] = 1;
-  $handler->display->display_options['fields']['rooms_room_id']['alter']['strip_tags'] = 0;
-  $handler->display->display_options['fields']['rooms_room_id']['alter']['html'] = 0;
-  $handler->display->display_options['fields']['rooms_room_id']['element_label_colon'] = 1;
-  $handler->display->display_options['fields']['rooms_room_id']['element_default_classes'] = 1;
-  $handler->display->display_options['fields']['rooms_room_id']['hide_empty'] = 0;
-  $handler->display->display_options['fields']['rooms_room_id']['empty_zero'] = 0;
-  $handler->display->display_options['fields']['rooms_room_id']['format_plural'] = 0;
-  /* Field: Room: Room ID */
-  $handler->display->display_options['fields']['rooms_room_id_1']['id'] = 'rooms_room_id_1';
-  $handler->display->display_options['fields']['rooms_room_id_1']['table'] = 'rooms_room';
-  $handler->display->display_options['fields']['rooms_room_id_1']['field'] = 'rooms_room_id';
-  $handler->display->display_options['fields']['rooms_room_id_1']['label'] = 'Availability';
-  $handler->display->display_options['fields']['rooms_room_id_1']['alter']['alter_text'] = 1;
-  $handler->display->display_options['fields']['rooms_room_id_1']['alter']['text'] = '<a href="/rooms/rooms/[rooms_room_id_1]/availability">manage availability</a>';
-  $handler->display->display_options['fields']['rooms_room_id_1']['alter']['make_link'] = 0;
-  $handler->display->display_options['fields']['rooms_room_id_1']['alter']['absolute'] = 0;
-  $handler->display->display_options['fields']['rooms_room_id_1']['alter']['external'] = 0;
-  $handler->display->display_options['fields']['rooms_room_id_1']['alter']['replace_spaces'] = 0;
-  $handler->display->display_options['fields']['rooms_room_id_1']['alter']['trim'] = 0;
-  $handler->display->display_options['fields']['rooms_room_id_1']['alter']['nl2br'] = 0;
-  $handler->display->display_options['fields']['rooms_room_id_1']['alter']['word_boundary'] = 1;
-  $handler->display->display_options['fields']['rooms_room_id_1']['alter']['ellipsis'] = 1;
-  $handler->display->display_options['fields']['rooms_room_id_1']['alter']['strip_tags'] = 0;
-  $handler->display->display_options['fields']['rooms_room_id_1']['alter']['html'] = 0;
-  $handler->display->display_options['fields']['rooms_room_id_1']['element_label_colon'] = 1;
-  $handler->display->display_options['fields']['rooms_room_id_1']['element_default_classes'] = 1;
-  $handler->display->display_options['fields']['rooms_room_id_1']['hide_empty'] = 0;
-  $handler->display->display_options['fields']['rooms_room_id_1']['empty_zero'] = 0;
-  $handler->display->display_options['fields']['rooms_room_id_1']['format_plural'] = 0;
+  /* Field: Room: Link */
+  $handler->display->display_options['fields']['link_room']['id'] = 'link_room';
+  $handler->display->display_options['fields']['link_room']['table'] = 'room';
+  $handler->display->display_options['fields']['link_room']['field'] = 'link_room';
+  $handler->display->display_options['fields']['link_room']['label'] = 'View';
+  $handler->display->display_options['fields']['link_room']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['link_room']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['link_room']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['link_room']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['link_room']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['link_room']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['link_room']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['link_room']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['link_room']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['link_room']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['link_room']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['link_room']['element_label_colon'] = 1;
+  $handler->display->display_options['fields']['link_room']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['link_room']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['link_room']['empty_zero'] = 0;
+  /* Field: Room: Operations links */
+  $handler->display->display_options['fields']['operations']['id'] = 'operations';
+  $handler->display->display_options['fields']['operations']['table'] = 'room';
+  $handler->display->display_options['fields']['operations']['field'] = 'operations';
+  $handler->display->display_options['fields']['operations']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['operations']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['operations']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['operations']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['operations']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['operations']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['operations']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['operations']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['operations']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['operations']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['operations']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['operations']['element_label_colon'] = 1;
+  $handler->display->display_options['fields']['operations']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['operations']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['operations']['empty_zero'] = 0;
   
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'rooms_admin_page');
-  $handler->display->display_options['path'] = 'admin/rooms/rooms';
-  $handler->display->display_options['menu']['type'] = 'normal';
-  $handler->display->display_options['menu']['title'] = 'Rooms';
-  $handler->display->display_options['menu']['description'] = 'Manage rooms and add new rooms';
+  $handler->display->display_options['path'] = 'admin/rooms/rooms/list';
+  $handler->display->display_options['menu']['type'] = 'default tab';
+  $handler->display->display_options['menu']['title'] = 'List';
   $handler->display->display_options['menu']['weight'] = '-10';
-  $handler->display->display_options['menu']['name'] = 'management';
-  $handler->display->display_options['tab_options']['type'] = 'tab';
+  $handler->display->display_options['tab_options']['type'] = 'normal';
   $handler->display->display_options['tab_options']['title'] = 'Rooms';
   $handler->display->display_options['tab_options']['description'] = 'Manage rooms';
   $handler->display->display_options['tab_options']['weight'] = '0';
@@ -153,18 +202,16 @@ function rooms_room_views_default_views() {
     t('Offset'),
     t('Empty '),
     t('No rooms have been created yet'),
-    t('Name'),
-    t('Edit'),
-    t('<a href="/admin/rooms/rooms/room/[rooms_room_id]/edit">edit</a>'),
+    t('Room ID'),
     t('.'),
     t(','),
-    t('Availability'),
-    t('<a href="/rooms/rooms/[rooms_room_id_1]/availability">manage availability</a>'),
+    t('Name'),
+    t('View'),
+    t('Operations links'),
     t('Page'),
   );
 
-  $views[$view->name] = $view;
-
+  $views[] = $view;
   return $views;
 
 }

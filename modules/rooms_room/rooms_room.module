@@ -2,18 +2,12 @@
 
 /**
  * @file
- * Module for the RoomsRoom Entity - a starting point to create your own Entity
- * and associated administration interface
+ * Manage Rooms for Rooms! 
  */  
 
 
 /**
  * Implement hook_entity_info().
- *
- * We define two entities here - the actual entity that will hold our domain
- * specific information and an entity that holds information about the different
- * types of entities. See here: http://drupal.org/node/977380 for a discussion on this
- * choice.
  */
 function rooms_room_entity_info() {
   $return['rooms_room'] = array(
@@ -22,13 +16,13 @@ function rooms_room_entity_info() {
     // Entity API
     'entity class' => 'RoomsRoom',
     'controller class' => 'RoomsRoomController',
-    'base table' => 'rooms_room',
+    'base table' => 'room',
     'fieldable' => TRUE,
     'entity keys' => array(
-        'id' => 'rooms_room_id',
+        'id' => 'room_id',
         'bundle' => 'type',
     ),
-    // Bundles are defined by the rooms_room types below
+    // Bundles are defined by the room types below
     'bundles' => array(),
     // Bundle keys tell the FieldAPI how to extract information from the bundle objects
     'bundle keys' => array(
@@ -44,6 +38,7 @@ function rooms_room_entity_info() {
       'path' => 'admin/rooms/rooms',
       'file' => 'rooms_room.admin.inc',
       'controller class' => 'RoomsRoomUIController',
+      'menu wildcard' => '%rooms_room',
     ),
   );
   // The entity that holds information about the entity types	  
@@ -51,7 +46,7 @@ function rooms_room_entity_info() {
     'label' => t('Room Type'),
     'entity class' => 'RoomsRoomType',
     'controller class' => 'RoomsRoomTypeController',
-    'base table' => 'rooms_room_type',
+    'base table' => 'room_type',
     'fieldable' => FALSE,
     'bundle of' => 'rooms_room',
     'exportable' => TRUE,
@@ -77,8 +72,10 @@ function rooms_room_entity_info() {
 /**
  * Implements hook_entity_info_alter().
  *
- * We are adding the info about the rooms_room types via a hook since to avoid a recursion
- * issue as loading the rooms_room types requires the entity info as well.
+ * We are adding the info about the room types via a hook to avoid a recursion
+ * issue as loading the room types requires the entity info as well.
+ *
+ * @todo This needs to be improved
  */
 function rooms_room_entity_info_alter(&$entity_info) {
   foreach (rooms_room_get_types() as $type => $info) {
@@ -103,7 +100,7 @@ function rooms_room_permission() {
   // permissions for each individual entity
   $permissions = array(
     'administer room types' => array(
-      'title' => t('Administer rooms_room types'),
+      'title' => t('Administer room types'),
       'description' => t('Create and delete fields for room types, and set their permissions.'),
     ),
     'administer rooms' => array(
@@ -112,14 +109,14 @@ function rooms_room_permission() {
     ),  
   );
   
-  //Generate permissions per rooms_room 
+  //Generate permissions per room 
   foreach (rooms_room_get_types() as $type) {
     $type_name = check_plain($type->type);
     $permissions += array(
       "edit any $type_name room" => array(
         'title' => t('%type_name: Edit any room', array('%type_name' => $type->label)),
       ),
-      "view any $type_name rooms_room" => array(
+      "view any $type_name room" => array(
         'title' => t('%type_name: View any room', array('%type_name' => $type->label)),
       ),
     );
@@ -134,9 +131,9 @@ function rooms_room_permission() {
  * @param $op
  *   The operation being performed. One of 'view', 'update', 'create', 'delete'
  *   or just 'edit' (being the same as 'create' or 'update').
- * @param $rooms_room
- *   Optionally a rooms_room or a rooms_room type to check access for. If nothing is
- *   given, access for all rooms_rooms is determined.
+ * @param $room
+ *   Optionally a room or a room type to check access for. If nothing is
+ *   given, access for all rooms is determined.
  * @param $account
  *   The user to check for. Leave it to NULL to check for the global user.
  * @return boolean
@@ -147,9 +144,6 @@ function rooms_room_access($op, $room = NULL, $account = NULL) {
     return TRUE;
   }
   if (isset($room) && $type_name = $room->type) {
-    if ($op == 'delete') {
-      return TRUE;
-    }
     $op = ($op == 'view') ? 'view' : 'edit';
     if (user_access("$op any $type_name room", $account)) {
       return TRUE;
@@ -157,6 +151,7 @@ function rooms_room_access($op, $room = NULL, $account = NULL) {
   }
   return FALSE;
 }
+
 
 /**
  * Access callback for the entity API.
@@ -172,10 +167,10 @@ function rooms_room_type_access($op, $type = NULL, $account = NULL) {
  * @param $type_name
  *   If set, the type with the given name is returned.
  * @return RoomsRoomType[]
- *   Depending whether $type isset, an array of rooms_room types or a single one.
+ *   Depending whether $type isset, an array of room types or a single one.
  */
 function rooms_room_get_types($type_name = NULL) {
-    // entity_load will get the Entity controller for our rooms_room entity and call the load
+    // entity_load will get the Entity controller for our room entity and call the load
   // function of that object.
   $types = entity_load('rooms_room_type', isset($type_name) ? array($type_name) : FALSE);
   return isset($type_name) ? reset($types) : $types;
@@ -186,9 +181,9 @@ function rooms_room_get_types($type_name = NULL) {
  * Menu argument loader; Load a room type by string.
  *
  * @param $type
- *   The machine-readable name of a rooms_room type to load.
+ *   The machine-readable name of a room type to load.
  * @return
- *   A rooms_room type array or FALSE if $type does not exist.
+ *   A room type array or FALSE if $type does not exist.
  */
 function rooms_room_type_load($type) {
   return rooms_room_get_types($type);
@@ -196,34 +191,35 @@ function rooms_room_type_load($type) {
 
 
 /**
- * Fetch a room object.
+ * Fetch a room object. Make sure that the wildcard you choose 
+ * in the room entity definition fits the function name here.
  *
- * @param $rooms_room_id
- *   Integer specifying the rooms_room id.
+ * @param $room_id
+ *   Integer specifying the room id.
  * @param $reset
  *   A boolean indicating that the internal cache should be reset.
  * @return
- *   A fully-loaded $rooms_room object or FALSE if it cannot be loaded.
+ *   A fully-loaded $room object or FALSE if it cannot be loaded.
  *
  * @see rooms_room_load_multiple()
  */
 function rooms_room_load($room_id, $reset = FALSE) {
-  $rooms_rooms = rooms_room_load_multiple(array($room_id), array(), $reset);
-  return reset($rooms_rooms);
+  $rooms = rooms_room_load_multiple(array($room_id), array(), $reset);
+  return reset($rooms);
 }
 
 
 /**
- * Load multiple rooms_rooms based on certain conditions.
+ * Load multiple rooms based on certain conditions.
  *
- * @param $rooms_room_ids
- *   An array of rooms_room IDs.
+ * @param $room_ids
+ *   An array of room IDs.
  * @param $conditions
- *   An array of conditions to match against the {rooms_room} table.
+ *   An array of conditions to match against the {room} table.
  * @param $reset
  *   A boolean indicating that the internal cache should be reset.
  * @return
- *   An array of rooms_room objects, indexed by rooms_room_id.
+ *   An array of room objects, indexed by room_id.
  *
  * @see entity_load()
  * @see rooms_room_load()
@@ -253,7 +249,7 @@ function rooms_room_delete_multiple(array $room_ids) {
 
 
 /**
- * Create a rooms_room object.
+ * Create a room object.
  */
 function rooms_room_create($values = array()) {
   return entity_get_controller('rooms_room')->create($values);
@@ -261,10 +257,10 @@ function rooms_room_create($values = array()) {
 
 
 /**
- * Saves a rooms_room to the database.
+ * Saves a room to the database.
  *
- * @param $rooms_room
- *   The rooms_room object.
+ * @param $room
+ *   The room object.
  */
 function rooms_room_save(RoomsRoom $room) {
   return $room->save();
@@ -272,7 +268,7 @@ function rooms_room_save(RoomsRoom $room) {
 
 
 /**
- * Saves a rooms_room type to the db.
+ * Saves a room type to the db.
  */
 function rooms_room_type_save(RoomsRoomType $type) {
   $type->save();
@@ -280,10 +276,40 @@ function rooms_room_type_save(RoomsRoomType $type) {
 
 
 /**
- * Deletes a rooms_room type from the db.
+ * Deletes a room type from the db.
  */
 function rooms_room_type_delete(RoomsRoomType $type) {
   $type->delete();
+}
+
+
+/**
+ * URI callback for rooms
+ */
+function rooms_room_uri(RoomsRoom $room){
+  return array(
+    'path' => 'room/' . $room->room_id,
+  );
+}
+
+
+/**
+ * Menu title callback for showing individual entities
+ */
+function rooms_room_page_title(RoomsRoom $room){
+  return $room->name;
+}
+
+
+/**
+ * Sets up content to show an individual room
+ * @todo - get rid of drupal_set_title();
+ */
+function rooms_room_page_view($room, $view_mode = 'full') {    
+  $controller = entity_get_controller('rooms_room');  
+  $content = $controller->view(array($room->room_id => $room));
+  drupal_set_title($room->name);
+  return $content;
 }
 
 
@@ -307,6 +333,16 @@ function rooms_room_theme() {
       'variables' => array('content' => array()),
       'file' => 'rooms_room.admin.inc',
     ),
+    'room' => array(
+      'render element' => 'elements',
+      'template' => 'rooms_room',
+    ),
+   'rooms_room_extra_data' => array(
+      'variables' => array('room_extra_data', 'room' => NULL),
+      'template' => 'rooms_room-extra-data',
+    ),
+
+
   );
 }  
 
@@ -315,7 +351,7 @@ function rooms_room_theme() {
  * Implements hook_menu_local_tasks_alter().
  */
 function rooms_room_menu_local_tasks_alter(&$data, $router_item, $root_path) {
-  // Add action link 'admin/structure/rooms_rooms/add' on 'admin/structure/rooms_rooms'.
+  // Add action link 'admin/rooms/rooms/add' on 'admin/rooms/rooms'.
   if ($root_path == 'admin/rooms/rooms') {
     $item = menu_get_item('admin/rooms/rooms/add');
     if ($item['access']) {
@@ -329,12 +365,20 @@ function rooms_room_menu_local_tasks_alter(&$data, $router_item, $root_path) {
 
 
 /**
- * The class used for rooms_room entities
+ * The class used for room entities
  */
 class RoomsRoom extends Entity {
   
   public function __construct($values = array()) {
     parent::__construct($values, 'rooms_room');
+  }
+
+  protected function defaultLabel() {
+    return $this->name;
+  }
+
+  protected function defaultUri() {
+    return array('path' => 'room/' . $this->room_id);
   }
   
   
@@ -342,7 +386,7 @@ class RoomsRoom extends Entity {
 
 
 /**
- * The class used for rooms_room type entities
+ * The class used for room type entities
  */
 class RoomsRoomType extends Entity {
   
@@ -352,6 +396,7 @@ class RoomsRoomType extends Entity {
   public function __construct($values = array()) {
     parent::__construct($values, 'rooms_room_type');
   }
+  
 }
 
 
@@ -366,17 +411,17 @@ class RoomsRoomController extends EntityAPIController {
 
   /**
    * Create a room - we first set up the values that are specific
-   * to our rooms_room schema but then also go through the EntityAPIController
+   * to our room schema but then also go through the EntityAPIController
    * function.
    * 
    * @param $type
-   *   The machine-readable type of the rooms_room.
+   *   The machine-readable type of the room.
    *
    * @return
-   *   A rooms_room object with all default fields initialized.
+   *   A room object with all default fields initialized.
    */
   public function create(array $values = array()) {
-    // Add values that are specific to our RoomsRoom
+    // Add values that are specific to our Room
     $values += array( 
       'room_id' => '',
       'is_new' => TRUE,
@@ -390,11 +435,23 @@ class RoomsRoomController extends EntityAPIController {
     return $room;
   }
   
+  /**
+   * Overriding the buldContent function to add entity specific fields
+   */
+  public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
+    $content = parent::buildContent($entity, $view_mode, $langcode, $content);
+    $content['rooms_room_extra_data'] =  array(
+      '#markup' => theme('rooms_room_extra_data', array('rooms_room_extra_data' => check_plain($entity->data['extra_data']), 'rooms_room' => $entity)),
+    );
+
+    return $content;
+  }
+  
 }
 
 
 /**
- * The Controller for RoomsRoom entities
+ * The Controller for Room entities
  */
 class RoomsRoomTypeController extends EntityAPIController {
   public function __construct($entityType) {
@@ -402,18 +459,18 @@ class RoomsRoomTypeController extends EntityAPIController {
   }
   
    /**
-   * Create a rooms_room type - we first set up the values that are specific
-   * to our rooms_room type schema but then also go through the EntityAPIController
+   * Create a room type - we first set up the values that are specific
+   * to our room type schema but then also go through the EntityAPIController
    * function.
    * 
    * @param $type
-   *   The machine-readable type of the rooms_room.
+   *   The machine-readable type of the room.
    *
    * @return
-   *   A rooms_room type object with all default fields initialized.
+   *   A room type object with all default fields initialized.
    */
   public function create(array $values = array()) {
-    // Add values that are specific to our RoomsRoom
+    // Add values that are specific to our Room
     $values += array( 
       'id' => '',
       'is_new' => TRUE,
