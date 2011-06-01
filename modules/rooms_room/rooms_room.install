@@ -55,6 +55,12 @@ function rooms_room_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'base_price' => array(
+        'description' => 'The default cost per night for the room',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'data' => array(
         'type' => 'blob',
         'not null' => FALSE,

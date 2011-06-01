@@ -341,8 +341,6 @@ function rooms_room_theme() {
       'variables' => array('room_extra_data', 'room' => NULL),
       'template' => 'rooms_room-extra-data',
     ),
-
-
   );
 }  
 
@@ -428,6 +426,7 @@ class RoomsRoomController extends EntityAPIController {
       'title' => '',
       'created' => '',
       'changed' => '',
+      'base_price' => '',
       'data' => '',
     );
     

@@ -177,10 +177,19 @@ function rooms_room_edit_form($form, &$form_state, $room) {
     '#weight' => -5,
   );
   
+  $form['base_price'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Room Base Price'),
+    '#default_value' => isset($room->base_price) ? $room->base_price : '',
+    '#size' => '5',
+    '#description' => 'Base price is per room per night',
+    '#maxlength' => 10,
+  );
+  
   $form['data']['#tree'] = TRUE;
   $form['data']['extra_data'] = array(
     '#type' => 'checkbox',
-    '#title' => t('An interesting room switch'),
+    '#title' => t('An additional room switch'),
     '#default_value' => isset($room->data['extra_data']) ? $room->data['extra_data'] : 1,
   );
 
@@ -233,6 +242,11 @@ function rooms_room_edit_form_validate(&$form, &$form_state) {
   
   // Notify field widgets to validate their data.
   field_attach_form_validate('rooms_room', $room, $form, $form_state);
+  
+  //validate price field
+  if (!empty($form_state['values']['base_price']) && !is_numeric($form_state['values']['base_price'])) {
+    form_set_error('Base price error', t('%name: you must enter a numeric value for the price.', array('%name' => 'Base Price')));
+  }
 }
 
 
