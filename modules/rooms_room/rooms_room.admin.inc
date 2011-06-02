@@ -54,7 +54,7 @@ class RoomsRoomUIController extends EntityDefaultUIController {
       $items[$this->path . '/add/' . $type->type] = array(
         'title' => 'Add ' . $type->label,
         'page callback' => 'rooms_room_form_wrapper',
-        'page arguments' => array(rooms_room_create(array('type' => $type->type))),
+        'page arguments' => array($type->type),
         'access callback' => 'rooms_room_access',
         'access arguments' => array('edit', 'edit ' . $type->type),
         'file' => 'rooms_room.admin.inc',
@@ -104,8 +104,6 @@ class RoomsRoomUIController extends EntityDefaultUIController {
       'access arguments' => array('view', 1),
       'type' => MENU_CALLBACK,
     );
-    dpm($items);
-    dpm($this->path);
     return $items;
   }
   
@@ -137,9 +135,10 @@ class RoomsRoomUIController extends EntityDefaultUIController {
  *
  * @see rooms_room_edit_form()
  */
-function rooms_room_form_wrapper($room) {
+function rooms_room_form_wrapper($type) {
   // Add the breadcrumb for the form's location.
   rooms_room_set_breadcrumb();
+  $room = rooms_room_create(array('type' => $type));
   return drupal_get_form('rooms_room_edit_form', $room);
 }
 
@@ -167,6 +166,9 @@ function rooms_room_delete_form_wrapper($room) {
  *     with only a room type defined.
  */
 function rooms_room_edit_form($form, &$form_state, $room) {
+  dpm($form);
+  dpm($form_state);
+  dpm($room);
   // Add the default field elements.
   $form['name'] = array(
     '#type' => 'textfield',
@@ -192,7 +194,7 @@ function rooms_room_edit_form($form, &$form_state, $room) {
     '#title' => t('An additional room switch'),
     '#default_value' => isset($room->data['extra_data']) ? $room->data['extra_data'] : 1,
   );
-
+  
   // Add the field related form elements.
   $form_state['rooms_room'] = $room;
   field_attach_form('rooms_room', $room, $form, $form_state);

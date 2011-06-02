@@ -133,3 +133,16 @@ function rooms_room_schema() {
 
   return $schema;
 }
+
+
+/**
+ * Add a price field for rooms
+ */
+function rooms_room_update_7100() {
+  db_add_field('room', 'base_price', array(
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+    'description' => 'The default cost per night for the room',
+  ));
+}

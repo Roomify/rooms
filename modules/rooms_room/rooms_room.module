@@ -166,13 +166,16 @@ function rooms_room_type_access($op, $type = NULL, $account = NULL) {
  *
  * @param $type_name
  *   If set, the type with the given name is returned.
+ * @param $reset
+ *   A boolean indicating that the internal cache should be reset.
  * @return RoomsRoomType[]
  *   Depending whether $type isset, an array of room types or a single one.
  */
-function rooms_room_get_types($type_name = NULL) {
-    // entity_load will get the Entity controller for our room entity and call the load
+function rooms_room_get_types($type_name = NULL, $reset = FALSE) {
+  // entity_load will get the Entity controller for our room entity and call the load
   // function of that object.
-  $types = entity_load('rooms_room_type', isset($type_name) ? array($type_name) : FALSE);
+  $conditions = array();
+  $types = entity_load('rooms_room_type', isset($type_name) ? array($type_name) : FALSE, $conditions , $reset);
   return isset($type_name) ? reset($types) : $types;
 }
 
@@ -185,8 +188,8 @@ function rooms_room_get_types($type_name = NULL) {
  * @return
  *   A room type array or FALSE if $type does not exist.
  */
-function rooms_room_type_load($type) {
-  return rooms_room_get_types($type);
+function rooms_room_type_load($type, $reset = FALSE) {
+  return rooms_room_get_types($type, $reset);
 }
 
 
@@ -419,6 +422,9 @@ class RoomsRoomController extends EntityAPIController {
    *   A room object with all default fields initialized.
    */
   public function create(array $values = array()) {
+    $room_type = rooms_room_type_load($values['type'], TRUE);
+    $values['base_price'] = $room_type->data['base_price'];
+
     // Add values that are specific to our Room
     $values += array( 
       'room_id' => '',
@@ -426,7 +432,7 @@ class RoomsRoomController extends EntityAPIController {
       'title' => '',
       'created' => '',
       'changed' => '',
-      'base_price' => '',
+      //'base_price' => '',
       'data' => '',
     );
     

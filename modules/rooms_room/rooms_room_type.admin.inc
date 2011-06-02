@@ -63,6 +63,15 @@ function rooms_room_type_form($form, &$form_state, $room_type, $op = 'edit') {
     '#title' => t('An interesting room switch'),
     '#default_value' => !empty($room_type->data['extra_data']),
   );
+	
+	$form['data']['base_price'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Room Base Price'),
+    '#default_value' => isset($room_type->data['base_price']) ? $room_type->data['base_price'] : '',
+    '#size' => '5',
+    '#description' => t('Base price is per room per night - the price you set here will be the default price for all rooms of this type. You can then change the default base price on a per room basis'),
+    '#maxlength' => 10,
+  );
 
   $form['actions'] = array('#type' => 'actions');
   $form['actions']['submit'] = array(
