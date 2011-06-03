@@ -5,10 +5,24 @@ Drupal.behaviors.rooms_availability = {
     
     $('#calendar').fullCalendar({
       editable:true,
+      month:5,
       events: Drupal.settings.basePath + 'admin/rooms/rooms/room/ajax/test'
     });
     
-    alert(Drupal.settings.roomId);
+
+    $('#calendar1').fullCalendar({
+      editable:true,
+      month:6,
+      events: Drupal.settings.basePath + 'admin/rooms/rooms/room/ajax/test'
+    });
+
+    $('#calendar2').fullCalendar({
+      editable:true,
+      month:7,
+      events: Drupal.settings.basePath + 'admin/rooms/rooms/room/ajax/test'
+    });
+
+
   }
 };
 })(jQuery);

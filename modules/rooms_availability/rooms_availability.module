@@ -106,7 +106,6 @@ function rooms_availability_menu() {
 
 function room_load($room_id){
   $room = rooms_room_load($room_id);
-  dpm($room);
   return $room;
 }
 
@@ -149,18 +148,28 @@ function rooms_availability_event_test() {
 	
 		array(
 			'id' => 111,
-			'title' => "Event1",
+			'title' => "Mr and Ms Smith",
 			'start' => "$year-$month-10",
-			'url' => "http://istos.it/"
+			'url' => "http://google.com/"
 		),
 		
 		array(
 			'id' => 222,
-			'title' => "Event2",
+			'title' => "Roger John",
 			'start' => "$year-$month-20",
 			'end' => "$year-$month-22",
-			'url' => "http://istos.it/"
-		)
+			'url' => "http://google.com/"
+		),
+
+
+		array(
+			'id' => 223,
+			'title' => "Roger John",
+			'start' => "$year-$month-3",
+			'end' => "$year-$month-8",
+			'url' => "http://google.com/"
+		),
+
 	
 	));
   
