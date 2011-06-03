@@ -131,7 +131,7 @@ function rooms_availability_page(RoomsRoom $rooms_room) {
   drupal_add_library('rooms_availability', 'rooms_fullcalendar');
   drupal_add_js(drupal_get_path('module', 'rooms_availability') . '/js/rooms_availability.js');
   drupal_add_js(array('roomId' => $rooms_room->room_id), 'setting');
-  $output = theme('rooms_availability', array('hello', 'goodbye'));
+  $output = theme('rooms_availability', array('name'=>$rooms_room->name, 'type'=>$rooms_room->type));
   return $output;  
 }
 

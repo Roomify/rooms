@@ -6,6 +6,11 @@ Drupal.behaviors.rooms_availability = {
     $('#calendar').fullCalendar({
       editable:true,
       month:5,
+      header:{
+        left: 'title',
+        center: '',
+        right: ''
+      },
       events: Drupal.settings.basePath + 'admin/rooms/rooms/room/ajax/test'
     });
     
@@ -19,6 +24,11 @@ Drupal.behaviors.rooms_availability = {
     $('#calendar2').fullCalendar({
       editable:true,
       month:7,
+      header:{
+        left: 'title',
+        center: '',
+        right: ''
+      },
       events: Drupal.settings.basePath + 'admin/rooms/rooms/room/ajax/test'
     });
 
