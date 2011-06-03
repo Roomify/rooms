@@ -424,6 +424,7 @@ class RoomsRoomController extends EntityAPIController {
   public function create(array $values = array()) {
     $room_type = rooms_room_type_load($values['type'], TRUE);
     $values['base_price'] = $room_type->data['base_price'];
+    $values['sleeps'] = $room_type->data['sleeps'];
 
     // Add values that are specific to our Room
     $values += array( 
@@ -432,8 +433,7 @@ class RoomsRoomController extends EntityAPIController {
       'title' => '',
       'created' => '',
       'changed' => '',
-      //'base_price' => '',
-      'data' => '',
+      'data' => array(),
     );
     
     $room = parent::create($values);

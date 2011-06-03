@@ -61,6 +61,21 @@ function rooms_room_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'bookable' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+        'size' => 'tiny',
+        'description' => 'Whether the room is available for booking or not.',
+      ),
+      'sleeps' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+        'size' => 'tiny',
+        'description' => 'How many people can sleep in a room',
+      ),
+
       'data' => array(
         'type' => 'blob',
         'not null' => FALSE,
@@ -144,5 +159,26 @@ function rooms_room_update_7100() {
     'not null' => TRUE,
     'default' => 0,
     'description' => 'The default cost per night for the room',
+  ));
+}
+
+
+/**
+ * Add a bookable status field for rooms and a sleeps field
+ */
+function rooms_room_update_7200() {
+  db_add_field('room', 'bookable', array(
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 1,
+    'size' => 'tiny',
+    'description' => 'Whether the room is available for booking or not.',
+  ));
+  db_add_field('room', 'sleeps', array(
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 1,
+    'size' => 'tiny',
+    'description' => 'How many people can sleep in a room',
   ));
 }

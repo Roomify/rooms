@@ -72,6 +72,16 @@ function rooms_room_type_form($form, &$form_state, $room_type, $op = 'edit') {
     '#description' => t('Base price is per room per night - the price you set here will be the default price for all rooms of this type. You can then change the default base price on a per room basis'),
     '#maxlength' => 10,
   );
+	
+	$form['data']['sleeps'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Sleeps'),
+    '#default_value' => isset($room_type->data['sleeps']) ? $room_type->data['sleeps'] : '',
+    '#size' => '5',
+    '#description' => t('The default number of people that can sleeps in rooms of this type'),
+    '#maxlength' => 2,
+  );
+	
 
   $form['actions'] = array('#type' => 'actions');
   $form['actions']['submit'] = array(

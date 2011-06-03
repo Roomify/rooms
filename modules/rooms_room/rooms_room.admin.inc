@@ -53,7 +53,7 @@ class RoomsRoomUIController extends EntityDefaultUIController {
     foreach (rooms_room_get_types() as $type) {
       $items[$this->path . '/add/' . $type->type] = array(
         'title' => 'Add ' . $type->label,
-        'page callback' => 'rooms_room_form_wrapper',
+        'page callback' => 'rooms_room_create_form_wrapper',
         'page arguments' => array($type->type),
         'access callback' => 'rooms_room_access',
         'access arguments' => array('edit', 'edit ' . $type->type),
@@ -128,14 +128,28 @@ class RoomsRoomUIController extends EntityDefaultUIController {
 
 
 /**
- * Form callback wrapper: create or edit a Room.
+ * Form callback wrapper: edit a Room.
  *
  * @param $room
  *   The Rooms object being edited by this form.
  *
  * @see rooms_room_edit_form()
  */
-function rooms_room_form_wrapper($type) {
+function rooms_room_form_wrapper($room) {
+  // Add the breadcrumb for the form's location.
+  rooms_room_set_breadcrumb();
+  return drupal_get_form('rooms_room_edit_form', $room);
+}
+
+/**
+ * Form callback wrapper: create a Room.
+ *
+ * @param $room
+ *   The Rooms object being edited by this form.
+ *
+ * @see rooms_room_edit_form()
+ */
+function rooms_room_create_form_wrapper($type) {
   // Add the breadcrumb for the form's location.
   rooms_room_set_breadcrumb();
   $room = rooms_room_create(array('type' => $type));
@@ -166,9 +180,7 @@ function rooms_room_delete_form_wrapper($room) {
  *     with only a room type defined.
  */
 function rooms_room_edit_form($form, &$form_state, $room) {
-  dpm($form);
-  dpm($form_state);
-  dpm($room);
+
   // Add the default field elements.
   $form['name'] = array(
     '#type' => 'textfield',
@@ -187,13 +199,59 @@ function rooms_room_edit_form($form, &$form_state, $room) {
     '#description' => 'Base price is per room per night',
     '#maxlength' => 10,
   );
-  
-  $form['data']['#tree'] = TRUE;
-  $form['data']['extra_data'] = array(
+
+  $form['bookable'] = array(
     '#type' => 'checkbox',
-    '#title' => t('An additional room switch'),
-    '#default_value' => isset($room->data['extra_data']) ? $room->data['extra_data'] : 1,
+    '#title' => t('Bookable'),
+    '#description' => t('To remove room from bookable rooms uncheck'),
+    '#default_value' => isset($room->bookable) ? $room->bookable : 1,
   );
+
+  $form['sleeps'] = array(
+    '#type' => 'textfield',
+    '#size' => 5,
+    '#default_value' => isset($room->sleeps) ? $room->sleeps : 1,
+    '#title' => t('Sleeps'),
+  );
+
+
+  $form['data']['#tree'] = TRUE;
+
+  $form['data']['singlediscount'] = array(
+    '#type' => 'textfield',
+    '#size' => 5,
+    '#default_value' => isset($room->data['pricing']['singlediscount']) ? $room->data['pricing']['singlediscount'] : '',
+    '#title' => t('Discount for single occupancy'),
+    '#postfix' => '%',
+  );
+
+
+  $form['data']['bed_arrangement'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Bed Arrangement'),
+    //'#description' => t('Describe bed arrangements'),
+  );
+
+  $form['data']['bed_arrangement']['singles'] = array(
+    '#type' => 'textfield',
+    '#size' => 5,
+    '#default_value' => isset($room->data['bed_arrangement']['singles']) ? $room->data['bed_arrangement']['singles'] : '',
+    '#title' => t('Single Beds'),
+  );
+
+  $form['data']['bed_arrangement']['doubles'] = array(
+    '#type' => 'textfield',
+    '#size' => 5,
+    '#default_value' => isset($room->data['bed_arrangement']['doubles']) ? $room->data['bed_arrangement']['doubles'] : '',
+    '#title' => t('Double Beds'),
+  );
+  
+  $form['data']['bed_arrangement']['cot_available'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Cot available'),
+    '#default_value' => isset($room->data['bed_arrangement']['cot_available']) ? $room->data['bed_arrangement']['cot_available'] : 0,
+  );
+    
   
   // Add the field related form elements.
   $form_state['rooms_room'] = $room;
@@ -279,7 +337,8 @@ function rooms_room_edit_form_submit(&$form, &$form_state) {
  * @todo Remove hard-coded path
  */
 function rooms_room_form_submit_delete(&$form, &$form_state) {
-  $form_state['redirect'] = 'admin/rooms/rooms/room/' . $form_state['rooms']->room_id . '/delete';
+  dpm($form_state);
+  $form_state['redirect'] = 'admin/rooms/rooms/room/' . $form_state['rooms_room']->room_id . '/delete';
 }
 
 
