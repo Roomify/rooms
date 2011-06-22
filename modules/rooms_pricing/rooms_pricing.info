@@ -1,0 +1,11 @@
+name = Rooms Pricing
+description = Allows user to define seasons and other pricing rules for rooms
+core = 7.x
+
+package = Rooms
+
+version = 1.x-dev
+
+dependencies[] = rooms_availability
+
+files[] = rooms_pricing.admin.inc

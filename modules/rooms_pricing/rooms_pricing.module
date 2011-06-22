@@ -1,0 +1,269 @@
+<?php
+
+/**
+ * @file
+ * Manage Pricing Rules for Rooms 
+ */  
+
+
+/**
+ * Implement hook_entity_info().
+ */
+function rooms_pricing_entity_info() {
+  $return['rooms_pricing_rule'] = array(
+    'label' => t('Rooms Pricing Rule'),
+    // The entity class and controller class extend the classes provided by the
+    // Entity API
+    'entity class' => 'RoomsPricingRule',
+    'controller class' => 'RoomsPricingRuleController',
+    'base table' => 'rooms_pricing_rule',
+    'fieldable' => TRUE,
+    'entity keys' => array(
+        'id' => 'pricing_id',
+    ),
+    // Bundles are defined by the room types below
+    'bundles' => array(
+      'rooms_pricing_rule'=> array(
+        'label' => 'PricingRule',
+        'admin' => array(
+          'path' => 'admin/rooms/pricing/manage',
+          'access arguments' => array('administer pricing rules'),
+        ),
+      ),
+    ),
+    'label callback' => 'entity_class_label',
+    'uri callback' => 'entity_class_uri',
+    'creation callback' => 'rooms_pricing_rule_create',
+    'access callback' => 'rooms_pricing_rule_access',
+    'module' => 'rooms_pricing',
+    // The information below is used by the RoomsRoomUIController (which extends the EntityDefaultUIController)
+    'admin ui' => array(
+      'path' => 'admin/rooms/pricing_rules/manage',
+      'file' => 'rooms_pricing.admin.inc',
+      'controller class' => 'RoomsPricingRuleUIController',
+      'access arguments' => array('administer pricing rules'),
+    ),
+  );
+
+  return $return;
+}
+
+  
+
+/**
+ * Implements hook_permission().
+ */
+function rooms_pricing_permission() {
+  // We set up permisssions to manage entity types, manage all entities and the
+  // permissions for each individual entity
+  $permissions = array(
+    'administer pricing rules' => array(
+      'title' => t('Administer pricing rules'),
+      'description' => t('Create and change pricing rules.'),
+    ),
+  );
+  
+  return $permissions;  
+}
+
+
+/**
+ * Determines whether the given user has access to pricing rules editing and creation.
+ *
+ * @param $pricing_rule
+ *   Optionally a room or a room type to check access for. If nothing is
+ *   given, access for all rooms is determined.
+ * @param $account
+ *   The user to check for. Leave it to NULL to check for the global user.
+ * @return boolean
+ *   Whether access is allowed or not.
+ */
+function rooms_pricing_rule_access($pricing_rule = NULL, $account = NULL) {
+  if (user_access('administer pricing rules', $account)) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+
+/**
+ * Fetch a pricing rule object.
+ * 
+ * @param $pricing_id
+ *   Integer specifying the pricing rule id.
+ * @param $reset
+ *   A boolean indicating that the internal cache should be reset.
+ * @return
+ *   A fully-loaded $pricing_rule object or FALSE if it cannot be loaded.
+ *
+ * @see rooms_pricing_rule_load_multiple()
+ */
+function rooms_pricing_rule_load($pricing_id, $reset = FALSE) {
+  $pricing_rules = rooms_pricing_rule_load_multiple(array($pricing_id), array(), $reset);
+  return reset($pricing_rules);
+}
+
+
+/**
+ * Load multiple pricing rules based on certain conditions.
+ *
+ * @param $pricing_ids
+ *   An array of pricing rule IDs.
+ * @param $conditions
+ *   An array of conditions to match against the {room_pricing_rule} table.
+ * @param $reset
+ *   A boolean indicating that the internal cache should be reset.
+ * @return
+ *   An array of room objects, indexed by room_id.
+ *
+ * @see entity_load()
+ * @see rooms_room_load()
+ */
+function rooms_pricing_rule_load_multiple($pricing_ids = array(), $conditions = array(), $reset = FALSE) {
+  return entity_load('rooms_pricing_rule', $pricing_ids, $conditions, $reset);
+}
+
+
+/**
+ * Deletes a pricing rule.
+ */
+function rooms_pricing_rule_delete(RoomsPricingRule $pricing_rule) {
+  $pricing_rule->delete();
+}
+
+
+/**
+ * Delete multiple pricing rules.
+ *
+ * @param $pricing_ids
+ *   An array of room IDs.
+ */
+function rooms_pricing_rule_delete_multiple(array $pricing_ids) {
+  entity_get_controller('rooms_pricing_rule')->delete($pricing_ids);
+}
+
+
+/**
+ * Create a rooms pricing rule object.
+ */
+function rooms_pricing_rule_create($values = array()) {
+  return entity_get_controller('rooms_pricing_rule')->create($values);
+}
+
+
+/**
+ * Saves a pricing rule to the database.
+ *
+ * @param $room
+ *   The room object.
+ */
+function rooms_pricing_rule_save(RoomsPricingRule $pricing_rule) {
+  return $pricing_rule->save();
+}
+
+
+
+/**
+ * URI callback for pricing rules
+ */
+function rooms_pricing_rule_uri(RoomsPricingRule $pricing_rule){
+  return array(
+    'path' => 'room/pricing_rule' . $pricing_rule->pricing_id,
+  );
+}
+
+
+/**
+ * Menu title callback for showing individual entities
+ */
+function rooms_pricing_rule_page_title(RoomsPricingRule $pricing_rule){
+  return $pricing_rule->name;
+}
+
+
+/**
+ * Sets up content to show an individual room
+ * @todo - get rid of drupal_set_title();
+ */
+/*function rooms_room_page_view($room, $view_mode = 'full') {    
+  $controller = entity_get_controller('rooms_room');  
+  $content = $controller->view(array($room->room_id => $room));
+  drupal_set_title($room->name);
+  return $content;
+}*/
+
+
+/**
+ * Implements hook_views_api().
+ */
+function rooms_pricing_rule_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'rooms_pricing') . '/views',
+  );
+}
+
+
+
+
+/**
+ * The class used for room entities
+ */
+class RoomsPricingRule extends Entity {
+  
+  public function __construct($values = array()) {
+    parent::__construct($values, 'rooms_pricing_rule');
+  }
+
+  protected function defaultLabel() {
+    return $this->name;
+  }
+
+  protected function defaultUri() {
+    return array('path' => 'pricing_rule/' . $this->pricing_id);
+  }
+  
+  
+}
+
+
+
+/**
+ * The Controller for RoomsRoom entities
+ */
+class RoomsPricingRuleController extends EntityAPIController {
+  public function __construct($entityType) {
+    parent::__construct($entityType);
+  }
+
+
+  /**
+   * Create a room - we first set up the values that are specific
+   * to our room schema but then also go through the EntityAPIController
+   * function.
+   * 
+   * @param $type
+   *   The machine-readable type of the room.
+   *
+   * @return
+   *   A room object with all default fields initialized.
+   */
+  public function create(array $values = array()) {
+
+    $type = 'rooms_pricing_rule';
+
+    // Add values that are specific to our Room
+    $values += array( 
+      'pricing_id' => '',
+      'is_new' => TRUE,
+      'title' => '',
+      'active' => '1',
+    );
+    
+    $pricing_rule = parent::create($values);
+    return $pricing_rule;
+  }
+  
+  
+}
+

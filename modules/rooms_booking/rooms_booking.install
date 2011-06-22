@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * @file
+ * Install for Rooms Booking module - sets up the main Rooms Booking
+ * table
+ */
+
+
+function rooms_booking_install() {
+
+  $product_type = commerce_product_ui_product_type_new();
+
+  $product_type['type'] = 'booking';
+  $product_type['name'] = t('Booking');
+  $product_type['description'] = t('A Rooms Booking.');
+  $product_type['is_new'] = TRUE;
+
+  commerce_product_ui_product_type_save($product_type, FALSE);
+  commerce_product_configure_product_type('booking');
+}

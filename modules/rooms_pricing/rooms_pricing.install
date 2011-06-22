@@ -1,0 +1,56 @@
+<?php
+
+/**
+ * @file
+ * Sets up the base table for our entity and a table to store information about
+ * the entity types.
+ */
+
+
+/**
+ * Implements hook_schema().
+ */
+function rooms_pricing_schema() {
+  $schema = array();
+
+  $schema['rooms_pricing_rule'] = array(
+    'description' => 'The base table for Pricing Rules.',
+    'fields' => array(
+      'pricing_id' => array(
+        'description' => 'Primary Key: Identifier for a Rooms pricing rule.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'A human-readiable name for this pricing rule.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'room_type' => array(
+        'description' => 'The room type this pricing rules applies to.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'active' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+        'size' => 'tiny',
+        'description' => 'Whether this pricing rule is active or not.',
+      ),
+    ),
+    'primary key' => array('pricing_id'),
+    'indexes' => array(
+      'room_type' => array('room_type'),
+    ),
+  );
+
+
+  return $schema;
+}
+

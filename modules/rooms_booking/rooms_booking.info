@@ -1,0 +1,10 @@
+name = Rooms Booking
+description = Manages booking for Rooms
+core = 7.x
+version = 1.x-dev
+
+package = Rooms
+
+dependencies[] = rooms
+dependencies[] = rooms_room
+;dependencies[] = commerce_product

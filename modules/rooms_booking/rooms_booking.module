@@ -1,0 +1,19 @@
+<?php
+
+
+
+/**
+ * Implementsino hook_commerce_product_type_info()
+ */
+/*
+function rooms_booking_commerce_product_type_info() {
+   return array(
+    array(
+      'type' => 'booking1',
+      'name' => t('Booking1'),
+      'description' => 'A booking sale',
+      'help' => '',
+    ),
+  );
+}
+*/
