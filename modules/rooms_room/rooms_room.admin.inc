@@ -337,7 +337,6 @@ function rooms_room_edit_form_submit(&$form, &$form_state) {
  * @todo Remove hard-coded path
  */
 function rooms_room_form_submit_delete(&$form, &$form_state) {
-  dpm($form_state);
   $form_state['redirect'] = 'admin/rooms/rooms/room/' . $form_state['rooms_room']->room_id . '/delete';
 }
 

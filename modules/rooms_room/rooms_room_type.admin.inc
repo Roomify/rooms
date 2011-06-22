@@ -18,7 +18,7 @@ class RoomsRoomTypeUIController extends EntityDefaultUIController {
     $items[$this->path]['description'] = 'Manage room entity types, including adding
 		and removing fields and the display of fields.';
 		$items[$this->path]['weight'] = '3';
-		dpm($items);
+
     return $items;
   }
 }
@@ -108,7 +108,7 @@ function rooms_room_type_form($form, &$form_state, $room_type, $op = 'edit') {
  */
 function rooms_room_type_form_submit(&$form, &$form_state) {
   //$room_type = entity_ui_form_submit_build_entity($form, $form_state);
-  $room_type = entity_ui_controller('rooms_room_type')->entityFormSubmitBuildEntity($form, $form_state);
+  $room_type = entity_ui_form_submit_build_entity($form, $form_state);
   // Save and go back.
   $room_type->save();
   $form_state['redirect'] = 'admin/rooms/room_types';

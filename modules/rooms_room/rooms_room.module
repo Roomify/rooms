@@ -174,8 +174,7 @@ function rooms_room_type_access($op, $type = NULL, $account = NULL) {
 function rooms_room_get_types($type_name = NULL, $reset = FALSE) {
   // entity_load will get the Entity controller for our room entity and call the load
   // function of that object.
-  $conditions = array();
-  $types = entity_load('rooms_room_type', isset($type_name) ? array($type_name) : FALSE, $conditions , $reset);
+  $types = entity_load_multiple_by_name('rooms_room_type', isset($type_name) ? array($type_name) : FALSE);
   return isset($type_name) ? reset($types) : $types;
 }
 
@@ -458,7 +457,7 @@ class RoomsRoomController extends EntityAPIController {
 /**
  * The Controller for Room entities
  */
-class RoomsRoomTypeController extends EntityAPIController {
+class RoomsRoomTypeController extends EntityAPIControllerExportable {
   public function __construct($entityType) {
     parent::__construct($entityType);
   }
