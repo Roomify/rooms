@@ -13,7 +13,7 @@
 function rooms_room_schema() {
   $schema = array();
 
-  $schema['room'] = array(
+  $schema['rooms'] = array(
     'description' => 'The base table for Rooms.',
     'fields' => array(
       'room_id' => array(
@@ -90,7 +90,7 @@ function rooms_room_schema() {
     ),
   );
 
-  $schema['room_type'] = array(
+  $schema['rooms_type'] = array(
     'description' => 'Stores information about defined room types.',
     'fields' => array(
       'id' => array(
@@ -154,7 +154,7 @@ function rooms_room_schema() {
  * Add a price field for rooms
  */
 function rooms_room_update_7100() {
-  db_add_field('room', 'base_price', array(
+  db_add_field('rooms', 'base_price', array(
     'type' => 'int',
     'not null' => TRUE,
     'default' => 0,
@@ -167,14 +167,14 @@ function rooms_room_update_7100() {
  * Add a bookable status field for rooms and a sleeps field
  */
 function rooms_room_update_7200() {
-  db_add_field('room', 'bookable', array(
+  db_add_field('rooms', 'bookable', array(
     'type' => 'int',
     'not null' => TRUE,
     'default' => 1,
     'size' => 'tiny',
     'description' => 'Whether the room is available for booking or not.',
   ));
-  db_add_field('room', 'sleeps', array(
+  db_add_field('rooms', 'sleeps', array(
     'type' => 'int',
     'not null' => TRUE,
     'default' => 1,

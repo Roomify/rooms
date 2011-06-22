@@ -16,7 +16,7 @@ function rooms_room_entity_info() {
     // Entity API
     'entity class' => 'RoomsRoom',
     'controller class' => 'RoomsRoomController',
-    'base table' => 'room',
+    'base table' => 'rooms',
     'fieldable' => TRUE,
     'entity keys' => array(
         'id' => 'room_id',
@@ -46,7 +46,7 @@ function rooms_room_entity_info() {
     'label' => t('Room Type'),
     'entity class' => 'RoomsRoomType',
     'controller class' => 'RoomsRoomTypeController',
-    'base table' => 'room_type',
+    'base table' => 'rooms_type',
     'fieldable' => FALSE,
     'bundle of' => 'rooms_room',
     'exportable' => TRUE,

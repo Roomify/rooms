@@ -23,9 +23,12 @@ class RoomsPricingRuleUIController extends EntityDefaultUIController {
     $items = array();
     $id_count = count(explode('/', $this->path));
     $wildcard = isset($this->entityInfo['admin ui']['menu wildcard']) ? $this->entityInfo['admin ui']['menu wildcard'] : '%' . $this->entityType;
+    dpm($this->entityInfo);
+    dpm($wildcard);
+    dpm($id_count);
 
     $items[$this->path] = array(
-      'title' => 'Pricing Rule',
+      'title' => 'Pricing Rules',
       'description' => 'Add edit and update pricing rules (seasons, discounts, etc).',
       'page callback' => 'system_admin_menu_block_page',
       'access arguments' => array('access administration pages'),
@@ -38,28 +41,18 @@ class RoomsPricingRuleUIController extends EntityDefaultUIController {
     // Change the add page menu to multiple types of entities
     $items[$this->path . '/add'] = array(
       'title' => 'Add a Pricing Rule',
-      'description' => 'Add a new Pricing RUle',
-      'page callback'  => 'rooms_pricing_rule_add_page',
+      'description' => 'Add a new Pricing Rule',
+      'page callback'  => 'rooms_pricing_rule_form_wrapper',
       'access callback'  => 'rooms_pricing_rule_access',
-      'access arguments' => array('edit'),
+      'access arguments' => array('administer pricing rules'),
       'type' => MENU_NORMAL_ITEM,
       'weight' => 20,
-      'file' => 'rooms_pricing_rule.admin.inc',
+      'file' => 'rooms_pricing.admin.inc',
       'file path' => drupal_get_path('module', $this->entityInfo['module'])
 
     );
     
-    // Loading and editing Rooms entities
-    $items[$this->path . '/pricing_rule/' . $wildcard] = array(
-      'page callback' => 'rooms_pricing_rule_form_wrapper',
-      'page arguments' => array($id_count + 1),
-      'access callback' => 'rooms_pricing_rule_access',
-      'access arguments' => array('edit', $id_count + 1),
-      'weight' => 0,
-      'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
-      'file' => 'rooms_pricing_rule.admin.inc',
-      'file path' => drupal_get_path('module', $this->entityInfo['module'])
-    );
+    // Loading and editing Pricing Rule entities
     $items[$this->path . '/pricing_rule/' . $wildcard . '/edit'] = array(
       'title' => 'Edit',
       'type' => MENU_DEFAULT_LOCAL_TASK,
@@ -76,7 +69,7 @@ class RoomsPricingRuleUIController extends EntityDefaultUIController {
       'type' => MENU_LOCAL_TASK,
       'context' => MENU_CONTEXT_INLINE,
       'weight' => 10,
-      'file' => 'rooms_pricing_rule.admin.inc',
+      'file' => 'rooms_pricing.admin.inc',
       'file path' => drupal_get_path('module', $this->entityInfo['module'])
     );
     
@@ -91,6 +84,7 @@ class RoomsPricingRuleUIController extends EntityDefaultUIController {
       'access arguments' => array('view', 1),
       'type' => MENU_CALLBACK,
     );
+    dpm($items);
     return $items;
   }
   
@@ -122,10 +116,12 @@ class RoomsPricingRuleUIController extends EntityDefaultUIController {
  *
  * @see rooms_pricing_rule_edit_form()
  */
-function rooms_pricing_rule_form_wrapper($room) {
+function rooms_pricing_rule_form_wrapper() {
+  
+  $pricing_rule = rooms_pricing_rule_create();
   // Add the breadcrumb for the form's location.
-  rooms_room_set_breadcrumb();
-  return drupal_get_form('rooms_room_edit_form', $room);
+  rooms_pricing_rule_set_breadcrumb();
+  return drupal_get_form('rooms_pricing_rule_edit_form', $pricing_rule);
 }
 
 /**
@@ -166,7 +162,7 @@ function rooms_pricing_rule_delete_form_wrapper($room) {
  *   The Room object to edit or for a create form an empty room object
  *     with only a room type defined.
  */
-function rooms_pricing_rule_edit_form($form, &$form_state, $room) {
+function rooms_pricing_rule_edit_form($form, &$form_state, $pricing_rule) {
 
   // Add the default field elements.
   $form['name'] = array(
@@ -200,7 +196,7 @@ function rooms_pricing_rule_edit_form($form, &$form_state, $room) {
 
   $form['actions']['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Save Pricing RUle'),
+    '#value' => t('Save Pricing Rule'),
     '#submit' => $submit + array('rooms_pricing_rule_edit_form_submit'),
   );
   

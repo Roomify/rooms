@@ -3,7 +3,29 @@
 /**
  * @file
  * Manage Pricing Rules for Rooms 
- */  
+ */
+
+
+/**
+ * Implement hook_menu().
+ */
+function rooms_pricing_menu() {
+  
+  $items = array();
+  
+  $items['admin/rooms/config/pricing'] = array(
+    'title' => 'Pricing Configuration',
+    'description' => 'Configure settings and business rules for Rooms Pricing',
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 10,
+    'file path' => drupal_get_path('module', 'system'),
+    'file' => 'system.admin.inc',
+  );
+  
+  return $items;
+}
 
 
 /**
@@ -26,7 +48,7 @@ function rooms_pricing_entity_info() {
       'rooms_pricing_rule'=> array(
         'label' => 'PricingRule',
         'admin' => array(
-          'path' => 'admin/rooms/pricing/manage',
+          'path' => 'admin/rooms/config/pricing/pricing_rules',
           'access arguments' => array('administer pricing rules'),
         ),
       ),
@@ -36,9 +58,9 @@ function rooms_pricing_entity_info() {
     'creation callback' => 'rooms_pricing_rule_create',
     'access callback' => 'rooms_pricing_rule_access',
     'module' => 'rooms_pricing',
-    // The information below is used by the RoomsRoomUIController (which extends the EntityDefaultUIController)
+    // The information below is used by the PricingRulesUIController (which extends the EntityDefaultUIController)
     'admin ui' => array(
-      'path' => 'admin/rooms/pricing_rules/manage',
+      'path' => 'admin/rooms/pricing_rules',
       'file' => 'rooms_pricing.admin.inc',
       'controller class' => 'RoomsPricingRuleUIController',
       'access arguments' => array('administer pricing rules'),
