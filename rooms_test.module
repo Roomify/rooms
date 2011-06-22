@@ -27,8 +27,6 @@ function rooms_test_menu() {
 
 
 function rooms_test_fire(){
-	
-	dpm(rooms_room_get_types());
-	
+		
 	return 'hello';
 }
