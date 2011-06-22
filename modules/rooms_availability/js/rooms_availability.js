@@ -18,7 +18,7 @@ Drupal.behaviors.rooms_availability = {
     $('#calendar1').fullCalendar({
       editable:true,
       month:6,
-      events: Drupal.settings.basePath + 'admin/rooms/rooms/room/ajax/test'
+      events: Drupal.settings.basePath + 'admin/rooms/rooms/room/ajax/test',
     });
 
     $('#calendar2').fullCalendar({

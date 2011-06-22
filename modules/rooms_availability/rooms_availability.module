@@ -92,11 +92,17 @@ function rooms_availability_menu() {
     'type' => MENU_CALLBACK,
   );
 
-
   $items['admin/rooms/rooms/room/ajax/test'] = array(
     'title' =>  'Availability Event Test',
     'page callback' => 'rooms_availability_event_test',
     'access arguments' => array('manage rooms availability'),
+    'type' => MENU_CALLBACK,
+  );
+  
+  $items['admin/rooms/calendartest'] = array(
+    'title' => 'Calendar Tests',
+    'page callback' => 'calendar_test',
+    'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
   
@@ -158,7 +164,8 @@ function rooms_availability_event_test() {
 			'title' => "Roger John",
 			'start' => "$year-$month-20",
 			'end' => "$year-$month-22",
-			'url' => "http://google.com/"
+			'url' => "http://google.com/",
+      'color' => "red"
 		),
 
 
@@ -199,6 +206,124 @@ function rooms_availability_fullcalendar_get_js_path() {
   return variable_get('rooms_fullcalendar_path', FULLCALENDAR_PATH) . '/' . $fullcalendar_file[variable_get('rooms_fullcalendar_compression_type', 'min')];
 }
 
+
+function calendar_test(){
+  
+  $room = rooms_room_load(2);
+  
+  $start_date = new DateTime;
+  $start_date->setDate(2011,6,23);
+  
+  $end_date = new DateTime;
+  $end_date->setDate(2011,7,13);
+  
+  
+  $diff = $start_date->diff($end_date); 
+    
+  $event = new BookingEvent(6, 2, $start_date, $end_date);
+  
+  //$rc = new RoomsCalendar(10);
+  //$rc->updateMonth(6);
+  //dpm($rc);
+  
+  $output = '';
+  return $output;
+}
+
+
+
+/**
+ * Handles quering and updating the availability information
+ * relative to a single Room.
+ */
+class RoomCalendar {
+
+  // The room the Calendar is relevant to  
+  protected $room_id;
+  
+  // The default state for the room if it has no specific booking
+  protected $default_state;
+  
+  
+  public function __construct($room_id, $default_state){
+    $this->room_id = $room_id;
+    $this->default_state = $default_state;
+  }
+  
+  
+  /**
+   * Adds an event to the calendar
+   *
+   * @param $event
+   *   An array of events of type BookingEvent
+   *
+   * @return
+   *   TRUE if events added, FALSE if some event failed
+   */
+  public function addEvent($event) {}
+  
+  
+  /**
+   * Given an array of events removes events from the calendar
+   *
+   * @param $events
+   *    The events to remove from the database - an array of Booking Events
+   *
+   * @return
+   *   The array of ids of events that were found and removed
+   */
+  public function removeEvents($events) {}
+  
+  
+  /**
+   * Given a date range tries to determine whether room is available for booking
+   */
+  public function checkAvailability(DateTime $start_date, DateTime $end_date) {}
+  
+  
+  public function updateCalendar(array $events){
+    $date = new DateTime;
+    
+    $insert = db_insert('rooms_availability')
+      ->fields(array(
+        'rooms_room_id' => $this->room_id,
+        'year' => 2011,
+        'month' => $month,
+        'd1'=>1,
+        'd2'=>1,
+        'd3'=>1,
+        'd4'=>15,
+      ));
+      
+    //$insert->execute();
+  }
+}
+
+
+class BookingEvent {
+  
+  // The room the event is relevant to
+  protected $room_id;
+  
+  // The start date for the event
+  protected $start_date;
+  
+  // The end date for the event
+  protected $end_date;
+  
+  // The type of event
+  protected $event_type;
+  
+  
+  public function __construct($room_id, $event_id, $start_date, $end_date) {
+    $this->room_id = $room_id;
+    $this->event_type = $event_id;
+    $this->start_date = $start_date;
+    $this->end_date = $end_date;
+  }
+  
+  
+}
 
 
 
