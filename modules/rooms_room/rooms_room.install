@@ -75,7 +75,6 @@ function rooms_room_schema() {
         'size' => 'tiny',
         'description' => 'How many people can sleep in a room',
       ),
-
       'data' => array(
         'type' => 'blob',
         'not null' => FALSE,
