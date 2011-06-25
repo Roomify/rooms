@@ -27,6 +27,8 @@ function rooms_test_menu() {
 
 
 function rooms_test_fire(){
-		
+		  $room_types = array_keys(rooms_room_get_types());
+	dpm($room_types);
+	dpm(rooms_room_get_types());
 	return 'hello';
 }
