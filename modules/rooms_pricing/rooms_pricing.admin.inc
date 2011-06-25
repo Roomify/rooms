@@ -37,21 +37,64 @@ class RoomsPricingRuleUIController extends EntityDefaultUIController {
       //'type' => MENU_NORMAL_ITEM,
       'weight' => 1,
     );
-        
-    // Change the add page menu to multiple types of entities
-    $items[$this->path . '/add'] = array(
-      'title' => 'Add a Pricing Rule',
-      'description' => 'Add a new Pricing Rule',
-      'page callback'  => 'rooms_pricing_rule_form_wrapper',
+    
+    
+    // Allows users to create individual pricing rules as well as see what room type rules apply to
+    // a room
+    $items['admin/rooms/rooms/room/%room_to_price/pricing_rules'] = array(
+      'title' => 'Pricing Rules',
+      'description' => 'View and Manage Pricing Rules',
+      'page callback'  => 'rooms_room_pricing_rule_overview',
+      'page arguments' => array(4),
       'access callback'  => 'rooms_pricing_rule_access',
       'access arguments' => array('administer pricing rules'),
-      'type' => MENU_NORMAL_ITEM,
-      'weight' => 20,
+      'type' => MENU_LOCAL_TASK,
+      'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+      'weight' => 40,
       'file' => 'rooms_pricing.admin.inc',
-      'file path' => drupal_get_path('module', $this->entityInfo['module'])
+      'file path' => drupal_get_path('module', $this->entityInfo['module']),
 
     );
+        
+    // Menu item for adding pricing rules on individual rooms
+    $items['admin/rooms/rooms/room/%room/pricing_rules/pricing_room'] = array(
+      'title' => 'Add Pricing Rule',
+      'description' => 'Add a new Pricing Rule',
+      'page callback'  => 'rooms_pricing_rule_form_wrapper',
+      'page arguments' => array(6, 4),
+      'access callback'  => 'rooms_pricing_rule_access',
+      'access arguments' => array('administer pricing rules'),
+      'type' => MENU_LOCAL_ACTION,
+      'file' => 'rooms_pricing.admin.inc',
+      'file path' => drupal_get_path('module', $this->entityInfo['module']),
+    );
     
+    // Menu item for adding pricing rules on room types
+    $items[$this->path . '/add/pricing_type'] = array(
+      'title' => 'Add Pricing Rule for Room Type',
+      'description' => 'Add a new Pricing Rule',
+      'page callback'  => 'rooms_pricing_rule_form_wrapper',
+      'page arguments' => array(4),
+      'access callback'  => 'rooms_pricing_rule_access',
+      'access arguments' => array('administer pricing rules'),
+      'file' => 'rooms_pricing.admin.inc',
+      'file path' => drupal_get_path('module', $this->entityInfo['module']),
+    );
+    
+
+    //Menu item for adding pricing rules on multiple rooms (not related by type)
+    $items[$this->path . '/add/multiple_rooms'] = array(
+      'title' => 'Add Pricing Rule for multiple Rooms',
+      'description' => 'Add a new Pricing Rule',
+      'page callback'  => 'rooms_pricing_rule_form_wrapper',
+      'page arguments' => array(4),
+      'access callback'  => 'rooms_pricing_rule_access',
+      'access arguments' => array('administer pricing rules'),
+      'file' => 'rooms_pricing.admin.inc',
+      'file path' => drupal_get_path('module', $this->entityInfo['module']),
+    );
+
+
     // Loading and editing Pricing Rule entities
     $items[$this->path . '/pricing_rule/' . $wildcard . '/edit'] = array(
       'title' => 'Edit',
@@ -84,45 +127,38 @@ class RoomsPricingRuleUIController extends EntityDefaultUIController {
       'access arguments' => array('view', 1),
       'type' => MENU_CALLBACK,
     );
+    
     dpm($items);
     return $items;
   }
-  
-  
-  /**
-   * Create the markup for the add Room Entities page within the class
-   * so it can easily be extended/overriden.
-   */ 
-  public function addPage() {
-    $item = menu_get_item();
-    $content = system_admin_menu_block($item);
-
-    if (count($content) == 1) {
-      $item = array_shift($content);
-      drupal_goto($item['href']);
-    }    
-        
-    return theme('rooms_pricing_rule_add_list', array('content' => $content));
-  }
-  
 }
-
-
-/**
- * Form callback wrapper: edit a Pricing Rule.
- *
- * @param $pricing_rule
- * *   The RoomsPricingRule object being edited by this form.
- *
- * @see rooms_pricing_rule_edit_form()
- */
-function rooms_pricing_rule_form_wrapper() {
   
-  $pricing_rule = rooms_pricing_rule_create();
+  
+  
+  
+  
+function rooms_room_pricing_rule_overview($room){
+  dpm($room);
+  return 'hello';
+}
+  
+  
+
+
+
+function rooms_pricing_rule_form_wrapper($rule_type, $room = null) {
+  // Add the type to the starter values for our entity to define the entity
+  // bundle instance
+  $values = array('rule_type'=> $rule_type);
+  $pricing_rule = rooms_pricing_rule_create($values);
+  
   // Add the breadcrumb for the form's location.
   rooms_pricing_rule_set_breadcrumb();
-  return drupal_get_form('rooms_pricing_rule_edit_form', $pricing_rule);
+  
+  return drupal_get_form('rooms_pricing_rule_edit_form', $pricing_rule, $room, $rule_type);
 }
+
+
 
 /**
  * Form callback wrapper: create a PricingRule.
@@ -136,7 +172,7 @@ function rooms_pricing_rule_create_form_wrapper($type) {
   // Add the breadcrumb for the form's location.
   rooms_pricing_rule_set_breadcrumb();
   $room = rooms_pricing_rule_create(array('type' => $type));
-  return drupal_get_form('rooms_pricing_rule_edit_form', $room);
+  return drupal_get_form('rooms_pricing_rule_edit_form');
 }
 
 
@@ -162,8 +198,8 @@ function rooms_pricing_rule_delete_form_wrapper($room) {
  *   The Room object to edit or for a create form an empty room object
  *     with only a room type defined.
  */
-function rooms_pricing_rule_edit_form($form, &$form_state, $pricing_rule) {
-
+function rooms_pricing_rule_edit_form($form, &$form_state, $pricing_rule, $room = null, $rule_type) {
+  
   // Add the default field elements.
   $form['name'] = array(
     '#type' => 'textfield',
@@ -174,7 +210,107 @@ function rooms_pricing_rule_edit_form($form, &$form_state, $pricing_rule) {
     '#weight' => -5,
   );
   
+  $form['room_range'] = array (
+    '#title' => t('Room Range'),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE, 
+    '#collapsed' => FALSE,
+    '#description' => 'Where should this rule apply'
+  );
+  
+  // We are dealing with the creation of a rule for multiple rooms 
+  if ($rule_type == 'multiple_rooms' && $room == null) {    
+    // Load all rooms as checkboxes - yes this is heavy and yes needs to be improved
+    $rooms = rooms_get_rooms_by_id();
+    $form['room_range']['rooms'] = array (
+      '#type' => 'checkboxes',
+      '#title' => t('Rooms'),
+      '#options' => $rooms,
+      '#description' => t('Choose the room types this rule should apply for'),      
+    );
+  }
+  
+  if ($rule_type == 'pricing_room' && isset($room)) {
+    // Dealing with just one room - set the field to hidden
+    dpm($room);
+    $form['room_range']['room'] = array (
+      '#type' => 'hidden',
+      '#value' => $room->room_id,
+    );
+
+    $form['room_range']['room_info'] = array(
+      '#markup' => t('This pricing rule will apply to room @room', array('@room' => $room->name)),
+    );
+  }
+  
+  if ($rule_type == 'pricing_type' && $room == null) {
+    $room_types = rooms_room_get_type_labels();
     
+    $form['room_range']['room_type'] = array(
+      '#type' => 'checkboxes',
+      '#title' => t('Room Types'),
+      '#options' => $room_types,
+      '#description' => t('Choose the room types this rule should apply for'),
+    );
+  }
+
+  
+  $form['date_range'] = array (
+    '#title' => t('Date Range'),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE, 
+    '#collapsed' => FALSE,
+  );
+  
+  
+  $form['date_range']['start_date'] = array(
+    '#type' => 'date_popup',
+    '#title' => t('Start Date'),
+    '#date_type' => DATE_DATETIME,
+    '#date_format' => 'm/d/Y',
+    '#date_increment' => 1,
+    '#date_year_range' => '-1:+3',
+  );
+  
+  $form['date_range']['end_date'] = array(
+    '#type' => 'date_popup',
+    '#title' => t('End Date'),
+    '#date_type' => DATE_DATETIME,
+    '#date_format' => 'm/d/Y',
+    '#date_increment' => 1,
+    '#date_year_range' => '-1:+3',
+  );
+    
+  
+  $form['action'] = array (
+    '#title' => t('Action'),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE, 
+    '#collapsed' => FALSE,
+  );
+  
+  $form['action']['operation'] = array(
+    '#type' => 'select',
+    '#title' => 'Operation',
+    '#options' => array(
+      'add' => 'Add to existing price',
+      'substract' => 'Subtract from existing price',
+      'replace' => 'Replace existing price',  
+      
+    ),
+    '#default_value' =>  'replace',
+  );
+  
+  $form['action']['amount'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Amount'),
+    '#default_value' => '',
+    '#size' => '5',
+    '#description' => 'Amount to apply for rule',
+    '#maxlength' => 10,
+  );
+  
+
   
   // Add the field related form elements.
   $form_state['rooms_pricing_rule'] = $pricing_rule;
@@ -224,7 +360,7 @@ function rooms_pricing_rule_edit_form_validate(&$form, &$form_state) {
   $pricing_rule = $form_state['rooms_pricing_rule'];
   
   // Notify field widgets to validate their data.
-  field_attach_form_validate('rooms_pricing_rule', $room, $form, $form_state);
+  field_attach_form_validate('rooms_pricing_rule', $pricing_rule, $form, $form_state);
   
 }
 

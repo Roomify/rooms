@@ -23,6 +23,26 @@ function rooms_pricing_menu() {
     'file path' => drupal_get_path('module', 'system'),
     'file' => 'system.admin.inc',
   );
+  $items['admin/rooms/config/pricing/room_type'] = array(
+    'title' => 'Pricing Configuration per room type',
+    'description' => 'Configure settings and business rules for Rooms Pricing per Room Type',
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 10,
+    'file path' => drupal_get_path('module', 'system'),
+    'file' => 'system.admin.inc',
+  );
+  $items['admin/rooms/config/pricing/individual_room'] = array(
+    'title' => 'Pricing Configuration for individual rooms',
+    'description' => 'Configure settings and business rules for individual rooms',
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 10,
+    'file path' => drupal_get_path('module', 'system'),
+    'file' => 'system.admin.inc',
+  );
   
   return $items;
 }
@@ -45,13 +65,21 @@ function rooms_pricing_entity_info() {
     ),
     // Bundles are defined by the room types below
     'bundles' => array(
-      'rooms_pricing_rule'=> array(
-        'label' => 'PricingRule',
+      'pricing_type' => array(
+        'label' => 'Pricing Rule for Room Type',
         'admin' => array(
-          'path' => 'admin/rooms/config/pricing/pricing_rules',
+          'path' => 'admin/rooms/config/pricing/room_type/pricing_rules_type',
           'access arguments' => array('administer pricing rules'),
         ),
       ),
+      'pricing_room' => array(
+        'label' => 'Pricing Rule for Individual Room',
+        'admin' => array(
+          'path' => 'admin/rooms/config/pricing/individual_room/pricing_rules_individual',
+          'access arguments' => array('administer pricing rules'),
+        ),
+      ),
+
     ),
     'label callback' => 'entity_class_label',
     'uri callback' => 'entity_class_uri',
@@ -107,6 +135,11 @@ function rooms_pricing_rule_access($pricing_rule = NULL, $account = NULL) {
   return FALSE;
 }
 
+
+
+function rooms_pricing_rule_get_types($type_name = NULL, $reset = FALSE) {
+
+}
 
 /**
  * Fetch a pricing rule object.
@@ -204,15 +237,12 @@ function rooms_pricing_rule_page_title(RoomsPricingRule $pricing_rule){
 
 
 /**
- * Sets up content to show an individual room
- * @todo - get rid of drupal_set_title();
+ * Loads a room to apply pricing rules to
  */
-/*function rooms_room_page_view($room, $view_mode = 'full') {    
-  $controller = entity_get_controller('rooms_room');  
-  $content = $controller->view(array($room->room_id => $room));
-  drupal_set_title($room->name);
-  return $content;
-}*/
+function room_to_price_load($room){
+  $room = rooms_room_load($room);
+  return $room;
+}
 
 
 /**
@@ -274,6 +304,7 @@ class RoomsPricingRuleController extends EntityAPIController {
 
     $type = 'rooms_pricing_rule';
 
+    dpm($values);
     // Add values that are specific to our Room
     $values += array( 
       'pricing_id' => '',

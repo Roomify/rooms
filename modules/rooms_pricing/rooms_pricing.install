@@ -22,6 +22,13 @@ function rooms_pricing_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
+      'rule_type' => array(
+        'description' => 'The rule type for this pricing rule',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
       'name' => array(
         'description' => 'A human-readiable name for this pricing rule.',
         'type' => 'varchar',
@@ -29,25 +36,115 @@ function rooms_pricing_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
-      'room_type' => array(
-        'description' => 'The room type this pricing rules applies to.',
-        'type' => 'varchar',
-        'length' => 255,
+      'created' => array(
+        'description' => 'The Unix timestamp when the Room was created.',
+        'type' => 'int',
         'not null' => TRUE,
-        'default' => '',
+        'default' => 0,
       ),
-      'active' => array(
+      'changed' => array(
+        'description' => 'The Unix timestamp when the Room was most recently saved.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),      
+      'status' => array(
         'type' => 'int',
         'not null' => TRUE,
         'default' => 1,
         'size' => 'tiny',
         'description' => 'Whether this pricing rule is active or not.',
       ),
+      'start' => array(
+        'description' => 'The start date for this pricing rule.',
+        'type' => 'varchar', 
+        'length' => 20, 
+        'not null' => FALSE, 
+        'sortable' => TRUE, 
+        'views' => TRUE,
+      ),
+      'end' => array(
+        'description' => 'The end date for this pricing rule.',
+        'type' => 'varchar', 
+        'length' => 20, 
+        'not null' => FALSE, 
+        'sortable' => TRUE, 
+        'views' => TRUE,
+      ),
+      'action' => array(
+        'description' => 'The action to perform to the rooom price',
+        'type' => 'varchar', 
+        'length' => 10, 
+        'not null' => FALSE, 
+        'sortable' => TRUE, 
+        'views' => TRUE,
+      ),
+      'amount' => array(
+        'description' => 'The amount to use with the action to change the price',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),      
+
     ),
     'primary key' => array('pricing_id'),
     'indexes' => array(
+      'rule_type' => array('rule_type'),
+    ),
+  );
+  
+  $schema['rooms_pricing_rule_types'] = array(
+    'description' => 'Table connects pricing rules with room types',
+    'fields' => array(
+      'pricing_id' => array(
+        'description' => 'Pricing rule id',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'room_type' => array(
+        'description' => 'The type of room this rule applies to.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'indexes' => array(
+      'pricing_id' => array('pricing_id'),
       'room_type' => array('room_type'),
     ),
+    'unique keys' =>  array (
+      'pricing_rule_type' => array('pricing_id', 'room_type'),
+    ),
+
+  );
+
+
+  $schema['rooms_pricing_rules_rooms'] = array(
+    'description' => 'Table connects pricing rules with individual rooms',
+    'fields' => array(
+      'pricing_id' => array(
+        'description' => 'Pricing rule id',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'room_id' => array(
+        'description' => 'Room id',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'pricing_id' => array('pricing_id'),
+      'roomd_id' => array('room_id'),
+    ),
+    'unique keys' =>  array (
+      'pricing_rule_room' => array('pricing_id', 'room_id'),
+    ),
+
   );
 
 
