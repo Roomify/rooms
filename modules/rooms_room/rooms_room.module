@@ -180,6 +180,27 @@ function rooms_room_get_types($type_name = NULL, $reset = FALSE) {
 
 
 /**
+ * Helper function useful to easily get rooms types in an array for use in forms, etc
+ *
+ * @return $room_types
+ *  an array of room types keyed by type name and labels
+*/
+function rooms_room_get_type_labels() {
+  
+  $room_types = array();
+  
+  $types = rooms_room_get_types();
+  
+  
+  foreach ($types as $type){
+    $room_types[$type->type] = $type->label;
+  }
+  
+  return $room_types;
+}
+
+
+/**
  * Menu argument loader; Load a room type by string.
  *
  * @param $type
@@ -302,6 +323,31 @@ function rooms_room_page_title(RoomsRoom $room){
   return $room->name;
 }
 
+
+
+/**
+ * Get a list of Rooms keyed by id and name in value
+ */
+function rooms_get_rooms_by_id($conditions = array()) {
+  
+  $rooms = array();
+  
+  $query = new EntityFieldQuery();
+  
+  $result = $query->entityCondition('entity_type', 'rooms_room')
+                    //->entityCondition('bundle', 'event')
+                    ->execute();
+
+  $entities = entity_load('rooms_room', array_keys($result['rooms_room']));
+
+  foreach ($entities as $room){
+    $wrapper = entity_metadata_wrapper('rooms_room', $room);
+    
+    $rooms[$wrapper->room_id->value()] = $wrapper->name->value();
+  }
+
+  return $rooms;
+}
 
 /**
  * Sets up content to show an individual room
