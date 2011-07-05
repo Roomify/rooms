@@ -248,7 +248,7 @@ function room_to_price_load($room){
 /**
  * Implements hook_views_api().
  */
-function rooms_pricing_rule_views_api() {
+function rooms_pricing_views_api() {
   return array(
     'api' => 3,
     'path' => drupal_get_path('module', 'rooms_pricing') . '/views',
@@ -329,7 +329,6 @@ class RoomsPricingRuleController extends EntityAPIController {
 
     $type = 'rooms_pricing_rule';
 
-    dpm($values);
     // Add values that are specific to our Room
     $values += array( 
       'pricing_id' => '',
