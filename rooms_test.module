@@ -30,5 +30,14 @@ function rooms_test_fire(){
 		  $room_types = array_keys(rooms_room_get_types());
 	dpm($room_types);
 	dpm(rooms_room_get_types());
+	
+	$date1 = new DateTime('2011-07-01');
+	$date2 = new DateTime('2011-08-01');
+	$diff = $date1->diff($date2);
+	dpm($diff->days);
+	dpm($diff->invert);
+	dpm($date1);
+	dpm($date2);
+	
 	return 'hello';
 }
