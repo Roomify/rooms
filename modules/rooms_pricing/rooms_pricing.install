@@ -30,7 +30,7 @@ function rooms_pricing_schema() {
         'default' => '',
       ),
       'name' => array(
-        'description' => 'A human-readiable name for this pricing rule.',
+        'description' => 'A human-readable name for this pricing rule.',
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
@@ -55,7 +55,7 @@ function rooms_pricing_schema() {
         'size' => 'tiny',
         'description' => 'Whether this pricing rule is active or not.',
       ),
-      'start' => array(
+      'start_date' => array(
         'description' => 'The start date for this pricing rule.',
         'type' => 'varchar', 
         'length' => 20, 
@@ -63,7 +63,7 @@ function rooms_pricing_schema() {
         'sortable' => TRUE, 
         'views' => TRUE,
       ),
-      'end' => array(
+      'end_date' => array(
         'description' => 'The end date for this pricing rule.',
         'type' => 'varchar', 
         'length' => 20, 
@@ -71,8 +71,8 @@ function rooms_pricing_schema() {
         'sortable' => TRUE, 
         'views' => TRUE,
       ),
-      'action' => array(
-        'description' => 'The action to perform to the rooom price',
+      'operation' => array(
+        'description' => 'The action to perform to the room price',
         'type' => 'varchar', 
         'length' => 10, 
         'not null' => FALSE, 
