@@ -185,15 +185,15 @@ function rooms_room_get_types($type_name = NULL, $reset = FALSE) {
  * @return $room_types
  *  an array of room types keyed by type name and labels
 */
-function rooms_room_get_type_labels() {
+function rooms_room_types_ids() {
   
   $room_types = array();
   
   $types = rooms_room_get_types();
   
-  
+  dpm($types);
   foreach ($types as $type){
-    $room_types[$type->type] = $type->label;
+    $room_types[$type->id] = $type->label;
   }
   
   return $room_types;
@@ -328,7 +328,7 @@ function rooms_room_page_title(RoomsRoom $room){
 /**
  * Get a list of Rooms keyed by id and name in value
  */
-function rooms_get_rooms_by_id($conditions = array()) {
+function rooms_room_ids($conditions = array()) {
   
   $rooms = array();
   
@@ -338,12 +338,12 @@ function rooms_get_rooms_by_id($conditions = array()) {
                     //->entityCondition('bundle', 'event')
                     ->execute();
 
-  $entities = entity_load('rooms_room', array_keys($result['rooms_room']));
-
-  foreach ($entities as $room){
-    $wrapper = entity_metadata_wrapper('rooms_room', $room);
-    
-    $rooms[$wrapper->room_id->value()] = $wrapper->name->value();
+  if (count($result) > 0 ) { 
+    $entities = entity_load('rooms_room', array_keys($result['rooms_room']));
+    foreach ($entities as $room){
+      $wrapper = entity_metadata_wrapper('rooms_room', $room);      
+      $rooms[$wrapper->room_id->value()] = $wrapper->name->value();
+    }
   }
 
   return $rooms;
