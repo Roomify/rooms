@@ -23,9 +23,6 @@ class RoomsPricingRuleUIController extends EntityDefaultUIController {
     $items = array();
     $id_count = count(explode('/', $this->path));
     $wildcard = isset($this->entityInfo['admin ui']['menu wildcard']) ? $this->entityInfo['admin ui']['menu wildcard'] : '%' . $this->entityType;
-    dpm($this->entityInfo);
-    dpm($wildcard);
-    dpm($id_count);
 
     $items[$this->path] = array(
       'title' => 'Pricing Rules',
@@ -200,6 +197,12 @@ function rooms_pricing_rule_delete_form_wrapper($room) {
  */
 function rooms_pricing_rule_edit_form($form, &$form_state, $pricing_rule, $room = null, $rule_type) {
   
+  
+  $form['rule_type'] = array (
+    '#type' => 'hidden',
+    '#value' => $rule_type,
+  );
+  
   // Add the default field elements.
   $form['name'] = array(
     '#type' => 'textfield',
@@ -215,24 +218,34 @@ function rooms_pricing_rule_edit_form($form, &$form_state, $pricing_rule, $room 
     '#type' => 'fieldset',
     '#collapsible' => TRUE, 
     '#collapsed' => FALSE,
-    '#description' => 'Where should this rule apply'
+    '#description' => 'When should this rule apply.'
   );
   
   // We are dealing with the creation of a rule for multiple rooms 
   if ($rule_type == 'multiple_rooms' && $room == null) {    
     // Load all rooms as checkboxes - yes this is heavy and yes needs to be improved
-    $rooms = rooms_get_rooms_by_id();
-    $form['room_range']['rooms'] = array (
-      '#type' => 'checkboxes',
-      '#title' => t('Rooms'),
-      '#options' => $rooms,
-      '#description' => t('Choose the room types this rule should apply for'),      
-    );
+    $rooms = rooms_room_ids();
+    if (count($rooms) == 0 ){
+      $form['room_range']['no_room_info'] = array(
+        '#markup' => t('No rooms have been created. <a href="/admin/rooms/rooms">Go here to add some rooms.</a>'),
+      );
+      $form['room_range']['rooms'] = array (
+      '#type' => 'hidden',
+      '#value' => -1,
+      );
+
+    } else {
+      $form['room_range']['rooms'] = array (
+        '#type' => 'checkboxes',
+        '#title' => t('Rooms'),
+        '#options' => $rooms,
+        '#description' => t('Choose the room types this rule should apply for'),      
+      );
+    }
   }
   
   if ($rule_type == 'pricing_room' && isset($room)) {
     // Dealing with just one room - set the field to hidden
-    dpm($room);
     $form['room_range']['room'] = array (
       '#type' => 'hidden',
       '#value' => $room->room_id,
@@ -244,14 +257,24 @@ function rooms_pricing_rule_edit_form($form, &$form_state, $pricing_rule, $room 
   }
   
   if ($rule_type == 'pricing_type' && $room == null) {
-    $room_types = rooms_room_get_type_labels();
-    
-    $form['room_range']['room_type'] = array(
-      '#type' => 'checkboxes',
-      '#title' => t('Room Types'),
-      '#options' => $room_types,
-      '#description' => t('Choose the room types this rule should apply for'),
-    );
+    $room_types = rooms_room_types_ids();
+
+    if (count($room_types) == 0 ){
+      $form['room_range']['no_types_info'] = array(
+        '#markup' => t('No room types have been created. <a href="/admin/rooms/room_types">Go here to add some types.</a>'),
+      );
+      $form['room_range']['room_type'] = array (
+      '#type' => 'hidden',
+      '#value' => -1,
+      );
+    } else {
+      $form['room_range']['room_type'] = array(
+        '#type' => 'checkboxes',
+        '#title' => t('Room Types'),
+        '#options' => $room_types,
+        '#description' => t('Choose the room types this rule should apply for'),
+      );
+    }
   }
 
   
@@ -270,6 +293,7 @@ function rooms_pricing_rule_edit_form($form, &$form_state, $pricing_rule, $room 
     '#date_format' => 'm/d/Y',
     '#date_increment' => 1,
     '#date_year_range' => '-1:+3',
+    '#required' => TRUE,
   );
   
   $form['date_range']['end_date'] = array(
@@ -279,6 +303,7 @@ function rooms_pricing_rule_edit_form($form, &$form_state, $pricing_rule, $room 
     '#date_format' => 'm/d/Y',
     '#date_increment' => 1,
     '#date_year_range' => '-1:+3',
+    '#required' => TRUE,
   );
     
   
@@ -308,6 +333,7 @@ function rooms_pricing_rule_edit_form($form, &$form_state, $pricing_rule, $room 
     '#size' => '5',
     '#description' => 'Amount to apply for rule',
     '#maxlength' => 10,
+    '#required' => TRUE,
   );
   
 
@@ -357,7 +383,48 @@ function rooms_pricing_rule_edit_form($form, &$form_state, $pricing_rule, $room 
  * Form API validate callback for the room form
  */
 function rooms_pricing_rule_edit_form_validate(&$form, &$form_state) {
+    
   $pricing_rule = $form_state['rooms_pricing_rule'];
+
+//  dpm($form_state);
+  
+  // Check date validity
+  $date1 = new DateTime($form_state['values']['start_date']);
+  $date2 = new DateTime($form_state['values']['end_date']);
+  $diff = $date1->diff($date2);
+  // If date1 > date2
+  if ($diff->invert) {
+    form_set_error('date_range', t('End date must be after start date'));
+  }
+  
+  // Check for rooom types
+  if (isset($form_state['values']['rooms'])) {
+    if ($form_state['values']['rule_type'] == 'multiple_rooms' && $form_state['values']['rooms'] == -1) {
+      form_set_error('room_range', t('%name: No rooms selected.', array('%name' => 'Rooms')));
+    }
+    elseif (array_sum($form_state['values']['rooms']) == 0) {
+      form_set_error('room_range', t('%name: No rooms selected.', array('%name' => 'Rooms')));    
+    }    
+  }
+  
+  
+  // Check for rule types
+  if (isset($form_state['values']['room_type'])) {
+    if ($form_state['values']['rule_type'] == 'room_type' && $form_state['values']['room_type'] == -1) {
+      form_set_error('room_type', t('%name: No rooms selected.', array('%name' => 'Room Type')));
+    }
+    elseif (array_sum($form_state['values']['room_type']) == 0) {
+      form_set_error('room_range', t('%name: No room types selected.', array('%name' => 'Rooms')));    
+    }    
+  }
+  
+
+  // Make sure amount entered is numeric
+  if (!empty($form_state['values']['amount']) && !is_numeric($form_state['values']['amount'])) {
+    form_set_error('amount', t('%name: you must enter a numeric value for the price.', array('%name' => 'Amount')));
+  }
+  
+
   
   // Notify field widgets to validate their data.
   field_attach_form_validate('rooms_pricing_rule', $pricing_rule, $form, $form_state);
@@ -373,7 +440,8 @@ function rooms_pricing_rule_edit_form_validate(&$form, &$form_state) {
 function rooms_pricing_rule_edit_form_submit(&$form, &$form_state) {
   
   $pricing_rule = entity_ui_controller('rooms_pricing_rule')->entityFormSubmitBuildEntity($form, $form_state);
-  // Save the Room and go back to the list of rooms
+  
+  // Save the Pricing Rule and go back to the list of pricing rules
   
   // Add in created and changed times.
   if ($pricing_rule->is_new = isset($pricing_rule->is_new) ? $pricing_rule->is_new : 0){
