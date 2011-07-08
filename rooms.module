@@ -37,3 +37,19 @@ function rooms_permission() {
 function rooms_price_to_int($amount){
   return (int) $amount * 100;
 }
+
+
+
+/**
+ * Utility function that returns an array with the last day of each month given a year
+ */
+function rooms_end_of_month_dates($year = 2011, $calendar = CAL_GREGORIAN){
+  
+  $end_of_month_dates = array();
+  
+  for ($i = 1; $i<=12; $i++) {
+    $end_of_month_dates[$i] = cal_days_in_month(CAL_GREGORIAN, $i, $year);
+  }
+  
+  return $end_of_month_dates;
+}
