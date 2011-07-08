@@ -699,28 +699,28 @@ class BookingEvent {
     $this->end_date = $end_date;
   }
   
-  public function startDay() {
-    return $this->start_date->format('j');
+  public function startDay($format = 'j') {
+    return $this->start_date->format($format);
   }
   
-  public function startMonth() {
-    return $this->start_date->format('n');
+  public function startMonth($format = 'n') {
+    return $this->start_date->format($format);
   }
   
-  public function startYear() {
-    return $this->start_date->format('Y');
+  public function startYear($format = 'Y') {
+    return $this->start_date->format($format);
   }
   
-  public function endDay() {
-    return $this->end_date->format('j');
+  public function endDay($format = 'j') {
+    return $this->end_date->format($format);
   }
   
-  public function endMonth() {
-    return $this->end_date->format('n');
+  public function endMonth($format = 'n') {
+    return $this->end_date->format($format);
   }
   
-  public function endYear() {
-    return $this->end_date->format('Y');
+  public function endYear($format = 'Y') {
+    return $this->end_date->format($format);
   }
   
   /**
@@ -845,8 +845,8 @@ class BookingEvent {
     $event = array(
       'id' => $this->id,
       'title' => 'Event ID: ' . $this->id . ' - Room ID: ' . $this->room_id,
-      'start' => $this->startYear() . '-' . $this->startMonth() . '-' . $this->startDay(),
-      'end' => $this->endYear() . '-' . $this->endMonth() . '-' . $this->endDay(),
+      'start' => $this->startYear() . '-' . $this->startMonth('m') . '-' . $this->startDay('d'),
+      'end' => $this->endYear() . '-' . $this->endMonth('m') . '-' . $this->endDay('d'),
     );
     
     //set the color

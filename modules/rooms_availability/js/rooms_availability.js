@@ -26,6 +26,8 @@ Drupal.behaviors.rooms_availability = {
       events: Drupal.settings.basePath + 'admin/rooms/rooms/room/' + Drupal.settings.roomID + '/availability/json/' + Drupal.settings.currentYear + '/' + $currentmonth
     });
 
+    console.log(new Date(2011, 28, 8));
+    console.log()
     $('#calendar2').fullCalendar({
       editable:false,
       month:$nextmonth-1,
@@ -37,6 +39,8 @@ Drupal.behaviors.rooms_availability = {
       events: Drupal.settings.basePath + 'admin/rooms/rooms/room/' + Drupal.settings.roomID + '/availability/json/' + Drupal.settings.currentYear + '/' + $nextmonth
     });
 
+    // Trigger a window resize so that calendar will redraw itself as it loads funny in some browsers occasionally
+    $(window).resize();
 
   }
 };
