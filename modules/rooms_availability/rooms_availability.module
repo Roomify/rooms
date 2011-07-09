@@ -75,7 +75,7 @@ function rooms_availability_menu() {
   $items['admin/rooms/rooms/room/%room/availability'] = array(
     'title' => 'Room Availability',
     'page callback' =>  'rooms_availability_page',
-    'page arguments' => array(4),
+    'page arguments' => array(4,6,7),
     'access callback' => 'rooms_availability_access',
     'access arguments' => array(1),
     'type' => MENU_LOCAL_TASK,
@@ -136,19 +136,37 @@ function rooms_availability_access($rooms_room) {
  * page by adding calendar and pulling events from availability table.
  * 
  */
-function rooms_availability_page(RoomsRoom $rooms_room) {
+function rooms_availability_page(RoomsRoom $rooms_room, $year='', $month='') {
+  
+  $year = ($year == '') ? date('Y', time()) : $year;
+  $month = ($month == '') ? date('m', time()) : $month;
+  //dpm($year);
+  //dpm($month);
+  
   drupal_add_library('rooms_availability', 'rooms_fullcalendar');
   drupal_add_js(drupal_get_path('module', 'rooms_availability') . '/js/rooms_availability.js');
   drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/fullcalendar.theme.css');
   drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/rooms_availability.css');
   drupal_add_js(array('roomID' => $rooms_room->room_id), 'setting');
-  drupal_add_js(array('currentMonth' => date('n',time())), 'setting');
-  drupal_add_js(array('currentYear' => date('Y',time())), 'setting');
+  drupal_add_js(array('currentMonth' => $month), 'setting');
+  drupal_add_js(array('currentYear' => $year), 'setting');
+  
+  $forward_path = 'admin/rooms/rooms/room/' . $rooms_room->room_id . '/availability/' . $year . '/' . ($month + 1);
+  $forward_link = l(t('Forward'), $forward_path);
+
+  $backward_path = 'admin/rooms/rooms/room/' . $rooms_room->room_id . '/availability/' . $year . '/' . ($month - 1);
+  $backward_link = l(t('Back'), $backward_path);
+
+
+  dpm($forward_link);
+  
   $output = theme('rooms_availability',array('name' => $rooms_room->name,
                                               'type' => $rooms_room->type,
                                               'update_form' => drupal_get_form('update_calendar_form'),
-                                              'start_year' => date('Y', time()),
-                                              'start_month' => date('m',time()))
+                                              'start_year' => $year,
+                                              'start_month' => $month,
+                                              'forward_link' => $forward_link,
+                                              'backward_link' => $backward_link,)
                  );
   return $output;  
 }
@@ -303,9 +321,9 @@ function calendar_test(){
   
   //$rc->updateCalendar($events);
   
-  $rc->getEvents(new DateTime('2010-02-01'), new DateTime('2011-12-31'));
+  $ae = $rc->getEvents(new DateTime('2010-9-01'), new DateTime('2010-10-30'));
   //dpm($rc);
-
+  //dpm($ae);
   //$event1 = new BookingEvent (1, 2,$start_date1, $end_date1 );
   //dpm($event);
   //dpm($event1);
@@ -366,19 +384,16 @@ class RoomCalendar {
       $eod = rooms_end_of_month_dates($year);
       foreach ($months as $mid=>$month) {
         // The event array gives us the start days for each event within a month
-        $start_days = array_keys($month['evented']);
+        $start_days = array_keys($month['states']);
         $i = 0;
-        foreach ($month['evented'] as $start_day => $id) {
-          $start_day = str_replace('d','', $start_day);
-          // We need to figure out the end day of an event which is either a day before the start
-          // day of th next event or the last day of the month.
-          $end_day = isset($start_days[$i + 1]) ? (str_replace('d','',$start_days[$i+1])) -1 : -1;
-          $end_day = ($end_day==-1) ? $eod[$mid] : $end_day;
+        foreach ($month['states'] as $state) {
           // Create a booking event
+          $start = $state['start_day'];
+          $end= $state['end_day'];
           $event = new BookingEvent($this->room_id,
-                                    $id,
-                                    new DateTime("$year-$mid-$start_day"),
-                                    new DateTime("$year-$mid-$end_day"));
+                                    $state['state'],
+                                    new DateTime("$year-$mid-$start"),
+                                    new DateTime("$year-$mid-$end"));
           $events[] = $event;
           $i++;
           
@@ -502,7 +517,7 @@ class RoomCalendar {
     }
 
     // With all the months in place we now need to clean results to set the right end date
-    // for each month - this will save code downstream from having to worry about this
+    // for each month - this will save code downstream from having to worry about it
     foreach ($results[$this->room_id] as $year=>$months) {
       foreach ($months as $mid => $days) {
         // There is undoubtetly a smarter way to do this - but will leave with it for now
@@ -525,13 +540,36 @@ class RoomCalendar {
       }
     }
     
-    // With the results in place we do an evented array with the start and
+    // With the results in place we do a states array with the start and
     // end dates of each event
     foreach ($results[$this->room_id] as $year=>$months) {
       foreach ($months as $mid => $days){
-        $unique_events = array_unique($days['days']);
-        $results[$this->room_id][$year][$mid]['evented'] = $unique_events;
-        //$results[$this->room_id][$year][$mid]['eventedflipped'] = array_flip($results[$this->room_id][$year][$mid]['evented']);
+        $j = count($days);
+        $i = 1;
+        $start_day = $i;
+        $end_day = null;
+        $unique_states = array();
+        $old_state = $days['days']['d'.$i];
+        $state = $days['days']['d'.$i];
+        while ($j <= count($days['days']) )
+        {          
+          $state = $days['days']['d'.$i];
+          if ($state != $old_state){
+            $unique_states[] = array('state' => $old_state,
+                                               'start_day' => $start_day,
+                                               'end_day' => $i-1);
+            $end_day = $i - 1;
+            $start_day = $i;
+            $old_state = $state;
+          }
+          $i++;
+          $j++;
+        }
+        // Get the last event in
+        $unique_states[] = array('state' => $state,
+                                   'start_day' => isset($end_day) ? $end_day+1 : $start_day,
+                                   'end_day' => $i-1);
+        $results[$this->room_id][$year][$mid]['states'] = $unique_states;
       }
     }
     
@@ -853,11 +891,11 @@ class BookingEvent {
     switch ($this->id) {
       case 0:
         $event['color']  = 'green';
-        $event['title'] = 'Available';
+        $event['title'] = 'A';
         break;
       case 1 || 2:
         $event['color'] = 'gray';
-        $event['title'] = 'On Request';
+        $event['title'] = 'R';
         break;
       default:
         $event['color'] = 'red';
