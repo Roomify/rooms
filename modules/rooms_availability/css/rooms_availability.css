@@ -1,11 +1,19 @@
 .month1{
-  float:left;width:340px;margin:20px 10px;
+  float:left;width:30%;margin:20px 10px;
 }
 
 .month2{
-  float:left;width:340px;margin:20px 10px;  
+  float:left;width:30%;margin:20px 10px;  
 }
 
 .month3{
-  float:left;width:340px;margin:20px 10px;
+  float:left;width:30%;margin:20px 10px;
+}
+
+#date-forward {
+  float:right;margin:10px 20px 10px 10px;
+}
+
+#date-backward {
+  float:left;margin:10px 20px 10px 10px;
 }
