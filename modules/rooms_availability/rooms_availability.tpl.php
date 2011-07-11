@@ -1,5 +1,3 @@
-<?php dpm($variables) ?>
-
 <div class="<?php print $variables['classes']?>">
 <h1 style="text-transform:capitalize"><?php print $type ?> - <?php print $name ?> Availability View </h1>
 

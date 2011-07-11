@@ -177,7 +177,7 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
   // Send everything for theming
   $output = theme('rooms_availability', array('name' => $rooms_unit->name,
                                               'type' => $rooms_unit->type,
-                                              'update_form' => drupal_get_form('update_calendar_form'),
+                                              'update_form' => drupal_get_form('update_calendar_form', $rooms_unit->unit_id),
                                               'start_year' => $year,
                                               'start_month' => $month,
                                               'forward_link' => $forward_link,
@@ -191,7 +191,12 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
 /**
  * A basic form that allows us to update the state of the calendar
  */
-function update_calendar_form($form, &$form_state) {
+function update_calendar_form($form, &$form_state, $unit_id) {
+  
+  $form['unit_id'] = array (
+    '#type' => 'hidden',
+    '#value' => $unit_id,
+  );
   
   $form['date_range']['start_date'] = array(
     '#type' => 'date_popup',
@@ -246,11 +251,42 @@ function update_calendar_form($form, &$form_state) {
     '#submit' => $submit + array('update_calendar_form_submit'),
   );
   
+  // We append the validate handler to #validate in case a form callback_wrapper
+  // is used to add validate handlers earlier.
+  $form['#validate'][] = 'update_calenar_form_validate';
+  
+  
   return $form;
 }
 
 
+function update_calenar_form_validate(&$form, &$form_state) {
+  // Check date validity
+  $date1 = new DateTime($form_state['values']['start_date']);
+  $date2 = new DateTime($form_state['values']['end_date']);
+  $diff = $date1->diff($date2);
+  // If date1 > date2
+  if ($diff->invert) {
+    form_set_error('date_range', t('End date must be after start date'));
+  }
+}
+
+
 function update_calendar_form_submit(&$form, &$form_state) {
+  
+  $start_date = new DateTime($form_state['values']['start_date']);
+  $end_date = new DateTime($form_state['values']['end_date']);
+  $event_id = $form_state['values']['unit_state'];
+  
+  $unit_id = $form_state['values']['unit_id'];
+  
+  // Create a new Booking Event
+  $be = new BookingEvent($unit_id, $event_id, $start_date, $end_date);
+  $events = array($be);
+  $rc = new UnitCalendar($unit_id);
+  $rc->updateCalendar($events);
+
+  // create a calendar
   
 }
 
@@ -305,7 +341,6 @@ function rooms_availability_event($unit, $start_year = '', $start_month = '', $s
  
 	echo  drupal_json_encode($json_events);
   
-  //return $result;
 }
 
  
@@ -363,7 +398,7 @@ function calendar_test(){
 
   $events = array($event);
   
-  $rc = new UnitCalendar(1,0);
+  $rc = new UnitCalendar(1);
   
   //$rc->updateCalendar($events);
   
@@ -387,9 +422,11 @@ class UnitCalendar {
   protected $default_state;
   
   
-  public function __construct($unit_id, $default_state){
+  public function __construct($unit_id){
     $this->unit_id = $unit_id;
-    $this->default_state = $default_state;
+    // Load the booking unit
+    $unit = rooms_unit_load($unit_id);
+    $this->default_state = $unit->unit_id;
   }
   
   
@@ -763,7 +800,7 @@ class UnitCalendar {
       if (($i >= $event->startDay()) && ($i <= $event->endDay())) {
         $days['d' . $i] = $event->id;
       } else {
-        $days['d' . $i] = '0'; //replace with default state
+        $days['d' . $i] = $this->default_state; //replace with default state
       }
     }
     return $days;
@@ -796,7 +833,6 @@ class UnitCalendar {
     $query->condition('a.year', $year);
     $query->condition('a.month', $month);
     $result = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
-    dpm($result);
     if (count($result) > 0) {
       return TRUE;
     } 
