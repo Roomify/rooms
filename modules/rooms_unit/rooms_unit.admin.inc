@@ -204,7 +204,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#type' => 'checkbox',
     '#title' => t('Bookable'),
     '#description' => t('To remove unit from bookable unit uncheck'),
-    '#default_value' => isset($room->bookable) ? $room->bookable : 1,
+    '#default_value' => isset($unit->bookable) ? $unit->bookable : 1,
   );
 
   $form['sleeps'] = array(
@@ -223,6 +223,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
       ON_REQUEST => 'Available on Request',
       ANON_BOOKED => 'Anonymous Booking'
     ),
+    '#default_value' => isset($unit->default_state) ? $unit->default_state : 1,
     '#description' => t('Choose what state to put the unit in for the dates chosen above'),
   );
 
@@ -263,7 +264,13 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#title' => t('Cot available'),
     '#default_value' => isset($unit->data['bed_arrangement']['cot_available']) ? $unit->data['bed_arrangement']['cot_available'] : 0,
   );
-    
+  
+  $form['multiple'] = array (
+    '#type' => 'textfield',
+    '#size' => 5,
+    '#default_value' => 1,
+    '#title' => t('How many rooms like this should we create'),    
+  );
   
   // Add the field related form elements.
   $form_state['rooms_unit'] = $unit;
@@ -285,14 +292,14 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
 
   $form['actions']['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Save Room'),
+    '#value' => t('Save Unit'),
     '#submit' => $submit + array('rooms_unit_edit_form_submit'),
   );
   
   if (!empty($unit->name)) {
     $form['actions']['delete'] = array(
       '#type' => 'submit',
-      '#value' => t('Delete room'),
+      '#value' => t('Delete Unit'),
       '#suffix' => l(t('Cancel'), 'admin/rooms/units'),
       '#submit' => $submit + array('rooms_unit_form_submit_delete'),
       '#weight' => 45,
