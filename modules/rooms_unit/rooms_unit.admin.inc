@@ -213,6 +213,18 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#default_value' => isset($unit->sleeps) ? $unit->sleeps : 1,
     '#title' => t('Sleeps'),
   );
+  
+  $form['default_state'] = array(
+    '#type' => 'select',
+    '#title' => t('Bookable Unit Default State'),
+    '#options' => array(
+      NOT_AVAILABLE => 'Unavailable',
+      AVAILABLE => 'Available',
+      ON_REQUEST => 'Available on Request',
+      ANON_BOOKED => 'Anonymous Booking'
+    ),
+    '#description' => t('Choose what state to put the unit in for the dates chosen above'),
+  );
 
 
   $form['data']['#tree'] = TRUE;

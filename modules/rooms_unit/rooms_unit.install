@@ -61,6 +61,12 @@ function rooms_unit_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'default_state' => array(
+        'description' => 'The default booking state for the room',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'bookable' => array(
         'type' => 'int',
         'not null' => TRUE,

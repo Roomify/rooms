@@ -63,7 +63,8 @@ function rooms_unit_views_default_views() {
   $handler = $view->new_display('default', 'Master', 'default');
   $handler->display->display_options['title'] = 'Bookable Units';
   $handler->display->display_options['use_ajax'] = TRUE;
-  $handler->display->display_options['access']['type'] = 'none';
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['access']['perm'] = 'administer bookable units';
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
   $handler->display->display_options['exposed_form']['type'] = 'basic';
@@ -120,6 +121,13 @@ function rooms_unit_views_default_views() {
   $handler->display->display_options['style_options']['override'] = 1;
   $handler->display->display_options['style_options']['sticky'] = 0;
   $handler->display->display_options['style_options']['empty_table'] = 0;
+  /* No results behavior: Global: Text area */
+  $handler->display->display_options['empty']['area']['id'] = 'area';
+  $handler->display->display_options['empty']['area']['table'] = 'views';
+  $handler->display->display_options['empty']['area']['field'] = 'area';
+  $handler->display->display_options['empty']['area']['label'] = 'Empty Message';
+  $handler->display->display_options['empty']['area']['empty'] = FALSE;
+  $handler->display->display_options['empty']['area']['content'] = 'No bookable units have been created yet.';
   /* Field: Bookable Units: Bookable units ID */
   $handler->display->display_options['fields']['unit_id']['id'] = 'unit_id';
   $handler->display->display_options['fields']['unit_id']['table'] = 'rooms_units';
@@ -264,6 +272,7 @@ function rooms_unit_views_default_views() {
   $handler->display->display_options['filters']['type']['exposed'] = TRUE;
   $handler->display->display_options['filters']['type']['expose']['operator_id'] = 'type_op';
   $handler->display->display_options['filters']['type']['expose']['label'] = 'Filter By Type';
+  $handler->display->display_options['filters']['type']['expose']['use_operator'] = TRUE;
   $handler->display->display_options['filters']['type']['expose']['operator'] = 'type_op';
   $handler->display->display_options['filters']['type']['expose']['identifier'] = 'type';
   $handler->display->display_options['filters']['type']['expose']['multiple'] = 1;
@@ -273,13 +282,15 @@ function rooms_unit_views_default_views() {
   $handler = $view->new_display('page', 'Page', 'page_1');
   $handler->display->display_options['path'] = 'admin/rooms/units/list';
   $handler->display->display_options['menu']['type'] = 'default tab';
-  $handler->display->display_options['menu']['title'] = 'Bookable Units';
+  $handler->display->display_options['menu']['title'] = 'Bookable Units List';
   $handler->display->display_options['menu']['description'] = 'A list of the units (rooms, etc) that can be booked for your accommodation';
-  $handler->display->display_options['menu']['weight'] = '0';
+  $handler->display->display_options['menu']['weight'] = '-10';
   $handler->display->display_options['tab_options']['type'] = 'normal';
   $handler->display->display_options['tab_options']['title'] = 'Bookable Units';
-  $handler->display->display_options['tab_options']['weight'] = '0';
-  $translatables['test'] = array(
+  $handler->display->display_options['tab_options']['description'] = 'Create units that can be booked such as rooms for a hotel';
+  $handler->display->display_options['tab_options']['weight'] = '-10';
+  $handler->display->display_options['tab_options']['name'] = 'management';
+  $translatables['bookable_units'] = array(
     t('Master'),
     t('Bookable Units'),
     t('more'),
@@ -291,6 +302,8 @@ function rooms_unit_views_default_views() {
     t('Items per page'),
     t('- All -'),
     t('Offset'),
+    t('Empty Message'),
+    t('No bookable units have been created yet.'),
     t('ID'),
     t('.'),
     t(','),
