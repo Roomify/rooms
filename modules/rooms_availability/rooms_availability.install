@@ -16,7 +16,7 @@ function rooms_availability_schema() {
   $schema['rooms_availability'] = array(
     'description' => 'The main table holiding availability information',
     'fields' => array(
-      'rooms_room_id' => array(
+      'unit_id' => array(
         'description' => 'Identifier for a room.',
         'type' => 'int',
         'unsigned' => TRUE,
@@ -222,17 +222,17 @@ function rooms_availability_schema() {
       ),
     ),
     'indexes' => array(
-      'rooms_room_id' => array('rooms_room_id'),
+      'unit_id' => array('unit_id'),
       'year' => array('year'),
       'month' => array('month'),
     ),
     'unique keys' =>  array (
-      'month_key' => array('rooms_room_id', 'year', 'month'),
+      'month_key' => array('unit_id', 'year', 'month'),
     ),
     'foreign keys' => array(
-      'rooms_room_id' => array(
-        'table' => 'rooms_room',
-        'columns' => array('rooms_room_id' => 'rooms_room_id'),
+      'unit_id' => array(
+        'table' => 'rooms_units',
+        'columns' => array('unit_id' => 'unit_id'),
       ),
     ),
   );

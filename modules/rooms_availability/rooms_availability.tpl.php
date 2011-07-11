@@ -27,6 +27,5 @@
 <p>Careful this will overwrite any existing bookings.</p>
 
 
-
 <?php print render($variables['update_form']); ?>
 </div>

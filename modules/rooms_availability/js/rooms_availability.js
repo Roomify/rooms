@@ -4,48 +4,60 @@ Drupal.behaviors.rooms_availability = {
   attach: function(context) {
         
     $currentmonth = parseInt(Drupal.settings.currentMonth);
+    $currentyear = parseInt(Drupal.settings.currentYear);
     if ($currentmonth == 12) {
-      $nextmonth = 1;
+      $nextmonth1 = 1;
+      $nextyear1 = parseInt(Drupal.settings.currentYear) + 1;
+      $nextmonth2 = 2;
+      $nextyear2 = parseInt(Drupal.settings.currentYear) + 1;
     }
-    if ($currentmonth == 1) {
-      $pastmonth == 12;
+    if ($currentmonth == 11){
+      $nextmonth1 = 12;
+      $nextyear1 = Drupal.settings.currentYear;
+      $nextmonth2 = 2;
+      $nextyear2 = parseInt(Drupal.settings.currentYear) + 1;
     }
     else{
-      $nextmonth = parseInt(Drupal.settings.currentMonth)+1;
-      $pastmonth = parseInt(Drupal.settings.currentMonth)-1;
+      $nextmonth1 = $currentmonth+1;
+      $nextyear1 = $currentyear;
+      $nextmonth2 = $currentmonth+2;
+      $nextyear2 = $currentyear;
     }
     
     $('#calendar').fullCalendar({
       editable:false,
-      month:$pastmonth-1,
+      month:$currentmonth-1,
+      year:Drupal.settings.currentYear,
       header:{
         left: 'title',
         center: '',
         right: ''
       },
-      events: Drupal.settings.basePath + 'admin/rooms/rooms/room/' + Drupal.settings.roomID + '/availability/json/' + Drupal.settings.currentYear + '/' + $pastmonth
+      events: Drupal.settings.basePath + 'admin/rooms/units/unit/' + Drupal.settings.roomID + '/availability/json/' + $currentyear + '/' + $currentmonth
     });
     
     $('#calendar1').fullCalendar({
       editable:false,
+      month:$nextmonth1-1,
+      year:Drupal.settings.currentYear,
       header:{
         left: 'title',
         center: '',
         right: ''
       },
-      month:$currentmonth-1,
-      events: Drupal.settings.basePath + 'admin/rooms/rooms/room/' + Drupal.settings.roomID + '/availability/json/' + Drupal.settings.currentYear + '/' + $currentmonth
+      events: Drupal.settings.basePath + 'admin/rooms/units/unit/' + Drupal.settings.roomID + '/availability/json/' + $nextyear1 + '/' + $nextmonth1
     });
 
     $('#calendar2').fullCalendar({
       editable:false,
-      month:$nextmonth-1,
+      month:$nextmonth2-1,
+      year:Drupal.settings.currentYear,
       header:{
         left: 'title',
         center: '',
         right: ''
       },
-      events: Drupal.settings.basePath + 'admin/rooms/rooms/room/' + Drupal.settings.roomID + '/availability/json/' + Drupal.settings.currentYear + '/' + $nextmonth
+      events: Drupal.settings.basePath + 'admin/rooms/units/unit/' + Drupal.settings.roomID + '/availability/json/' + $nextyear2 + '/' + $nextmonth2
     });
 
     // Resize takes care of some quirks on occasion
