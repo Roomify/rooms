@@ -6,11 +6,11 @@
  * as fields.
  */
 
-class rooms_room_handler_link_field extends views_handler_field {
+class rooms_unit_handler_link_field extends views_handler_field {
   function construct() {
     parent::construct();
 
-    $this->additional_fields['room_id'] = 'room_id';
+    $this->additional_fields['unit_id'] = 'unit_id';
     $this->additional_fields['type'] = 'type';
   }
 
@@ -39,8 +39,8 @@ class rooms_room_handler_link_field extends views_handler_field {
 
   function render($values) {
     $text = !empty($this->options['text']) ? $this->options['text'] : t('view');
-    $room_id = $values->{$this->aliases['room_id']};
+    $unit_id = $values->{$this->aliases['unit_id']};
 
-    return l($text, 'room/' . $room_id);
+    return l($text, 'unit/' . $unit_id);
   }
 }

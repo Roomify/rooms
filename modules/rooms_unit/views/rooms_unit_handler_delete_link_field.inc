@@ -7,7 +7,7 @@
  */
 
 
-class rooms_room_handler_delete_link_field extends rooms_room_handler_link_field {
+class rooms_unit_handler_delete_link_field extends rooms_unit_handler_link_field {
   function construct() {
     parent::construct();
     $this->additional_fields['type'] = 'type';
@@ -18,14 +18,14 @@ class rooms_room_handler_delete_link_field extends rooms_room_handler_link_field
     $type = $values->{$this->aliases['type']};
     
     //Creating a dummy room to check access against
-    $dummy_room = (object) array('type' => $type);
-    if (!rooms_room_access('edit', $dummy_room)) {
+    $dummy_unit = (object) array('type' => $type);
+    if (!rooms_unit_access('edit', $dummy_unit)) {
       return;
     }
     
     $text = !empty($this->options['text']) ? $this->options['text'] : t('delete');
-    $room_id = $values->{$this->aliases['room_id']};
+    $unit_id = $values->{$this->aliases['unit_id']};
     
-    return l($text, 'admin/rooms/rooms/room/' . $room_id . '/delete');
+    return l($text, 'admin/rooms/units/unit/' . $unit_id . '/delete');
   }
 }

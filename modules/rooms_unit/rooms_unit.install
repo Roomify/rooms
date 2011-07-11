@@ -10,53 +10,53 @@
 /**
  * Implements hook_schema().
  */
-function rooms_room_schema() {
+function rooms_unit_schema() {
   $schema = array();
 
-  $schema['rooms'] = array(
+  $schema['rooms_units'] = array(
     'description' => 'The base table for Rooms.',
     'fields' => array(
-      'room_id' => array(
-        'description' => 'Primary Key: Identifier for a Room.',
+      'unit_id' => array(
+        'description' => 'Primary Key: Identifier for a Bookable Unit.',
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
       'type' => array(
-        'description' => 'The {room_type}.type of this Room.',
+        'description' => 'The {unit_type}.type of this Bookable Unit.',
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'default' => '',
       ),
       'language' => array(
-        'description' => 'The language of the Room.',
+        'description' => 'The language of the Unit.',
         'type' => 'varchar',
         'length' => 32,
         'not null' => TRUE,
         'default' => '',
       ),
       'name' => array(
-        'description' => 'The name of the Room - a human-readable identifier.',
+        'description' => 'The name of the Unit - a human-readable identifier.',
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
         'default' => '',
       ),
       'created' => array(
-        'description' => 'The Unix timestamp when the Room was created.',
+        'description' => 'The Unix timestamp when the Unit was created.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
       ),
       'changed' => array(
-        'description' => 'The Unix timestamp when the Room was most recently saved.',
+        'description' => 'The Unix timestamp when the Unit was most recently saved.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
       ),
       'base_price' => array(
-        'description' => 'The default cost per night for the room',
+        'description' => 'The default cost per night for the unit',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -66,14 +66,14 @@ function rooms_room_schema() {
         'not null' => TRUE,
         'default' => 1,
         'size' => 'tiny',
-        'description' => 'Whether the room is available for booking or not.',
+        'description' => 'Whether the unit is available for booking or not.',
       ),
       'sleeps' => array(
         'type' => 'int',
         'not null' => TRUE,
         'default' => 1,
         'size' => 'tiny',
-        'description' => 'How many people can sleep in a room',
+        'description' => 'How many people can sleep in a unit',
       ),
       'data' => array(
         'type' => 'blob',
@@ -83,28 +83,28 @@ function rooms_room_schema() {
         'description' => 'A serialized array of additional data.',
       ),
     ),
-    'primary key' => array('room_id'),
+    'primary key' => array('unit_id'),
     'indexes' => array(
       'type' => array('type'),
     ),
   );
 
-  $schema['rooms_type'] = array(
-    'description' => 'Stores information about defined room types.',
+  $schema['rooms_unit_type'] = array(
+    'description' => 'Stores information about defined unit types.',
     'fields' => array(
       'id' => array(
         'type' => 'serial',
         'not null' => TRUE,
-        'description' => 'Primary Key: Unique room type identifier.',
+        'description' => 'Primary Key: Unique unit type identifier.',
       ),
       'type' => array(
-        'description' => 'The machine-readable name of this room type.',
+        'description' => 'The machine-readable name of this unit type.',
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
       ),
       'label' => array(
-        'description' => 'The human-readable name of this room type.',
+        'description' => 'The human-readable name of this unit type.',
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
@@ -122,7 +122,7 @@ function rooms_room_schema() {
         'not null' => FALSE,
         'size' => 'big',
         'serialize' => TRUE,
-        'description' => 'A serialized array of additional data related to this room type.',
+        'description' => 'A serialized array of additional data related to this unit type.',
       ),
       // These two fields provide exportable support and come from Entity module definitions
       'status' => array(
@@ -146,38 +146,4 @@ function rooms_room_schema() {
   );
 
   return $schema;
-}
-
-
-/**
- * Add a price field for rooms
- */
-function rooms_room_update_7100() {
-  db_add_field('rooms', 'base_price', array(
-    'type' => 'int',
-    'not null' => TRUE,
-    'default' => 0,
-    'description' => 'The default cost per night for the room',
-  ));
-}
-
-
-/**
- * Add a bookable status field for rooms and a sleeps field
- */
-function rooms_room_update_7200() {
-  db_add_field('rooms', 'bookable', array(
-    'type' => 'int',
-    'not null' => TRUE,
-    'default' => 1,
-    'size' => 'tiny',
-    'description' => 'Whether the room is available for booking or not.',
-  ));
-  db_add_field('rooms', 'sleeps', array(
-    'type' => 'int',
-    'not null' => TRUE,
-    'default' => 1,
-    'size' => 'tiny',
-    'description' => 'How many people can sleep in a room',
-  ));
 }

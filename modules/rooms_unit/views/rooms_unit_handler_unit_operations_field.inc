@@ -1,14 +1,14 @@
 <?php
 
 /**
- * This field handler aggregates operations that can be done on a room
+ * This field handler aggregates operations that can be done on a unit
  * under a single field providing a more flexible way to present them in a view
  */
-class rooms_room_handler_room_operations_field extends views_handler_field {
+class rooms_unit_handler_unit_operations_field extends views_handler_field {
   function construct() {
     parent::construct();
 
-    $this->additional_fields['room_id'] = 'room_id';
+    $this->additional_fields['unit_id'] = 'unit_id';
   }
 
   function query() {
@@ -17,8 +17,7 @@ class rooms_room_handler_room_operations_field extends views_handler_field {
   }
 
   function render($values) {
-
-    $links = menu_contextual_links('rooms_room', 'admin/rooms/rooms/room', array($this->get_value($values, 'room_id')));
+    $links = menu_contextual_links('rooms_unit', 'admin/rooms/units/unit', array($this->get_value($values, 'unit_id')));
     if (!empty($links)) {
       return theme('links', array('links' => $links, 'attributes' => array('class' => array('links', 'inline', 'operations'))));
     }

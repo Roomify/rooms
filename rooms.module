@@ -42,6 +42,15 @@ function rooms_price_to_int($amount){
 
 /**
  * Utility function that returns an array with the last day of each month given a year
+ *
+ * @param $year
+ * The year to get the end of month dates for
+ *
+ * @param $calendar
+ * The calendar to use to determine eof dates
+ *
+ * @return
+ * An array keyed by months
  */
 function rooms_end_of_month_dates($year = 2011, $calendar = CAL_GREGORIAN){
   
