@@ -165,6 +165,8 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
   // Calculate forward and back dates for our 3-month view calendar and create links
   $date1 = new DateTime("$year-$month-1");
   $date2 = new DateTime("$year-$month-1");
+  $date_current = new DateTime("now");
+
 
   $forward = $date1->add(new DateInterval('P3M'));
   $forward_path = 'admin/rooms/units/unit/' . $rooms_unit->unit_id . '/availability/' . $forward->format('Y') . '/' . $forward->format('n');
@@ -173,6 +175,9 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
   $backward = $date2->sub(new DateInterval('P3M'));
   $backward_path = 'admin/rooms/units/unit/' . $rooms_unit->unit_id . '/availability/' . $backward->format('Y') . '/' . $backward->format('n');
   $backward_link = l(t('Back'), $backward_path);
+  
+  $current_path = 'admin/rooms/units/unit/' . $rooms_unit->unit_id . '/availability/' . $date_current->format('Y') . '/' . $date_current->format('n');
+  $current_link = l(t('Current'), $current_path);
 
   // Send everything for theming
   $output = theme('rooms_availability', array('name' => $rooms_unit->name,
@@ -181,7 +186,8 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
                                               'start_year' => $year,
                                               'start_month' => $month,
                                               'forward_link' => $forward_link,
-                                              'backward_link' => $backward_link,)
+                                              'backward_link' => $backward_link,
+                                              'current_link' => $current_link,)
                  );
   
   return $output;  
