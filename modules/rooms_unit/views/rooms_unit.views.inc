@@ -51,8 +51,8 @@ function rooms_unit_views_default_views() {
 
   $view = new view;
   $view->name = 'bookable_units';
-  $view->description = '';
-  $view->tag = 'default';
+  $view->description = 'A list of bookable units';
+  $view->tag = 'rooms';
   $view->base_table = 'rooms_units';
   $view->human_name = 'Bookable Units';
   $view->core = 7;
@@ -69,6 +69,10 @@ function rooms_unit_views_default_views() {
   $handler->display->display_options['query']['type'] = 'views_query';
   $handler->display->display_options['exposed_form']['type'] = 'basic';
   $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '20';
+  $handler->display->display_options['pager']['options']['offset'] = '0';
+  $handler->display->display_options['pager']['options']['id'] = '0';
+  $handler->display->display_options['pager']['options']['expose']['items_per_page_options_all'] = 0;
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['columns'] = array(
     'unit_id' => 'unit_id',
@@ -272,7 +276,7 @@ function rooms_unit_views_default_views() {
   $handler->display->display_options['filters']['type']['exposed'] = TRUE;
   $handler->display->display_options['filters']['type']['expose']['operator_id'] = 'type_op';
   $handler->display->display_options['filters']['type']['expose']['label'] = 'Filter By Type';
-  $handler->display->display_options['filters']['type']['expose']['use_operator'] = TRUE;
+  $handler->display->display_options['filters']['type']['expose']['use_operator'] = 1;
   $handler->display->display_options['filters']['type']['expose']['operator'] = 'type_op';
   $handler->display->display_options['filters']['type']['expose']['identifier'] = 'type';
   $handler->display->display_options['filters']['type']['expose']['multiple'] = 1;
@@ -309,13 +313,14 @@ function rooms_unit_views_default_views() {
     t(','),
     t('Type'),
     t('Name'),
-    t('Base_price'),
+    t('Base Price'),
     t('Bookable'),
     t('Link'),
     t('Operations links'),
     t('Filter By Type'),
     t('Page'),
   );
+
 
 
   $views[] = $view;
