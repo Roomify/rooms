@@ -285,7 +285,7 @@ function rooms_unit_create($values = array()) {
  * @param RoomsUnit $unit
  *   The Unit object.
  */
-function rooms_Unit_save(RoomsUnit $unit) {
+function rooms_unit_save(RoomsUnit $unit) {
   return $unit->save();
 }
 
@@ -478,6 +478,7 @@ class RoomsUnitController extends EntityAPIController {
     $values += array( 
       'unit_id' => '',
       'is_new' => TRUE,
+      'original' => TRUE,
       'title' => '',
       'created' => '',
       'changed' => '',

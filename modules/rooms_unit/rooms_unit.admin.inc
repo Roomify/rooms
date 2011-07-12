@@ -180,7 +180,7 @@ function rooms_unit_delete_form_wrapper($unit) {
  *     with only a unit type defined.
  */
 function rooms_unit_edit_form($form, &$form_state, $unit) {
-
+  
   // Add the default field elements.
   $form['name'] = array(
     '#type' => 'textfield',
@@ -265,12 +265,24 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#default_value' => isset($unit->data['bed_arrangement']['cot_available']) ? $unit->data['bed_arrangement']['cot_available'] : 0,
   );
   
-  $form['multiple'] = array (
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => 1,
-    '#title' => t('How many rooms like this should we create'),    
-  );
+  // If we are creating a new booking unit
+  
+  if ($unit->unit_id == '') {
+    $form['multi'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Create multiple units'),
+      '#description' => t('Create multiple booking units allows you to quickly create the number of
+                          required units that all have the same configutation - you can still personalise
+                          each later on.'),
+    );
+  
+    $form['multi']['multiple'] = array (
+      '#type' => 'textfield',
+      '#size' => 5,
+      '#default_value' => 1,
+      '#title' => t('How many booking units like this should we create'),    
+    );
+  }
   
   // Add the field related form elements.
   $form_state['rooms_unit'] = $unit;
@@ -326,6 +338,10 @@ function rooms_unit_edit_form_validate(&$form, &$form_state) {
   if (!empty($form_state['values']['base_price']) && !is_numeric($form_state['values']['base_price'])) {
     form_set_error('Base price error', t('%name: you must enter a numeric value for the price.', array('%name' => 'Base Price')));
   }
+  
+  if (!empty($form_state['values']['multiple']) && !is_numeric($form_state['values']['multiple'])) {
+    form_set_error('Multiple Rooms Error', t('%name: you must enter at least 1 as the number of multiple rooms.', array('%name' => 'Multiple Rooms')));
+  }
 }
 
 
@@ -335,18 +351,37 @@ function rooms_unit_edit_form_validate(&$form, &$form_state) {
  * @todo remove hard-coded link
  */
 function rooms_unit_edit_form_submit(&$form, &$form_state) {
+    
+  $multiple = 1;
+  $units = array();
   
-  $unit = entity_ui_controller('rooms_unit')->entityFormSubmitBuildEntity($form, $form_state);
-  // Save the Unit and go back to the list of rooms
-  
-  // Add in created and changed times.
-  if ($unit->is_new = isset($unit->is_new) ? $unit->is_new : 0){
-    $unit->created = time();
+  if ($form_state['rooms_unit']->unit_id == '') {
+    $multiple = $form_state['values']['multiple'];
   }
+  $name = $form_state['values']['name'];
+  for ($i = 1; $i <= $multiple ; $i++ ) {
 
-  $unit->changed = time();
+    $units[$i] = rooms_unit_create(array('type' => $form_state['rooms_unit']->type));
+    $form_state['rooms_unit'] = $units[$i];
+    
+    if ($i>1) {
+      $form_state['values']['name'] = $name . ' - ' . $i;
+    }
+
+    $units[$i] = entity_ui_controller('rooms_unit')->entityFormSubmitBuildEntity($form, $form_state);
+    
+    // Add in created and changed times.
+    if ($units[$i]->is_new = isset($units[$i]->is_new) ? $units[$i]->is_new : 0){
+      $units[$i]->created = time();
+    }
+
+    $units[$i]->changed = time();
+
+  }
   
-  $unit->save();
+  foreach ($units as $unit) {
+    $unit->save();
+  }
   $form_state['redirect'] = 'admin/rooms/units';
 }
 
