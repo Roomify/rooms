@@ -870,6 +870,15 @@ class PricingEvent {
       case REPLACE:
         $this->amount = $amount;
         break;
+      case ADD:
+        $this->amount = $this->amount + $amount;
+        break;
+      case SUB:
+        $this->amount = $this->amount - $amount;
+        break;
+      case INCREASE:
+        $this->amount = $this->amount + (($this->amount * $amount)/100)  ;
+        break;
       default:
         break;
     }
