@@ -357,26 +357,28 @@ function rooms_unit_edit_form_submit(&$form, &$form_state) {
   
   if ($form_state['rooms_unit']->unit_id == '') {
     $multiple = $form_state['values']['multiple'];
-  }
-  $name = $form_state['values']['name'];
-  for ($i = 1; $i <= $multiple ; $i++ ) {
+  
+    $name = $form_state['values']['name'];
+    for ($i = 1; $i <= $multiple ; $i++ ) {
+      $units[$i] = rooms_unit_create(array('type' => $form_state['rooms_unit']->type));
+      $form_state['rooms_unit'] = $units[$i];
+      if ($i>1) {
+        $form_state['values']['name'] = $name . ' - ' . $i;
+      }
 
-    $units[$i] = rooms_unit_create(array('type' => $form_state['rooms_unit']->type));
-    $form_state['rooms_unit'] = $units[$i];
+      $units[$i] = entity_ui_controller('rooms_unit')->entityFormSubmitBuildEntity($form, $form_state);
     
-    if ($i>1) {
-      $form_state['values']['name'] = $name . ' - ' . $i;
+      // Add in created and changed times.
+      if ($units[$i]->is_new = isset($units[$i]->is_new) ? $units[$i]->is_new : 0){
+        $units[$i]->created = time();
+      }
+
+      $units[$i]->changed = time();
     }
-
-    $units[$i] = entity_ui_controller('rooms_unit')->entityFormSubmitBuildEntity($form, $form_state);
-    
-    // Add in created and changed times.
-    if ($units[$i]->is_new = isset($units[$i]->is_new) ? $units[$i]->is_new : 0){
-      $units[$i]->created = time();
-    }
-
-    $units[$i]->changed = time();
-
+  } else{
+    $units[0] =  $form_state['rooms_unit'];
+    $unites[0] = entity_ui_controller('rooms_unit')->entityFormSubmitBuildEntity($form, $form_state);
+    $units[0]->changed = time();
   }
   
   foreach ($units as $unit) {

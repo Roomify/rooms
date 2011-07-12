@@ -2,8 +2,8 @@
 
 /**
  * @file
- * Sets up the base table for our entity and a table to store information about
- * the entity types.
+ * Install for Rooms Pricing module - sets up the main Rooms Pricing
+ * table
  */
 
 
@@ -13,141 +13,230 @@
 function rooms_pricing_schema() {
   $schema = array();
 
-  $schema['rooms_pricing_rule'] = array(
-    'description' => 'The base table for Pricing Rules.',
+  $schema['rooms_pricing'] = array(
+    'description' => 'The main table holiding pricing information',
     'fields' => array(
-      'pricing_id' => array(
-        'description' => 'Primary Key: Identifier for a Rooms pricing rule.',
-        'type' => 'serial',
+      'unit_id' => array(
+        'description' => 'Identifier for a booking unit.',
+        'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
-      'rule_type' => array(
-        'description' => 'The rule type for this pricing rule',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'name' => array(
-        'description' => 'A human-readable name for this pricing rule.',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'created' => array(
-        'description' => 'The Unix timestamp when the Room was created.',
+      'year' => array(
+        'description' => 'The calendar year for which this pricing row is relevant',
         'type' => 'int',
         'not null' => TRUE,
-        'default' => 0,
+        'default' => '0',
       ),
-      'changed' => array(
-        'description' => 'The Unix timestamp when the Room was most recently saved.',
+      'month' => array(
+        'description' => 'The month for which this pricing row is relevant',
         'type' => 'int',
         'not null' => TRUE,
-        'default' => 0,
-      ),      
-      'status' => array(
+        'default' => '0',
+      ),
+      'd1' => array(
+        'description' => 'Month Day 1',
         'type' => 'int',
         'not null' => TRUE,
-        'default' => 1,
-        'size' => 'tiny',
-        'description' => 'Whether this pricing rule is active or not.',
+        'default' => '0',
       ),
-      'start_date' => array(
-        'description' => 'The start date for this pricing rule.',
-        'type' => 'varchar', 
-        'length' => 20, 
-        'not null' => FALSE, 
-        'sortable' => TRUE, 
-        'views' => TRUE,
-      ),
-      'end_date' => array(
-        'description' => 'The end date for this pricing rule.',
-        'type' => 'varchar', 
-        'length' => 20, 
-        'not null' => FALSE, 
-        'sortable' => TRUE, 
-        'views' => TRUE,
-      ),
-      'operation' => array(
-        'description' => 'The action to perform to the room price',
-        'type' => 'varchar', 
-        'length' => 10, 
-        'not null' => FALSE, 
-        'sortable' => TRUE, 
-        'views' => TRUE,
-      ),
-      'amount' => array(
-        'description' => 'The amount to use with the action to change the price',
+      'd2' => array(
+        'description' => 'Month Day 2',
         'type' => 'int',
         'not null' => TRUE,
-        'default' => 0,
-      ),      
-
+        'default' => '0',
+      ),
+      'd3' => array(
+        'description' => 'Month Day 3',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd4' => array(
+        'description' => 'Month Day 4',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd5' => array(
+        'description' => 'Month Day 5',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd6' => array(
+        'description' => 'Month Day 6',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd7' => array(
+        'description' => 'Month Day 7',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd8' => array(
+        'description' => 'Month Day 8',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd9' => array(
+        'description' => 'Month Day 9',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd10' => array(
+        'description' => 'Month Day 10',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd11' => array(
+        'description' => 'Month Day 11',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd12' => array(
+        'description' => 'Month Day 12',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd13' => array(
+        'description' => 'Month Day 13',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd14' => array(
+        'description' => 'Month Day 14',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd15' => array(
+        'description' => 'Month Day 15',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd16' => array(
+        'description' => 'Month Day 16',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd17' => array(
+        'description' => 'Month Day 17',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd18' => array(
+        'description' => 'Month Day 18',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd19' => array(
+        'description' => 'Month Day 19',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd20' => array(
+        'description' => 'Month Day 20',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd21' => array(
+        'description' => 'Month Day 21',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd22' => array(
+        'description' => 'Month Day 22',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd23' => array(
+        'description' => 'Month Day 23',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd24' => array(
+        'description' => 'Month Day 24',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd25' => array(
+        'description' => 'Month Day 25',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd26' => array(
+        'description' => 'Month Day 26',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd27' => array(
+        'description' => 'Month Day 27',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd28' => array(
+        'description' => 'Month Day 28',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd29' => array(
+        'description' => 'Month Day 29',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd30' => array(
+        'description' => 'Month Day 30',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'd31' => array(
+        'description' => 'Month Day 31',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
     ),
-    'primary key' => array('pricing_id'),
     'indexes' => array(
-      'rule_type' => array('rule_type'),
+      'unit_id' => array('unit_id'),
+      'year' => array('year'),
+      'month' => array('month'),
+    ),
+    'unique keys' =>  array (
+      'month_key' => array('unit_id', 'year', 'month'),
+    ),
+    'foreign keys' => array(
+      'unit_id' => array(
+        'table' => 'rooms_units',
+        'columns' => array('unit_id' => 'unit_id'),
+      ),
     ),
   );
+
   
-  $schema['rooms_pricing_rule_types'] = array(
-    'description' => 'Table connects pricing rules with room types',
-    'fields' => array(
-      'pricing_id' => array(
-        'description' => 'Pricing rule id',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-      'room_type' => array(
-        'description' => 'The type of room this rule applies to.',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-    ),
-    'indexes' => array(
-      'pricing_id' => array('pricing_id'),
-      'room_type' => array('room_type'),
-    ),
-    'unique keys' =>  array (
-      'pricing_rule_type' => array('pricing_id', 'room_type'),
-    ),
-
-  );
-
-
-  $schema['rooms_pricing_rules_rooms'] = array(
-    'description' => 'Table connects pricing rules with individual rooms',
-    'fields' => array(
-      'pricing_id' => array(
-        'description' => 'Pricing rule id',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-      'room_id' => array(
-        'description' => 'Room id',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-    ),
-    'indexes' => array(
-      'pricing_id' => array('pricing_id'),
-      'roomd_id' => array('room_id'),
-    ),
-    'unique keys' =>  array (
-      'pricing_rule_room' => array('pricing_id', 'room_id'),
-    ),
-
-  );
-
-
   return $schema;
 }
-

@@ -1,12 +1,11 @@
 name = Rooms Pricing
-description = Allows user to define seasons and other pricing rules for rooms
+description = Manages pricing information for Rooms
 core = 7.x
+version = 1.x-dev
 
 package = Rooms
 
-version = 1.x-dev
-
+dependencies[] = rooms_unit
 dependencies[] = rooms_availability
-
-files[] = rooms_pricing.admin.inc
-files[] = views/rooms_pricing.views.inc
+dependencies[] = date
+dependencies[] = date_popup

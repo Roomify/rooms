@@ -72,7 +72,7 @@ function rooms_availability_permission() {
 function rooms_availability_menu() {
   $items  =  array();
   
-  $items['admin/rooms/units/unit/%unit/availability'] = array(
+  $items['admin/rooms/units/unit/%availability_unit/availability'] = array(
     'title' => 'Manage Availability',
     'page callback' =>  'rooms_availability_page',
     'page arguments' => array(4,6,7),
@@ -83,7 +83,7 @@ function rooms_availability_menu() {
     'weight' => '20',
   );
   
-  $items['admin/rooms/units/unit/%unit/availability/json/%/%'] = array(
+  $items['admin/rooms/units/unit/%availability_unit/availability/json/%/%'] = array(
     'title' =>  'Availability Event',
     'page callback' => 'rooms_availability_event',
     'page arguments' => array(4,7,8,9,10,11,12),
@@ -118,7 +118,7 @@ function rooms_availability_menu() {
 /**
  * Menu load for units - calls the actuall rooms_unit_load implemented in rooms_unit.module
  */
-function unit_load($unit_id){
+function availability_unit_load($unit_id){
   $unit = rooms_unit_load($unit_id);
   return $unit;
 }
@@ -182,7 +182,7 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
   // Send everything for theming
   $output = theme('rooms_availability', array('name' => $rooms_unit->name,
                                               'type' => $rooms_unit->type,
-                                              'update_form' => drupal_get_form('update_calendar_form', $rooms_unit->unit_id),
+                                              'update_form' => drupal_get_form('update_availability_calendar_form', $rooms_unit->unit_id),
                                               'start_year' => $year,
                                               'start_month' => $month,
                                               'forward_link' => $forward_link,
@@ -197,7 +197,7 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
 /**
  * A basic form that allows us to update the state of the calendar
  */
-function update_calendar_form($form, &$form_state, $unit_id) {
+function update_availability_calendar_form($form, &$form_state, $unit_id) {
   
   $form['unit_id'] = array (
     '#type' => 'hidden',
@@ -254,19 +254,19 @@ function update_calendar_form($form, &$form_state, $unit_id) {
   $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Update Room Availability'),
-    '#submit' => $submit + array('update_calendar_form_submit'),
+    '#submit' => $submit + array('update_availability_calendar_form_submit'),
   );
   
   // We append the validate handler to #validate in case a form callback_wrapper
   // is used to add validate handlers earlier.
-  $form['#validate'][] = 'update_calenar_form_validate';
+  $form['#validate'][] = 'update_availability_calendar_form_validate';
   
   
   return $form;
 }
 
 
-function update_calenar_form_validate(&$form, &$form_state) {
+function update_availability_calendar_form_validate(&$form, &$form_state) {
   // Check date validity
   $date1 = new DateTime($form_state['values']['start_date']);
   $date2 = new DateTime($form_state['values']['end_date']);
@@ -278,7 +278,7 @@ function update_calenar_form_validate(&$form, &$form_state) {
 }
 
 
-function update_calendar_form_submit(&$form, &$form_state) {
+function update_availability_calendar_form_submit(&$form, &$form_state) {
   
   $start_date = new DateTime($form_state['values']['start_date']);
   $end_date = new DateTime($form_state['values']['end_date']);
@@ -942,7 +942,6 @@ class BookingEvent {
     // Else split into years
     $events = array();
     for ($i = $this->startYear(); $i <= $this->endYear(); $i++) {
-      dpm($i);
       $sd = new DateTime();
       $ed = new DateTime();
       if ($i == $this->startYear()) {
@@ -962,7 +961,6 @@ class BookingEvent {
       }
     }
     
-    dpm($events, 'yearly events');
     return $events;
   }
   

@@ -2,351 +2,986 @@
 
 /**
  * @file
- * Manage Pricing Rules for Rooms 
+ * Manages pricing for Bookable Units and displaying dates on the jquery FullCalendar
+ * plugin
  */
 
 
-/**
- * Implement hook_menu().
- */
-function rooms_pricing_menu() {
-  
-  $items = array();
-  
-  $items['admin/rooms/config/pricing'] = array(
-    'title' => 'Pricing Configuration',
-    'description' => 'Configure settings and business rules for Rooms Pricing',
-    'page callback' => 'system_admin_menu_block_page',
-    'access arguments' => array('access administration pages'),
-    'type' => MENU_NORMAL_ITEM,
-    'weight' => 10,
-    'file path' => drupal_get_path('module', 'system'),
-    'file' => 'system.admin.inc',
-  );
-  $items['admin/rooms/config/pricing/room_type'] = array(
-    'title' => 'Pricing Configuration per room type',
-    'description' => 'Configure settings and business rules for Rooms Pricing per Room Type',
-    'page callback' => 'system_admin_menu_block_page',
-    'access arguments' => array('access administration pages'),
-    'type' => MENU_NORMAL_ITEM,
-    'weight' => 10,
-    'file path' => drupal_get_path('module', 'system'),
-    'file' => 'system.admin.inc',
-  );
-  $items['admin/rooms/config/pricing/individual_room'] = array(
-    'title' => 'Pricing Configuration for individual rooms',
-    'description' => 'Configure settings and business rules for individual rooms',
-    'page callback' => 'system_admin_menu_block_page',
-    'access arguments' => array('access administration pages'),
-    'type' => MENU_NORMAL_ITEM,
-    'weight' => 10,
-    'file path' => drupal_get_path('module', 'system'),
-    'file' => 'system.admin.inc',
-  );
-  
-  return $items;
-}
-
-
-/**
- * Implement hook_entity_info().
- */
-function rooms_pricing_entity_info() {
-  $return['rooms_pricing_rule'] = array(
-    'label' => t('Rooms Pricing Rule'),
-    // The entity class and controller class extend the classes provided by the
-    // Entity API
-    'entity class' => 'RoomsPricingRule',
-    'controller class' => 'RoomsPricingRuleController',
-    'base table' => 'rooms_pricing_rule',
-    'fieldable' => TRUE,
-    'entity keys' => array(
-        'id' => 'pricing_id',
-    ),
-    // Bundles are defined by the room types below
-    'bundles' => array(
-      'pricing_type' => array(
-        'label' => 'Pricing Rule for Room Type',
-        'admin' => array(
-          'path' => 'admin/rooms/config/pricing/room_type/pricing_rules_type',
-          'access arguments' => array('administer pricing rules'),
-        ),
-      ),
-      'pricing_room' => array(
-        'label' => 'Pricing Rule for Individual Room',
-        'admin' => array(
-          'path' => 'admin/rooms/config/pricing/individual_room/pricing_rules_individual',
-          'access arguments' => array('administer pricing rules'),
-        ),
-      ),
-
-    ),
-    'label callback' => 'entity_class_label',
-    'uri callback' => 'entity_class_uri',
-    'creation callback' => 'rooms_pricing_rule_create',
-    'access callback' => 'rooms_pricing_rule_access',
-    'module' => 'rooms_pricing',
-    // The information below is used by the PricingRulesUIController (which extends the EntityDefaultUIController)
-    'admin ui' => array(
-      'path' => 'admin/rooms/pricing_rules',
-      'file' => 'rooms_pricing.admin.inc',
-      'controller class' => 'RoomsPricingRuleUIController',
-      'access arguments' => array('administer pricing rules'),
-    ),
-  );
-
-  return $return;
-}
-
-  
+define('ADD', 'add');
+define ('SUB', 'sub');
+define ('REPLACE', 'replace');
+define ('INCREASE', 'increase');
+define ('DECREASE', 'decrease');
 
 /**
  * Implements hook_permission().
  */
 function rooms_pricing_permission() {
-  // We set up permisssions to manage entity types, manage all entities and the
-  // permissions for each individual entity
   $permissions = array(
-    'administer pricing rules' => array(
-      'title' => t('Administer pricing rules'),
-      'description' => t('Create and change pricing rules.'),
+    'manage booking unit pricing' => array(
+      'title' => t('manage booking unit pricing'),
+      'description' => t('Allows users to manage pricing settings for Rooms'),
+      'restrict access' => TRUE,
     ),
   );
-  
-  return $permissions;  
+  return $permissions;
 }
 
 
 /**
- * Determines whether the given user has access to pricing rules editing and creation.
- *
- * @param $pricing_rule
- *   Optionally a room or a room type to check access for. If nothing is
- *   given, access for all rooms is determined.
- * @param $account
- *   The user to check for. Leave it to NULL to check for the global user.
- * @return boolean
- *   Whether access is allowed or not.
+ * Implements hook_menu().
  */
-function rooms_pricing_rule_access($pricing_rule = NULL, $account = NULL) {
-  if (user_access('administer pricing rules', $account)) {
+function rooms_pricing_menu() {
+  $items  =  array();
+  
+  $items['admin/rooms/units/unit/%pricing_unit/pricing'] = array(
+    'title' => 'Manage Pricing',
+    'page callback' =>  'rooms_pricing_page',
+    'page arguments' => array(4,6,7),
+    'access callback' => 'rooms_pricing_access',
+    'access arguments' => array(1),
+    'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+    'weight' => '30',
+  );
+  
+  $items['admin/rooms/units/unit/%pricing_unit/pricing/json/%/%'] = array(
+    'title' =>  'Pricing Info',
+    'page callback' => 'rooms_pricing_json',
+    'page arguments' => array(4,7,8,9,10,11,12),
+    'access callback' => 'rooms_pricing_access',
+    'access arguments' => array(1),
+    'type' => MENU_CALLBACK,
+    'weight' => '30',
+  );
+  
+  
+  return $items;
+}
+
+
+
+/**
+ * Menu load for units - calls the actuall rooms_unit_load implemented in rooms_unit.module
+ */
+function pricing_unit_load($unit_id){
+  $unit = rooms_unit_load($unit_id);
+  return $unit;
+}
+
+
+/**
+ * Room pricing access callback
+ * @todo check unauthorised access for calendar js
+ */ 
+function rooms_pricing_access($rooms_unit) {
+  if (user_access('manage booking unit pricing')) {
     return TRUE;
   }
-  return FALSE;
+  return 'FALSE';
 }
 
-
-
-function rooms_pricing_rule_get_types($type_name = NULL, $reset = FALSE) {
-
-}
 
 /**
- * Fetch a pricing rule object.
+ * Callback for admin/rooms/units/unit/%pricing_unit/availability - builds availability
+ * page by adding calendar and pulling events from availability table.
  * 
- * @param $pricing_id
- *   Integer specifying the pricing rule id.
- * @param $reset
- *   A boolean indicating that the internal cache should be reset.
- * @return
- *   A fully-loaded $pricing_rule object or FALSE if it cannot be loaded.
- *
- * @see rooms_pricing_rule_load_multiple()
  */
-function rooms_pricing_rule_load($pricing_id, $reset = FALSE) {
-  $pricing_rules = rooms_pricing_rule_load_multiple(array($pricing_id), array(), $reset);
-  return reset($pricing_rules);
+function rooms_pricing_page(RoomsUnit $rooms_unit, $year='', $month='') {
+  
+  // Basic check to avoid any uggliness
+  $year = check_plain($year);
+  $month = check_plain($month);
+  
+  // If year is not set then give it the current date
+  $year = ($year == '') ? date('Y', time()) : $year;
+  $month = ($month == '') ? date('m', time()) : $month;
+
+  // Add all the stuff we will need to show the FullCalendar  
+  drupal_add_library('rooms_availability', 'rooms_fullcalendar');
+  drupal_add_js(drupal_get_path('module', 'rooms_pricing') . '/js/rooms_pricing.js');
+  drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/fullcalendar.theme.css');
+  drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/rooms_availability.css');
+  
+  // Injest settings in javascript that we will use
+  drupal_add_js(array('roomID' => $rooms_unit->unit_id), 'setting');
+  drupal_add_js(array('currentMonth' => $month), 'setting');
+  drupal_add_js(array('currentYear' => $year), 'setting');
+
+  // Calculate forward and back dates for our 3-month view calendar and create links
+  $date1 = new DateTime("$year-$month-1");
+  $date2 = new DateTime("$year-$month-1");
+  $date_current = new DateTime("now");
+
+
+  $forward = $date1->add(new DateInterval('P3M'));
+  $forward_path = 'admin/rooms/units/unit/' . $rooms_unit->unit_id . '/pricing/' . $forward->format('Y') . '/' . $forward->format('n');
+  $forward_link = l(t('Forward'), $forward_path);
+
+  $backward = $date2->sub(new DateInterval('P3M'));
+  $backward_path = 'admin/rooms/units/unit/' . $rooms_unit->unit_id . '/pricing/' . $backward->format('Y') . '/' . $backward->format('n');
+  $backward_link = l(t('Back'), $backward_path);
+  
+  $current_path = 'admin/rooms/units/unit/' . $rooms_unit->unit_id . '/pricing/' . $date_current->format('Y') . '/' . $date_current->format('n');
+  $current_link = l(t('Current'), $current_path);
+
+  // Send everything for theming
+  $output = theme('rooms_pricing', array('name' => $rooms_unit->name,
+                                              'type' => $rooms_unit->type,
+                                              'update_form' => drupal_get_form('update_unit_pricing_form', $rooms_unit->unit_id),
+                                              'start_year' => $year,
+                                              'start_month' => $month,
+                                              'forward_link' => $forward_link,
+                                              'backward_link' => $backward_link,
+                                              'current_link' => $current_link,)
+                 );
+  
+  return $output;  
 }
 
 
 /**
- * Load multiple pricing rules based on certain conditions.
- *
- * @param $pricing_ids
- *   An array of pricing rule IDs.
- * @param $conditions
- *   An array of conditions to match against the {room_pricing_rule} table.
- * @param $reset
- *   A boolean indicating that the internal cache should be reset.
- * @return
- *   An array of room objects, indexed by room_id.
- *
- * @see entity_load()
- * @see rooms_room_load()
+ * A basic form that allows us to update the state of the calendar
  */
-function rooms_pricing_rule_load_multiple($pricing_ids = array(), $conditions = array(), $reset = FALSE) {
-  return entity_load('rooms_pricing_rule', $pricing_ids, $conditions, $reset);
+function update_unit_pricing_form($form, &$form_state, $unit_id) {
+  
+  $form['unit_id'] = array (
+    '#type' => 'hidden',
+    '#value' => $unit_id,
+  );
+  
+  $form['date_range'] = array (
+    '#title' => t('Date Range'),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE, 
+    '#collapsed' => FALSE,
+  );
+  
+  $form['date_range']['start_date'] = array(
+    '#type' => 'date_popup',
+    '#title' => t('Start Date'),
+    '#date_type' => DATE_DATETIME,
+    '#date_format' => 'm/d/Y',
+    '#date_increment' => 1,
+    '#date_year_range' => '-1:+3',
+    '#required' => TRUE,
+  );
+  
+  $form['date_range']['end_date'] = array(
+    '#type' => 'date_popup',
+    '#title' => t('End Date'),
+    '#date_type' => DATE_DATETIME,
+    '#date_format' => 'm/d/Y',
+    '#date_increment' => 1,
+    '#date_year_range' => '-1:+3',
+    '#required' => TRUE,
+  );
+  
+  
+  $form['op'] = array (
+    '#title' => t('Operation'),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE, 
+    '#collapsed' => FALSE,
+  );
+  
+  $form['op']['operation'] = array(
+    '#type' => 'select',
+    '#title' => 'Operation',
+    '#options' => array(
+      ADD => 'Add to price',
+      SUB => 'Subtract from price',
+      REPLACE => 'Replace price',
+      INCREASE => 'Increase price by % amount',
+      DECREASE => 'Decrease price by % amount',
+    ),
+    '#default_value' =>  'replace',
+  );
+  
+  $form['op']['amount'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Amount'),
+    '#default_value' => '',
+    '#size' => '5',
+    '#description' => 'Amount to apply for rule',
+    '#maxlength' => 10,
+    '#required' => TRUE,
+  );
+  
+  
+  $form['actions'] = array(
+    '#type' => 'container',
+    '#attributes' => array('class' => array('form-actions')),
+    '#weight' => 400,
+  );
+  
+  // We add the form's #submit array to this button along with the actual submit
+  // handler to preserve any submit handlers added by a form callback_wrapper.
+  $submit = array();
+
+  if (!empty($form['#submit'])) {
+    $submit += $form['#submit'];
+  }
+  
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Update Room Pricing'),
+    '#submit' => $submit + array('update_unit_pricing_form_submit'),
+  );
+  
+  // We append the validate handler to #validate in case a form callback_wrapper
+  // is used to add validate handlers earlier.
+  $form['#validate'][] = 'update_unit_pricing_form_validate';
+  
+  
+  return $form;
 }
 
 
-/**
- * Deletes a pricing rule.
- */
-function rooms_pricing_rule_delete(RoomsPricingRule $pricing_rule) {
-  $pricing_rule->delete();
+function update_unit_pricing_form_validate(&$form, &$form_state) {
+  // Check date validity
+  $date1 = new DateTime($form_state['values']['start_date']);
+  $date2 = new DateTime($form_state['values']['end_date']);
+  $diff = $date1->diff($date2);
+  // If date1 > date2
+  if ($diff->invert) {
+    form_set_error('date_range', t('End date must be after start date'));
+  }
+  
+   // Make sure amount entered is numeric
+  if (!empty($form_state['values']['amount']) && !is_numeric($form_state['values']['amount'])) {
+    form_set_error('amount', t('%name: you must enter a numeric value for the price.', array('%name' => 'Amount')));
+  }
 }
 
 
-/**
- * Delete multiple pricing rules.
- *
- * @param $pricing_ids
- *   An array of room IDs.
- */
-function rooms_pricing_rule_delete_multiple(array $pricing_ids) {
-  entity_get_controller('rooms_pricing_rule')->delete($pricing_ids);
-}
-
-
-/**
- * Create a rooms pricing rule object.
- */
-function rooms_pricing_rule_create($values = array()) {
-  return entity_get_controller('rooms_pricing_rule')->create($values);
-}
-
-
-/**
- * Saves a pricing rule to the database.
- *
- * @param $room
- *   The room object.
- */
-function rooms_pricing_rule_save(RoomsPricingRule $pricing_rule) {
-  return $pricing_rule->save();
+function update_unit_pricing_form_submit(&$form, &$form_state) {
+  
+  $start_date = new DateTime($form_state['values']['start_date']);
+  $end_date = new DateTime($form_state['values']['end_date']);
+  $operation = $form_state['values']['operation'];
+  $amount = $form_state['values']['amount'];
+  
+  $unit_id = $form_state['values']['unit_id'];
+  
+  // Get all the pricing events for the date range
+  $rc = new UnitPricingCalendar($unit_id);
+  $pe = new PricingEvent($unit_id, $amount, $start_date, $end_date, $operation);
+  $events = array($pe);
+  
+  $rc->updateCalendar($events);
+    
 }
 
 
 
-/**
- * URI callback for pricing rules
+/** 
+ * Creates the necessary json for the date range provided - needs at least start year and month at which point it will
+ * return the entire month.
  */
-function rooms_pricing_rule_uri(RoomsPricingRule $pricing_rule){
+function rooms_pricing_json($unit, $start_year = '', $start_month = '', $start_day = '', $end_year = '', $end_month = '', $end_day = '') {
+
+  $start_year = (int)$start_year;
+  $start_month = (int)$start_month;
+  $start_day = (int)$start_day;
+  
+  $end_year = (int)$end_year;
+  $end_month = (int)$end_month;
+  $end_day = (int)$end_day;
+  
+  $eom = rooms_end_of_month_dates($start_year);
+    
+  if (($start_year == 0) || ($start_month == 0)) {
+    echo drupal_json_encode('missing basic info');
+    return;
+  } elseif ($start_day == 0) {
+    $start_date = new DateTime("$start_year-$start_month-1");
+    $end_day = $eom[$start_month];
+    $end_date = new DateTime("$start_year-$start_month-$end_day");
+  } elseif ($start_day != 0 && $end_year == 0) {
+    $start_date = new DateTime("$start_year-$start_month-$start_day");
+    $end_date = new DateTime("$start_year-$start_month-15");
+    $end_date->add(new DateInterval('P1M'));
+    $end_year = $end_date->format('Y');
+    $end_month = $end_date->format('n');
+    $end_day = $eom[$end_date->format('n')];
+    $end_date = new DateTime("$end_year-$end_month-$end_day");
+  }
+  else{
+    $start_date = new DateTime("$start_year-$start_month-$start_day");
+    $end_date = new DateTime("$end_year-$end_month-$end_day");    
+  }
+
+  $rc = new UnitPricingCalendar($unit->unit_id, $unit->default_state);
+  
+  $events = $rc->getEvents($start_date, $end_date);
+  $json_events  = array();
+  
+  foreach ($events as $event) {
+    $json_events[] = $event->formatJson();
+  }
+    
+ 
+	echo  drupal_json_encode($json_events);
+  
+}
+
+ 
+
+/**
+ * Implement rooms_pricing_theme().
+ */
+function rooms_pricing_theme() {
   return array(
-    'path' => 'room/pricing_rule' . $pricing_rule->pricing_id,
+    'rooms_pricing' => array(
+      'template' => 'rooms_pricing'
+    )
   );
 }
 
 
 /**
- * Menu title callback for showing individual entities
+ * Handles quering and updating the pricing information
+ * relative to a single bookable unit.
  */
-function rooms_pricing_rule_page_title(RoomsPricingRule $pricing_rule){
-  return $pricing_rule->name;
-}
+class UnitPricingCalendar {
 
-
-/**
- * Loads a room to apply pricing rules to
- */
-function room_to_price_load($room){
-  $room = rooms_room_load($room);
-  return $room;
-}
-
-
-/**
- * Implements hook_views_api().
- */
-function rooms_pricing_views_api() {
-  return array(
-    'api' => 3,
-    'path' => drupal_get_path('module', 'rooms_pricing') . '/views',
-  );
-}
-
-
-/**
- * Implements hook_menu_local_tasks_alter().
- */
-function rooms_pricing_menu_local_tasks_alter(&$data, $router_item, $root_path) {
-  // Add action link 'admin/rooms/pricing_rules/list' on 'admin/rooms/pricing_rules'.
-  if ($root_path == 'admin/rooms/pricing_rules') {
-    $item = menu_get_item('admin/rooms/pricing_rules/add/pricing_type');
-    if ($item['access']) {
-      $data['actions']['output'][] = array(
-        '#theme' => 'menu_local_action',
-        '#link' => $item,
-      );
-    }
-  }
-  if ($root_path == 'admin/rooms/pricing_rules') {
-    $item = menu_get_item('admin/rooms/pricing_rules/add/multiple_rooms');
-    if ($item['access']) {
-      $data['actions']['output'][] = array(
-        '#theme' => 'menu_local_action',
-        '#link' => $item,
-      );
-    }
-  }  
-}
-
-
-
-/**
- * The class used for room entities
- */
-class RoomsPricingRule extends Entity {
+  // The bookable unit the Calendar is relevant to  
+  protected $unit_id;
   
-  public function __construct($values = array()) {
-    parent::__construct($values, 'rooms_pricing_rule');
-  }
-
-  protected function defaultLabel() {
-    return $this->name;
-  }
-
-  protected function defaultUri() {
-    return array('path' => 'pricing_rule/' . $this->pricing_id);
+  // The default state for the room if it has no specific booking
+  protected $default_state;
+  
+  // The default price for the room
+  protected $default_price;
+  
+  
+  public function __construct($unit_id){
+    $this->unit_id = $unit_id;
+    // Load the booking unit
+    $unit = rooms_unit_load($unit_id);
+    $this->default_state = $unit->default_state;
+    $this->default_price = $unit->base_price;
   }
   
   
-}
-
-
-
-/**
- * The Controller for RoomsRoom entities
- */
-class RoomsPricingRuleController extends EntityAPIController {
-  public function __construct($entityType) {
-    parent::__construct($entityType);
-  }
-
-
   /**
-   * Create a room - we first set up the values that are specific
-   * to our room schema but then also go through the EntityAPIController
-   * function.
-   * 
-   * @param $type
-   *   The machine-readable type of the room.
+   * Given an array of events removes events from the calendar
+   *
+   * @param $events
+   *    The events to remove from the database - an array of Booking Events
    *
    * @return
-   *   A room object with all default fields initialized.
+   *   The array of ids of events that were found and removed
    */
-  public function create(array $values = array()) {
+  public function removeEvents($events) {}
+  
+  
+  /**
+   * Given a date range determine the cost of the room over that period
+   *
+   * @param $start_date
+   * The starting date for the search
+   *
+   * @param $end_date
+   * The end date for the search
+   *  
+   * @return
+   * The price of the room for that period
+   */
+  public function calculatePrice(DateTime $start_date, DateTime $end_date) {}
+  
+  
+  /**
+   * Given a date range returns an array of PricingEvents. The heavy lifting really takes place in
+   * the getRawDayData function - here we are simply acting as a factory for price event objects
+   *
+   * @param $start_date
+   * The starting date
+   *
+   * @param $end_date
+   * The end date of our range
+   *
+   * @returns
+   * An array of PricingEvent objects
+   */
+  public function getEvents(DateTime $start_date, DateTime $end_date) {
 
-    $type = 'rooms_pricing_rule';
-
-    // Add values that are specific to our Room
-    $values += array( 
-      'pricing_id' => '',
-      'is_new' => TRUE,
-      'title' => '',
-      'active' => '1',
-    );
     
-    $pricing_rule = parent::create($values);
-    return $pricing_rule;
+    $start_day = $start_date->format('j');
+    $end_day = $end_date->format('j');
+    
+    
+    // Get the raw day results
+    $results = $this->getRawDayData($start_date, $end_date);
+    $events = array();
+    foreach ($results[$this->unit_id] as $year=>$months){
+      $eod = rooms_end_of_month_dates($year);
+      foreach ($months as $mid=>$month) {
+        // The event array gives us the start days for each event within a month
+        $start_days = array_keys($month['states']);
+        foreach ($month['states'] as $state) {
+          // Create a booking event 
+          $start = $state['start_day'];
+          $end= $state['end_day'];
+          $sd = new DateTime("$year-$mid-$start");
+          $ed = new DateTime("$year-$mid-$end");
+                    
+          $event = new PricingEvent($this->unit_id,
+                                    $state['state'],
+                                    $sd,
+                                    $ed);
+          $events[] = $event;
+        }    
+      }
+    }
+    return $events;
   }
   
   
-  public function save($entity, DatabaseTransaction $transaction = NULL) {
-    $return = parent::save($entity);
-    return $return;
+  /**
+   * Given a date range it returns all data within that range including the start and
+   * end dates of states. The MySQL queries are kept simple and then the data is cleared up
+   * 
+   * @param $start_date
+   * The starting date
+   *
+   * @param $end_date
+   * The end date of our range
+   *
+   * @return
+   * An array of the structure data[unitid][year][month][days][d1]..[d31]
+   * as wekk as data[unitid][year][month][unique_states]
+   */
+  public function getRawDayData(DateTime $start_date, DateTime $end_date) {
+    
+    // Create a dummy PricingEvent to represent the range we are searching over
+    // This gives us access to handy functions that PricingEvents have
+    $s = new PricingEvent($this->unit_id, 0, $start_date, $end_date);    
+    
+    $results = array();
+    
+    // Start by doing a query to the db to get any info stored there
+    
+    // If search across the same year do a single query
+    if ($s->sameYear()) {
+      $query = db_select('rooms_pricing', 'a');
+      $query->fields('a');
+      $query->condition('a.unit_id', $this->unit_id);
+      $query->condition('a.year', $s->startYear());
+      $query->condition('a.month', $s->startMonth(), '>=');
+      $query->condition('a.month', $s->endMonth(), '<=');
+      $months = $query->execute()->fetchAll(PDO::FETCH_ASSOC);   
+      if (count($months) > 0) {
+        foreach ($months as $month) {
+          $m = $month['month'];
+          $y = $month['year'];
+          $id = $month['unit_id'];
+          // Remove the three first rows and just keep the days
+          unset($month['month']);
+          unset($month['year']);
+          unset($month['unit_id']);
+          $results[$id][$y][$m]['days'] = $month;
+        }
+      }
+    }
+    // For multiple years do a query for each year
+    else {
+      for ($j = $s->startYear(); $j <= $s->endYear(); $j++) {
+        $query = db_select('rooms_pricing', 'a');
+        $query->fields('a');
+        $query->condition('a.unit_id', $this->unit_id);
+        $query->condition('a.year', $j);
+        if ($j == $s->startYear()) {
+          $query->condition('a.month', $s->startMonth(), '>=');
+        }
+        elseif ($j == $s->endYear()) {
+          $query->condition('a.month', $s->endMonth(), '<=');
+        }
+        $months = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
+        if (count($months) > 0) {
+          foreach($months as $month) {
+            $m = $month['month'];
+            $y = $month['year'];
+            $id = $month['unit_id'];
+            unset($month['month']);
+            unset($month['year']);
+            unset($month['unit_id']);
+            $results[$id][$y][$m]['days'] = $month;
+          }
+        }
+      }
+    }
+    
+    
+    // With the results from the db in place fill in any missing months
+    // with the default state for the unit
+    for ($j = $s->startYear(); $j <= $s->endYear(); $j++) {
+      $eod = rooms_end_of_month_dates($j);
+
+      // We start by setting the expected start and end months for each year
+      if ($s->sameYear()) {
+        $expected_months = $s->endMonth() - $s->startMonth() +1;
+        $sm = $s->startMonth();
+        $em = $s->endMonth();
+      }
+      elseif ($j == $s->endYear()) {
+        $expected_months = $s->endMonth();
+        $sm = 1;
+        $em = $s->endMonth();
+      }
+      elseif ($j == $s->startYear()) {
+        $expected_months = 12 - $s->startMonth() +1;
+        $em = 12;
+        $sm = $s->startMonth();
+      }
+      else {
+        $expected_months = 12;
+        $sm = 1;
+        $em = 12;
+      }
+      
+      // We then check to see if the months we have already fit our expectations
+      $actual_months =  isset($result[$this->unit_id][$j]) ? count($results[$id][$j]) : 0;
+      if ($expected_months>$actual_months) {
+        // We have missing months so lets go fill them
+        for ($i = $sm; $i<=$em; $i++) {
+          if (!isset($results[$this->unit_id][$j][$i])) {
+            $last_day = $eod[$i];
+            $month = $this->prepareFullMonthArray(new PricingEvent($this->unit_id,
+                                                                   $this->default_price,
+                                                                   new DateTime("$j-$i-1"), 
+                                                                   new DateTime("$j-$i-$last_day")));
+            // Add the month in its rightful position
+            $results[$this->unit_id][$j][$i]['days'] = $month;
+            // And sort months
+            ksort($results[$this->unit_id][$j]);
+          }
+        }
+      }        
+    }
+
+    // With all the months in place we now need to clean results to set the right start and end date
+    // for each month - this will save code downstream from having to worry about it
+    foreach ($results[$this->unit_id] as $year=>$months) {
+      foreach ($months as $mid => $days) {
+        // There is undoubtetly a smarter way to do this - but will live with this for now
+        if (count($days['days']) != $eod[$mid]){
+          switch ($eod[$mid]) {
+            case 30:
+              unset($results[$this->unit_id][$year][$mid]['days']['d31']);
+              break;
+            case 29:
+              unset($results[$this->unit_id][$year][$mid]['days']['d31']);
+              unset($results[$this->unit_id][$year][$mid]['days']['d30']);
+              break;
+            case 28:
+              unset($results[$this->unit_id][$year][$mid]['days']['d31']);
+              unset($results[$this->unit_id][$year][$mid]['days']['d30']);
+              unset($results[$this->unit_id][$year][$mid]['days']['d29']);
+              break;
+          }
+        }
+        if (($year == $s->startYear()) && ($mid == $s->startMonth())) {
+          // We know we have the entire months over the range so we just unset all the dates
+          // from the start of the month to the actual start day
+          for ($i = 1; $i < $s->startDay(); $i++) {
+            unset($results[$this->unit_id][$year][$mid]['days']['d'.$i]);
+          }
+        }
+        if (($year == $s->endYear()) && ($mid == $s->endMonth())){
+          // and from the end of the month back to the actual end day
+          for ($i = $s->endDay()+1; $i <= $eod[$mid]; $i++) {
+            unset($results[$this->unit_id][$year][$mid]['days']['d'.$i]);
+          }
+        }
+
+      }
+    }
+        
+    // With the results in place we do a states array with the start and
+    // end dates of each event
+    foreach ($results[$this->unit_id] as $year=>$months) {
+      foreach ($months as $mid => $days){
+        // The number of days in the month we are interested in eventing
+        $j = count($days);
+        // The start date (in case we are not starting from the first day of the month)
+        $i = substr(key($days['days']), 1);
+        $start_day = $i;
+        $end_day = null;
+        $unique_states = array();
+        $old_state = $days['days']['d'.$i];
+        $state = $days['days']['d'.$i];
+        while ($j <= count($days['days']) )
+        {          
+          $state = $days['days']['d'.$i];
+          if ($state != $old_state){
+            $unique_states[] = array('state' => $old_state,
+                                               'start_day' => $start_day,
+                                               'end_day' => $i-1);
+            $end_day = $i - 1;
+            $start_day = $i;
+            $old_state = $state;
+          }
+          $i++;
+          $j++;
+        }
+        // Get the last event in
+        $unique_states[] = array('state' => $state,
+                                   'start_day' => isset($end_day) ? $end_day+1 : $start_day,
+                                   'end_day' => $i-1);
+        $results[$this->unit_id][$year][$mid]['states'] = $unique_states;
+      }
+    }
+    
+    return $results;
+  }
+  
+  
+  /**
+   * Given an array of PricingEvents the calendar is updated with regards to the
+   * events that are relevant to the Unit this calendar refers to
+   */
+  public function updateCalendar(array $events) {
+    
+    foreach ($events as $event){
+      // Make sure event refers to the unit for this calendar
+      if ($event->unit_id == $this->unit_id) {
+        
+        // Get all the pricing events that fit within this event
+        $affected_events = $this->getEvents($event->start_date, $event->end_date);
+        
+        $monthly_events = array();
+        
+        foreach ($affected_events as $a_event) {
+          //Apply the operation
+          $a_event->applyOperation($event->amount, $event->operation);
+          
+          // If the event is in the same month span just queue to be added
+          if ($a_event->sameMonth()) {
+            $monthly_events[] = $a_event;
+          }
+          else {
+            // Check if multi-year - if not just create monthly events
+            if ($a_event->sameYear()) {
+              $monthly_events_tmp = array();
+              $monthly_events_tmp = $a_event->transformToMonthlyEvents();
+              $monthly_events =  array_merge($monthly_events, $monthly_events_tmp);
+            } else{
+              // else transform to single years and then to monthly
+              $yearly_events = $a_event->transformToYearlyEvents();
+              foreach ($yearly_events as $ye){
+                $monthly_events_tmp = array();
+                $monthly_events_tmp = $ye->transformToMonthlyEvents();
+                $monthly_events =  array_merge($monthly_events, $monthly_events_tmp);
+              }
+            }
+          }
+        }
+        
+        foreach($monthly_events as $event) {
+            $this->addMonthEvent($event);
+        }
+      }
+    }
+            
+
+  }
+
+  
+  /**
+   * Adds an event to the calendar
+   *
+   * @param $event
+   *   An an event of type BookingEvent 
+   *
+   * @return
+   *   TRUE if events added, FALSE if some event failed
+   */
+  public function addMonthEvent($event) {
+    // First check if the month exists and do an update if so
+    if ($this->monthDefined($event->startMonth(), $event->startYear())) {
+      //Do the update
+      $partial_month_row = $this->preparePartialMonthArray($event);
+      $update = db_update('rooms_pricing')
+        ->condition('unit_id', $this->unit_id)
+        ->condition('month', $event->startMonth())
+        ->condition('year', $event->startYear())
+        ->fields($partial_month_row)
+        ->execute();
+    }
+    // Do an insert for a new month
+    else {
+      // Prepare the days array
+      $days = $this->prepareFullMonthArray($event);      
+      $month_row = array (
+        'unit_id' => $this->unit_id,
+        'year' => $event->startYear(),
+        'month' => $event->startMonth(),        
+      );
+      $month_row = array_merge($month_row, $days);
+      
+      $insert = db_insert('rooms_pricing')->fields($month_row);
+      $insert->execute();
+    }
+  }
+    
+  
+  /**
+   * Given an event it prepares the entire month array for it
+   * assuming no other events in the month and days where there
+   * is no event get set to the default state;
+   */
+  protected function prepareFullMonthArray($event){
+    $days = array();
+    $eod = rooms_end_of_month_dates($event->startYear());
+    $last_day = $eod[$event->startMonth()];
+
+    for ($i = 1; $i<=$last_day; $i++) {
+      if (($i >= $event->startDay()) && ($i <= $event->endDay())) {
+        $days['d' . $i] = $event->amount;
+      } else {
+        $days['d' . $i] = $this->default_price; //replace with default state
+      }
+    }
+    return $days;
+  }
+  
+  
+  /**
+   * Given an event it prepares a partial array covering just the days
+   * for which the event is involved
+   */
+  protected function preparePartialMonthArray($event){
+    $days = array();
+    for ($i = $event->startDay(); $i<=$event->endDay(); $i++) {
+        $days['d' . $i] = $event->amount;
+    }
+    return $days;
+  }
+  
+  /**
+   * Check if a month exists
+   *
+   * @return true - if the month is defined
+   */
+  public function monthDefined($month, $year) {
+    $query = db_select('rooms_pricing', 'a');
+    $query->addField('a', 'unit_id');
+    $query->addField('a', 'year');
+    $query->addField('a', 'month');
+    $query->condition('a.unit_id', $this->unit_id);
+    $query->condition('a.year', $year);
+    $query->condition('a.month', $month);
+    $result = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
+    if (count($result) > 0) {
+      return TRUE;
+    } 
+    return FALSE;
   }
   
   
 }
 
+
+
+class PricingEvent {
+  
+  // The room the event is relevant to
+  public $unit_id;
+  
+  // The start date for the event
+  public $start_date;
+  
+  // The end date for the event
+  public $end_date;
+  
+  // The amount for this period
+  public $amount;
+  
+  // The operation to perform
+  public $operation;
+  
+  
+  
+  public function __construct($unit_id, $amount, $start_date, $end_date, $operation = '') {
+    $this->unit_id = $unit_id;
+    $this->amount = $amount;
+    $this->start_date = $start_date;
+    $this->end_date = $end_date;
+    $this->operation = $operation;
+  }
+  
+  public function startDay($format = 'j') {
+    return $this->start_date->format($format);
+  }
+  
+  public function startMonth($format = 'n') {
+    return $this->start_date->format($format);
+  }
+  
+  public function startYear($format = 'Y') {
+    return $this->start_date->format($format);
+  }
+  
+  public function endDay($format = 'j') {
+    return $this->end_date->format($format);
+  }
+  
+  public function endMonth($format = 'n') {
+    return $this->end_date->format($format);
+  }
+  
+  public function endYear($format = 'Y') {
+    return $this->end_date->format($format);
+  }
+  
+  /**
+   * Returns the months involved in the events
+   */
+  public function months() {
+    dpm($this->diff()->m);
+  }
+
+  public function diff() {
+    $interval = $this->start_date->diff($this->end_date);
+    return $interval;
+  }
+  
+  public function sameMonth() {
+    if (($this->startMonth() == $this->endMonth()) && ($this->startYear() == $this->endYear())) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+  
+  public function sameYear() {
+    
+    if ($this->startYear() == $this->endYear()) {
+      return TRUE;
+    }
+    return FALSE;    
+  }
+  
+  
+  public function applyOperation($amount, $operation) {
+    
+    switch ($operation) {
+      case REPLACE:
+        $this->amount = $amount;
+        break;
+      default:
+        break;
+    }
+    
+  }
+  
+  /**
+   * Takes a single event that spans several years and transforms it to
+   * yearly events
+   */
+  public function transformToYearlyEvents() {
+    // If same year return the event
+    if ($this->sameYear()) {
+      $sd = new DateTime();
+      $sd->setDate($this->startYear(), $this->startMonth(), $this->startDay());
+      $ed = new DateTime();
+      $ed->setDate($this->endYear(), $this->endMonth(), $this->endDay());
+      $be = new PricingEvent($this->unit_id, $this->amount, $sd, $ed, $this->operation);
+      return array($be);
+    }
+    
+    // Else split into years
+    $events = array();
+    for ($i = $this->startYear(); $i <= $this->endYear(); $i++) {
+      $sd = new DateTime();
+      $ed = new DateTime();
+      if ($i == $this->startYear()) {
+        $sd->setDate($i, $this->startMonth(), $this->startDay());
+        $ed->setDate($i, 12, 31);
+        $events[$i] = new PricingEvent($this->unit_id, $this->amount, $sd, $ed, $this->operation);
+      }
+      elseif ($i == $this->endYear()) {
+        $sd->setDate($i, 1, 1);
+        $ed->setDate($i, $this->endMonth(), $this->endDay());
+        $events[$i] = new PricingEvent($this->unit_id, $this->amount, $sd, $ed, $this->operation);
+      }
+      else {
+        $sd->setDate($i, 1, 1);
+        $ed->setDate($i, 12, 31);
+        $events[$i] = new PricingEvent($this->unit_id, $this->amount, $sd, $ed, $this->operation);
+      }
+    }
+    
+    return $events;
+  }
+  
+  /**
+   * Takes a single event that spans several months and transforms it to
+   * monthly events - this assumes that the event is contained within a year
+   */
+  public function transformToMonthlyEvents() {
+    $events = array();
+    //First we need to split into events in separate years
+    if (!$this->sameYear()) {
+      return FALSE;
+    }
+    if ($this->sameMonth()) {
+      $sd = new DateTime();
+      $sd->setDate($this->startYear(), $this->startMonth(), $this->startDay());
+      $ed = new DateTime();
+      $ed->setDate($this->endYear(), $this->endMonth(), $this->endDay());
+      $be = new PricingEvent($this->unit_id, $this->amount, $sd, $ed, $this->operation);
+      return array($be);      
+    }
+    $months = rooms_end_of_month_dates($this->startYear());
+
+    for ($i = $this->startMonth(); $i <= $this->endMonth(); $i++) {
+      $sd = new DateTime();
+      $ed = new DateTime();
+      if ($i == $this->startMonth()) {
+        $sd->setDate($this->startYear() , $i, $this->startDay());
+        $ed->setDate($this->startYear(), $i, $months[$i]);
+        $events[$i] = new PricingEvent($this->unit_id, $this->amount, $sd, $ed, $this->operation);
+      }
+      elseif ($i == $this->endMonth()) {
+        $sd->setDate($this->startYear(), $i, 1);
+        $ed->setDate($this->startYear(), $i, $this->endDay());
+        $events[$i] = new PricingEvent($this->unit_id, $this->amount, $sd, $ed, $this->operation);
+      }
+      else{
+        $sd->setDate($this->startYear(), $i, 1);
+        $ed->setDate($this->startYear(), $i, $months[$i]);
+        $events[$i] = new PricingEvent($this->unit_id, $this->amount, $sd, $ed, $this->operation);
+      }
+    }
+    return $events;
+  }
+  
+  
+  /**
+   * Return event in a format amenable to FullCalendar display or generally
+   * sensible json
+   */
+  public function formatJson(){
+    //print $this->amount;
+    $event = array(
+      'id' => $this->amount,
+      //'title' => 'Event ID: ' . $this->amount . ' - Unit ID: ' . $this->unit_id,
+      'start' => $this->startYear() . '-' . $this->startMonth('m') . '-' . $this->startDay('d'),
+      'end' => $this->endYear() . '-' . $this->endMonth('m') . '-' . $this->endDay('d'),
+    );
+    
+    //set the color
+    if ($this->amount < 100) {
+      $event['color']  = 'orange';
+      $event['title'] = $this->amount;
+    } elseif ($this->amount >= 100) { 
+      $event['color'] = 'red';
+      $event['title'] = $this->amount;
+    }
+    
+    return $event;
+  }
+  
+}
