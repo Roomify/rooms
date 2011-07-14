@@ -6,6 +6,14 @@
  * plugin
  */
 
+/**
+  * Defining some room states that will be used throughout
+  * 
+  */
+define ('NOT_AVAILABLE', 0);
+define ('AVAILABLE', 1);
+define ('ON_REQUEST', 2);
+define ('ANON_BOOKED', 3);
 
 /**
  * The default path to the FullCalendar plugin.
@@ -94,20 +102,6 @@ function rooms_availability_menu() {
   );
 
 
-  //  Temporary items to remove
-  $items['admin/rooms/units/unit/ajax/test'] = array(
-    'title' =>  'Availability Event Test',
-    'page callback' => 'rooms_availability_event_test',
-    'access arguments' => array('manage bookable unit availability'),
-    'type' => MENU_CALLBACK,
-  );
-  
-  $items['admin/rooms/calendartest'] = array(
-    'title' => 'Calendar Tests',
-    'page callback' => 'calendar_test',
-    'access arguments' => array('access content'),
-    'type' => MENU_CALLBACK,
-  );
   
   
   return $items;
@@ -189,7 +183,7 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
                                               'backward_link' => $backward_link,
                                               'current_link' => $current_link,)
                  );
-  
+
   return $output;  
 }
 
@@ -278,6 +272,10 @@ function update_availability_calendar_form_validate(&$form, &$form_state) {
 }
 
 
+/**
+ *@todo Need to figure out what to do when we cancel an existing booking
+ */
+
 function update_availability_calendar_form_submit(&$form, &$form_state) {
   
   $start_date = new DateTime($form_state['values']['start_date']);
@@ -290,10 +288,7 @@ function update_availability_calendar_form_submit(&$form, &$form_state) {
   $be = new BookingEvent($unit_id, $event_id, $start_date, $end_date);
   $events = array($be);
   $rc = new UnitCalendar($unit_id);
-  $rc->updateCalendar($events);
-
-  // create a calendar
-  
+  $rc->updateCalendar($events);  
 }
 
 
@@ -373,45 +368,7 @@ function rooms_availability_fullcalendar_get_js_path() {
 
 
 
-function calendar_test(){
 
-  $output = '';
-  $unit = rooms_unit_load(1);
-  
-  $start_date = new DateTime;
-  $start_date->setDate(2011,2,1);
-
-  $end_date = new DateTime;
-  $end_date->setDate(2011,2,7);
-  
-  $start_date1 = new DateTime;
-  $start_date1->setDate(2013,8,8);
-  
-  $end_date1 = new DateTime;
-  $end_date1->setDate(2011,8,16);
-  
-
-  $start_date2 = new DateTime;
-  $start_date2->setDate(2011,8,17);
-  
-  $end_date2 = new DateTime;
-  $end_date2->setDate(2011,8,26);
-
-    
-  $event = new BookingEvent(1, 5, $start_date, $end_date);
-  $event1 = new BookingEvent(1, 6, $start_date1, $end_date1);
-  $event2 = new BookingEvent(1, 7, $start_date2, $end_date2);
-
-  $events = array($event);
-  
-  $rc = new UnitCalendar(1);
-  
-  //$rc->updateCalendar($events);
-  
-  $ae = $rc->getEvents(new DateTime('2010-9-03'), new DateTime('2010-9-30'));  
-
-  return $output;
-}
 
 
 
@@ -437,7 +394,9 @@ class UnitCalendar {
   
   
   /**
-   * Given an array of events removes events from the calendar
+   * Given an array of events removes events from the calendar - keeping this for reference
+   * but the fact is that we may never need this - remove an event is simply changing the state
+   * of the calendar.
    *
    * @param $events
    *    The events to remove from the database - an array of Booking Events
@@ -464,7 +423,20 @@ class UnitCalendar {
    * Returns true if the date range provided does not have states other than the ones we are
    * interested in
    */
-  public function checkAvailability(DateTime $start_date, DateTime $end_date, $states = array()) {}
+  public function stateAvailability(DateTime $start_date, DateTime $end_date, $states = array()) {
+    
+    $valid = true;
+    
+    //get all events in the date range
+    $events = $this->getEvents($start_date, $end_date);
+    foreach ($events as $event) {
+      if (!in_array($event->id, $states)) {
+        $valid = false;
+      }
+    }
+    
+    return $valid;
+  }
   
   
   /**
@@ -1014,7 +986,7 @@ class BookingEvent {
   public function formatJson(){
     $event = array(
       'id' => $this->id,
-      'title' => 'Event ID: ' . $this->id . ' - Unit ID: ' . $this->unit_id,
+      'title' => $this->id,
       'start' => $this->startYear() . '-' . $this->startMonth('m') . '-' . $this->startDay('d'),
       'end' => $this->endYear() . '-' . $this->endMonth('m') . '-' . $this->endDay('d'),
     );
@@ -1046,3 +1018,5 @@ class BookingEvent {
   }
   
 }
+
+
