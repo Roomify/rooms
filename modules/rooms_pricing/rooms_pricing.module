@@ -54,7 +54,17 @@ function rooms_pricing_menu() {
     'type' => MENU_CALLBACK,
     'weight' => '30',
   );
-  
+
+
+  $items['admin/rooms/config/currency'] = array(
+    'title' => 'Manage Currency Settings',
+    'access arguments' => array('manage booking unit pricing'),
+    'page callback' => 'system_admin_menu_block_page',
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 9,
+    'file path' => drupal_get_path('module', 'system'),
+    'file' => 'system.admin.inc',
+  );
   
   return $items;
 }
