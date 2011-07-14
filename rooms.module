@@ -6,11 +6,6 @@
  * by all Rooms modules
  */
 
-// Defining some room states that will be used throughout
-define ('NOT_AVAILABLE', 0);
-define ('AVAILABLE', 1);
-define ('ON_REQUEST', 2);
-define ('ANON_BOOKED', 3);
 
 /**
  * Implements hook_permission().

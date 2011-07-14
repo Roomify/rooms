@@ -6,5 +6,5 @@ version = 1.x-dev
 package = Rooms
 
 dependencies[] = rooms
-dependencies[] = rooms_room
-;dependencies[] = commerce_product
+dependencies[] = rooms_unit
+dependencies[] = commerce_product

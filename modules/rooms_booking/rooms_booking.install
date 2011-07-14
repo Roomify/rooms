@@ -11,11 +11,39 @@ function rooms_booking_install() {
 
   $product_type = commerce_product_ui_product_type_new();
 
-  $product_type['type'] = 'booking';
-  $product_type['name'] = t('Booking');
-  $product_type['description'] = t('A Rooms Booking.');
+  $product_type['type'] = 'rooms_booking';
+  $product_type['name'] = t('Rooms Unit Booking');
+  $product_type['description'] = t('A Rooms Unit Booking.');
   $product_type['is_new'] = TRUE;
 
   commerce_product_ui_product_type_save($product_type, FALSE);
-  commerce_product_configure_product_type('booking');
+  commerce_price_create_instance('commerce_price', 'commerce_product', 'rooms_booking', t('Price'), 0, 'calculated_sell_price');
+	
+	$field_data = _rooms_booking_product_type_fields();
+	
+	if ((!field_info_field_types('rooms_booking_dates')) || (!field_info_field_types('rooms_booked_unit_id'))) {
+    field_cache_clear();
+  }
+
+  // Look for or add the specified price field to the requested entity bundle.
+  $field_date = field_info_field('rooms_booking_dates');
+  $instance_date = field_info_instance('commerce_product', 'rooms_booking_dates', 'rooms_booking');
+	
+	if (empty($field_date)) {
+		field_create_field($field_data['rooms_booking_dates']);		
+	}
+	if (empty($instance_date)) {
+		field_create_instance($field_data['rooms_booking_dates_instance']);	
+	}
+
+
+  $field_id = field_info_field('rooms_booked_unit_id');
+  $instance_id = field_info_instance('commerce_product', 'rooms_booked_unit_id_instance', 'rooms_booking');
+	
+	if (empty($field_id)) {
+		field_create_field($field_data['rooms_booked_unit_id']);		
+	}
+	if (empty($instance_id)) {
+		field_create_instance($field_data['rooms_booked_unit_id_instance']);	
+	}
 }
