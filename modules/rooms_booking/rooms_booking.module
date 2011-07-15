@@ -130,7 +130,7 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
   
   $units = $agent->checkAvailability($start_date, $end_date, $group_size, $units);
   
-  drupal_set_message('helo');
+  drupal_set_message('Helo');
   dpm($units);
   //dpm($form_state); 
 }
@@ -187,6 +187,11 @@ function _rooms_booking_product_type_fields() {
 			'module' => 'number',
 			'active' => 1,
 			'locked' => 1,
+      'settings' => array (
+				'size' => 8,
+        'max_length' => 10,
+        'text_processins' => 0,        
+      ),
 		),	
 		'rooms_booked_unit_id_instance' => array (
 			'field_name' => 'rooms_booked_unit_id',
@@ -194,13 +199,35 @@ function _rooms_booking_product_type_fields() {
 			'entity_type' => 'commerce_product',
 			'bundle' => 'rooms_booking',
 			'required' => true,
+      'settings' => array(
+				'size' => 8,
+        'max_length' => 10,
+        'text_processing' => 0,
+          //'text_processing'
+			),				
 			'widget' => array (
         'type' => 'text_textfield',
-        'settings' => array(
-					'size' => 8,
-          'max_length' => 10,
-				),				
 			),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'number',
+          'settings' => array(
+            'decimal_separator' => '.',
+            'prefix_suffix' => TRUE,
+            'scale' => 0,
+            'thousand_separator' => ' ',
+          ),
+          'type' => 'number_integer',
+          'weight' => 11,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
+      ),
 		)
 	);
 
