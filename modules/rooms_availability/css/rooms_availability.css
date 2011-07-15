@@ -11,9 +11,39 @@
 }
 
 #date-forward {
-  float:right;margin:10px 60px 10px 10px;
+  float:right;
+  margin:10px 60px 10px 10px;
 }
 
 #date-backward {
-  float:left;margin:10px 20px 10px 10px;
+  float:left;
+  margin:10px 20px 10px 10px;
+}
+
+#update-availability-calendar-form {
+  /*height:150px;*/
+}
+
+.availability-updates{
+  border-top:1px solid silver;
+  margin-top:80px;
+}
+
+#update-availability-calendar-form .form-item-unit-state{
+float:left;
+}
+
+
+#update-availability-calendar-form .form-item{
+  padding:0px;
+}
+
+#update-availability-calendar-form .start-date , #update-availability-calendar-form .end-date{
+  float:left;
+  margin-right:20px;
+}
+
+#update-availability-calendar-form .form-actions {
+  clear:both;
+  padding:10px 0px;
 }

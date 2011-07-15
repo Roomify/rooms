@@ -182,7 +182,7 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
   );
   $content['room_name'] = $rooms_unit->name;
   $content['type'] = $rooms_unit->type;
-  $content['update_form'] = drupal_get_form('update_availability_calendar_form', $rooms_unit->unit_id);
+  $content['update_form'] = drupal_get_form('update_availability_calendar_form', $rooms_unit->unit_id, $year, $month);
   $content['start_year'] = $year;
   $content['start_month'] = $month;
   $content['forward_link'] = $forward_link;
@@ -206,7 +206,7 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
 /**
  * A basic form that allows us to update the state of the calendar
  */
-function update_availability_calendar_form($form, &$form_state, $unit_id) {
+function update_availability_calendar_form($form, &$form_state, $unit_id, $year, $month) {
   
   $form['unit_id'] = array (
     '#type' => 'hidden',
@@ -214,20 +214,26 @@ function update_availability_calendar_form($form, &$form_state, $unit_id) {
   );
   
   $form['date_range']['start_date'] = array(
+    '#prefix' => '<div class="start-date">',    
+    '#suffix' => '</div>',
     '#type' => 'date_popup',
     '#title' => t('Start Date'),
     '#date_type' => DATE_DATETIME,
-    '#date_format' => 'm/d/Y',
+    '#date_format' => 'Y/m/d',
+    '#default_value' => "$year-$month-01 00:00:00",
     '#date_increment' => 1,
     '#date_year_range' => '-1:+3',
     '#required' => TRUE,
   );
   
   $form['date_range']['end_date'] = array(
+    '#prefix' => '<div class="end-date">',    
+    '#suffix' => '</div>',
     '#type' => 'date_popup',
     '#title' => t('End Date'),
     '#date_type' => DATE_DATETIME,
-    '#date_format' => 'm/d/Y',
+    '#date_format' => 'Y/m/d',
+    '#default_value' => "$year-$month-01 00:00:00",
     '#date_increment' => 1,
     '#date_year_range' => '-1:+3',
     '#required' => TRUE,
