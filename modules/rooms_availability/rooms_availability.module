@@ -102,8 +102,6 @@ function rooms_availability_menu() {
   );
 
 
-  
-  
   return $items;
 }
 
@@ -121,6 +119,7 @@ function availability_unit_load($unit_id){
 /**
  * Room availability access callback
  * @todo check unauthorised access for calendar js
+ * @todo either improve or remove
  */ 
 function rooms_availability_access($rooms_unit) {
   if (user_access('manage booking unit availability')) {
@@ -172,17 +171,33 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
   
   $current_path = 'admin/rooms/units/unit/' . $rooms_unit->unit_id . '/availability/' . $date_current->format('Y') . '/' . $date_current->format('n');
   $current_link = l(t('Current'), $current_path);
+  
+  // The content to theme
+  $content = array();
 
+  $content['title'] = array (
+    '#prefix' => '<div class="availability-title">',
+    '#markup' => '<h2>' . t('@name Availability View', array('@name' => $rooms_unit->name)) . '</h2>',
+    '#suffix' => '</div>'
+  );
+  $content['room_name'] = $rooms_unit->name;
+  $content['type'] = $rooms_unit->type;
+  $content['update_form'] = drupal_get_form('update_availability_calendar_form', $rooms_unit->unit_id);
+  $content['start_year'] = $year;
+  $content['start_month'] = $month;
+  $content['forward_link'] = $forward_link;
+  $content['backward_link'] = $backward_link;
+  $content['current_link'] = $current_link;
+
+  $content['update_form_into'] = array (
+    '#prefix' => '<div class="availability-update">',
+    '#markup' => '<h2>' . t('Update Room Availability') . '</h2>',
+    '#suffix' => '</div>'
+  );
+
+  
   // Send everything for theming
-  $output = theme('rooms_availability', array('name' => $rooms_unit->name,
-                                              'type' => $rooms_unit->type,
-                                              'update_form' => drupal_get_form('update_availability_calendar_form', $rooms_unit->unit_id),
-                                              'start_year' => $year,
-                                              'start_month' => $month,
-                                              'forward_link' => $forward_link,
-                                              'backward_link' => $backward_link,
-                                              'current_link' => $current_link,)
-                 );
+  $output = theme('rooms_availability', $content);
 
   return $output;  
 }
@@ -347,7 +362,7 @@ function rooms_availability_event($unit, $start_year = '', $start_month = '', $s
  
 
 /**
- * Implement rooms_availability_theme().
+ * Implement hook_theme().
  */
 function rooms_availability_theme() {
   return array(
@@ -365,11 +380,6 @@ function rooms_availability_fullcalendar_get_js_path() {
   $fullcalendar_file = array('none' => 'fullcalendar.js', 'min' => 'fullcalendar.min.js');
   return variable_get('rooms_fullcalendar_path', FULLCALENDAR_PATH) . '/' . $fullcalendar_file[variable_get('rooms_fullcalendar_compression_type', 'min')];
 }
-
-
-
-
-
 
 
 /**

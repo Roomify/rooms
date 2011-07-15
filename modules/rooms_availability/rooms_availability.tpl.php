@@ -1,5 +1,6 @@
 <div class="<?php print $variables['classes']?>">
-<h1 style="text-transform:capitalize"><?php print $type ?> - <?php print $name ?> Availability View </h1>
+
+<?php print render($title) ?>
 
 <table>
   <tr>
@@ -25,16 +26,7 @@
 
 
 
+<?php print render($update_form_into); ?>
 
-
-
-<div style="clear:both"></div>
-
-
-<h2>Update Room Availability</h2>
-
-<p>Careful this will overwrite any existing bookings.</p>
-
-
-<?php print render($variables['update_form']); ?>
+<?php print render($update_form); ?>
 </div>
