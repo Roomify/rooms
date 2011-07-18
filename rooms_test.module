@@ -28,6 +28,15 @@ function rooms_test_menu() {
 		'type' => MENU_NORMAL_ITEM,
     'access arguments' => array('access administration pages'),
   );
+	
+	
+	$items['admin/rooms/test/test3'] = array(
+    'title' => 'Event Update Tests',
+    'description' => 'Tests for event update',
+    'page callback' => 'rooms_test_event_update',
+		'type' => MENU_NORMAL_ITEM,
+    'access arguments' => array('access administration pages'),
+  );
 
   return $items;
 }
@@ -43,14 +52,39 @@ function rooms_test_availability() {
 }
 
 
+function rooms_test_event_update() {
+	
+	$s = new DateTime('2011-07-11');
+	$e = new DateTime('2011-12-11');
+
+	$rc = new UnitCalendar(2);
+	$event = new BookingEvent(2,300,$s,$e);
+	
+	
+	$response = $rc->updateCalendar(array($event));
+	dpm($response);
+  if ($response[300] == 'SAVED'){
+		$event->lock();
+  }
+	
+	
+	return 'hello';
+}
+
 
 
 function rooms_test_commerce(){
+	$output = '';
+	$line_item = commerce_line_item_load(15);
+	dpm($line_item);
 	
+	$product = commerce_product_load(16);
+	
+	dpm($product);
 	
 	//rooms_booking_install();
 	
-	$output = '';
+	/*
 	global $user;
 	//dpm($user);
 	global $language;
@@ -127,7 +161,7 @@ function rooms_test_commerce(){
   //}
 	
 	
-	
+	*/
 	
 	return $output;
 }
