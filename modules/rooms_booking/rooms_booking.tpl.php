@@ -1,6 +1,7 @@
 <? dpm($variables) ?>
 
 <?php if (!$booking_results): ?>
+  <?php print render($booking_search_form); ?>
   <?php print render($no_results); ?>
 <?php endif; ?>
 
