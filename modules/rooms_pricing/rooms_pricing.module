@@ -55,7 +55,6 @@ function rooms_pricing_menu() {
     'weight' => '30',
   );
 
-
   $items['admin/rooms/config/currency'] = array(
     'title' => 'Manage Currency Settings',
     'access arguments' => array('manage booking unit pricing'),
@@ -694,8 +693,6 @@ class UnitPricingCalendar {
         }
       }
     }
-            
-
   }
 
   
@@ -711,7 +708,7 @@ class UnitPricingCalendar {
   public function addMonthEvent($event) {
     // First check if the month exists and do an update if so
     if ($this->monthDefined($event->startMonth(), $event->startYear())) {
-      //Do the update
+      // Do the update
       $partial_month_row = $this->preparePartialMonthArray($event);
       $update = db_update('rooms_pricing')
         ->condition('unit_id', $this->unit_id)
@@ -743,15 +740,19 @@ class UnitPricingCalendar {
    * is no event get set to the default state;
    */
   protected function prepareFullMonthArray($event){
+    
+    // Get the default currency to convert prices for storage in db
+    $default_currency_code = commerce_default_currency();
+    
     $days = array();
     $eod = rooms_end_of_month_dates($event->startYear());
     $last_day = $eod[$event->startMonth()];
 
     for ($i = 1; $i<=$last_day; $i++) {
       if (($i >= $event->startDay()) && ($i <= $event->endDay())) {
-        $days['d' . $i] = $event->amount;
+        $days['d' . $i] = commerce_currency_decimal_to_amount($event->amount, $default_currency_code);
       } else {
-        $days['d' . $i] = $this->default_price; //replace with default state
+        $days['d' . $i] = commerce_currency_decimal_to_amount($this->default_price, $default_currency_code);
       }
     }
     return $days;
@@ -762,10 +763,14 @@ class UnitPricingCalendar {
    * Given an event it prepares a partial array covering just the days
    * for which the event is involved
    */
-  protected function preparePartialMonthArray($event){
+  protected function preparePartialMonthArray($event) {
+
+    // Get the default currency to convert prices for storage in db
+    $default_currency_code = commerce_default_currency();
+
     $days = array();
     for ($i = $event->startDay(); $i<=$event->endDay(); $i++) {
-        $days['d' . $i] = $event->amount;
+        $days['d' . $i] = commerce_currency_decimal_to_amount($event->amount, $default_currency);
     }
     return $days;
   }
@@ -984,20 +989,23 @@ class PricingEvent {
    */
   public function formatJson(){
     //print $this->amount;
+    $currency_code = commerce_default_currency();
+    $amount = commerce_currency_amount_to_decimal($this->amount, $currency_code);
+    
     $event = array(
-      'id' => $this->amount,
+      "id" => $amount,
       //'title' => 'Event ID: ' . $this->amount . ' - Unit ID: ' . $this->unit_id,
-      'start' => $this->startYear() . '-' . $this->startMonth('m') . '-' . $this->startDay('d'),
-      'end' => $this->endYear() . '-' . $this->endMonth('m') . '-' . $this->endDay('d'),
+      "start" => $this->startYear() . '-' . $this->startMonth('m') . '-' . $this->startDay('d'),
+      "end" => $this->endYear() . '-' . $this->endMonth('m') . '-' . $this->endDay('d'),
     );
     
     //set the color
     if ($this->amount < 100) {
-      $event['color']  = 'orange';
+      $event['color']  = "orange";
       $event['title'] = $this->amount;
     } elseif ($this->amount >= 100) { 
-      $event['color'] = 'red';
-      $event['title'] = $this->amount;
+      $event['color'] = "green";
+      $event['title'] = "$amount";
     }
     
     return $event;
