@@ -32,12 +32,19 @@ function rooms_booking_permission() {
 function rooms_booking_menu() {
   $items  =  array();
   
+  $items['booking'] = array(
+    'title' => 'Booking',
+    'page callback' => 'rooms_booking_page',
+    'access arguments' => array('book units'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  
   $items['booking/%start_date/%end_date'] = array(
     'title' => 'Booking',
     'page callback' =>  'rooms_booking_page',
     'page arguments' => array(1,2),
     'access arguments' => array('book units'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
   );
   
   return $items;
@@ -64,15 +71,19 @@ function rooms_booking_page($start_date = 0, $end_date = 0, $group_size = 0, $b_
   $content = array();
   $units = 0;
   
+  drupal_add_css(drupal_get_path('module', 'rooms_booking') . '/css/booking_search.css');
+  
   // If no start and end date send a no results message
   if ((gettype($start_date) == 'integer') || (gettype($end_date) == 'integer')){
     $content['booking_results'] = 0;
+    $booking_search_form = drupal_get_form('rooms_booking_availability_search_form');
     $no_results = array (
       '#prefix' => '<div class="no-booking-data">',
-      '#markup' => '<p>' . t('Unfortunately something went wrong - we can\'t get you booking availability.') . '</p>',
+      '#markup' => '<p>' . t('Perform a search to see availability') . '</p>',
       '#suffix' => '</div>',
     );
     $content['no_results'] = $no_results;
+    $content['booking_search_form'] = $booking_search_form;
   }
   else {
     $content['booking_results'] = 1;
@@ -180,12 +191,16 @@ function book_unit_form_submit(&$form, &$form_state){
   $unit = rooms_unit_load($form_state['values']['unit_id']);
   $sd = $form_state['values']['start_date'];
   $ed = $form_state['values']['end_date'];
+  // Set the correct departure date
+  $dd = new DateTime($ed);
+  $dd->add(new DateInterval('P1D'));
+  
   $price = $form_state['values']['price'];
   
   // Create product
   $room_booking = commerce_product_new('rooms_booking');
   $room_booking->sku = 'UNIT' . $unit->unit_id . ' - ' . time();
-  $room_booking->title = 'Booking for ' . $unit->name . ' Arrival: ' . $sd . ' Departure:' . $ed;
+  $room_booking->title = 'Booking for ' . $unit->name . ' Arrival: ' . $sd . ' Departure: ' . $dd->format('Y-m-d');
   commerce_product_save($room_booking);
   $amount = commerce_currency_amount_to_decimal($price, 'USD');
   
@@ -205,10 +220,16 @@ function book_unit_form_submit(&$form, &$form_state){
 			'value2' => $ed,
 		)),		
 	);
+  
+  $commerce_unit = array(
+    'und' => array( array(
+      'value' => $unit->unit_id,
+    )),
+  );
 	
 	$room_booking->commerce_price = $commerce_price;
 	$room_booking->rooms_booking_dates = $commerce_dates;	
-
+  $room_booking->rooms_booked_unit_id = $commerce_unit;
 
 	field_attach_update('commerce_product', $room_booking);
   
@@ -263,11 +284,43 @@ function end_date_load($end_date) {
   return $ed;
 }
 
+/**
+ * Implements hook_commerce_checkout_complete
+ */
+function rooms_booking_commerce_checkout_complete($order) {
+  dpm($order, 'checkout complete');
+  foreach ($order->commerce_line_items as $lang => $item) {
+    foreach ($item as $item_id) {
+      $line_item = commerce_line_item_load($item_id['line_item_id']);
+      foreach ($line_item->commerce_product as $lang => $product) {
+        dpm($product);
+        $p = commerce_product_load($product[0]['product_id']);
+        if ($p->type == 'rooms_booking') {
+          $start_date = new DateTime($p->rooms_booking_dates['und'][0]['value']);
+          $end_date = new DateTime($p->rooms_booking_dates['und'][0]['value2']);
+          $unit_id = $p->rooms_booked_unit_id['und'][0]['value'];
+          // Create a new BookingEvent
+          $be = new BookingEvent($unit_id, $order->order_number, $start_date, $end_date);
+          // Update the booking date of the unit id for those days
+          $uc = new UnitCalendar($unit_id);
+          $response = $uc->updateCalendar(array($be));
+          if ($response[$order->order_number] == 'SAVED'){
+            $be->lock();
+          }
+        }
+      }
+    }
+  }
+
+}
+
 
 
 function rooms_booking_availability_search_form($form, $form_state) {
   
   $form['date_range']['start_date'] = array(
+    '#prefix' => '<div class="arrival-date">',
+    '#suffix' => '</div>',
     '#type' => 'date_popup',
     '#title' => t('Check-in Date'),
     '#date_type' => DATE_DATETIME,
@@ -278,6 +331,8 @@ function rooms_booking_availability_search_form($form, $form_state) {
   );
   
   $form['date_range']['end_date'] = array(
+    '#prefix' => '<div class="departure-date">',
+    '#suffix' => '</div><div style="clear:both"></div>',
     '#type' => 'date_popup',
     '#title' => t('Check-out Date'),
     '#date_type' => DATE_DATETIME,
@@ -313,6 +368,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
       '6' => '6',
     ),
     '#default_value' =>  '1',
+    '#suffix' => '<div style="clear:both"></div>',
   );
   
   $form['actions'] = array(
