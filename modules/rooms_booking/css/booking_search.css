@@ -1,0 +1,14 @@
+#rooms-booking-availability-search-form .arrival-date , #rooms-booking-availability-search-form .departure-date{
+  float:left;
+  margin-right:20px;
+}
+
+
+#rooms-booking-availability-search-form .form-item-group-size, #rooms-booking-availability-search-form .form-item-rooms{
+  float:left;
+  margin-right:20px;
+}
+
+#rooms-booking-availability-search-form .form-item-rooms{
+  clear:right;
+}
