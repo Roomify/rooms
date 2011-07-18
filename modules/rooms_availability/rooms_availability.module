@@ -7,13 +7,20 @@
  */
 
 /**
-  * Defining some room states that will be used throughout
-  * 
-  */
+ * Defining some room states that will be used throughout
+ * 
+ */
 define ('NOT_AVAILABLE', 0);
 define ('AVAILABLE', 1);
 define ('ON_REQUEST', 2);
 define ('ANON_BOOKED', 3);
+
+/**
+ * Defining responses for Calendar Updated
+ */
+define ('ROOMS_BLOCKED', 100);
+define ('ROOMS_UPDATED', 200);
+define ('ROOMS_WRONG_UNIT', 300);
 
 /**
  * The default path to the FullCalendar plugin.
@@ -309,7 +316,13 @@ function update_availability_calendar_form_submit(&$form, &$form_state) {
   $be = new BookingEvent($unit_id, $event_id, $start_date, $end_date);
   $events = array($be);
   $rc = new UnitCalendar($unit_id);
-  $rc->updateCalendar($events);  
+  $response = $rc->updateCalendar($events);
+  if ($response[$event_id] == ROOMS_BLOCKED) {
+    drupal_set_message('Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period');
+  }
+  elseif ($response[$event_id] == ROOMS_UPDATED) {
+    drupal_set_message('Calendar Updated');
+  }
 }
 
 
@@ -424,7 +437,11 @@ class UnitCalendar {
   
   
   /**
-   * Given a date range and a set of states tries to determine whether a bookable unit is available for booking.
+   * Given a set of states (e.g. the desired states to accept a booking) we compare against
+   * the states the unit is actually in.
+   *
+   * If the unit is in any state that is not in the list of desired states it means there is a
+   * mismatch - hence no availability.
    *
    * @param $start_date
    * The starting date for the search
@@ -441,17 +458,15 @@ class UnitCalendar {
    */
   public function stateAvailability(DateTime $start_date, DateTime $end_date, $states = array()) {
     
-    $valid = true;
+    $valid = TRUE;
     
-    //get all events in the date range
-    $events = $this->getEvents($start_date, $end_date);
-    foreach ($events as $event) {
-      if (!in_array($event->id, $states)) {
-        $valid = false;
-      }
-    }
-    
+    // Get all states in the date range
+    $existing_states = $this->getStates($start_date, $end_date);
+    // Look at the difference between existing states and states to check against -
+    $diff = array_diff($existing_states, $states);
+    $valid = (count ($diff) > 0) ? FALSE : TRUE;
     return $valid;
+
   }
   
   
@@ -469,12 +484,10 @@ class UnitCalendar {
    * An array of BookingEvent objects
    */
   public function getEvents(DateTime $start_date, DateTime $end_date) {
-
-    
+    // Format dates for use later on
     $start_day = $start_date->format('j');
     $end_day = $end_date->format('j');
-    
-    
+     
     // Get the raw day results
     $results = $this->getRawDayData($start_date, $end_date);
     $events = array();
@@ -499,6 +512,36 @@ class UnitCalendar {
       }
     }
     return $events;
+  }
+  
+  
+  /**
+   * Given a date range returns all states in that range - useful when we are not interested
+   * in starting and ending dates but simply in states
+   *
+   * @param $start_date
+   * The start day of the range
+   * 
+   * @param $end_date
+   * The end date of our range
+   *
+   * @returns
+   * An array of states within that range
+   */
+  public function getStates(DateTime $start_date, DateTime $end_date) {    
+    
+    $states = array();
+    // Get the raw day results
+    $results = $this->getRawDayData($start_date, $end_date);
+    foreach ($results[$this->unit_id] as $year=>$months) {
+      foreach ($months as $mid=>$month) {
+        foreach ($month['states'] as $state) {
+          $states[] = $state['state'];  
+        } 
+      }
+    }
+    $states = array_unique($states);
+    return $states;
   }
   
   
@@ -704,41 +747,77 @@ class UnitCalendar {
   /**
    * Given an array of BookingEvents the calendar is updated with regards to the
    * events that are relevant to the Unit this calendar refers to
+   *
+   * @param $events
+   * An array of events to update the calendar with
+   *
+   * @return array - An array of response on whether event updates were succesful or not
    */
   public function updateCalendar(array $events) {
     
+    $responses = array();
+    // First check that none of the events supplied are blocked by an existing event
+    // with a locked status      
     $monthly_events = array();
 
     foreach ($events as $event){
       // Make sure event refers to the unit for this calendar
       if ($event->unit_id == $this->unit_id) {
-        // If the event is in the same month span just queue to be added
-        if ($event->sameMonth()) {
-          $monthly_events[] = $event;
+        
+        // Check if event is not blocked by a locked event
+        $states = $this->getStates($event->start_date, $event->end_date);
+        $blocked = FALSE;
+        foreach ($states as $state) {
+          $query = db_select('rooms_booking_locks', 'l');
+          $query->addField('l', 'unit_id');
+          $query->addField('l', 'state');
+          $query->addField('l', 'locked');
+          $query->condition('l.unit_id', $this->unit_id);
+          $query->condition('l.state', $state);
+          $query->condition('l.locked', 1);
+          $result = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
+          if (count($result) > 0) {
+            $blocked = TRUE;
+          }
         }
-        else {
-          // Check if multi-year - if not just create monthly events
-          if ($event->sameYear()) {
-            $monthly_events_tmp = array();
-            $monthly_events_tmp = $event->transformToMonthlyEvents();
-            $monthly_events =  array_merge($monthly_events, $monthly_events_tmp);
-          } else{
-            // else transform to single years and then to monthly
-            $yearly_events = $event->transformToYearlyEvents();
-            foreach ($yearly_events as $ye){
+        
+        if (!$blocked) {
+          // If the event is in the same month span just queue to be added
+          if ($event->sameMonth()) {
+            $monthly_events[] = $event;
+          }
+          else {
+            // Check if multi-year - if not just create monthly events
+            if ($event->sameYear()) {
               $monthly_events_tmp = array();
-              $monthly_events_tmp = $ye->transformToMonthlyEvents();
+              $monthly_events_tmp = $event->transformToMonthlyEvents();
               $monthly_events =  array_merge($monthly_events, $monthly_events_tmp);
+            } else{
+              // else transform to single years and then to monthly
+              $yearly_events = $event->transformToYearlyEvents();
+              foreach ($yearly_events as $ye){
+                $monthly_events_tmp = array();
+                $monthly_events_tmp = $ye->transformToMonthlyEvents();
+                $monthly_events =  array_merge($monthly_events, $monthly_events_tmp);
+              }
             }
           }
         }
+        else {
+          $response[$event->id] = ROOMS_BLOCKED;
+        }
       }
-    }
-            
+      else {
+        $response[$event->id] = ROOMS_WRONG_UNIT;
+      }
+    }        
 
     foreach($monthly_events as $event) {
       $this->addMonthEvent($event);
+      $response[$event->id] = ROOMS_UPDATED;
     }
+    
+    return $response;
   }
 
   
@@ -754,7 +833,6 @@ class UnitCalendar {
   public function addMonthEvent($event) {
     // First check if the month exists and do an update if so
     if ($this->monthDefined($event->startMonth(), $event->startYear())) {
-      //Do the update
       $partial_month_row = $this->preparePartialMonthArray($event);
       $update = db_update('rooms_availability')
         ->condition('unit_id', $this->unit_id)
@@ -911,6 +989,21 @@ class BookingEvent {
     return FALSE;    
   }
   
+  /**
+   * Lock event - updates the rooms_booking_locks table to indicate that this event
+   * is locked
+   */
+  public function lock(){   
+    $fields = array(
+      'unit_id' => $this->unit_id,
+      'state' => $this->id,
+      'locked' => 1,
+    );
+    $lock = db_insert('rooms_booking_locks')->fields($fields);
+    $lock->execute();
+    dpm('locked');
+  }
+  
   
   /**
    * Takes an event that spans several years and transforms it to
@@ -994,7 +1087,7 @@ class BookingEvent {
     return $events;
   }
   
-  
+    
   /**
    * Return event in a format amenable to FullCalendar display or generally
    * sensible json
