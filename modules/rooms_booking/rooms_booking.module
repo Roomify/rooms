@@ -270,14 +270,9 @@ function rooms_booking_commerce_checkout_complete($order) {
     foreach ($item as $item_id) {
       $line_item = commerce_line_item_load($item_id['line_item_id']);
       foreach ($line_item->commerce_product as $lang => $product) {
-        dpm($product);
         $p = commerce_product_load($product[0]['product_id']);
         if ($p->type == 'rooms_booking') {
-          dpm($p);
           $unit_id = $p->rooms_booked_unit_id['und'][0]['value'];
-          
-          
-          
           // Create a new BookingEvent
           $be = new BookingEvent($unit_id,
                                  $order->order_number,
