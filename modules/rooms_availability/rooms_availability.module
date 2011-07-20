@@ -10,10 +10,10 @@
  * Defining some room states that will be used throughout
  * 
  */
-define ('NOT_AVAILABLE', 0);
-define ('AVAILABLE', 1);
-define ('ON_REQUEST', 2);
-define ('ANON_BOOKED', 3);
+define ('ROOMS_NOT_AVAILABLE', 0);
+define ('ROOMS_AVAILABLE', 1);
+define ('ROOMS_ON_REQUEST', 2);
+define ('ROOMS_ANON_BOOKED', 3);
 
 /**
  * Defining responses for Calendar Updated
@@ -251,10 +251,10 @@ function update_availability_calendar_form($form, &$form_state, $unit_id, $year,
     '#type' => 'select',
     '#title' => t('Bookable Unit State'),
     '#options' => array(
-      NOT_AVAILABLE => 'Unavailable',
-      AVAILABLE => 'Available',
-      ON_REQUEST => 'Available on Request',
-      ANON_BOOKED => 'Anonymous Booking'
+      ROOMS_NOT_AVAILABLE => 'Unavailable',
+      ROOMS_AVAILABLE => 'Available',
+      ROOMS_ON_REQUEST => 'Available on Request',
+      ROOMS_ANON_BOOKED => 'Anonymous Booking'
     ),
     '#description' => t('Choose what state to put the unit in for the dates chosen above'),
   );
@@ -466,7 +466,6 @@ class UnitCalendar {
     $diff = array_diff($existing_states, $states);
     $valid = (count ($diff) > 0) ? FALSE : TRUE;
     return $valid;
-
   }
   
   
@@ -1102,19 +1101,19 @@ class BookingEvent {
     
     //set the color
     switch ($this->id) {
-      case NOT_AVAILABLE:
+      case ROOMS_NOT_AVAILABLE:
         $event['color']  = 'red';
         $event['title'] = 'N/A';
         break;
-      case AVAILABLE:
+      case ROOMS_AVAILABLE:
         $event['color'] = 'green';
         $event['title'] = 'A';
         break;
-      case ON_REQUEST:
+      case ROOMS_ON_REQUEST:
         $event['color'] = 'gray';
         $event['title'] = 'REQ';
         break;        
-      case ANON_BOOKED:
+      case ROOMS_ANON_BOOKED:
         $event['color'] = '#481600';
         $event['title'] = 'A-B';
         break;        
