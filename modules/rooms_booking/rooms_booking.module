@@ -316,6 +316,7 @@ function rooms_booking_commerce_checkout_complete($order) {
 
 
 
+
 function rooms_booking_availability_search_form($form, $form_state) {
   
   $form['date_range']['start_date'] = array(

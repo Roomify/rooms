@@ -51,6 +51,17 @@ function rooms_booking_install() {
   if (empty($instance_id)) {
     field_create_instance($field_data['rooms_booked_unit_id_instance']);	
   }
+  
+  $field_id = field_info_field('rooms_booked_status');
+  $instance_id = field_info_instance('commerce_product', 'rooms_booked_status', 'rooms_booking');
+  
+  if (empty($field_id)) {
+    field_create_field($field_data['rooms_booked_status']);		
+  }
+  if (empty($instance_id)) {
+    field_create_instance($field_data['rooms_booked_status_instance']);	
+  }
+  
 }
 
 
