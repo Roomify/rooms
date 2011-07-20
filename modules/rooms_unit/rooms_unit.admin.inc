@@ -218,10 +218,10 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#type' => 'select',
     '#title' => t('Bookable Unit Default State'),
     '#options' => array(
-      NOT_AVAILABLE => 'Unavailable',
-      AVAILABLE => 'Available',
-      ON_REQUEST => 'Available on Request',
-      ANON_BOOKED => 'Anonymous Booking'
+      ROOMS_NOT_AVAILABLE => 'Unavailable',
+      ROOMS_AVAILABLE => 'Available',
+      ROOMS_ON_REQUEST => 'Available on Request',
+      ROOMS_ANON_BOOKED => 'Anonymous Booking'
     ),
     '#default_value' => isset($unit->default_state) ? $unit->default_state : 1,
     '#description' => t('Choose what state to put the unit in for the dates chosen above'),
