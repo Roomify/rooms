@@ -6,7 +6,7 @@
 <?php endif; ?>
 
 <?php if ($booking_results): ?>
-  <?php foreach ($units as $unit) {
+  <?php foreach ($units as $unit_id => $unit) {
     print render($unit['unit']);
     print render($unit['book_unit_form']);
   }?>

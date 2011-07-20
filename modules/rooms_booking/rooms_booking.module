@@ -9,9 +9,9 @@
  */
 
 
-define ('ROOM_SIZE_FAILURE', 0);
-define ('AVAILABILITY_FAILURE', 1);
-define ('NO_ROOMS', 2);
+define ('ROOMS_SIZE_FAILURE', 0);
+define ('ROOMS_AVAILABILITY_FAILURE', 1);
+define ('ROOMS_NO_ROOMS', 2);
 
 
 function rooms_booking_permission() {
@@ -88,9 +88,9 @@ function rooms_booking_page($start_date = 0, $end_date = 0, $group_size = 0, $b_
   else {
     $content['booking_results'] = 1;
     // Get all the units
-    $agent = new AvailabilityAgent();
-    $units = $agent->checkAvailability($start_date, $end_date, $group_size, $b_units);
-    if ($units == NO_ROOMS) {
+    $agent = new AvailabilityAgent($start_date, $end_date);
+    $units = $agent->checkAvailability();
+    if ($units == ROOMS_NO_ROOMS) {
       $content['booking_results'] = 0;
       $no_rooms = array (
         '#prefix' => '<div class="no-booking-data">',
@@ -101,15 +101,15 @@ function rooms_booking_page($start_date = 0, $end_date = 0, $group_size = 0, $b_
       return theme('rooms_booking', $content);
     }
     else {
-      foreach ($units as $unit){
-        $unit = rooms_unit_load($unit->unit_id);
+      foreach ($units as $unit_id => $unit_info){
+        $unit = rooms_unit_load($unit_info['unit']->unit_id);
         $controller = entity_get_controller('rooms_unit');  
         $unit_content = $controller->view(array($unit->unit_id => $unit));
-        $content['units'][]['unit'] = $unit_content;
-        $price = 100000;
-        // Going through hook_forms to handle multiple forms on the page
+        $content['units'][$unit->unit_id]['unit'] = $unit_content;
+        $price = 100000; // We need to calculate the proper price
+        //Going through hook_forms to handle multiple forms on the page
         $form = 'book_unit_form_' . $unit->unit_id;
-        $content['units'][]['book_unit_form'] = drupal_get_form($form, $unit, $start_date, $end_date, $price);
+        $content['units'][$unit->unit_id]['book_unit_form'] = drupal_get_form($form, $unit, $start_date, $end_date, $price, $unit_info['state']);
       }
     }
 
@@ -138,24 +138,29 @@ function rooms_booking_forms($form_id, $args) {
 }
 
 
-function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_date, $price) {
+function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_date, $price, $status) {
    
-  $form['unit_id'] = array (
+  $form['unit_id'] = array(
     '#type' => 'hidden',
     '#value' => $unit->unit_id,
   );
   
-  $form['start_date'] = array (
+  $form['status'] = array(
+    '#type' => 'hidden',
+    '#value' => $status,    
+  );
+  
+  $form['start_date'] = array(
     '#type' => 'hidden',
     '#value' => $start_date->format('Y-m-d'),
   );
 
-  $form['end_date'] = array (
+  $form['end_date'] = array(
     '#type' => 'hidden',
     '#value' => $end_date->format('Y-m-d'),
   );
   
-  $form['price'] = array (
+  $form['price'] = array(
     '#type' => 'hidden',
     '#value' => $price,
   );
@@ -200,7 +205,9 @@ function book_unit_form_submit(&$form, &$form_state){
   $price = $form_state['values']['price'];
   $status = $form_state['values']['status'];
   
-  $room_booking = rooms_booking_create_product($sd, $ed, $price, $unit_id, $status);  
+  $agent = new AvailabilityAgent($sd, $ed);
+  $room_booking = $agent->createProduct($unit_id, $status);
+  
   // Add to cart
   $line_item = commerce_product_line_item_new($room_booking, 1, 0, array(), 'product');
 	$line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
@@ -210,65 +217,6 @@ function book_unit_form_submit(&$form, &$form_state){
 }
 
 
-/**
- * Create a booking product with values set.
- */
-function rooms_booking_create_product($start_date, $end_date, $price, $unit_id, $status) {
-  
-  // Set the correct departure date for the product name (checkout day)
-  $dd = new DateTime($end_date);
-  $dd->add(new DateInterval('P1D'));
-
-  
-  // Create product
-  $room_booking = commerce_product_new('rooms_booking');
-  // SKU's need to be unique so we are adding system time to each product
-  $room_booking->sku = 'UNIT' . $unit->unit_id . ' - ' . time();
-  // Product name is give something sensible - this needs to be parametrised of course
-  $room_booking->title = 'Booking for ' . $unit->name . ' Arrival: ' . $start_date . ' Departure: ' . $dd->format('Y-m-d');
-  // Save the product and then we will add fields to it.
-  commerce_product_save($room_booking);
-  
-  $amount = commerce_currency_amount_to_decimal($price, 'USD');
-  
-  $commerce_price = array(
-    'und' => array(
-      array( 
-      	'amount' => $amount,
-      	'currency_code' => 'USD',
-      	'data' => array(''),
-      ),
-    ),
-	);
-	
-	$commerce_dates = array(
-		'und' => array( array( 
-			'value' => $sd,
-			'value2' => $ed,
-		)),		
-	);
-  
-  $commerce_unit = array(
-    'und' => array( array(
-      'value' => $unit->unit_id,
-    )),
-  );
-  
-  $commerce_status = array(
-    'und' => array(array(
-      'value' => $request_status,
-    )),
-  );
-	
-	$room_booking->commerce_price = $commerce_price;
-	$room_booking->rooms_booking_dates = $commerce_dates;	
-  $room_booking->rooms_booked_unit_id = $commerce_unit;
-  $rooms_booking->rooms_booked_status = $commerce_status;
-
-  // Save the fields as well and return the product
-	field_attach_update('commerce_product', $room_booking);
-  return $room_booking;
-}
 
 
 /**
@@ -325,22 +273,27 @@ function rooms_booking_commerce_checkout_complete($order) {
         dpm($product);
         $p = commerce_product_load($product[0]['product_id']);
         if ($p->type == 'rooms_booking') {
-          $start_date = new DateTime($p->rooms_booking_dates['und'][0]['value']);
-          $end_date = new DateTime($p->rooms_booking_dates['und'][0]['value2']);
+          dpm($p);
           $unit_id = $p->rooms_booked_unit_id['und'][0]['value'];
+          
+          
+          
           // Create a new BookingEvent
-          $be = new BookingEvent($unit_id, $order->order_number, $start_date, $end_date);
+          $be = new BookingEvent($unit_id,
+                                 $order->order_number,
+                                 new DateTime($p->rooms_booking_dates['und'][0]['value']),
+                                 new DateTime($p->rooms_booking_dates['und'][0]['value2']));
+          
           // Update the booking date of the unit id for those days
           $uc = new UnitCalendar($unit_id);
           $response = $uc->updateCalendar(array($be));
-          if ($response[$order->order_number] == 'SAVED'){
+          if ($response[$order->order_number] == ROOMS_UPDATED) {
             $be->lock();
           }
         }
       }
     }
   }
-
 }
 
 
@@ -350,21 +303,61 @@ function rooms_booking_commerce_checkout_complete($order) {
  * Implements hook_commerce_order_update
  */
 function rooms_booking_commerce_order_update($order) {
+  
+  $booking_states = array('rooms_unit_pending', 'rooms_unit_confirmed', 'rooms_unit_cancelled');
+  
+  $current = entity_metadata_wrapper('commerce_order', $order);
+  $original = entity_metadata_wrapper('commerce_order', $order->original);
+  
+  $current_status = $current->status->value();
+  $original_status = $original->status->value();
+  
+  // If the order is in a booking state
+  if (in_array($original_status, $booking_states)) {
+    if ($current_status == 'rooms_unit_cancelled'){
+      // We need to find the booking and cancel it
+    }
+  }
 }
+
 
 
 /**
  * Implements hook_commerce_order_presave
+ *
+ * @todo - figure this out - I don't like this one bit
  */
 function rooms_booking_commerce_order_presave($order) {
   
-  $ow = entity_metadata_wrapper('commerce_order', $order);
-  dpm($ow->status->value());
-  $var = $order->original->status;
-  dpm($var);
-  $variable = 2;
-  $ow->status->set('rooms_unit_canceled');
-
+  $booking_states = array('rooms_unit_pending', 'rooms_unit_confirmed', 'rooms_unit_cancelled');
+  
+  $current = entity_metadata_wrapper('commerce_order', $order);
+  $original = entity_metadata_wrapper('commerce_order', $order->original);
+  
+  $original_status = $original->status->value();
+  
+  // If a booking status has not been set already and this is a Rooms Unit product set the status
+  // This will take care of this first time an item is added in the cart
+  if (!in_array($original_status, $booking_states)){
+    foreach ($order->commerce_line_items as $lang => $item) {  
+      foreach ($item as $item_id) {
+        $line_item = commerce_line_item_load($item_id['line_item_id']);
+        foreach ($line_item->commerce_product as $lang => $product) {
+          $p = commerce_product_load($product[0]['product_id']);
+          if ($p->type == 'rooms_booking') {
+            $status = $p->rooms_booked_status['und'][0]['value'];
+            $ow = entity_metadata_wrapper('commerce_order', $order);
+            if ($status == ROOMS_ON_REQUEST) {
+              $ow->status->set('rooms_unit_pending');
+            }
+            elseif ($status == ROOMS_AVAILABLE) {
+              $ow->status->set('rooms_unit_confirmed');
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 
@@ -695,14 +688,103 @@ function rooms_booking_theme() {
 
 /**
  * An AvailabilityAgent provides access to the availability functionality of DrupalRooms and
- * lets you query for availability and get pricing information
+ * lets you query for availability, get pricing information and create products that can be bought.
+ *
+ * The Agent essentially acts like a factory creating the appropriate responses for us when needed.
  */
 class AvailabilityAgent {
   
   // The states to consider valid for an availability search
   public $valid_states;
   
-  public function __construct($valid_states = array(AVAILABLE)) {
+  public $start_date;
+  
+  public $end_date;
+  
+  public $group_size;
+  
+  public $booking_units;
+  
+  public $units = array();
+  
+  public function __construct($start_date, $end_date, $group_size = 2, $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)) {
+    $this->valid_states = $valid_states;
+    $this->start_date = $start_date;
+    $this->end_date = $end_date;
+    $this->group_size = $group_size;
+    $this->booking_units = $booking_units;
+  }
+  
+  /**
+   * Creates products for each booking unit
+   *
+   * @param $unit_id
+   * The id of the booking unit for which we are creating a product
+   *
+   * @param $status
+   * The status of the room - this will determine the order status
+   *
+   * @returns A Commerce product
+   */
+  public function createProduct($unit_id, $status) {
+
+    $unit = rooms_unit_load($unit_id);
+    
+    // Set the correct departure date for the product name (checkout day)
+    $dd = new DateTime($this->end_date);
+    $dd->add(new DateInterval('P1D'));
+  
+    // Create product
+    $room_booking = commerce_product_new('rooms_booking');
+    // SKU's need to be unique so we are adding system time to each product
+    $room_booking->sku = 'UNIT' . $unit_id . ' - ' . time();
+    // Product name - we set something that will make sense to the user here - this needs to be parametrised of course
+    $room_booking->title = 'Booking for ' . $unit->name . ' Arrival: ' . $this->start_date . ' Departure: ' . $dd->format('Y-m-d');
+    // Save the product and then we will add fields to it.
+    commerce_product_save($room_booking);
+  
+    
+  
+    $amount = commerce_currency_amount_to_decimal(100000, 'USD');
+    
+    $commerce_price = array(
+      'und' => array(
+          array( 
+          	'amount' => $amount,
+         	'currency_code' => 'USD',
+        	'data' => array(''),
+        ),
+      ),
+  	);
+	
+  	$commerce_dates = array(
+  		'und' => array( array( 
+  			'value' => $this->start_date,
+  			'value2' => $this->end_date,
+  		)),		
+  	);
+  
+    $commerce_unit = array(
+      'und' => array( array(
+        'value' => $unit->unit_id,
+      )),
+    );
+  
+    $commerce_status = array(
+      'und' => array(array(
+        'value' => $status,
+      )),
+    );
+	
+  	$room_booking->commerce_price = $commerce_price;
+  	$room_booking->rooms_booking_dates = $commerce_dates;	
+    $room_booking->rooms_booked_unit_id = $commerce_unit;
+    $room_booking->rooms_booked_status = $commerce_status;
+
+    // Save the fields as well and return the product
+  	field_attach_update('commerce_product', $room_booking);
+    
+    return $room_booking;  
   }
   
   /**
@@ -721,39 +803,40 @@ class AvailabilityAgent {
    * In how many booking units can we accommodate the people
    *
    * @return
-   * A list of valid rooms or a message as to what caused failure
+   * If valid units exist an array keyed by valid unit ids containing unit and the states it holds during
+   * the requested period or a message as to what caused the failure.
    */
-  public function checkAvailability ($start_date, $end_date, $group_size, $booking_units) {
+  public function checkAvailability () {
     
     $units = array();
     
     $results = array();
 
-    // Determine the types of rooms that quality - the sleeping potential of the sum
+    // Determine the types of rooms that qualify - the sleeping potential of the sum
     // of the rooms should satisfy the group size
     
     // If BUs == 0 and no group size get all available units
-    if ($group_size == 0 && $booking_units == 0) {
+    if ($this->group_size == 0 && $this->booking_units == 0) {
       $query = new EntityFieldQuery();
       $result = $query
         ->entityCondition('entity_type', 'rooms_unit')
         ->execute();
       //dpm($result, 'no size or booking units');  
       if (count($result) == 0) {
-        return NO_ROOMS;
+        return ROOMS_NO_ROOMS;
       }
     }
     
     // If BUs = 1 then we want rooms that can sleep as big as the group size
-    elseif ($booking_units == 1) {
+    elseif ($this->booking_units == 1) {
       $query = new EntityFieldQuery();
       $result = $query
         ->entityCondition('entity_type', 'rooms_unit')
-        ->propertyCondition('sleeps', $group_size, '>=')
+        ->propertyCondition('sleeps', $this->group_size, '>=')
         ->execute();
       
       if (count($result) == 0) {
-        return ROOM_SIZE_FAILURE;
+        return ROOMS_SIZE_FAILURE;
       }
     }
     
@@ -763,16 +846,26 @@ class AvailabilityAgent {
       foreach ($result['rooms_unit'] as $unit) {
         // Get a calendar and check availability
         $rc = new UnitCalendar($unit->unit_id);
-        if ($rc->stateAvailability($start_date, $end_date, array(AVAILABLE))) {
-          $units[] = $unit;
+        // We need to make this based on user-set vars
+        
+        // Rather than using $rc->stateAvailability we will get the states check directly
+        // as different states will impact on what products we create.
+        $states = $rc->getStates($this->start_date, $this->end_date);
+        $state_diff = array_diff($states, $this->valid_states);
+        if (count($state_diff) == 0) {
+          $units[$unit->unit_id]['unit'] = $unit;
+          if (in_array(ROOMS_ON_REQUEST, $states)) {
+            $units[$unit->unit_id]['state'] = ROOMS_ON_REQUEST;  
+          } else {
+            $units[$unit->unit_id]['state'] = ROOMS_AVAILABLE;  
+          }
+          
         }
       }
     }
-    
-    //dpm($units, 'there are the available units');
-    
+        
     if (count($units) == 0){
-      return NO_ROOMS;
+      return ROOMS_NO_ROOMS;
     }
     else {
      return $units; 
