@@ -102,16 +102,24 @@ function rooms_booking_page($start_date = 0, $end_date = 0, $group_size = 0, $b_
     }
     else {
       foreach ($units as $unit_id => $unit_info){
+        $price_calendar = new UnitPricingCalendar($unit_id);
+        $price = $price_calendar->calculatePrice($start_date, $end_date);
+        // Convert to integer value as this is what Commerce expects
+        
         $unit = rooms_unit_load($unit_info['unit']->unit_id);
         $controller = entity_get_controller('rooms_unit');  
         $unit_content = $controller->view(array($unit->unit_id => $unit));
         $content['units'][$unit->unit_id]['unit'] = $unit_content;
         //Going through hook_forms to handle multiple forms on the page
         $form = 'book_unit_form_' . $unit->unit_id;
-        $content['units'][$unit->unit_id]['book_unit_form'] = drupal_get_form($form, $unit, $start_date, $end_date, $unit_info['state']);
+        $content['units'][$unit_id]['book_unit_form'] = drupal_get_form($form, $unit, $start_date, $end_date, $unit_info['state']);
+        $content['units'][$unit_id]['price'] = array (
+          '#prefix' => '<div class="unit_price" style="font-weight:bold">',
+          '#markup' =>  t('Cost: ') . $price . commerce_default_currency(),
+          '#suffix' => '</div>'
+        );  
       }
     }
-
   }
   
   $output = theme('rooms_booking', $content);
