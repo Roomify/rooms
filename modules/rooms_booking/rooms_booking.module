@@ -180,6 +180,12 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
   return $form;
 }
 
+
+/**
+ * Validation for cart booking form
+ *
+ * @todo Evaluate what to do here
+ */
 function book_unit_form_validate(&$form, &$form_state){
 }
 
@@ -188,20 +194,41 @@ function book_unit_form_validate(&$form, &$form_state){
 function book_unit_form_submit(&$form, &$form_state){
   global $user;
   
-  $unit = rooms_unit_load($form_state['values']['unit_id']);
+  $unit_id = $form_state['values']['unit_id']; 
   $sd = $form_state['values']['start_date'];
   $ed = $form_state['values']['end_date'];
-  // Set the correct departure date
-  $dd = new DateTime($ed);
-  $dd->add(new DateInterval('P1D'));
-  
   $price = $form_state['values']['price'];
+  $status = $form_state['values']['status'];
+  
+  $room_booking = rooms_booking_create_product($sd, $ed, $price, $unit_id, $status);  
+  // Add to cart
+  $line_item = commerce_product_line_item_new($room_booking, 1, 0, array(), 'product');
+	$line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
+
+  // Send user to cart
+  drupal_goto('cart');  
+}
+
+
+/**
+ * Create a booking product with values set.
+ */
+function rooms_booking_create_product($start_date, $end_date, $price, $unit_id, $status) {
+  
+  // Set the correct departure date for the product name (checkout day)
+  $dd = new DateTime($end_date);
+  $dd->add(new DateInterval('P1D'));
+
   
   // Create product
   $room_booking = commerce_product_new('rooms_booking');
+  // SKU's need to be unique so we are adding system time to each product
   $room_booking->sku = 'UNIT' . $unit->unit_id . ' - ' . time();
-  $room_booking->title = 'Booking for ' . $unit->name . ' Arrival: ' . $sd . ' Departure: ' . $dd->format('Y-m-d');
+  // Product name is give something sensible - this needs to be parametrised of course
+  $room_booking->title = 'Booking for ' . $unit->name . ' Arrival: ' . $start_date . ' Departure: ' . $dd->format('Y-m-d');
+  // Save the product and then we will add fields to it.
   commerce_product_save($room_booking);
+  
   $amount = commerce_currency_amount_to_decimal($price, 'USD');
   
   $commerce_price = array(
@@ -226,20 +253,23 @@ function book_unit_form_submit(&$form, &$form_state){
       'value' => $unit->unit_id,
     )),
   );
+  
+  $commerce_status = array(
+    'und' => array(array(
+      'value' => $request_status,
+    )),
+  );
 	
 	$room_booking->commerce_price = $commerce_price;
 	$room_booking->rooms_booking_dates = $commerce_dates;	
   $room_booking->rooms_booked_unit_id = $commerce_unit;
+  $rooms_booking->rooms_booked_status = $commerce_status;
 
+  // Save the fields as well and return the product
 	field_attach_update('commerce_product', $room_booking);
-  
-  // Add to cart
-  $line_item = commerce_product_line_item_new($room_booking, 1, 0, array(), 'product');
-	$line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
-
-  // Send user to cart
-  drupal_goto('cart');  
+  return $room_booking;
 }
+
 
 /**
  * Implements hook_load()
@@ -288,7 +318,6 @@ function end_date_load($end_date) {
  * Implements hook_commerce_checkout_complete
  */
 function rooms_booking_commerce_checkout_complete($order) {
-  dpm($order, 'checkout complete');
   foreach ($order->commerce_line_items as $lang => $item) {
     foreach ($item as $item_id) {
       $line_item = commerce_line_item_load($item_id['line_item_id']);
@@ -314,6 +343,69 @@ function rooms_booking_commerce_checkout_complete($order) {
 
 }
 
+
+
+
+/**
+ * Implements hook_commerce_order_update
+ */
+function rooms_booking_commerce_order_update($order) {
+}
+
+
+/**
+ * Implements hook_commerce_order_presave
+ */
+function rooms_booking_commerce_order_presave($order) {
+  
+  $ow = entity_metadata_wrapper('commerce_order', $order);
+  dpm($ow->status->value());
+  $var = $order->original->status;
+  dpm($var);
+  $variable = 2;
+  $ow->status->set('rooms_unit_canceled');
+
+}
+
+
+function rooms_booking_commerce_order_state_info() {
+  $order_states = array();
+  
+    $order_states['rooms_unit_booking'] = array(
+    'name' => 'rooms_unit_booking',
+    'title' => t('Rooms Booking'),
+    'description' => t('Orders related to Rooms bookings'),
+    'weight' => 0,
+    'default_status' => 'confirmed',
+  );
+
+  return $order_states;
+}
+
+
+function rooms_booking_commerce_order_status_info() {
+  $order_statuses = array();
+
+  $order_statuses['rooms_unit_confirmed'] = array(
+    'name' => 'rooms_unit_confirmed',
+    'title' => t('Booking Confirmed'),
+    'state' => 'rooms_unit_booking',
+  );
+
+  $order_statuses['rooms_unit_canceled'] = array(
+    'name' => 'rooms_unit_canceled',
+    'title' => t('Booking Canceled'),
+    'state' => 'rooms_unit_booking',
+  );
+
+  $order_statuses['rooms_unit_pending'] = array(
+    'name' => 'rooms_unit_pending',
+    'title' => t('Booking Pending'),
+    'state' => 'rooms_unit_booking',
+  );
+  
+  return $order_statuses;
+}
 
 
 
@@ -528,8 +620,61 @@ function _rooms_booking_product_type_fields() {
           'weight' => 0,
         ),
       ),
+		),
+		'rooms_booked_status' => array (
+			'field_name' => 'rooms_booked_status',
+			'label' => t('Booked Unit Status'),
+			'cardinality' => 1,
+			'type' => 'number_integer',
+			'module' => 'number',
+			'active' => 1,
+			'locked' => 1,
+      'settings' => array (
+				'size' => 8,
+        'max_length' => 10,
+        'text_processins' => 0,        
+      ),
+		),	
+		'rooms_booked_status_instance' => array (
+			'field_name' => 'rooms_booked_status',
+			'label' => t('Booked Unit Status'),
+			'entity_type' => 'commerce_product',
+			'bundle' => 'rooms_booking',
+			'required' => true,
+      'settings' => array(
+				'size' => 8,
+        'max_length' => 10,
+        'text_processing' => 0,
+          //'text_processing'
+			),				
+			'widget' => array (
+        'type' => 'text_textfield',
+			),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'number',
+          'settings' => array(
+            'decimal_separator' => '.',
+            'prefix_suffix' => TRUE,
+            'scale' => 0,
+            'thousand_separator' => ' ',
+          ),
+          'type' => 'number_integer',
+          'weight' => 11,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
+      ),
 		)
+
 	);
+
+
 
   return $field_data;
 }
