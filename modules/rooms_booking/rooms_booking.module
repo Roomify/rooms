@@ -277,7 +277,7 @@ function rooms_booking_commerce_checkout_complete($order) {
           // Update the booking date of the unit id for those days
           $uc = new UnitCalendar($unit_id);
           $response = $uc->updateCalendar(array($be));
-          if ($response[$order->order_number] == ROOMS_UPDATED) {
+          if ($response[$event_id] == ROOMS_UPDATED) {
             $be->lock();
           }
         }
