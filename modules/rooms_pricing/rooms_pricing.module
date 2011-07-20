@@ -92,8 +92,8 @@ function rooms_pricing_access($rooms_unit) {
 
 
 /**
- * Callback for admin/rooms/units/unit/%pricing_unit/availability - builds availability
- * page by adding calendar and pulling events from availability table.
+ * Callback for admin/rooms/units/unit/%pricing_unit/pricing - builds pricing
+ * page by adding calendar and pulling events from pricing table.
  * 
  */
 function rooms_pricing_page(RoomsUnit $rooms_unit, $year='', $month='') {
@@ -109,8 +109,8 @@ function rooms_pricing_page(RoomsUnit $rooms_unit, $year='', $month='') {
   // Add all the stuff we will need to show the FullCalendar  
   drupal_add_library('rooms_availability', 'rooms_fullcalendar');
   drupal_add_js(drupal_get_path('module', 'rooms_pricing') . '/js/rooms_pricing.js');
-  drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/fullcalendar.theme.css');
-  drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/rooms_availability.css');
+//  drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/fullcalendar.theme.css');
+//  drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/rooms_availability.css');
   
   // Injest settings in javascript that we will use
   drupal_add_js(array('roomID' => $rooms_unit->unit_id), 'setting');
@@ -435,9 +435,11 @@ class UnitPricingCalendar {
           $end= $state['end_day'];
           $sd = new DateTime("$year-$mid-$start");
           $ed = new DateTime("$year-$mid-$end");
-                    
+          dpm($state['state'], 'state');
+          $amount = commerce_currency_amount_to_decimal($state['state'], commerce_default_currency());
+          dpm($amount, 'converted');
           $event = new PricingEvent($this->unit_id,
-                                    $state['state'],
+                                    $amount,
                                     $sd,
                                     $ed);
           $events[] = $event;
@@ -659,7 +661,7 @@ class UnitPricingCalendar {
         
         // Get all the pricing events that fit within this event
         $affected_events = $this->getEvents($event->start_date, $event->end_date);
-        
+        dpm($affected_events);
         $monthly_events = array();
         
         foreach ($affected_events as $a_event) {
@@ -740,19 +742,16 @@ class UnitPricingCalendar {
    * is no event get set to the default state;
    */
   protected function prepareFullMonthArray($event){
-    
-    // Get the default currency to convert prices for storage in db
-    $default_currency_code = commerce_default_currency();
-    
+        
     $days = array();
     $eod = rooms_end_of_month_dates($event->startYear());
     $last_day = $eod[$event->startMonth()];
 
     for ($i = 1; $i<=$last_day; $i++) {
       if (($i >= $event->startDay()) && ($i <= $event->endDay())) {
-        $days['d' . $i] = commerce_currency_decimal_to_amount($event->amount, $default_currency_code);
+        $days['d' . $i] = commerce_currency_decimal_to_amount($event->amount, commerce_default_currency());
       } else {
-        $days['d' . $i] = commerce_currency_decimal_to_amount($this->default_price, $default_currency_code);
+        $days['d' . $i] = commerce_currency_decimal_to_amount($this->default_price, commerce_default_currency());
       }
     }
     return $days;
@@ -764,13 +763,9 @@ class UnitPricingCalendar {
    * for which the event is involved
    */
   protected function preparePartialMonthArray($event) {
-
-    // Get the default currency to convert prices for storage in db
-    $default_currency_code = commerce_default_currency();
-
     $days = array();
     for ($i = $event->startDay(); $i<=$event->endDay(); $i++) {
-        $days['d' . $i] = commerce_currency_decimal_to_amount($event->amount, $default_currency);
+        $days['d' . $i] = commerce_currency_decimal_to_amount($event->amount, commerce_default_currency());
     }
     return $days;
   }
@@ -892,7 +887,8 @@ class PricingEvent {
         $this->amount = $this->amount - $amount;
         break;
       case INCREASE:
-        $this->amount = $this->amount + (($this->amount * $amount)/100)  ;
+        $this->amount = $this->amount + (($this->amount) * ($amount/100));
+        dpm($this->amount);
         break;
       default:
         break;
@@ -989,8 +985,7 @@ class PricingEvent {
    */
   public function formatJson(){
     //print $this->amount;
-    $currency_code = commerce_default_currency();
-    $amount = commerce_currency_amount_to_decimal($this->amount, $currency_code);
+    $amount = $this->amount;
     
     $event = array(
       "id" => $amount,
