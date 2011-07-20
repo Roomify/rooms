@@ -55,17 +55,11 @@ function rooms_test_availability() {
 function rooms_test_event_update() {
 	
 	$s = new DateTime('2011-07-11');
-	$e = new DateTime('2011-12-11');
+	$e = new DateTime('2011-07-14');
 
-	$rc = new UnitCalendar(2);
-	$event = new BookingEvent(2,300,$s,$e);
+	$rc = new UnitPricingCalendar(2);
 	
-	
-	$response = $rc->updateCalendar(array($event));
-	dpm($response);
-  if ($response[300] == 'SAVED'){
-		$event->lock();
-  }
+	$rc->calculatePrice($s, $e);
 	
 	
 	return 'hello';
@@ -78,9 +72,20 @@ function rooms_test_commerce(){
 	$line_item = commerce_line_item_load(15);
 	dpm($line_item);
 	
-	$product = commerce_product_load(16);
+	$product = commerce_product_load(34);
 	
 	dpm($product);
+	
+	
+	
+	$order = commerce_order_load(33);
+	$ow = entity_metadata_wrapper('commerce_order', $order);
+  //dpm($ow->status->value());
+	$ow->status->set('rooms_unit_canceled');
+  //dpm($ow->status->value());
+	commerce_order_save($order);
+	
+
 	
 	//rooms_booking_install();
 	

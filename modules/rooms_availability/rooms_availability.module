@@ -965,7 +965,6 @@ class BookingEvent {
    * Returns the months involved in the events
    */
   public function months() {
-    dpm($this->diff()->m);
   }
 
   public function diff() {
@@ -1000,7 +999,6 @@ class BookingEvent {
     );
     $lock = db_insert('rooms_booking_locks')->fields($fields);
     $lock->execute();
-    dpm('locked');
   }
   
   

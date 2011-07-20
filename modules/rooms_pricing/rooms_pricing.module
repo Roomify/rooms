@@ -445,9 +445,7 @@ class UnitPricingCalendar {
           $end= $state['end_day'];
           $sd = new DateTime("$year-$mid-$start");
           $ed = new DateTime("$year-$mid-$end");
-          dpm($state['state'], 'state');
           $amount = commerce_currency_amount_to_decimal($state['state'], commerce_default_currency());
-          dpm($amount, 'converted');
           $event = new PricingEvent($this->unit_id,
                                     $amount,
                                     $sd,
@@ -671,7 +669,6 @@ class UnitPricingCalendar {
         
         // Get all the pricing events that fit within this event
         $affected_events = $this->getEvents($event->start_date, $event->end_date);
-        dpm($affected_events);
         $monthly_events = array();
         
         foreach ($affected_events as $a_event) {
@@ -858,7 +855,6 @@ class PricingEvent {
    * Returns the months involved in the events
    */
   public function months() {
-    dpm($this->diff()->m);
   }
 
   public function diff() {
@@ -896,7 +892,6 @@ class PricingEvent {
         break;
       case INCREASE:
         $this->amount = $this->amount + (($this->amount) * ($amount/100));
-        dpm($this->amount);
         break;
       default:
         break;
