@@ -398,7 +398,17 @@ class UnitPricingCalendar {
    * @return
    * The price of the room for that period
    */
-  public function calculatePrice(DateTime $start_date, DateTime $end_date) {}
+  public function calculatePrice(DateTime $start_date, DateTime $end_date) {
+    
+    $price = 0;
+    $pricing_events = $this->getEvents($start_date, $end_date);
+    foreach ($pricing_events as $event){
+      $days = $event->diff()->d + 1;
+      $price = $price + ($days * $event->amount);
+    }
+    
+    return $price;
+  }
   
   
   /**
@@ -811,8 +821,6 @@ class PricingEvent {
   
   // The operation to perform
   public $operation;
-  
-  
   
   public function __construct($unit_id, $amount, $start_date, $end_date, $operation = '') {
     $this->unit_id = $unit_id;

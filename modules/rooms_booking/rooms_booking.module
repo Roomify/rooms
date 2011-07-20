@@ -106,10 +106,9 @@ function rooms_booking_page($start_date = 0, $end_date = 0, $group_size = 0, $b_
         $controller = entity_get_controller('rooms_unit');  
         $unit_content = $controller->view(array($unit->unit_id => $unit));
         $content['units'][$unit->unit_id]['unit'] = $unit_content;
-        $price = 100000; // We need to calculate the proper price
         //Going through hook_forms to handle multiple forms on the page
         $form = 'book_unit_form_' . $unit->unit_id;
-        $content['units'][$unit->unit_id]['book_unit_form'] = drupal_get_form($form, $unit, $start_date, $end_date, $price, $unit_info['state']);
+        $content['units'][$unit->unit_id]['book_unit_form'] = drupal_get_form($form, $unit, $start_date, $end_date, $unit_info['state']);
       }
     }
 
@@ -138,8 +137,8 @@ function rooms_booking_forms($form_id, $args) {
 }
 
 
-function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_date, $price, $status) {
-   
+function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_date, $status) {
+
   $form['unit_id'] = array(
     '#type' => 'hidden',
     '#value' => $unit->unit_id,
@@ -160,11 +159,6 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     '#value' => $end_date->format('Y-m-d'),
   );
   
-  $form['price'] = array(
-    '#type' => 'hidden',
-    '#value' => $price,
-  );
-
   // We add the form's #submit array to this button along with the actual submit
   // handler to preserve any submit handlers added by a form callback_wrapper.
   $submit = array();
@@ -202,7 +196,6 @@ function book_unit_form_submit(&$form, &$form_state){
   $unit_id = $form_state['values']['unit_id']; 
   $sd = $form_state['values']['start_date'];
   $ed = $form_state['values']['end_date'];
-  $price = $form_state['values']['price'];
   $status = $form_state['values']['status'];
   
   $agent = new AvailabilityAgent($sd, $ed);
@@ -298,61 +291,17 @@ function rooms_booking_commerce_checkout_complete($order) {
  * Implements hook_commerce_order_update
  */
 function rooms_booking_commerce_order_update($order) {
-  
-  $booking_states = array('rooms_unit_pending', 'rooms_unit_confirmed', 'rooms_unit_cancelled');
-  
-  $current = entity_metadata_wrapper('commerce_order', $order);
-  $original = entity_metadata_wrapper('commerce_order', $order->original);
-  
-  $current_status = $current->status->value();
-  $original_status = $original->status->value();
-  
-  // If the order is in a booking state
-  if (in_array($original_status, $booking_states)) {
-    if ($current_status == 'rooms_unit_cancelled'){
-      // We need to find the booking and cancel it
-    }
   }
-}
 
 
 
 /**
  * Implements hook_commerce_order_presave
  *
- * @todo - figure this out - I don't like this one bit
+ * @todo - We need to figure out how to set the right states
  */
 function rooms_booking_commerce_order_presave($order) {
   
-  $booking_states = array('rooms_unit_pending', 'rooms_unit_confirmed', 'rooms_unit_cancelled');
-  
-  $current = entity_metadata_wrapper('commerce_order', $order);
-  $original = entity_metadata_wrapper('commerce_order', $order->original);
-  
-  $original_status = $original->status->value();
-  
-  // If a booking status has not been set already and this is a Rooms Unit product set the status
-  // This will take care of this first time an item is added in the cart
-  if (!in_array($original_status, $booking_states)){
-    foreach ($order->commerce_line_items as $lang => $item) {  
-      foreach ($item as $item_id) {
-        $line_item = commerce_line_item_load($item_id['line_item_id']);
-        foreach ($line_item->commerce_product as $lang => $product) {
-          $p = commerce_product_load($product[0]['product_id']);
-          if ($p->type == 'rooms_booking') {
-            $status = $p->rooms_booked_status['und'][0]['value'];
-            $ow = entity_metadata_wrapper('commerce_order', $order);
-            if ($status == ROOMS_ON_REQUEST) {
-              $ow->status->set('rooms_unit_pending');
-            }
-            elseif ($status == ROOMS_AVAILABLE) {
-              $ow->status->set('rooms_unit_confirmed');
-            }
-          }
-        }
-      }
-    }
-  }
 }
 
 
@@ -738,14 +687,16 @@ class AvailabilityAgent {
     // Save the product and then we will add fields to it.
     commerce_product_save($room_booking);
   
-    
-  
-    $amount = commerce_currency_amount_to_decimal(100000, 'USD');
-    
+    // Calculate the price
+    $price_calendar = new UnitPricingCalendar($unit_id);
+    $price = $price_calendar->calculatePrice(new DateTime($this->start_date), new DateTime($this->end_date));
+    // Convert to integer value as this is what Commerce expects
+    $price = commerce_currency_decimal_to_amount($price, commerce_default_currency());
+        
     $commerce_price = array(
       'und' => array(
           array( 
-          	'amount' => $amount,
+          'amount' => $price,
          	'currency_code' => 'USD',
         	'data' => array(''),
         ),
