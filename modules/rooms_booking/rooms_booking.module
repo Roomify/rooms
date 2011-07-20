@@ -267,9 +267,10 @@ function rooms_booking_commerce_checkout_complete($order) {
         if ($p->type == 'rooms_booking') {
           $unit_id = $p->rooms_booked_unit_id['und'][0]['value'];
           // Create a new BookingEvent
+          // The event id is the order number + 10 - The +10 ensures that states 0-10 are free to use differently
           $event_id = $orded->order_number + 10;
           $be = new BookingEvent($unit_id,
-                                 $order->order_number,
+                                 $event_id,
                                  new DateTime($p->rooms_booking_dates['und'][0]['value']),
                                  new DateTime($p->rooms_booking_dates['und'][0]['value2']));
           
