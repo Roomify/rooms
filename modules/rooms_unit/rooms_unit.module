@@ -382,7 +382,7 @@ function rooms_unit_theme() {
       'variables' => array('content' => array()),
       'file' => 'rooms_unit.admin.inc',
     ),
-    'unit' => array(
+    'rooms_unit' => array(
       'render element' => 'elements',
       'template' => 'rooms_unit',
     ),
@@ -490,7 +490,7 @@ class RoomsUnitController extends EntityAPIController {
   }
   
   /**
-   * Overriding the buldContent function to add entity specific fields
+   * Overriding the buildContent function to add entity specific fields
    */
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
     $content = parent::buildContent($entity, $view_mode, $langcode, $content);

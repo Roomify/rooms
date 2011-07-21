@@ -31,12 +31,16 @@
 <div class="<?php print $classes; ?> clearfix"<?php print $attributes; ?>>
   <?php if (!$page): ?>
     <h2<?php print $title_attributes; ?>>
-        <a href="<?php print $url; ?>"><?php print $title; ?></a>
+       <?php print $title; ?>
     </h2>
   <?php endif; ?>
 
   <div class="content"<?php print $content_attributes; ?>>
     <?php
+      unset ($content['state']);
+      unset ($content['type']);
+      unset ($content['sleeps']);
+      unset ($content['Bed Configuration']);
       print render($content);
     ?>
   </div>
