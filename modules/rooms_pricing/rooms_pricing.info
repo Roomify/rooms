@@ -7,5 +7,4 @@ package = Rooms
 
 dependencies[] = rooms_unit
 dependencies[] = rooms_availability
-dependencies[] = date
-dependencies[] = date_popup
+dependencies[] = commerce

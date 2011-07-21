@@ -8,3 +8,7 @@ package = Rooms
 dependencies[] = rooms
 dependencies[] = rooms_unit
 dependencies[] = commerce_product
+dependencies[] = commerce_cart
+dependencies[] = commerce_line_item
+dependencies[] = commerce_order
+dependencies[] = commerce_checkout
