@@ -22,23 +22,6 @@ function rooms_permission() {
   return $permissions;
 }
 
-/**
- * Converts a price to an int for storage in database - we are assuming a currency
- * with pennies, cents or what have you and simple raising by 100.
- *
- * @param $amount
- * The amount to convert to integer
- *
- * @return
- * An integer representhing the currency amount
- *
- * @todo integrate with Drupal Commerce to make use of their fancy currency settings
- */ 
-function rooms_price_to_int($amount) {
-  return (int) $amount * 100;
-}
-
-
 
 /**
  * Utility function that returns an array with the last day of each month given a year
