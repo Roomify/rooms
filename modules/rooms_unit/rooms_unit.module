@@ -189,7 +189,7 @@ function rooms_unit_get_types($type_name = NULL, $reset = FALSE) {
 function rooms_unit_types_ids() {
   $unit_types = array();
   $types = rooms_unit_get_types();
-  foreach ($types as $type){
+  foreach ($types as $type) {
     $unit_types[$type->id] = $type->label;
   }
   
@@ -309,7 +309,7 @@ function rooms_unit_type_delete(RoomsUnitType $type) {
 /**
  * URI callback for units
  */
-function rooms_unit_uri(RoomsUnit $unit){
+function rooms_unit_uri(RoomsUnit $unit) {
   return array(
     'path' => 'unit/' . $unit->unit_id,
   );
@@ -319,7 +319,7 @@ function rooms_unit_uri(RoomsUnit $unit){
 /**
  * Menu title callback for showing individual entities
  */
-function rooms_unit_page_title(RoomsUnit $unit){
+function rooms_unit_page_title(RoomsUnit $unit) {
   return $unit->name;
 }
 
@@ -341,7 +341,7 @@ function rooms_unit_ids($conditions = array()) {
 
   if (count($result) > 0 ) { 
     $entities = entity_load('rooms_unit', array_keys($result['rooms_unit']));
-    foreach ($entities as $unit){
+    foreach ($entities as $unit) {
       $wrapper = entity_metadata_wrapper('rooms_unit', $unit);      
       $units[$wrapper->unit_id->value()] = $wrapper->name->value();
     }
@@ -499,7 +499,7 @@ class RoomsUnitController extends EntityAPIController {
     );
     
     $content[t('type')] =  array(
-      '#markup' => t('Type: ') . $entity->type . '<br/>',      
+      '#markup' => t('Type:') . ' ' . $entity->type . '<br/>',      
     );
 
 
@@ -508,7 +508,7 @@ class RoomsUnitController extends EntityAPIController {
     );
 
     $content[t('Bed Configuration')] = array(
-      '#markup' => t('Double Beds: ') . $entity->data['bed_arrangement']['doubles'] . '<br/>' . t('Single Beds: ') . $entity->data['bed_arrangement']['singles'] . '<br/>',
+      '#markup' => t('Double Beds:') . ' ' . $entity->data['bed_arrangement']['doubles'] . '<br/>' . t('Single Beds:') . ' ' . $entity->data['bed_arrangement']['singles'] . '<br/>',
     );
     
 //    $content['rooms_unit_extra_data'] =  array(

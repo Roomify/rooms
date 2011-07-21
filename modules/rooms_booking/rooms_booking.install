@@ -15,12 +15,12 @@ function rooms_booking_install() {
     $product_type = commerce_product_ui_product_type_new();
 
     $product_type['type'] = 'rooms_booking';
-    $product_type['name'] = t('Rooms Unit Booking');
-    $product_type['description'] = t('A Rooms Unit Booking.');
+    $product_type['name'] = st('Rooms Unit Booking');
+    $product_type['description'] = st('A Rooms Unit Booking.');
     $product_type['is_new'] = TRUE;
   
     commerce_product_ui_product_type_save($product_type, FALSE);
-    commerce_price_create_instance('commerce_price', 'commerce_product', 'rooms_booking', t('Price'), 0, 'calculated_sell_price');
+    commerce_price_create_instance('commerce_price', 'commerce_product', 'rooms_booking', st('Price'), 0, 'calculated_sell_price');
   }
   
   // Now check for fields and if not there add them
@@ -35,10 +35,10 @@ function rooms_booking_install() {
   $instance_date = field_info_instance('commerce_product', 'rooms_booking_dates', 'rooms_booking');
 
   if (empty($field_date)) {
-    field_create_field($field_data['rooms_booking_dates']);		
+    field_create_field($field_data['rooms_booking_dates']);
   }
   if (empty($instance_date)) {
-    field_create_instance($field_data['rooms_booking_dates_instance']);	
+    field_create_instance($field_data['rooms_booking_dates_instance']);
   }
 
 
@@ -46,20 +46,20 @@ function rooms_booking_install() {
   $instance_id = field_info_instance('commerce_product', 'rooms_booked_unit_id', 'rooms_booking');
   
   if (empty($field_id)) {
-    field_create_field($field_data['rooms_booked_unit_id']);		
+    field_create_field($field_data['rooms_booked_unit_id']);
   }
   if (empty($instance_id)) {
-    field_create_instance($field_data['rooms_booked_unit_id_instance']);	
+    field_create_instance($field_data['rooms_booked_unit_id_instance']);
   }
   
   $field_id = field_info_field('rooms_booked_status');
   $instance_id = field_info_instance('commerce_product', 'rooms_booked_status', 'rooms_booking');
   
   if (empty($field_id)) {
-    field_create_field($field_data['rooms_booked_status']);		
+    field_create_field($field_data['rooms_booked_status']);
   }
   if (empty($instance_id)) {
-    field_create_instance($field_data['rooms_booked_status_instance']);	
+    field_create_instance($field_data['rooms_booked_status_instance']);
   }
   
 }

@@ -37,7 +37,7 @@ function rooms_pricing_menu() {
   $items['admin/rooms/units/unit/%pricing_unit/pricing'] = array(
     'title' => 'Manage Pricing',
     'page callback' =>  'rooms_pricing_page',
-    'page arguments' => array(4,6,7),
+    'page arguments' => array(4, 6, 7),
     'access callback' => 'rooms_pricing_access',
     'access arguments' => array(1),
     'type' => MENU_LOCAL_TASK,
@@ -48,7 +48,7 @@ function rooms_pricing_menu() {
   $items['admin/rooms/units/unit/%pricing_unit/pricing/json/%/%'] = array(
     'title' =>  'Pricing Info',
     'page callback' => 'rooms_pricing_json',
-    'page arguments' => array(4,7,8,9,10,11,12),
+    'page arguments' => array(4, 7, 8, 9, 10, 11, 12),
     'access callback' => 'rooms_pricing_access',
     'access arguments' => array(1),
     'type' => MENU_CALLBACK,
@@ -73,7 +73,7 @@ function rooms_pricing_menu() {
 /**
  * Menu load for units - calls the actuall rooms_unit_load implemented in rooms_unit.module
  */
-function pricing_unit_load($unit_id){
+function pricing_unit_load($unit_id) {
   $unit = rooms_unit_load($unit_id);
   return $unit;
 }
@@ -142,7 +142,7 @@ function rooms_pricing_page(RoomsUnit $rooms_unit, $year='', $month='') {
                                               'start_month' => $month,
                                               'forward_link' => $forward_link,
                                               'backward_link' => $backward_link,
-                                              'current_link' => $current_link,)
+                                              'current_link' => $current_link)
                  );
   
   return $output;  
@@ -154,12 +154,12 @@ function rooms_pricing_page(RoomsUnit $rooms_unit, $year='', $month='') {
  */
 function update_unit_pricing_form($form, &$form_state, $unit_id) {
   
-  $form['unit_id'] = array (
+  $form['unit_id'] = array(
     '#type' => 'hidden',
     '#value' => $unit_id,
   );
   
-  $form['date_range'] = array (
+  $form['date_range'] = array(
     '#title' => t('Date Range'),
     '#type' => 'fieldset',
     '#collapsible' => TRUE, 
@@ -187,7 +187,7 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
   );
   
   
-  $form['op'] = array (
+  $form['op'] = array(
     '#title' => t('Operation'),
     '#type' => 'fieldset',
     '#collapsible' => TRUE, 
@@ -303,11 +303,13 @@ function rooms_pricing_json($unit, $start_year = '', $start_month = '', $start_d
   if (($start_year == 0) || ($start_month == 0)) {
     echo drupal_json_encode('missing basic info');
     return;
-  } elseif ($start_day == 0) {
+  }
+  elseif ($start_day == 0) {
     $start_date = new DateTime("$start_year-$start_month-1");
     $end_day = $eom[$start_month];
     $end_date = new DateTime("$start_year-$start_month-$end_day");
-  } elseif ($start_day != 0 && $end_year == 0) {
+  }
+  elseif ($start_day != 0 && $end_year == 0) {
     $start_date = new DateTime("$start_year-$start_month-$start_day");
     $end_date = new DateTime("$start_year-$start_month-15");
     $end_date->add(new DateInterval('P1M'));
@@ -331,7 +333,7 @@ function rooms_pricing_json($unit, $start_year = '', $start_month = '', $start_d
   }
     
  
-	echo  drupal_json_encode($json_events);
+  echo drupal_json_encode($json_events);
   
 }
 
@@ -364,8 +366,7 @@ class UnitPricingCalendar {
   // The default price for the room
   protected $default_price;
   
-  
-  public function __construct($unit_id){
+  public function __construct($unit_id) {
     $this->unit_id = $unit_id;
     // Load the booking unit
     $unit = rooms_unit_load($unit_id);
@@ -402,7 +403,7 @@ class UnitPricingCalendar {
     
     $price = 0;
     $pricing_events = $this->getEvents($start_date, $end_date);
-    foreach ($pricing_events as $event){
+    foreach ($pricing_events as $event) {
       $days = $event->diff()->d + 1;
       $price = $price + ($days * $event->amount);
     }
@@ -434,9 +435,9 @@ class UnitPricingCalendar {
     // Get the raw day results
     $results = $this->getRawDayData($start_date, $end_date);
     $events = array();
-    foreach ($results[$this->unit_id] as $year=>$months){
+    foreach ($results[$this->unit_id] as $year => $months) {
       $eod = rooms_end_of_month_dates($year);
-      foreach ($months as $mid=>$month) {
+      foreach ($months as $mid => $month) {
         // The event array gives us the start days for each event within a month
         $start_days = array_keys($month['states']);
         foreach ($month['states'] as $state) {
@@ -519,7 +520,7 @@ class UnitPricingCalendar {
         }
         $months = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
         if (count($months) > 0) {
-          foreach($months as $month) {
+          foreach ($months as $month) {
             $m = $month['month'];
             $y = $month['year'];
             $id = $month['unit_id'];
@@ -582,10 +583,10 @@ class UnitPricingCalendar {
 
     // With all the months in place we now need to clean results to set the right start and end date
     // for each month - this will save code downstream from having to worry about it
-    foreach ($results[$this->unit_id] as $year=>$months) {
+    foreach ($results[$this->unit_id] as $year => $months) {
       foreach ($months as $mid => $days) {
         // There is undoubtetly a smarter way to do this - but will live with this for now
-        if (count($days['days']) != $eod[$mid]){
+        if (count($days['days']) != $eod[$mid]) {
           switch ($eod[$mid]) {
             case 30:
               unset($results[$this->unit_id][$year][$mid]['days']['d31']);
@@ -605,13 +606,13 @@ class UnitPricingCalendar {
           // We know we have the entire months over the range so we just unset all the dates
           // from the start of the month to the actual start day
           for ($i = 1; $i < $s->startDay(); $i++) {
-            unset($results[$this->unit_id][$year][$mid]['days']['d'.$i]);
+            unset($results[$this->unit_id][$year][$mid]['days']['d' . $i]);
           }
         }
-        if (($year == $s->endYear()) && ($mid == $s->endMonth())){
+        if (($year == $s->endYear()) && ($mid == $s->endMonth())) {
           // and from the end of the month back to the actual end day
           for ($i = $s->endDay()+1; $i <= $eod[$mid]; $i++) {
-            unset($results[$this->unit_id][$year][$mid]['days']['d'.$i]);
+            unset($results[$this->unit_id][$year][$mid]['days']['d' . $i]);
           }
         }
 
@@ -620,21 +621,20 @@ class UnitPricingCalendar {
         
     // With the results in place we do a states array with the start and
     // end dates of each event
-    foreach ($results[$this->unit_id] as $year=>$months) {
-      foreach ($months as $mid => $days){
+    foreach ($results[$this->unit_id] as $year => $months) {
+      foreach ($months as $mid => $days) {
         // The number of days in the month we are interested in eventing
         $j = count($days);
         // The start date (in case we are not starting from the first day of the month)
         $i = substr(key($days['days']), 1);
         $start_day = $i;
-        $end_day = null;
+        $end_day = NULL;
         $unique_states = array();
-        $old_state = $days['days']['d'.$i];
-        $state = $days['days']['d'.$i];
-        while ($j <= count($days['days']) )
-        {          
-          $state = $days['days']['d'.$i];
-          if ($state != $old_state){
+        $old_state = $days['days']['d' . $i];
+        $state = $days['days']['d' . $i];
+        while ($j <= count($days['days'])) {          
+          $state = $days['days']['d' . $i];
+          if ($state != $old_state) {
             $unique_states[] = array('state' => $old_state,
                                                'start_day' => $start_day,
                                                'end_day' => $i-1);
@@ -663,7 +663,7 @@ class UnitPricingCalendar {
    */
   public function updateCalendar(array $events) {
     
-    foreach ($events as $event){
+    foreach ($events as $event) {
       // Make sure event refers to the unit for this calendar
       if ($event->unit_id == $this->unit_id) {
         
@@ -685,10 +685,11 @@ class UnitPricingCalendar {
               $monthly_events_tmp = array();
               $monthly_events_tmp = $a_event->transformToMonthlyEvents();
               $monthly_events =  array_merge($monthly_events, $monthly_events_tmp);
-            } else{
+            }
+            else {
               // else transform to single years and then to monthly
               $yearly_events = $a_event->transformToYearlyEvents();
-              foreach ($yearly_events as $ye){
+              foreach ($yearly_events as $ye) {
                 $monthly_events_tmp = array();
                 $monthly_events_tmp = $ye->transformToMonthlyEvents();
                 $monthly_events =  array_merge($monthly_events, $monthly_events_tmp);
@@ -697,7 +698,7 @@ class UnitPricingCalendar {
           }
         }
         
-        foreach($monthly_events as $event) {
+        foreach ($monthly_events as $event) {
             $this->addMonthEvent($event);
         }
       }
@@ -730,7 +731,7 @@ class UnitPricingCalendar {
     else {
       // Prepare the days array
       $days = $this->prepareFullMonthArray($event);      
-      $month_row = array (
+      $month_row = array(
         'unit_id' => $this->unit_id,
         'year' => $event->startYear(),
         'month' => $event->startMonth(),        
@@ -748,7 +749,7 @@ class UnitPricingCalendar {
    * assuming no other events in the month and days where there
    * is no event get set to the default state;
    */
-  protected function prepareFullMonthArray($event){
+  protected function prepareFullMonthArray($event) {
         
     $days = array();
     $eod = rooms_end_of_month_dates($event->startYear());
@@ -757,7 +758,8 @@ class UnitPricingCalendar {
     for ($i = 1; $i<=$last_day; $i++) {
       if (($i >= $event->startDay()) && ($i <= $event->endDay())) {
         $days['d' . $i] = commerce_currency_decimal_to_amount($event->amount, commerce_default_currency());
-      } else {
+      }
+      else {
         $days['d' . $i] = commerce_currency_decimal_to_amount($this->default_price, commerce_default_currency());
       }
     }
@@ -986,7 +988,7 @@ class PricingEvent {
    * Return event in a format amenable to FullCalendar display or generally
    * sensible json
    */
-  public function formatJson(){
+  public function formatJson() {
     //print $this->amount;
     $amount = $this->amount;
     
@@ -1001,7 +1003,8 @@ class PricingEvent {
     if ($this->amount < 100) {
       $event['color']  = "orange";
       $event['title'] = $this->amount;
-    } elseif ($this->amount >= 100) { 
+    }
+    elseif ($this->amount >= 100) { 
       $event['color'] = "green";
       $event['title'] = "$amount";
     }

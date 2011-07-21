@@ -25,8 +25,8 @@ class RoomsUnitUIController extends EntityDefaultUIController {
     $wildcard = isset($this->entityInfo['admin ui']['menu wildcard']) ? $this->entityInfo['admin ui']['menu wildcard'] : '%' . $this->entityType;
 
     $items[$this->path] = array(
-      'title' => t('Bookable Units'),
-      'description' => t('Add edit and update bookable units (e.g. rooms at a hotel or a villa).'),
+      'title' => 'Bookable Units',
+      'description' => 'Add edit and update bookable units (e.g. rooms at a hotel or a villa).',
       'page callback' => 'system_admin_menu_block_page',
       'access arguments' => array('access administration pages'),
       'file path' => drupal_get_path('module', 'system'),
@@ -276,7 +276,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
                           each later on.'),
     );
   
-    $form['multi']['multiple'] = array (
+    $form['multi']['multiple'] = array(
       '#type' => 'textfield',
       '#size' => 5,
       '#default_value' => 1,
@@ -369,13 +369,14 @@ function rooms_unit_edit_form_submit(&$form, &$form_state) {
       $units[$i] = entity_ui_controller('rooms_unit')->entityFormSubmitBuildEntity($form, $form_state);
     
       // Add in created and changed times.
-      if ($units[$i]->is_new = isset($units[$i]->is_new) ? $units[$i]->is_new : 0){
+      if ($units[$i]->is_new = isset($units[$i]->is_new) ? $units[$i]->is_new : 0) {
         $units[$i]->created = time();
       }
 
       $units[$i]->changed = time();
     }
-  } else{
+  }
+  else {
     $units[0] =  $form_state['rooms_unit'];
     $unites[0] = entity_ui_controller('rooms_unit')->entityFormSubmitBuildEntity($form, $form_state);
     $units[0]->changed = time();

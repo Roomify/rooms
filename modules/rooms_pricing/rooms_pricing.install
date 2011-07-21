@@ -226,7 +226,7 @@ function rooms_pricing_schema() {
       'year' => array('year'),
       'month' => array('month'),
     ),
-    'unique keys' =>  array (
+    'unique keys' =>  array(
       'month_key' => array('unit_id', 'year', 'month'),
     ),
     'foreign keys' => array(

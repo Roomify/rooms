@@ -90,7 +90,7 @@ function rooms_availability_menu() {
   $items['admin/rooms/units/unit/%availability_unit/availability'] = array(
     'title' => 'Manage Availability',
     'page callback' =>  'rooms_availability_page',
-    'page arguments' => array(4,6,7),
+    'page arguments' => array(4, 6, 7),
     'access callback' => 'rooms_availability_access',
     'access arguments' => array(1),
     'type' => MENU_LOCAL_TASK,
@@ -101,7 +101,7 @@ function rooms_availability_menu() {
   $items['admin/rooms/units/unit/%availability_unit/availability/json/%/%'] = array(
     'title' =>  'Availability Event',
     'page callback' => 'rooms_availability_event',
-    'page arguments' => array(4,7,8,9,10,11,12),
+    'page arguments' => array(4, 7, 8, 9, 10, 11, 12),
     'access callback' => 'rooms_availability_access',
     'access arguments' => array(1),
     'type' => MENU_CALLBACK,
@@ -117,7 +117,7 @@ function rooms_availability_menu() {
 /**
  * Menu load for units - calls the actuall rooms_unit_load implemented in rooms_unit.module
  */
-function availability_unit_load($unit_id){
+function availability_unit_load($unit_id) {
   $unit = rooms_unit_load($unit_id);
   return $unit;
 }
@@ -182,7 +182,7 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
   // The content to theme
   $content = array();
 
-  $content['title'] = array (
+  $content['title'] = array(
     '#prefix' => '<div class="availability-title">',
     '#markup' => '<h2>' . t('@name Availability View', array('@name' => $rooms_unit->name)) . '</h2>',
     '#suffix' => '</div>'
@@ -196,7 +196,7 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
   $content['backward_link'] = $backward_link;
   $content['current_link'] = $current_link;
 
-  $content['update_form_into'] = array (
+  $content['update_form_into'] = array(
     '#prefix' => '<div class="availability-update">',
     '#markup' => '<h2>' . t('Update Room Availability') . '</h2>',
     '#suffix' => '</div>'
@@ -215,7 +215,7 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
  */
 function update_availability_calendar_form($form, &$form_state, $unit_id, $year, $month) {
   
-  $form['unit_id'] = array (
+  $form['unit_id'] = array(
     '#type' => 'hidden',
     '#value' => $unit_id,
   );
@@ -318,10 +318,10 @@ function update_availability_calendar_form_submit(&$form, &$form_state) {
   $rc = new UnitCalendar($unit_id);
   $response = $rc->updateCalendar($events);
   if ($response[$event_id] == ROOMS_BLOCKED) {
-    drupal_set_message('Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period');
+    drupal_set_message(t('Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period'));
   }
   elseif ($response[$event_id] == ROOMS_UPDATED) {
-    drupal_set_message('Calendar Updated');
+    drupal_set_message(t('Calendar Updated'));
   }
 }
 
@@ -346,11 +346,13 @@ function rooms_availability_event($unit, $start_year = '', $start_month = '', $s
   if (($start_year == 0) || ($start_month == 0)) {
     echo drupal_json_encode('missing basic info');
     return;
-  } elseif ($start_day == 0) {
+  }
+  elseif ($start_day == 0) {
     $start_date = new DateTime("$start_year-$start_month-1");
     $end_day = $eom[$start_month];
     $end_date = new DateTime("$start_year-$start_month-$end_day");
-  } elseif ($start_day != 0 && $end_year == 0) {
+  }
+  elseif ($start_day != 0 && $end_year == 0) {
     $start_date = new DateTime("$start_year-$start_month-$start_day");
     $end_date = new DateTime("$start_year-$start_month-15");
     $end_date->add(new DateInterval('P1M'));
@@ -372,9 +374,8 @@ function rooms_availability_event($unit, $start_year = '', $start_month = '', $s
   foreach ($events as $event) {
     $json_events[] = $event->formatJson();
   }
-    
  
-	echo  drupal_json_encode($json_events);
+  echo drupal_json_encode($json_events);
   
 }
 
@@ -414,7 +415,7 @@ class UnitCalendar {
   protected $default_state;
   
   
-  public function __construct($unit_id){
+  public function __construct($unit_id) {
     $this->unit_id = $unit_id;
     // Load the booking unit
     $unit = rooms_unit_load($unit_id);
@@ -464,7 +465,7 @@ class UnitCalendar {
     $existing_states = $this->getStates($start_date, $end_date);
     // Look at the difference between existing states and states to check against -
     $diff = array_diff($existing_states, $states);
-    $valid = (count ($diff) > 0) ? FALSE : TRUE;
+    $valid = (count($diff) > 0) ? FALSE : TRUE;
     return $valid;
   }
   
@@ -490,9 +491,9 @@ class UnitCalendar {
     // Get the raw day results
     $results = $this->getRawDayData($start_date, $end_date);
     $events = array();
-    foreach ($results[$this->unit_id] as $year=>$months){
+    foreach ($results[$this->unit_id] as $year => $months) {
       $eod = rooms_end_of_month_dates($year);
-      foreach ($months as $mid=>$month) {
+      foreach ($months as $mid => $month) {
         // The event array gives us the start days for each event within a month
         $start_days = array_keys($month['states']);
         foreach ($month['states'] as $state) {
@@ -532,8 +533,8 @@ class UnitCalendar {
     $states = array();
     // Get the raw day results
     $results = $this->getRawDayData($start_date, $end_date);
-    foreach ($results[$this->unit_id] as $year=>$months) {
-      foreach ($months as $mid=>$month) {
+    foreach ($results[$this->unit_id] as $year => $months) {
+      foreach ($months as $mid => $month) {
         foreach ($month['states'] as $state) {
           $states[] = $state['state'];  
         } 
@@ -605,7 +606,7 @@ class UnitCalendar {
         }
         $months = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
         if (count($months) > 0) {
-          foreach($months as $month) {
+          foreach ($months as $month) {
             $m = $month['month'];
             $y = $month['year'];
             $id = $month['unit_id'];
@@ -668,10 +669,10 @@ class UnitCalendar {
 
     // With all the months in place we now need to clean results to set the right start and end date
     // for each month - this will save code downstream from having to worry about it
-    foreach ($results[$this->unit_id] as $year=>$months) {
+    foreach ($results[$this->unit_id] as $year => $months) {
       foreach ($months as $mid => $days) {
         // There is undoubtetly a smarter way to do this - but will live with this for now
-        if (count($days['days']) != $eod[$mid]){
+        if (count($days['days']) != $eod[$mid]) {
           switch ($eod[$mid]) {
             case 30:
               unset($results[$this->unit_id][$year][$mid]['days']['d31']);
@@ -691,13 +692,13 @@ class UnitCalendar {
           // We know we have the entire months over the range so we just unset all the dates
           // from the start of the month to the actual start day
           for ($i = 1; $i < $s->startDay(); $i++) {
-            unset($results[$this->unit_id][$year][$mid]['days']['d'.$i]);
+            unset($results[$this->unit_id][$year][$mid]['days']['d' . $i]);
           }
         }
-        if (($year == $s->endYear()) && ($mid == $s->endMonth())){
+        if (($year == $s->endYear()) && ($mid == $s->endMonth())) {
           // and from the end of the month back to the actual end day
           for ($i = $s->endDay()+1; $i <= $eod[$mid]; $i++) {
-            unset($results[$this->unit_id][$year][$mid]['days']['d'.$i]);
+            unset($results[$this->unit_id][$year][$mid]['days']['d' . $i]);
           }
         }
 
@@ -706,21 +707,20 @@ class UnitCalendar {
         
     // With the results in place we do a states array with the start and
     // end dates of each event
-    foreach ($results[$this->unit_id] as $year=>$months) {
-      foreach ($months as $mid => $days){
+    foreach ($results[$this->unit_id] as $year => $months) {
+      foreach ($months as $mid => $days) {
         // The number of days in the month we are interested in eventing
         $j = count($days);
         // The start date (in case we are not starting from the first day of the month)
         $i = substr(key($days['days']), 1);
         $start_day = $i;
-        $end_day = null;
+        $end_day = NULL;
         $unique_states = array();
-        $old_state = $days['days']['d'.$i];
-        $state = $days['days']['d'.$i];
-        while ($j <= count($days['days']) )
-        {          
-          $state = $days['days']['d'.$i];
-          if ($state != $old_state){
+        $old_state = $days['days']['d' . $i];
+        $state = $days['days']['d' . $i];
+        while ($j <= count($days['days'])) {          
+          $state = $days['days']['d' . $i];
+          if ($state != $old_state) {
             $unique_states[] = array('state' => $old_state,
                                                'start_day' => $start_day,
                                                'end_day' => $i-1);
@@ -759,7 +759,7 @@ class UnitCalendar {
     // with a locked status      
     $monthly_events = array();
 
-    foreach ($events as $event){
+    foreach ($events as $event) {
       // Make sure event refers to the unit for this calendar
       if ($event->unit_id == $this->unit_id) {
         
@@ -791,10 +791,11 @@ class UnitCalendar {
               $monthly_events_tmp = array();
               $monthly_events_tmp = $event->transformToMonthlyEvents();
               $monthly_events =  array_merge($monthly_events, $monthly_events_tmp);
-            } else{
+            }
+            else {
               // else transform to single years and then to monthly
               $yearly_events = $event->transformToYearlyEvents();
-              foreach ($yearly_events as $ye){
+              foreach ($yearly_events as $ye) {
                 $monthly_events_tmp = array();
                 $monthly_events_tmp = $ye->transformToMonthlyEvents();
                 $monthly_events =  array_merge($monthly_events, $monthly_events_tmp);
@@ -811,7 +812,7 @@ class UnitCalendar {
       }
     }        
 
-    foreach($monthly_events as $event) {
+    foreach ($monthly_events as $event) {
       $this->addMonthEvent($event);
       $response[$event->id] = ROOMS_UPDATED;
     }
@@ -844,7 +845,7 @@ class UnitCalendar {
     else {
       // Prepare the days array
       $days = $this->prepareFullMonthArray($event);      
-      $month_row = array (
+      $month_row = array(
         'unit_id' => $this->unit_id,
         'year' => $event->startYear(),
         'month' => $event->startMonth(),        
@@ -862,7 +863,7 @@ class UnitCalendar {
    * assuming no other events in the month and days where there
    * is no event get set to the default state;
    */
-  protected function prepareFullMonthArray($event){
+  protected function prepareFullMonthArray($event) {
     $days = array();
     $eod = rooms_end_of_month_dates($event->startYear());
     $last_day = $eod[$event->startMonth()];
@@ -870,7 +871,8 @@ class UnitCalendar {
     for ($i = 1; $i<=$last_day; $i++) {
       if (($i >= $event->startDay()) && ($i <= $event->endDay())) {
         $days['d' . $i] = $event->id;
-      } else {
+      }
+      else {
         $days['d' . $i] = $this->default_state; //replace with default state
       }
     }
@@ -882,7 +884,7 @@ class UnitCalendar {
    * Given an event it prepares a partial array covering just the days
    * for which the event is involved
    */
-  protected function preparePartialMonthArray($event){
+  protected function preparePartialMonthArray($event) {
     $days = array();
     for ($i = $event->startDay(); $i<=$event->endDay(); $i++) {
         $days['d' . $i] = $event->id;
@@ -991,7 +993,7 @@ class BookingEvent {
    * Lock event - updates the rooms_booking_locks table to indicate that this event
    * is locked
    */
-  public function lock(){   
+  public function lock() {   
     $fields = array(
       'unit_id' => $this->unit_id,
       'state' => $this->id,
@@ -1089,7 +1091,7 @@ class BookingEvent {
    * Return event in a format amenable to FullCalendar display or generally
    * sensible json
    */
-  public function formatJson(){
+  public function formatJson() {
     $event = array(
       'id' => $this->id,
       'title' => $this->id,

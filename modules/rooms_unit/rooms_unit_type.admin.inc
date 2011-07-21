@@ -17,8 +17,7 @@ class RoomsUnitTypeUIController extends EntityDefaultUIController {
     $items = parent::hook_menu();
     $items[$this->path]['description'] = 'Manage unit types, including adding
 		and removing fields and the display of fields.';
-		$items[$this->path]['weight'] = '3';
-
+    $items[$this->path]['weight'] = '3';
     return $items;
   }
 }
@@ -55,14 +54,14 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#description' => t('A unique machine-readable name for this unit type. It must only contain lowercase letters, numbers, and underscores.'),
   );
 
-	$form['data']['#tree'] = TRUE;
+  $form['data']['#tree'] = TRUE;
 //  $form['data']['extra_data'] = array(
 //    '#type' => 'checkbox',
 //    '#title' => t('An interesting room switch'),
 //    '#default_value' => !empty($room_type->data['extra_data']),
 //  );
-	
-	$form['data']['base_price'] = array(
+
+  $form['data']['base_price'] = array(
     '#type' => 'textfield',
     '#title' => t('Unit Base Price'),
     '#default_value' => isset($unit_type->data['base_price']) ? $unit_type->data['base_price'] : '',
@@ -70,8 +69,8 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#description' => t('Base price is per unit per night - the price you set here will be the default price for all units of this type. You can then change the default base price on a per unit basis'),
     '#maxlength' => 10,
   );
-	
-	$form['data']['sleeps'] = array(
+  
+  $form['data']['sleeps'] = array(
     '#type' => 'textfield',
     '#title' => t('Sleeps'),
     '#default_value' => isset($unit_type->data['sleeps']) ? $unit_type->data['sleeps'] : '',
@@ -79,8 +78,7 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#description' => t('The default number of people that can sleeps in units of this type'),
     '#maxlength' => 2,
   );
-	
-
+  
   $form['actions'] = array('#type' => 'actions');
   $form['actions']['submit'] = array(
     '#type' => 'submit',

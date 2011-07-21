@@ -34,7 +34,7 @@ function rooms_permission() {
  *
  * @todo integrate with Drupal Commerce to make use of their fancy currency settings
  */ 
-function rooms_price_to_int($amount){
+function rooms_price_to_int($amount) {
   return (int) $amount * 100;
 }
 
@@ -52,7 +52,7 @@ function rooms_price_to_int($amount){
  * @return
  * An array keyed by months
  */
-function rooms_end_of_month_dates($year = 2011, $calendar = CAL_GREGORIAN){
+function rooms_end_of_month_dates($year = 2011, $calendar = CAL_GREGORIAN) {
   
   $end_of_month_dates = array();
   
