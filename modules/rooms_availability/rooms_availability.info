@@ -6,5 +6,8 @@ version = 1.x-dev
 package = Rooms
 
 dependencies[] = rooms_unit
+dependencies[] = rooms
+dependencies[] = rooms_ui
 dependencies[] = date
+dependencies[] = date_api
 dependencies[] = date_popup
