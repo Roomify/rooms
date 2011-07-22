@@ -636,6 +636,35 @@ function rooms_booking_theme() {
 
 
 /**
+ * Implements Rules to set Order Status
+ */
+function rooms_booking_rules_action_info() {
+  $actions = array();
+
+  $actions['rooms_booking_cancel_order'] = array(
+    'label' => t('Cancel the booking related to an order'),
+    'parameter' => array(
+      'commerce_order' => array(
+        'type' => 'commerce_order',
+        'label' => t('Order to extract info from for booking cancellation'),
+      ),
+    ),
+    'group' => t('Rooms'),
+    'callbacks' => array(
+      'execute' => 'rooms_booking_cancel_order_booking',
+    ),
+  );
+
+
+  return $actions;
+}
+
+function rooms_booking_cancel_order_booking() {
+  
+}
+
+
+/**
  * An AvailabilityAgent provides access to the availability functionality of DrupalRooms and
  * lets you query for availability, get pricing information and create products that can be bought.
  *
