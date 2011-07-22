@@ -57,11 +57,21 @@ Drupal.behaviors.rooms_availability = {
         center: '',
         right: ''
       },
-      events: Drupal.settings.basePath + 'admin/rooms/units/unit/' + Drupal.settings.roomID + '/availability/json/' + $nextyear2 + '/' + $nextmonth2
+      events: Drupal.settings.basePath + 'admin/rooms/units/unit/' + Drupal.settings.roomID + '/availability/json/' + $nextyear2 + '/' + $nextmonth2,
+      eventClick: function(calEvent, jsEvent, view) {
+        
+        alert('Event: ' + calEvent.title);
+        location.reload();
+        
+      }
+ 
     });
 
+  
     // Resize takes care of some quirks on occasion
     $(window).resize();
+    
+    
 
   }
 };
