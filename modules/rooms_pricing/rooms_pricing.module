@@ -7,11 +7,11 @@
  */
 
 
-define('ADD', 'add');
-define ('SUB', 'sub');
-define ('REPLACE', 'replace');
-define ('INCREASE', 'increase');
-define ('DECREASE', 'decrease');
+define('ROOMS_ADD', 'add');
+define('ROOMS_SUB', 'sub');
+define('ROOMS_REPLACE', 'replace');
+define('ROOMS_INCREASE', 'increase');
+define('ROOMS_DECREASE', 'decrease');
 
 /**
  * Implements hook_permission().
@@ -198,11 +198,11 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
     '#type' => 'select',
     '#title' => 'Operation',
     '#options' => array(
-      ADD => 'Add to price',
-      SUB => 'Subtract from price',
-      REPLACE => 'Replace price',
-      INCREASE => 'Increase price by % amount',
-      DECREASE => 'Decrease price by % amount',
+      ROOMS_ADD => 'Add to price',
+      ROOMS_SUB => 'Subtract from price',
+      ROOMS_REPLACE => 'Replace price',
+      ROOMS_INCREASE => 'Increase price by % amount',
+      ROOMS_DECREASE => 'Decrease price by % amount',
     ),
     '#default_value' =>  'replace',
   );
@@ -881,19 +881,21 @@ class PricingEvent {
   
   
   public function applyOperation($amount, $operation) {
-    
     switch ($operation) {
-      case REPLACE:
+      case ROOMS_REPLACE:
         $this->amount = $amount;
         break;
-      case ADD:
+      case ROOMS_ADD:
         $this->amount = $this->amount + $amount;
         break;
-      case SUB:
+      case ROOMS_SUB:
         $this->amount = $this->amount - $amount;
         break;
-      case INCREASE:
+      case ROOMS_INCREASE:
         $this->amount = $this->amount + (($this->amount) * ($amount/100));
+        break;
+      case ROOMS_DECREASE:
+        $this->amount = $this->amount - (($this->amount) * ($amount/100));
         break;
       default:
         break;
@@ -1002,7 +1004,7 @@ class PricingEvent {
     //set the color
     if ($this->amount < 100) {
       $event['color']  = "orange";
-      $event['title'] = $this->amount;
+      $event['title'] = "$this->amount";
     }
     elseif ($this->amount >= 100) { 
       $event['color'] = "green";
