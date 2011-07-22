@@ -27,3 +27,7 @@ the calendar is updated to reflect the change.
 
 For the rest join us in the issue queues for now and work with us to create a great
 booking solution for Drupal!
+
+PHP REQUIREMENTS
+----------------
+The use of the DateInterval class means that we need at least PHP5.3
