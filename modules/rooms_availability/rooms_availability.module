@@ -92,7 +92,7 @@ function rooms_availability_menu() {
     'page callback' =>  'rooms_availability_page',
     'page arguments' => array(4, 6, 7),
     'access callback' => 'rooms_availability_access',
-    'access arguments' => array(1),
+    'access arguments' => array(4),
     'type' => MENU_LOCAL_TASK,
     'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
     'weight' => '20',
@@ -103,11 +103,20 @@ function rooms_availability_menu() {
     'page callback' => 'rooms_availability_event',
     'page arguments' => array(4, 7, 8, 9, 10, 11, 12),
     'access callback' => 'rooms_availability_access',
-    'access arguments' => array(1),
+    'access arguments' => array(4),
     'type' => MENU_CALLBACK,
-    'weight' => '30',
+    'weight' => 30,
   );
 
+  $items['admin/rooms/units/unit/%availability_unit/event'] = array(
+    'title' => 'Event Management',
+    'page callback' =>  'rooms_availability_event_manager_page',
+    'page arguments' => array(4),
+    'access callback' => 'rooms_availability_access',
+    'access arguments' => array(4),
+    'type' => MENU_CALLBACK,
+    'weight' => 30,
+  );
 
   return $items;
 }
@@ -121,6 +130,7 @@ function availability_unit_load($unit_id) {
   $unit = rooms_unit_load($unit_id);
   return $unit;
 }
+
 
 
 /**
@@ -142,7 +152,7 @@ function rooms_availability_access($rooms_unit) {
  * 
  */
 function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
-  
+
   // Basic check to avoid any uggliness
   $year = check_plain($year);
   $month = check_plain($month);
@@ -158,9 +168,9 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
   drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/rooms_availability.css');
   
   // Injest settings in javascript that we will use
-  drupal_add_js(array('roomID' => $rooms_unit->unit_id), 'setting');
-  drupal_add_js(array('currentMonth' => $month), 'setting');
-  drupal_add_js(array('currentYear' => $year), 'setting');
+  drupal_add_js(array('roomsAvailability' => array('roomID' => $rooms_unit->unit_id)), 'setting');
+  drupal_add_js(array('roomsAvailability' => array ('currentMonth' => $month)), 'setting');
+  drupal_add_js(array('roomsAvailability' => array('currentYear' => $year)), 'setting');
 
   // Calculate forward and back dates for our 3-month view calendar and create links
   $date1 = new DateTime("$year-$month-1");
@@ -379,7 +389,153 @@ function rooms_availability_event($unit, $start_year = '', $start_month = '', $s
   
 }
 
- 
+
+/**
+ *
+ */
+function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_date = 0, $end_date = 0) {
+  
+  // If any info missing we cannot load the event
+  if ($event_id == NULL || $start_date == 0 || $end_date == 0){
+    return 'Unable to load event';
+  }
+  
+  $state_options = array(
+    ROOMS_NOT_AVAILABLE => 'Unavailable',
+    ROOMS_AVAILABLE => 'Available',
+    ROOMS_ON_REQUEST => 'On Request',
+    ROOMS_ANON_BOOKED => 'Anonymous Booking',
+  );
+
+  
+  // Basic check to avoid damage from dirty input
+  $event_id = check_plain($event_id);
+  $start_date = check_plain($start_date);
+  $end_date = check_plain($end_date);
+  
+  $sd = new DateTime();
+  $sd->setTimestamp($start_date);
+  
+  $ed = new DateTime();
+  $ed->setTimestamp($end_date); 
+    
+  $content['event_details'] = array(
+    '#prefix' => '<div class="event-details">',
+    '#markup' => t('Current event state is: @status - Event starts @startdate and ends @enddate', array('@status' => $state_options[$event_id],'@startdate' => $sd->format('Y-m-d'), '@enddate' => $ed->format('Y-m-d'))),
+    '#suffix' => '</div>'
+  );
+  
+  $content['event_manager_form'] = drupal_get_form('rooms_availability_event_manager_form', $unit->unit_id, $event_id, $start_date, $end_date);
+  
+  $output = theme('rooms_event', $content);
+  
+  return $output;
+}
+
+
+function rooms_availability_event_manager_form($form, $form_state, $unit_id, $event_id, $start_date, $end_date) {
+  $form = array();
+  
+  
+  $form['form_wrapper_top'] = array(
+    '#type' => 'item',
+    '#markup' => '',
+    '#prefix' => '<div id="replace_textfield_div">',
+  );
+
+  
+  $form['unit_id'] = array(
+    '#type' => 'hidden',
+    '#value' => $unit_id,
+  );
+
+  $form['event_id'] = array(
+    '#type' => 'hidden',
+    '#value' => $event_id,
+  );
+  
+  $form['start_date'] = array(
+    '#type' => 'hidden',
+    '#value' => $start_date,
+  );
+  
+  $form['end_date'] = array(
+    '#type' => 'hidden',
+    '#value' => $end_date,
+  );
+  
+  $state_options = array(
+    ROOMS_NOT_AVAILABLE => 'Unavailable',
+    ROOMS_AVAILABLE => 'Available',
+    ROOMS_ON_REQUEST => 'On Request',
+    ROOMS_ANON_BOOKED => 'Anonymous Booking',
+  );
+  
+  unset($state_options[$event_id]);
+  
+  $form['change_event_status'] = array(
+    '#title' => t("Change the state for this event to: "),
+    '#type' => 'select',
+    '#options' => $state_options,
+    '#default_value' => $event_id,
+    '#ajax' => array(
+      'callback' => 'rooms_availability_ajax_event_status_change',
+      'wrapper' => 'replace_textfield_div',
+     ),
+  );
+
+  // This entire form element will be replaced whenever 'changethis' is updated.
+  $form['form_wrapper_bottom'] = array(
+    '#type' => 'item',
+    '#markup' => '',
+    '#suffix' => '</div>',
+  );
+
+  //if (!empty($form_state['values']['change_event_status']) && $form_state['values']['change_event_status'] != $form_state['values']['event_id']) {
+  //  $form['replace_textfield']['#description'] = t("Say why you chose '@value'", array('@value' => $form_state['values']['event_id']));
+  //}
+  return $form;
+
+}
+
+/**
+ * Callback for ajax_example_simplest.
+ *
+ * On an ajax submit, the form builder function is called again, then the $form
+ * and $form_state are passed to this callback function so it can select which
+ * portion of the form to send on to the client.
+ *
+ * @return renderable array (the textfield element)
+ */
+function rooms_availability_ajax_event_status_change($form, $form_state) {
+  
+  $unit_id = $form_state['values']['unit_id'];
+  $event_id = $form_state['values']['event_id'];
+  $start_time = $form_state['values']['start_date'];
+  $end_time = $form_state['values']['end_date'];
+  
+  $new_event_id = $form_state['values']['change_event_status'];
+  
+  // If we have a new event id go ahead and update event
+  if (($event_id != $new_event_id)) {
+    
+    $start_date = new DateTime();
+    $start_date->setTimestamp($start_time);
+    
+    $end_date = new DateTime();
+    $end_date->setTimestamp($end_time);  
+    
+    $event = new BookingEvent($unit_id, $new_event_id, $start_date, $end_date);
+    $uc = new UnitCalendar($unit_id);
+    $responses = $uc->updateCalendar(array($event));
+    
+    $form['form_wrapper_bottom']['#markup'] = 'Original Event id is:' . $event_id . ' New Event id is:' . $new_event_id;
+    
+  }
+  
+  return $form;
+}
+
 
 /**
  * Implement hook_theme().
@@ -388,10 +544,13 @@ function rooms_availability_theme() {
   return array(
     'rooms_availability' => array(
       'template' => 'rooms_availability'
+    ),
+    'rooms_event' => array(
+      'template' => 'rooms_event'
     )
+
   );
 }
-
 
 /**
  * Returns the path to the FullCalendar plugin.
@@ -743,6 +902,27 @@ class UnitCalendar {
   }
   
   
+  public function eventBlocked($state) {
+    
+    $blocked = FALSE;
+    
+    // Query the locks table to see if event is blocked
+    $query = db_select('rooms_booking_locks', 'l');
+    $query->addField('l', 'unit_id');
+    $query->addField('l', 'state');
+    $query->addField('l', 'locked');
+    $query->condition('l.unit_id', $this->unit_id);
+    $query->condition('l.state', $state);
+    $query->condition('l.locked', 1);
+    $result = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
+    
+    if (count($result) > 0) {
+      $blocked = TRUE;
+    }
+    return $blocked;
+  }
+  
+  
   /**
    * Given an array of BookingEvents the calendar is updated with regards to the
    * events that are relevant to the Unit this calendar refers to
@@ -767,15 +947,7 @@ class UnitCalendar {
         $states = $this->getStates($event->start_date, $event->end_date);
         $blocked = FALSE;
         foreach ($states as $state) {
-          $query = db_select('rooms_booking_locks', 'l');
-          $query->addField('l', 'unit_id');
-          $query->addField('l', 'state');
-          $query->addField('l', 'locked');
-          $query->condition('l.unit_id', $this->unit_id);
-          $query->condition('l.state', $state);
-          $query->condition('l.locked', 1);
-          $result = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
-          if (count($result) > 0) {
+          if ($this->eventBlocked($state)) {
             $blocked = TRUE;
           }
         }
@@ -1106,12 +1278,14 @@ class BookingEvent {
         $event['title'] = 'N/A';
         break;
       case ROOMS_AVAILABLE:
-        $event['color'] = 'green';
-        $event['title'] = 'A';
+        $event['color'] = '#8CBF62';
+        $event['borderColor'] = '#04711B';
+        //$event['backgroundColor'] = 'green';
+        $event['title'] = 'AV';
         break;
       case ROOMS_ON_REQUEST:
-        $event['color'] = 'gray';
-        $event['title'] = 'REQ';
+        $event['color'] = '#C5C5C5';
+        $event['title'] = 'ON-REQ';
         break;        
       case ROOMS_ANON_BOOKED:
         $event['color'] = '#481600';
