@@ -31,7 +31,6 @@ Drupal.behaviors.rooms_availability = {
     
     
     $.each(calendars, function(key, value) {
-      alert(value[0])
       $(value[0]).once().fullCalendar({
         editable:false,
         month:value[1]-1,
@@ -47,13 +46,15 @@ Drupal.behaviors.rooms_availability = {
           var sd = Math.round(Date.parse(calEvent.start)/1000);
           var ed = Math.round(Date.parse(calEvent.end)/1000);
           if ($.colorbox) {
+            
             var url = Drupal.settings.basePath + 'admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/' + calEvent.id + '/' + sd + '/' + ed; 
             $.colorbox({
               href: url,
-              width: 500,
+              opacity:0.7,
+              width: 400,
               height: 400,
               onClosed:function(){
-                $(value[0]).fullCalendar('refetchEvents');
+                $(value[0]).fullCalendar('refetchEvents');  
                 //$('#calendar').fullCalendar('rerender');
               }
             });   

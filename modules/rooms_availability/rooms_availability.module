@@ -211,7 +211,6 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
     '#markup' => '<h2>' . t('Update Room Availability') . '</h2>',
     '#suffix' => '</div>'
   );
-
   
   // Send everything for theming
   $output = theme('rooms_availability', $content);
@@ -418,10 +417,18 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
   
   $ed = new DateTime();
   $ed->setTimestamp($end_date); 
+
+  if ($event_id < 10) {
+    $content['event_title'] = array(
+      '#prefix' => '<h2>',
+      '#markup' => t('@room is @status', array('@room' => $unit->name, '@status' => $state_options[$event_id])),
+      '#suffix' => '</h2>'
+    );
+  }
     
   $content['event_details'] = array(
     '#prefix' => '<div class="event-details">',
-    '#markup' => t('Current event state is: @status - Event starts @startdate and ends @enddate', array('@status' => $state_options[$event_id],'@startdate' => $sd->format('Y-m-d'), '@enddate' => $ed->format('Y-m-d'))),
+    '#markup' => t('Duration: @startdate to @enddate', array('@startdate' => $sd->format('Y-m-d'), '@enddate' => $ed->format('Y-m-d'))),
     '#suffix' => '</div>'
   );
   
@@ -465,6 +472,7 @@ function rooms_availability_event_manager_form($form, $form_state, $unit_id, $ev
   );
   
   $state_options = array(
+    '-1' => 'Choose a new status',
     ROOMS_NOT_AVAILABLE => 'Unavailable',
     ROOMS_AVAILABLE => 'Available',
     ROOMS_ON_REQUEST => 'On Request',
@@ -517,7 +525,7 @@ function rooms_availability_ajax_event_status_change($form, $form_state) {
   $new_event_id = $form_state['values']['change_event_status'];
   
   // If we have a new event id go ahead and update event
-  if (($event_id != $new_event_id)) {
+  if (($event_id != $new_event_id) && $new_event_id != -1) {
     
     $start_date = new DateTime();
     $start_date->setTimestamp($start_time);
