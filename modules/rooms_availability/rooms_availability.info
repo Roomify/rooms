@@ -11,3 +11,4 @@ dependencies[] = rooms_ui
 dependencies[] = date
 dependencies[] = date_api
 dependencies[] = date_popup
+dependencies[] = colorbox
