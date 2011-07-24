@@ -8,7 +8,192 @@
 
 
 function rooms_booking_install() {
+
+  // Create a Booking Product to hold booking sales
+  rooms_booking_create_booking_product();
   
+}
+
+
+/**
+ * Implements hook_schema().
+ */
+function rooms_booking_schema() {
+  $schema = array();
+
+  $schema['rooms_booking_locks'] = array(
+    'description' => 'Booking states held in this table can be set to lock - so they cannot be deleted',
+    'fields' => array(
+      'unit_id' => array(
+        'description' => 'Identifier for a booking unit.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'state' => array(
+        'description' => 'The state for a booking unit.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '0',
+      ),
+      'locked' => array(
+        'description' => 'Whether the state is locked or not',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => '1',
+      ),
+    )
+  );
+  
+  $schema['rooms_bookings'] = array(
+    'description' => 'The base table for Bookings.',
+    'fields' => array(
+      'booking_id' => array(
+        'description' => 'Primary Key: Identifier for a Booking.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'type' => array(
+        'description' => 'The {unit_type}.type of this Booking.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'language' => array(
+        'description' => 'The language of the Booking.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'name' => array(
+        'description' => 'The name of the Booking - a human-readable identifier.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp when the Unit was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'changed' => array(
+        'description' => 'The Unix timestamp when the Unit was most recently saved.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'customer_id' => array(
+        'description' => 'The customer_id this booking is tied to.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,        
+      ),
+      'order_id' => array(
+        'description' => 'The order_id this booking may be tied to.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'unit_id' => array(
+        'description' => 'The unit_id this booking may be tied to.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'start_date' => array(
+        'type' => 'varchar', 
+        'length' => 20, 
+        'not null' => FALSE,
+        'description' => 'The start date for the booking.',
+      ),
+      'end_date' => array(
+        'type' => 'varchar', 
+        'length' => 20, 
+        'not null' => FALSE,
+        'description' => 'The end date for the booking.',
+      ),
+      'data' => array(
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'A serialized array of additional data.',
+      ),
+    ),
+    'primary key' => array('unit_id'),
+    'indexes' => array(
+      'type' => array('type'),
+      'customer_id' => array('customer_id'),
+    ),
+  );
+
+  $schema['rooms_booking_type'] = array(
+    'description' => 'Stores information about defined booking types.',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique booking type identifier.',
+      ),
+      'type' => array(
+        'description' => 'The machine-readable name of this booking type.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'label' => array(
+        'description' => 'The human-readable name of this booking type.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'weight' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => 'The weight of this booking type in relation to others.',
+      ),
+      'data' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'A serialized array of additional data related to this unit type.',
+      ),
+      // These two fields provide exportable support and come from Entity module definitions
+      'status' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0x01,
+        'size' => 'tiny',
+        'description' => 'The exportable status of the entity.',
+      ),
+      'module' => array(
+        'description' => 'The name of the providing module if the entity has been defined in code.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('id'),
+    'unique keys' => array(
+      'type' => array('type'),
+    ),
+  );
+
+  
+  return $schema;
+}
+
+
+function rooms_booking_create_booking_product() {
   // First check if the product type exists already and if not add
   $product_entities = commerce_product_entity_info();
   if (!isset($product_entities['commerce_product']['bundles']['rooms_booking'])) {
@@ -61,39 +246,4 @@ function rooms_booking_install() {
   if (empty($instance_id)) {
     field_create_instance($field_data['rooms_booked_status_instance']);
   }
-  
-}
-
-
-/**
- * Implements hook_schema().
- */
-function rooms_booking_schema() {
-  $schema = array();
-
-  $schema['rooms_booking_locks'] = array(
-    'description' => 'Booking states held in this table can be set to lock - so they cannot be deleted',
-    'fields' => array(
-      'unit_id' => array(
-        'description' => 'Identifier for a booking unit.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-      'state' => array(
-        'description' => 'The state for a booking unit.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => '0',
-      ),
-      'locked' => array(
-        'description' => 'Whether the state is locked or not',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => '1',
-      ),
-    )
-  );
-  
-  return $schema;
 }
