@@ -140,7 +140,6 @@ function rooms_booking_forms($form_id, $args) {
   
   $forms[$form_id] = array(
     'callback' => 'book_unit_form_builder',
-    //'callback arguments' => array($form_id, $args)
   );
   
   return $forms;

@@ -390,7 +390,8 @@ function rooms_availability_event($unit, $start_year = '', $start_month = '', $s
 
 
 /**
- *
+ * The EventManager page shows when clicking on an event in the availability calendar - will allow a user to manipulate
+ * that event.
  */
 function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_date = 0, $end_date = 0) {
   
@@ -440,9 +441,11 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
 }
 
 
+/**
+ * The Event Manager Form - will eventually change based on the type of event we are manipulating
+ */
 function rooms_availability_event_manager_form($form, $form_state, $unit_id, $event_id, $start_date, $end_date) {
   $form = array();
-  
   
   $form['form_wrapper_top'] = array(
     '#type' => 'item',
@@ -499,21 +502,12 @@ function rooms_availability_event_manager_form($form, $form_state, $unit_id, $ev
     '#suffix' => '</div>',
   );
 
-  //if (!empty($form_state['values']['change_event_status']) && $form_state['values']['change_event_status'] != $form_state['values']['event_id']) {
-  //  $form['replace_textfield']['#description'] = t("Say why you chose '@value'", array('@value' => $form_state['values']['event_id']));
-  //}
   return $form;
 
 }
 
 /**
- * Callback for ajax_example_simplest.
- *
- * On an ajax submit, the form builder function is called again, then the $form
- * and $form_state are passed to this callback function so it can select which
- * portion of the form to send on to the client.
- *
- * @return renderable array (the textfield element)
+ * The callback for the change_event_status widget of the event manager form
  */
 function rooms_availability_ajax_event_status_change($form, $form_state) {
   
