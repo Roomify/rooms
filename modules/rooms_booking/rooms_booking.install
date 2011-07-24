@@ -2,17 +2,9 @@
 
 /**
  * @file
- * Install for Rooms Booking module - sets up the main Rooms Booking
- * table
+ * Sets up the base table for our entity and a table to store information about
+ * the entity types.
  */
-
-
-function rooms_booking_install() {
-
-  // Create a Booking Product to hold booking sales
-  rooms_booking_create_booking_product();
-  
-}
 
 
 /**
@@ -20,30 +12,6 @@ function rooms_booking_install() {
  */
 function rooms_booking_schema() {
   $schema = array();
-
-  $schema['rooms_booking_locks'] = array(
-    'description' => 'Booking states held in this table can be set to lock - so they cannot be deleted',
-    'fields' => array(
-      'unit_id' => array(
-        'description' => 'Identifier for a booking unit.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-      'state' => array(
-        'description' => 'The state for a booking unit.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => '0',
-      ),
-      'locked' => array(
-        'description' => 'Whether the state is locked or not',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => '1',
-      ),
-    )
-  );
   
   $schema['rooms_bookings'] = array(
     'description' => 'The base table for Bookings.',
@@ -55,7 +23,7 @@ function rooms_booking_schema() {
         'not null' => TRUE,
       ),
       'type' => array(
-        'description' => 'The {unit_type}.type of this Booking.',
+        'description' => 'The Booking type of this Booking.',
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
@@ -93,11 +61,12 @@ function rooms_booking_schema() {
         'not null' => TRUE,
         'default' => 0,        
       ),
-      'order_id' => array(
-        'description' => 'The order_id this booking may be tied to.',
-        'type' => 'int',
+      'unit_type' => array(
+        'description' => 'The type of Unit the booking refers to',
+        'type' => 'varchar',
+        'length' => 255,
         'not null' => TRUE,
-        'default' => 0,
+        'default' => '',
       ),
       'unit_id' => array(
         'description' => 'The unit_id this booking may be tied to.',
@@ -117,6 +86,12 @@ function rooms_booking_schema() {
         'not null' => FALSE,
         'description' => 'The end date for the booking.',
       ),
+        'order_id' => array(
+        'description' => 'The order_id this booking may be tied to.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'data' => array(
         'type' => 'blob',
         'not null' => FALSE,
@@ -125,7 +100,7 @@ function rooms_booking_schema() {
         'description' => 'A serialized array of additional data.',
       ),
     ),
-    'primary key' => array('unit_id'),
+    'primary key' => array('booking_id'),
     'indexes' => array(
       'type' => array('type'),
       'customer_id' => array('customer_id'),
@@ -188,62 +163,5 @@ function rooms_booking_schema() {
     ),
   );
 
-  
   return $schema;
-}
-
-
-function rooms_booking_create_booking_product() {
-  // First check if the product type exists already and if not add
-  $product_entities = commerce_product_entity_info();
-  if (!isset($product_entities['commerce_product']['bundles']['rooms_booking'])) {
-    $product_type = commerce_product_ui_product_type_new();
-
-    $product_type['type'] = 'rooms_booking';
-    $product_type['name'] = st('Rooms Unit Booking');
-    $product_type['description'] = st('A Rooms Unit Booking.');
-    $product_type['is_new'] = TRUE;
-  
-    commerce_product_ui_product_type_save($product_type, FALSE);
-    commerce_price_create_instance('commerce_price', 'commerce_product', 'rooms_booking', st('Price'), 0, 'calculated_sell_price');
-  }
-  
-  // Now check for fields and if not there add them
-  $field_data = _rooms_booking_product_type_fields();
-
-  if ((!field_info_field_types('rooms_booking_dates')) || (!field_info_field_types('rooms_booked_unit_id'))) {
-    field_cache_clear();
-  }
-
-  // Look for or add the specified price field to the requested entity bundle.
-  $field_date = field_info_field('rooms_booking_dates');
-  $instance_date = field_info_instance('commerce_product', 'rooms_booking_dates', 'rooms_booking');
-
-  if (empty($field_date)) {
-    field_create_field($field_data['rooms_booking_dates']);
-  }
-  if (empty($instance_date)) {
-    field_create_instance($field_data['rooms_booking_dates_instance']);
-  }
-
-
-  $field_id = field_info_field('rooms_booked_unit_id');
-  $instance_id = field_info_instance('commerce_product', 'rooms_booked_unit_id', 'rooms_booking');
-  
-  if (empty($field_id)) {
-    field_create_field($field_data['rooms_booked_unit_id']);
-  }
-  if (empty($instance_id)) {
-    field_create_instance($field_data['rooms_booked_unit_id_instance']);
-  }
-  
-  $field_id = field_info_field('rooms_booked_status');
-  $instance_id = field_info_instance('commerce_product', 'rooms_booked_status', 'rooms_booking');
-  
-  if (empty($field_id)) {
-    field_create_field($field_data['rooms_booked_status']);
-  }
-  if (empty($instance_id)) {
-    field_create_instance($field_data['rooms_booked_status_instance']);
-  }
 }

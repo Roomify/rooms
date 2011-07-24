@@ -1,14 +1,21 @@
 name = Rooms Booking
-description = Manages booking for Rooms
+description = Create bookings
 core = 7.x
-version = 1.x-dev
 
 package = Rooms
 
-dependencies[] = rooms
+version = 1.x-dev
+
 dependencies[] = rooms_unit
-dependencies[] = commerce_product
-dependencies[] = commerce_cart
-dependencies[] = commerce_line_item
-dependencies[] = commerce_order
-dependencies[] = commerce_checkout
+dependencies[] = rooms_availability
+dependencies[] = rooms_pricing
+dependencies[] = views
+
+
+files[] = rooms_booking.admin.inc
+files[] = rooms_booking_type.admin.inc
+files[] = views/rooms_booking.views.inc
+files[] = views/rooms_booking_handler_link_field.inc
+files[] = views/rooms_booking_handler_delete_link_field.inc
+files[] = views/rooms_booking_handler_edit_link_field.inc
+files[] = views/rooms_booking_handler_booking_operations_field.inc

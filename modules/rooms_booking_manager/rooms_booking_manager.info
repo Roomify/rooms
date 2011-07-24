@@ -1,0 +1,17 @@
+name = Rooms Booking Manager
+description = Manages booking for Rooms - handling main integration with Commerce
+core = 7.x
+version = 1.x-dev
+
+package = Rooms
+
+files[] = includes/rooms_booking_manager.availability_agent.inc
+
+dependencies[] = rooms
+dependencies[] = rooms_unit
+dependencies[] = rooms_booking
+dependencies[] = commerce_product
+dependencies[] = commerce_cart
+dependencies[] = commerce_line_item
+dependencies[] = commerce_order
+dependencies[] = commerce_checkout

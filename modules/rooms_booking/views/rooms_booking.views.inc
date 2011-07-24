@@ -1,0 +1,166 @@
+<?php
+
+/**
+ * @file
+ * Providing extra functionality for the Room UI via views.
+ */
+
+
+/**
+ * Implements hook_views_data()
+ */
+function rooms_booking_views_data_alter(&$data) { 
+  $data['rooms_bookings']['link_booking'] = array(
+    'field' => array(
+      'title' => t('Link'),
+      'help' => t('Provide a link to the booking.'),
+      'handler' => 'rooms_booking_handler_link_field',
+    ),
+  );
+  $data['rooms_bookings']['edit_booking'] = array(
+    'field' => array(
+      'title' => t('Edit Link'),
+      'help' => t('Provide a link to the edit form for the booking.'),
+      'handler' => 'rooms_booking_handler_edit_link_field',
+    ),
+  );
+  $data['rooms_bookings']['delete_booking'] = array(
+    'field' => array(
+      'title' => t('Delete Link'),
+      'help' => t('Provide a link to delete the booking.'),
+      'handler' => 'rooms_booking_handler_delete_link_field',
+    ),
+  );
+  // This content of this field are decided based on the menu structure that
+  // follows rooms/booking/%booking_id/op
+  $data['rooms_bookings']['operations'] = array(
+    'field' => array(
+      'title' => t('Operations links'),
+      'help' => t('Display all operations available for this booking.'),
+      'handler' => 'rooms_booking_handler_booking_operations_field',
+    ),
+  );
+}
+
+
+/**
+ * Implements hook_views_default_views().
+ */
+function rooms_booking_views_default_views() {
+  $views = array();
+
+  $view = new view;
+  $view->name = 'bookings';
+  $view->description = 'A list of all bookings';
+  $view->tag = 'rooms';
+  $view->base_table = 'rooms_bookings';
+  $view->human_name = 'Bookings';
+  $view->core = 7;
+  $view->api_version = '3.0-alpha1';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+  
+  /* Display: Master */
+  $handler = $view->new_display('default', 'Master', 'default');
+  $handler->display->display_options['title'] = 'Bookings';
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['access']['perm'] = 'administer bookings';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['query']['options']['query_comment'] = FALSE;
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_options']['columns'] = array(
+    'booking_id' => 'booking_id',
+    'operations' => 'operations',
+  );
+  $handler->display->display_options['style_options']['default'] = '-1';
+  $handler->display->display_options['style_options']['info'] = array(
+    'booking_id' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+    ),
+    'operations' => array(
+      'align' => '',
+      'separator' => '',
+    ),
+  );
+  $handler->display->display_options['style_options']['override'] = 1;
+  $handler->display->display_options['style_options']['sticky'] = 0;
+  $handler->display->display_options['style_options']['empty_table'] = 0;
+  /* No results behavior: Global: Text area */
+  $handler->display->display_options['empty']['area']['id'] = 'area';
+  $handler->display->display_options['empty']['area']['table'] = 'views';
+  $handler->display->display_options['empty']['area']['field'] = 'area';
+  $handler->display->display_options['empty']['area']['label'] = 'Empty Message';
+  $handler->display->display_options['empty']['area']['empty'] = FALSE;
+  $handler->display->display_options['empty']['area']['content'] = 'No bookings have been created yet.';
+  $handler->display->display_options['empty']['area']['format'] = 'filtered_html';
+  $handler->display->display_options['empty']['area']['tokenize'] = 0;
+  /* Field: Bookings: Bookings ID */
+  $handler->display->display_options['fields']['booking_id']['id'] = 'booking_id';
+  $handler->display->display_options['fields']['booking_id']['table'] = 'rooms_bookings';
+  $handler->display->display_options['fields']['booking_id']['field'] = 'booking_id';
+  /* Field: Bookings: Name */
+  $handler->display->display_options['fields']['name']['id'] = 'name';
+  $handler->display->display_options['fields']['name']['table'] = 'rooms_bookings';
+  $handler->display->display_options['fields']['name']['field'] = 'name';
+  $handler->display->display_options['fields']['name']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['name']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['name']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['name']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['name']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['name']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['name']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['name']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['name']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['name']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['name']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['name']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['name']['element_label_colon'] = 1;
+  $handler->display->display_options['fields']['name']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['name']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['name']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['name']['hide_alter_empty'] = 0;
+  /* Field: Bookings: Operations links */
+  $handler->display->display_options['fields']['operations']['id'] = 'operations';
+  $handler->display->display_options['fields']['operations']['table'] = 'rooms_bookings';
+  $handler->display->display_options['fields']['operations']['field'] = 'operations';
+  $handler->display->display_options['fields']['operations']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['operations']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['operations']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['operations']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['operations']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['operations']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['operations']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['operations']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['operations']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['operations']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['operations']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['operations']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['operations']['element_label_colon'] = 1;
+  $handler->display->display_options['fields']['operations']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['operations']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['operations']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['operations']['hide_alter_empty'] = 0;
+  
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page_1');
+  $handler->display->display_options['path'] = 'admin/rooms/bookings/list';
+  $handler->display->display_options['menu']['type'] = 'default tab';
+  $handler->display->display_options['menu']['title'] = 'Bookings List';
+  $handler->display->display_options['menu']['description'] = 'List of bookings';
+  $handler->display->display_options['menu']['weight'] = '-10';
+  $handler->display->display_options['tab_options']['type'] = 'normal';
+  $handler->display->display_options['tab_options']['title'] = 'Bookings';
+  $handler->display->display_options['tab_options']['description'] = 'A list of bookings';
+  $handler->display->display_options['tab_options']['weight'] = '0';
+  $handler->display->display_options['tab_options']['name'] = 'management';
+
+
+  $views[] = $view;
+  dpm($views, 'oh hi');
+  return $views;
+}

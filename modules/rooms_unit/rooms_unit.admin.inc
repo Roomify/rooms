@@ -120,7 +120,6 @@ class RoomsUnitUIController extends EntityDefaultUIController {
       $item = array_shift($content);
       drupal_goto($item['href']);
     }    
-        
     return theme('rooms_unit_add_list', array('content' => $content));
   }
   

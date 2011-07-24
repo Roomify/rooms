@@ -1,0 +1,665 @@
+<?php
+   
+
+/**
+ * @file
+ * Rooms Booking brings together all the pieces required to
+ * find a room and book it - including the DrupalCommerce
+ * integration
+ */
+
+
+define ('ROOMS_SIZE_FAILURE', 0);
+define ('ROOMS_AVAILABILITY_FAILURE', 1);
+define ('ROOMS_NO_ROOMS', 2);
+
+
+function rooms_booking_manager_permission() {
+  $permissions = array(
+    'book units' => array(
+      'title' => t('Book units'),
+      'description' => t('Allows users to book units'),
+      'restrict access' => TRUE,
+    ),
+  );
+  return $permissions;
+}
+
+
+/**
+ * Implements hook_menu().
+ */
+function rooms_booking_manager_menu() {
+  $items  =  array();
+  
+  $items['booking'] = array(
+    'title' => 'Booking',
+    'page callback' => 'rooms_booking_results_page',
+    'access arguments' => array('book units'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  
+  $items['booking/%start_date/%end_date'] = array(
+    'title' => 'Booking',
+    'page callback' =>  'rooms_booking_results_page',
+    'page arguments' => array(1, 2),
+    'access arguments' => array('book units'),
+    'type' => MENU_CALLBACK,
+  );
+  
+  return $items;
+}
+
+/**
+ * Searches for availability and constructs the booking page
+ *
+ * @param $start_date
+ * The start date for the search
+ *
+ * @param $end_date
+ * The end date for the search
+ *
+ * @param $group_size
+ * How many are to be accommodated
+ *
+ * @param $rooms
+ * In how many rooms are we to accommodate them
+ */
+function rooms_booking_results_page($start_date = 0, $end_date = 0, $group_size = 0, $b_units = 0) {
+  
+  // The array of content to render
+  $content = array();
+  $units = 0;
+  
+  drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
+  
+  // If no start and end date send a no results message
+  if ((gettype($start_date) == 'integer') || (gettype($end_date) == 'integer')) {
+    $content['booking_results'] = 0;
+    $booking_search_form = drupal_get_form('rooms_booking_availability_search_form');
+    $no_results = array(
+      '#prefix' => '<div class="no-booking-data">',
+      '#markup' => '<p>' . t('Perform a search to see availability') . '</p>',
+      '#suffix' => '</div>',
+    );
+    $content['no_results'] = $no_results;
+    $content['booking_search_form'] = $booking_search_form;
+  }
+  else {
+    $content['booking_results'] = 1;
+    // Get all the units
+    $agent = new AvailabilityAgent($start_date, $end_date);
+    $units = $agent->checkAvailability();
+    if ($units == ROOMS_NO_ROOMS) {
+      $content['booking_results'] = 0;
+      $no_rooms = array(
+        '#prefix' => '<div class="no-booking-data">',
+        '#markup' => '<p>' . t('Unfortunately no rooms are available') . '</p>',
+        '#suffix' => '</div>',
+      );
+      $content['no_results'] = $no_rooms;
+      return theme('rooms_booking_results', $content);
+    }
+    else {
+      foreach ($units as $unit_id => $unit_info) {
+        $price_calendar = new UnitPricingCalendar($unit_id);
+        $price = $price_calendar->calculatePrice($start_date, $end_date);
+        // Convert to integer value as this is what Commerce expects
+        
+        $unit = rooms_unit_load($unit_info['unit']->unit_id);
+        $controller = entity_get_controller('rooms_unit');  
+        $unit_content = $controller->view(array($unit->unit_id => $unit));
+        $content['units'][$unit->unit_id]['unit'] = $unit_content;
+        //Going through hook_forms to handle multiple forms on the page
+        $form = 'book_unit_form_' . $unit->unit_id;
+        $content['units'][$unit_id]['book_unit_form'] = drupal_get_form($form, $unit, $start_date, $end_date, $unit_info['state']);
+        $content['units'][$unit_id]['price'] = array(
+          '#prefix' => '<div class="unit_price" style="font-weight:bold">',
+          '#markup' =>  t('Cost:') . ' ' . $price . commerce_default_currency(),
+          '#suffix' => '</div>'
+        );  
+      }
+    }
+  }
+  
+  $output = theme('rooms_booking_results', $content);
+
+  return $output;
+}
+
+/**
+ * Implementation of hook_forms()
+ */
+function rooms_booking_manager_forms($form_id, $args) {
+
+  $forms = array();
+  
+  if (0 !== strpos($form_id, 'book_unit_form_')) {
+    return $forms;
+  }
+  
+  $forms[$form_id] = array(
+    'callback' => 'book_unit_form_builder',
+  );
+  
+  return $forms;
+}
+
+
+function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_date, $status) {
+
+  $form['unit_id'] = array(
+    '#type' => 'hidden',
+    '#value' => $unit->unit_id,
+  );
+  
+  $form['status'] = array(
+    '#type' => 'hidden',
+    '#value' => $status,    
+  );
+  
+  $form['start_date'] = array(
+    '#type' => 'hidden',
+    '#value' => $start_date->format('Y-m-d'),
+  );
+
+  $form['end_date'] = array(
+    '#type' => 'hidden',
+    '#value' => $end_date->format('Y-m-d'),
+  );
+  
+  // We add the form's #submit array to this button along with the actual submit
+  // handler to preserve any submit handlers added by a form callback_wrapper.
+  $submit = array();
+
+  if (!empty($form['#submit'])) {
+    $submit += $form['#submit'];
+  }
+  
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Book This Room'),
+    '#submit' => $submit + array('book_unit_form_submit'),
+  );
+  
+  // We append the validate handler to #validate in case a form callback_wrapper
+  // is used to add validate handlers earlier.
+  $form['#validate'][] = 'book_unit_form_validate';
+  return $form;
+}
+
+
+/**
+ * Validation for cart booking form
+ *
+ * @todo Evaluate what to do here
+ */
+function book_unit_form_validate(&$form, &$form_state) {
+}
+
+
+function book_unit_form_submit(&$form, &$form_state) {
+  global $user;
+  
+  $unit_id = $form_state['values']['unit_id']; 
+  $sd = $form_state['values']['start_date'];
+  $ed = $form_state['values']['end_date'];
+  $status = $form_state['values']['status'];
+  
+  $agent = new AvailabilityAgent($sd, $ed);
+  $room_booking = $agent->createProduct($unit_id, $status);
+  
+  // Add to cart
+  $line_item = commerce_product_line_item_new($room_booking, 1, 0, array(), 'product');
+  $line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
+
+  // Send user to cart
+  drupal_goto('cart');  
+}
+
+
+
+
+/**
+ * Implements hook_load()
+ *
+ * Expects to see a date in the form Y-m-d
+ * 
+ * @returns a DateTime Object or null if invalid
+ */
+function start_date_load($start_date) {
+  
+  $start_date = check_plain($start_date);
+  
+  // Try to create a date time object
+  try {
+    $sd = new DateTime($start_date);
+  } catch (Exception $e) {
+    $sd = 0;
+  }
+  
+  return $sd;
+}
+
+
+/**
+ * Implements hook_load()
+ *
+ * Expects to see a date in the form Y-m-d
+ * 
+ * @returns a DateTime Object or null if invalid
+ */
+function end_date_load($end_date) {
+  
+  $end_date = check_plain($end_date);
+  
+  // Try to create a date time object
+  try {
+    $ed = new DateTime($end_date);
+  } catch (Exception $e) {
+    $ed = 0;
+  }
+  
+  return $ed;
+}
+
+/**
+ * Implements hook_commerce_checkout_complete
+ */
+function rooms_booking_manager_commerce_checkout_complete($order) {
+  foreach ($order->commerce_line_items as $lang => $item) {
+    foreach ($item as $item_id) {
+      $line_item = commerce_line_item_load($item_id['line_item_id']);
+      foreach ($line_item->commerce_product as $lang => $product) {
+        $p = commerce_product_load($product[0]['product_id']);
+        if ($p->type == 'rooms_booking') {
+          $unit_id = $p->rooms_booked_unit_id['und'][0]['value'];
+          // Create a new BookingEvent
+          // The event id is the order number + 10 - The +10 ensures that states 0-10 are free to use differently
+          $event_id = $order->order_number + 10;
+          $be = new BookingEvent($unit_id,
+                                 $event_id,
+                                 new DateTime($p->rooms_booking_dates['und'][0]['value']),
+                                 new DateTime($p->rooms_booking_dates['und'][0]['value2']));
+          
+          // Update the booking date of the unit id for those days
+          $uc = new UnitCalendar($unit_id);
+          $response = $uc->updateCalendar(array($be));
+          if ($response[$event_id] == ROOMS_UPDATED) {
+            $be->lock();
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+
+/**
+ * Implements hook_commerce_order_update
+ */
+function rooms_booking_manager_commerce_order_update($order) {
+  }
+
+
+
+/**
+ * Implements hook_commerce_order_presave
+ *
+ * @todo - We need to figure out how to set the right states
+ */
+function rooms_booking_manager_commerce_order_presave($order) {
+  
+}
+
+
+function rooms_booking_manager_commerce_order_state_info() {
+  $order_states = array();
+  
+    $order_states['rooms_unit_booking'] = array(
+    'name' => 'rooms_unit_booking',
+    'title' => t('Rooms Booking'),
+    'description' => t('Orders related to Rooms bookings'),
+    'weight' => 0,
+    'default_status' => 'confirmed',
+  );
+
+  return $order_states;
+}
+
+
+function rooms_booking_manager_commerce_order_status_info() {
+  $order_statuses = array();
+
+  $order_statuses['rooms_unit_confirmed'] = array(
+    'name' => 'rooms_unit_confirmed',
+    'title' => t('Booking Confirmed'),
+    'state' => 'rooms_unit_booking',
+  );
+
+  $order_statuses['rooms_unit_canceled'] = array(
+    'name' => 'rooms_unit_canceled',
+    'title' => t('Booking Canceled'),
+    'state' => 'rooms_unit_booking',
+  );
+
+  $order_statuses['rooms_unit_pending'] = array(
+    'name' => 'rooms_unit_pending',
+    'title' => t('Booking Pending'),
+    'state' => 'rooms_unit_booking',
+  );
+  
+  return $order_statuses;
+}
+
+
+
+function rooms_booking_availability_search_form($form, $form_state) {
+  
+  $form['date_range']['start_date'] = array(
+    '#prefix' => '<div class="arrival-date">',
+    '#suffix' => '</div>',
+    '#type' => 'date_popup',
+    '#title' => t('Check-in Date'),
+    '#date_type' => DATE_DATETIME,
+    '#date_format' => 'm/d/Y',
+    '#date_increment' => 1,
+    '#date_year_range' => '-1:+3',
+    '#required' => TRUE,
+  );
+  
+  $form['date_range']['end_date'] = array(
+    '#prefix' => '<div class="departure-date">',
+    '#suffix' => '</div><div style="clear:both"></div>',
+    '#type' => 'date_popup',
+    '#title' => t('Check-out Date'),
+    '#date_type' => DATE_DATETIME,
+    '#date_format' => 'm/d/Y',
+    '#date_increment' => 1,
+    '#date_year_range' => '-1:+3',
+    '#required' => TRUE,
+  );
+  
+  $form['conditions']['group_size'] = array(
+    '#type' => 'select',
+    '#title' => 'Group Size',
+    '#options' => array(
+      '1' => '1',
+      '2' => '2',
+      '3' => '3',
+      '4' => '4',
+      '5' => '5',
+      '6' => '6',
+    ),
+    '#default_value' =>  '2',
+  );
+  
+  $form['conditions']['rooms'] = array(
+    '#type' => 'select',
+    '#title' => 'Rooms',
+    '#options' => array(
+      '1' => '1',
+      '2' => '2',
+      '3' => '3',
+      '4' => '4',
+      '5' => '5',
+      '6' => '6',
+    ),
+    '#default_value' =>  '1',
+    '#suffix' => '<div style="clear:both"></div>',
+  );
+  
+  $form['actions'] = array(
+    '#type' => 'container',
+    '#attributes' => array('class' => array('form-actions')),
+    '#weight' => 400,
+  );
+  
+  // We add the form's #submit array to this button along with the actual submit
+  // handler to preserve any submit handlers added by a form callback_wrapper.
+  $submit = array();
+
+  if (!empty($form['#submit'])) {
+    $submit += $form['#submit'];
+  }
+  
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Search for Availabiliy'),
+    '#submit' => $submit + array('rooms_booking_availability_search_form_submit'),
+  );
+  
+  // We append the validate handler to #validate in case a form callback_wrapper
+  // is used to add validate handlers earlier.
+  $form['#validate'][] = 'rooms_booking_availability_search_form_validate';
+  
+  
+  return $form;
+
+}
+
+
+function rooms_booking_availability_search_form_validate(&$form, &$form_state) {
+  
+  $now = new DateTime();
+  $date1 = new DateTime($form_state['values']['start_date']);
+  $date2 = new DateTime($form_state['values']['end_date']);
+  
+  $diff1 = $now->diff($date1);
+  if ($diff1->invert) {
+    form_set_error('date_range', t('Start date must be after today'));
+  }
+  
+  $diff = $date1->diff($date2);
+  // If date1 > date2
+  if ($diff->invert) {
+    form_set_error('date_range', t('End date must be after start date'));
+  }
+}
+
+
+function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
+  
+  $start_date = new DateTime($form_state['values']['start_date']);
+  $end_date = new DateTime($form_state['values']['end_date']);
+  $end_date->sub(new DateInterval('P1D'));
+  
+  $group_size = $form_state['values']['group_size'];
+  
+  $units = $form_state['values']['rooms'];
+  
+  
+  drupal_goto('booking/' . $start_date->format('Y-m-d') . '/' . $end_date->format('Y-m-d'));
+}
+
+  
+
+
+/**
+ * Implementation of hook_commerce_product_type_info()
+ */
+function _rooms_booking_manager_product_type_fields() {
+  $field_data = array(
+    'rooms_booking_dates' => array(
+      'field_name' => 'rooms_booking_dates',
+      'label' => t('Booking Dates'),
+      'cardinality' => 1,
+      'type' => 'date',
+      'module' => 'date',
+      'active' => '1',
+      'locked' => '1',
+      'settings' => array(
+        'repeat' => 0,
+        'todate' => 'required',
+        'granularity' => array(
+          'year' => 'year',
+          'month' => 'month',
+          'day' => 'day',
+        ),
+        'tz_handling' => 'none',
+        'timezone_db' => '',
+      ),
+    ),
+    'rooms_booking_dates_instance' => array(
+      'field_name' => 'rooms_booking_dates',
+      'label' => t('Booking Dates'),
+      'entity_type' => 'commerce_product',
+      'bundle' => 'rooms_booking',
+      'required' => FALSE,
+      'widget' => array(
+        'type' => 'date_popup',
+        'module' => 'date',
+        'settings' => array(
+          'default_value' => 'now',
+          'default_format' => 'medium',
+        ),
+      ),
+    ),
+    'rooms_booked_unit_id' => array(
+      'field_name' => 'rooms_booked_unit_id',
+      'label' => t('Booked Unit ID'),
+      'cardinality' => 1,
+      'type' => 'number_integer',
+      'module' => 'number',
+      'active' => 1,
+      'locked' => 1,
+      'settings' => array(
+        'size' => 8,
+        'max_length' => 10,
+        'text_processins' => 0,        
+      ),
+    ),
+    'rooms_booked_unit_id_instance' => array(
+      'field_name' => 'rooms_booked_unit_id',
+      'label' => t('Booked Unit ID'),
+      'entity_type' => 'commerce_product',
+      'bundle' => 'rooms_booking',
+      'required' => TRUE,
+      'settings' => array(
+        'size' => 8,
+        'max_length' => 10,
+        'text_processing' => 0,
+      ),
+      'widget' => array(
+        'type' => 'text_textfield',
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'number',
+          'settings' => array(
+            'decimal_separator' => '.',
+            'prefix_suffix' => TRUE,
+            'scale' => 0,
+            'thousand_separator' => ' ',
+          ),
+          'type' => 'number_integer',
+          'weight' => 11,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
+      ),
+    ),
+    'rooms_booked_status' => array(
+      'field_name' => 'rooms_booked_status',
+      'label' => t('Booked Unit Status'),
+      'cardinality' => 1,
+      'type' => 'number_integer',
+      'module' => 'number',
+      'active' => 1,
+      'locked' => 1,
+      'settings' => array(
+        'size' => 8,
+        'max_length' => 10,
+        'text_processins' => 0,        
+      ),
+    ),
+    'rooms_booked_status_instance' => array(
+      'field_name' => 'rooms_booked_status',
+      'label' => t('Booked Unit Status'),
+      'entity_type' => 'commerce_product',
+      'bundle' => 'rooms_booking',
+      'required' => TRUE,
+      'settings' => array(
+        'size' => 8,
+        'max_length' => 10,
+        'text_processing' => 0,
+      ),
+      'widget' => array(
+        'type' => 'text_textfield',
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'number',
+          'settings' => array(
+            'decimal_separator' => '.',
+            'prefix_suffix' => TRUE,
+            'scale' => 0,
+            'thousand_separator' => ' ',
+          ),
+          'type' => 'number_integer',
+          'weight' => 11,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
+      ),
+    )
+  );
+
+  return $field_data;
+}
+
+
+
+/**
+ * Implements hook_theme()
+ */
+function rooms_booking_manager_theme() {
+  return array(
+    'rooms_booking' => array(
+      'template' => 'rooms_booking_results'
+    )
+  );
+}
+
+
+/**
+ * Implements Rules to set Order Status
+ */
+function rooms_booking_manager_rules_action_info() {
+  $actions = array();
+
+  $actions['rooms_booking_cancel_order'] = array(
+    'label' => t('Cancel the booking related to an order'),
+    'parameter' => array(
+      'commerce_order' => array(
+        'type' => 'commerce_order',
+        'label' => t('Order to extract info from for booking cancellation'),
+      ),
+    ),
+    'group' => t('Rooms'),
+    'callbacks' => array(
+      'execute' => 'rooms_booking_cancel_order_booking',
+    ),
+  );
+
+
+  return $actions;
+}
+
+function rooms_booking_cancel_order_booking() {
+  
+}
+
+
