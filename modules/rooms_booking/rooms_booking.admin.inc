@@ -556,8 +556,6 @@ function theme_rooms_booking_add_list($variables) {
       $output = '<p>' . t('No booking types have been created yet for you to use.') . '</p>';
     }
   }
-  dpm($content);
-  dpm('hello');
   return $output;
 }
 
