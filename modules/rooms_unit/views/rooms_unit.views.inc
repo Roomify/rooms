@@ -321,8 +321,6 @@ function rooms_unit_views_default_views() {
     t('Page'),
   );
 
-
-
   $views['bookable_units'] = $view; 
   return $views;
 }

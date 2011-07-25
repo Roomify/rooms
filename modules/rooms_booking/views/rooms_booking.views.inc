@@ -160,7 +160,6 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['tab_options']['name'] = 'management';
 
 
-  $views[] = $view;
-  dpm($views, 'oh hi');
+  $views['bookings'] = $view;
   return $views;
 }
