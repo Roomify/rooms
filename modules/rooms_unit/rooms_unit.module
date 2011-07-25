@@ -330,14 +330,19 @@ function rooms_unit_page_title(RoomsUnit $unit) {
  *
  * @todo - double check utility of this and perhaps use rooms_unit_load_multiple
  */
-function rooms_unit_ids($conditions = array()) {
+function rooms_unit_ids($bundle = '') {
   
   $units = array();
   
   $query = new EntityFieldQuery();
   
-  $result = $query->entityCondition('entity_type', 'rooms_unit')
-                    ->execute();
+  $query->entityCondition('entity_type', 'rooms_unit');
+  
+  if ($bundle != ''){
+    $query->entityCondition('bundle', $bundle);  
+  }
+  
+  $result = $query->execute();
 
   if (count($result) > 0 ) { 
     $entities = entity_load('rooms_unit', array_keys($result['rooms_unit']));
