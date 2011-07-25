@@ -6,6 +6,31 @@
  */  
 
 
+
+/**
+ * Implement hook_menu()
+ */
+function rooms_booking_menu() {
+  $items  =  array();
+  
+  $items['admin/rooms/bookings/customers'] = array(
+    'title' => 'Customers',
+    'page callback' => 'rooms_booking_get_client_profiles',
+    'access arguments' => array('administer bookings'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  
+  $items['admin/rooms/bookings/room_types'] = array(
+    'title' => 'Room Types',
+    'page callback' => 'rooms_booking_get_room_types',
+    'access arguments' => array('administer bookings'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+
 /**
  * Implement hook_entity_info().
  */
@@ -351,7 +376,6 @@ function rooms_booking_page_view($booking, $view_mode = 'full') {
  * Implements hook_views_api().
  */
 function rooms_booking_views_api() {
-  dpm('hi');
   return array(
     'api' => 3,
     'path' => drupal_get_path('module', 'rooms_booking') . '/views',
@@ -394,6 +418,42 @@ function rooms_booking_menu_local_tasks_alter(&$data, $router_item, $root_path) 
       );
     }
   }
+}
+
+
+function rooms_booking_get_client_profiles($string = ''){
+  $matches = array();
+  if ($string) {
+    $result = db_select('field_data_commerce_customer_address')
+      ->fields('field_data_commerce_customer_address', array('commerce_customer_address_name_line', 'entity_id'))
+      ->condition('commerce_customer_address_name_line', db_like($string) . '%', 'LIKE')
+      ->condition('entity_type', 'commerce_customer_profile')
+      ->condition('bundle', 'billing')
+      ->range(0, 10)
+      ->execute();
+    foreach ($result as $customer) {
+      $matches[$customer->commerce_customer_address_name_line . ':' . $customer->entity_id] = check_plain($customer->commerce_customer_address_name_line);
+    }
+  }
+
+  drupal_json_output($matches);
+}
+
+
+function rooms_booking_get_room_types($string = ''){
+  $matches = array();
+  if ($string) {
+    $result = db_select('rooms_booking_type')
+      ->fields('rooms_booking_type', array('type'))
+      ->condition('type', db_like($string) . '%', 'LIKE')
+      ->range(0, 10)
+      ->execute();
+    foreach ($result as $room_type) {
+      $matches[$room_type->type] = check_plain($room_type->type);
+    }
+  }
+
+  drupal_json_output($matches);
 }
 
 

@@ -30,7 +30,7 @@ function rooms_booking_type_form($form, &$form_state, $booking_type, $op = 'edit
 
   if ($op == 'clone') {
     $booking_type->label .= ' (cloned)';
-    $b0oking_type->type = '';
+    $booking_type->type = '';
   }
 
   $form['label'] = array(
@@ -46,7 +46,6 @@ function rooms_booking_type_form($form, &$form_state, $booking_type, $op = 'edit
     '#type' => 'machine_name',
     '#default_value' => isset($booking_type->type) ? $booking_type->type : '',
     '#maxlength' => 32,
-//    '#disabled' => $booking_type->isLocked() && $op != 'clone',
     '#machine_name' => array(
       'exists' => 'rooms_booking_get_types',
       'source' => array('label'),
@@ -54,12 +53,6 @@ function rooms_booking_type_form($form, &$form_state, $booking_type, $op = 'edit
     '#description' => t('A unique machine-readable name for this booking type. It must only contain lowercase letters, numbers, and underscores.'),
   );
 
-  $form['data']['#tree'] = TRUE;
-//  $form['data']['extra_data'] = array(
-//    '#type' => 'checkbox',
-//    '#title' => t('An interesting room switch'),
-//    '#default_value' => !empty($room_type->data['extra_data']),
-//  );
 
   
   $form['actions'] = array('#type' => 'actions');
@@ -69,16 +62,6 @@ function rooms_booking_type_form($form, &$form_state, $booking_type, $op = 'edit
     '#weight' => 40,
   );
 
-  //Locking not supported yet
-  /*if (!$booking_type->isLocked() && $op != 'add') {
-    $form['actions']['delete'] = array(
-      '#type' => 'submit',
-      '#value' => t('Delete booking type'),
-      '#weight' => 45,
-      '#limit_validation_errors' => array(),
-      '#submit' => array('rooms_booking_type_form_submit_delete')
-    );
-  }*/
   return $form;
 }
 
