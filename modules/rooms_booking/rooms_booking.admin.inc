@@ -182,11 +182,18 @@ function rooms_booking_delete_form_wrapper($booking) {
  */
 function rooms_booking_edit_form($form, &$form_state, $booking) {
     
+  $client = '';
+  if (isset($booking->customer_id)) {
+    $client = $booking->name . ':' . $booking->customer_id;
+  }
+  dpm($booking);
+  
   $form['client'] = array(
     '#type' => 'textfield', 
     '#title' => t('Customer'), 
     '#maxlength' => 60, 
     '#autocomplete_path' => 'admin/rooms/bookings/customers',
+    '#default_value' => $client,
     '#weight' => -1,
     '#required' => TRUE,
   );
@@ -195,11 +202,12 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#prefix' => '<div class="start-date">',    
     '#suffix' => '</div>',
     '#type' => 'date_popup',
-    '#title' => t('Start Date'),
+    '#title' => t('Check-in Date'),
     '#date_type' => DATE_DATETIME,
     '#date_format' => 'Y/m/d',
     '#date_increment' => 1,
     '#date_year_range' => '-1:+3',
+    '#default_value' => isset($booking->start_date) ? $booking->start_date : '',
     '#required' => TRUE,
   );
   
@@ -207,11 +215,12 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#prefix' => '<div class="end-date">',    
     '#suffix' => '</div>',
     '#type' => 'date_popup',
-    '#title' => t('End Date'),
+    '#title' => t('Check-out Date'),
     '#date_type' => DATE_DATETIME,
     '#date_format' => 'Y/m/d',
     '#date_increment' => 1,
     '#date_year_range' => '-1:+3',
+    '#default_value' => isset($booking->end_date) ? $booking->end_date : '',
     '#required' => TRUE,
   );
 
@@ -221,7 +230,16 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     $types[$type->type] = $type->label;
   }
   
-  $selected = isset($form_state['values']['unit_type']) ? $form_state['values']['unit_type'] : key($types);
+  $selected = '';
+  if (isset($form_state['values']['unit_type'])) {
+    $selected = $form_state['values']['unit_type'];
+  }
+  elseif (isset($booking->unit_type)) {
+    $selected = $booking->unit_type;
+  }
+  else {
+    $selected = key($types);
+  }
 
   $form['unit_type'] = array(
     '#type' => 'select', 
@@ -241,16 +259,24 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#suffix' => '</div>',
   );
 
-  if (!empty($form_state['values']['unit_type']) && $form_state['values']['unit_type'] != 'notype') {
+  if ((!empty($form_state['values']['unit_type']) && $form_state['values']['unit_type'] != 'notype') || (isset($booking->unit_id))) {
     $form['unit_fieldset']['instructions'] = array(
-      '#markup' => t('Choose a room from the list of available rooms below - the listed rooms all have availability.'),
+      '#markup' => t('Choose a room from the list of available rooms below - if the dates above are set we only show
+                     units with availability for the dates selected.'),
     );
+    
+    if (isset($form_state['values']['unit_type'])) {
+      $room_options = rooms_booking_edit_form_get_rooms_callback($form_state['values']['unit_type'], $form_state['values']['start_date'], $form_state['values']['end_date']);
+    }
+    elseif (isset($booking->unit_type)) {
+      $room_options = rooms_booking_edit_form_get_rooms_callback($booking->unit_type);
+    }
     
     $form['unit_fieldset']['unit_id'] = array(
       '#type' => 'select',
       '#title' => t('Unit'),
-      '#options' => rooms_booking_edit_form_get_rooms_callback($form_state['values']['unit_type'], $form_state['values']['start_date'], $form_state['values']['end_date']),
-      '#default_value' => isset($form_state['values']['dropdown_second']) ? $form_state['values']['dropdown_second'] : '',
+      '#options' => $room_options,
+      '#default_value' => isset($booking->unit_id) ? $booking->unit_id : '',
     ); 
   }
     
@@ -303,16 +329,26 @@ function rooms_booking_edit_form_unit_type_callback($form, $form_state) {
 function rooms_booking_edit_form_get_rooms_callback($select, $start_date = 0, $end_date = 0) {
   // Get the possible units
   $units = rooms_unit_ids($select);
+  $available_units = array();
   
   if ($start_date != 0 && $end_date != 0) {
-    foreach ($units as $unit) {
-    
+    $sd = new DateTime($start_date);
+    $ed = new DateTime($end_date);
+    $ed->sub(new DateInterval('P1D'));
+    foreach ($units as $id => $unit) {
+      $rc = new UnitCalendar($id);
+      // Get Rooms that are available or available on request
+      if ($rc->stateAvailability($sd, $ed, array(1, 2))){
+        $available_units[$id] = $unit;
+      }
     }
+    if (count($available_units) == 0) {
+      $units = array('No Available Units of this type');
+    }
+    
   }
   
-  
-  return $units; 
-  
+  return $units;   
 }
 
 /**
@@ -320,6 +356,15 @@ function rooms_booking_edit_form_get_rooms_callback($select, $start_date = 0, $e
  */
 function rooms_booking_edit_form_validate(&$form, &$form_state) {
   $booking = $form_state['rooms_booking'];
+  
+  $date1 = new DateTime($form_state['values']['start_date']);
+  $date2 = new DateTime($form_state['values']['end_date']);
+  $diff = $date1->diff($date2);
+  // If date1 > date2
+  if ($diff->invert) {
+    form_set_error('date_range', t('End date must be after start date'));
+  }
+
   
   // Notify field widgets to validate their data.
   field_attach_form_validate('rooms_booking', $booking, $form, $form_state);
@@ -333,9 +378,6 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
  * @todo remove hard-coded link
  */
 function rooms_booking_edit_form_submit(&$form, &$form_state) {
-   
-  dpm($form_state);
-  
   // Get the client name and client id
   $client = explode(':', $form_state['values']['client']);
   $client_name = $client[0];
@@ -348,10 +390,10 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
   $start_date = $form_state['values']['start_date'];
   $end_date = $form_state['values']['end_date'];
   
-  $unit = NULL;
+  $unit = 0;
   if (!empty($form_state['values']['unit_id'])) {
     $unit = $form_state['values']['unit_id'];
-  }
+  } 
   
   // If we are dealing with a new booking
   if ($form_state['rooms_booking']->booking_id == '') {
@@ -369,11 +411,50 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
   }
   else {
     $booking =  $form_state['rooms_booking'];
+    
+    // We are going to be updating the event - so the first step is to remove the
+    // old event.
+    if (($booking->unit_id != 0) && ($booking->start_date != '') && ($booking->end_date != '')) {
+      // Create a calendar
+      $uc = new UnitCalendar($booking->unit_id);
+      // Create an event representing the event to remove
+      $be = new BookingEvent($booking->unit_id,
+                             rooms_availability_assign_id($booking->booking_id),
+                             new DateTime($booking->start_date),
+                             new DateTime($booking->end_date));
+      $uc->removeEvents(array($be));
+    }
+    
     $booking = entity_ui_controller('rooms_booking')->entityFormSubmitBuildEntity($form, $form_state);
     $booking->changed = time();
   }
   
   $booking->save();
+  
+  // We have a unit defined so lets block availability there
+  if ($unit != 0) {
+    // Set the event_id
+    $id = rooms_availability_assign_id($booking->booking_id);
+    $sd = new DateTime($start_date);
+    $ed = new DateTime($end_date);
+    $ed->sub(new DateInterval('P1D'));
+    
+    // Create an event
+    $be = new BookingEvent($unit, $id, $sd, $ed);
+    
+    // Create UnitCalednar
+    $rc = new UnitCalendar($unit);
+    $responses = $rc->updateCalendar(array($be));
+
+    if ($responses[$id] == ROOMS_UPDATED) {
+      drupal_set_message('Room Availability Updated');
+      $be->lock();
+    }
+    else {
+      drupal_set_message('Room Availability could not be updated');
+    }
+  }
+  
   $form_state['redirect'] = 'admin/rooms/bookings';
 }
 
@@ -418,6 +499,18 @@ function rooms_booking_delete_form($form, &$form_state, $booking) {
 function rooms_booking_delete_form_submit($form, &$form_state) {
   $booking = $form_state['rooms_booking'];
 
+  //Check if the booking had a unit associated with it and if so update the availability calendar
+  if (isset($booking->unit_id) && isset($booking->start_date) && isset($booking->end_date)) {
+      $uc = new UnitCalendar($booking->unit_id);
+      // Create an event representing the event to remove
+      $be = new BookingEvent($booking->unit_id,
+                             rooms_availability_assign_id($booking->booking_id),
+                             new DateTime($booking->start_date),
+                             new DateTime($booking->end_date));
+      $uc->removeEvents(array($be));
+  }
+  
+  
   rooms_booking_delete($booking);
 
   drupal_set_message(t('The booking %name has been deleted.', array('%name' => $booking->name)));
