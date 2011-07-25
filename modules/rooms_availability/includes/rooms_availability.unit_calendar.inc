@@ -22,9 +22,7 @@ class UnitCalendar {
   
   
   /**
-   * Given an array of events removes events from the calendar - keeping this for reference
-   * but the fact is that we may never need this - remove an event is simply changing the state
-   * of the calendar.
+   * Given an array of events removes events from the calendar setting the value to the default 
    *
    * @param $events
    *    The events to remove from the database - an array of Booking Events
@@ -32,7 +30,19 @@ class UnitCalendar {
    * @return
    *   The array of ids of events that were found and removed
    */
-  public function removeEvents($events) {}
+  public function removeEvents($events) {
+    
+    $events_to_delete = array();
+    foreach ($events as $event){
+      // Break any locks
+      $event->unlock();
+      // Set the events to the default state
+      $event->id = $this->default_state;
+      
+      $events_to_delete[] = $event;
+    }
+    $this->updateCalendar($events_to_delete);
+  }
   
   
   /**
@@ -341,7 +351,19 @@ class UnitCalendar {
   }
   
   
-  public function eventBlocked($state) {
+  
+  /**
+   * Checks if an event is blocked, i.e. cannot be updated. This happens
+   * when the event id is in the rooms_booking_locks table and the new event_id
+   * is not the same as the one that is locked.
+   *
+   * @param int $existing_state - The state to check if locked
+   *
+   * @param int $new_state - The state we want to move to
+   *
+   * @returns boolean TRUE if not blocked
+   */
+  public function eventBlocked($existing_state, $new_state) {
     
     $blocked = FALSE;
     
@@ -351,11 +373,11 @@ class UnitCalendar {
     $query->addField('l', 'state');
     $query->addField('l', 'locked');
     $query->condition('l.unit_id', $this->unit_id);
-    $query->condition('l.state', $state);
+    $query->condition('l.state', $existing_state);
     $query->condition('l.locked', 1);
     $result = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
-    
-    if (count($result) > 0) {
+    // Only block if we are trying to update an event that is not locked
+    if ((count($result) > 0) && $result[0]['state'] != $new_state) {
       $blocked = TRUE;
     }
     return $blocked;
@@ -386,7 +408,7 @@ class UnitCalendar {
         $states = $this->getStates($event->start_date, $event->end_date);
         $blocked = FALSE;
         foreach ($states as $state) {
-          if ($this->eventBlocked($state)) {
+          if ($this->eventBlocked($state, $event->id)) {
             $blocked = TRUE;
           }
         }
@@ -501,6 +523,13 @@ class UnitCalendar {
         $days['d' . $i] = $event->id;
     }
     return $days;
+  }
+  
+  /**
+   * Returns the default state
+   */
+  public function getDefaultState(){
+    return $this->default_state;
   }
   
   /**
