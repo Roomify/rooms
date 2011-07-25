@@ -399,19 +399,23 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
   if ($event_id == NULL || $start_date == 0 || $end_date == 0){
     return 'Unable to load event';
   }
-  
+    
   $state_options = array(
     ROOMS_NOT_AVAILABLE => 'Unavailable',
     ROOMS_AVAILABLE => 'Available',
     ROOMS_ON_REQUEST => 'On Request',
     ROOMS_ANON_BOOKED => 'Anonymous Booking',
   );
-
   
   // Basic check to avoid damage from dirty input
   $event_id = check_plain($event_id);
   $start_date = check_plain($start_date);
   $end_date = check_plain($end_date);
+
+  $booked = FALSE;
+  if ($event_id > 10) {
+    $booked = TRUE;
+  }
   
   $sd = new DateTime();
   $sd->setTimestamp($start_date);
@@ -419,14 +423,28 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
   $ed = new DateTime();
   $ed->setTimestamp($end_date); 
 
-  if ($event_id < 10) {
+  if (!$booked) {
     $content['event_title'] = array(
       '#prefix' => '<h2>',
       '#markup' => t('@room is @status', array('@room' => $unit->name, '@status' => $state_options[$event_id])),
       '#suffix' => '</h2>'
     );
   }
-    
+  else {
+    $booking_id = rooms_availability_return_id($event_id);
+    $booking = rooms_booking_load($booking_id);
+    $output = t('@room is booked', array('@room' => $unit->name));
+    $output .= '<br/>';
+    $booking_path = 'admin/rooms/bookings/booking/' . $booking->booking_id . '/edit';
+    $booking_link = l(t('Edit Booking'), $booking_path);
+    $output .= $booking_link;
+
+    $content['event_title'] = array(
+      '#prefix' => '<h2>',
+      '#markup' => $output,
+      '#suffix' => '</h2>'
+    );    
+  }
   $content['event_details'] = array(
     '#prefix' => '<div class="event-details">',
     '#markup' => t('Duration: @startdate to @enddate', array('@startdate' => $sd->format('Y-m-d'), '@enddate' => $ed->format('Y-m-d'))),
@@ -552,6 +570,27 @@ function rooms_availability_theme() {
     )
 
   );
+}
+
+/**
+ * Sets event ids
+ *
+ * @todo - Make this depend on a paramenter
+ */
+function rooms_availability_assign_id($id) {
+  // Add eleven for now 
+  $id = $id + 11;
+  return $id;
+}
+
+
+/**
+ * Returns the valid event id
+ */
+function rooms_availability_return_id($id) {
+  $id = $id - 11;
+  
+  return $id;
 }
 
 /**
