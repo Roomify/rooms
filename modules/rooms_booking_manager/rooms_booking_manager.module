@@ -661,5 +661,3 @@ function rooms_booking_manager_rules_action_info() {
 function rooms_booking_cancel_order_booking() {
   
 }
-
-
