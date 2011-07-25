@@ -76,14 +76,36 @@ class BookingEvent {
    * Lock event - updates the rooms_booking_locks table to indicate that this event
    * is locked
    */
-  public function lock() {   
-    $fields = array(
-      'unit_id' => $this->unit_id,
-      'state' => $this->id,
-      'locked' => 1,
-    );
-    $lock = db_insert('rooms_booking_locks')->fields($fields);
-    $lock->execute();
+  public function lock() {  
+    // Check that the event is not already locked
+    $query = db_select('rooms_booking_locks', 'l');
+    $query->addField('l', 'unit_id');
+    $query->addField('l', 'state');
+    $query->addField('l', 'locked');
+    $query->condition('l.unit_id', $this->unit_id);
+    $query->condition('l.state', $this->id);
+    $query->condition('l.locked', 1);
+    $result = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
+    
+    if (count($result) == 1) {
+      return FALSE;
+    }
+    else {
+      $fields = array(
+        'unit_id' => $this->unit_id,
+        'state' => $this->id,
+        'locked' => 1,
+      );
+      $lock = db_insert('rooms_booking_locks')->fields($fields);
+      $lock->execute();
+    }
+    return TRUE;
+  }
+  
+  public function unlock() {
+    db_delete('rooms_booking_locks')
+    ->condition('state', $this->id)
+    ->execute();
   }
   
   
@@ -177,10 +199,25 @@ class BookingEvent {
   public function formatJson() {
     $event = array(
       'id' => $this->id,
-      'title' => $this->id,
       'start' => $this->startYear() . '-' . $this->startMonth('m') . '-' . $this->startDay('d'),
       'end' => $this->endYear() . '-' . $this->endMonth('m') . '-' . $this->endDay('d'),
+      'title' => $this->id,
     );
+
+    // Check if we are dealing with a booking
+    if ($this->id > 10) {
+      // Get the actual booking id
+      $booking_id = rooms_availability_return_id($this->id); 
+      $booking = rooms_booking_load($booking_id);
+      $name = $booking->name;
+      $interval = $this->diff();
+      if ((strlen($name) > 7) && ($interval->d < 1)) {
+        $event['title'] = substr($booking->name,0, 6) . '...';
+      }
+      else {
+        $event['title'] = $booking->name;
+      }
+    }
     
     //set the color
     switch ($this->id) {
