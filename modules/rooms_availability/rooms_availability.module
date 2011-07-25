@@ -433,7 +433,7 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
   else {
     $booking_id = rooms_availability_return_id($event_id);
     $booking = rooms_booking_load($booking_id);
-    $output = t('@room is booked', array('@room' => $unit->name));
+    $output = t('@room is booked for @client', array('@room' => $unit->name, '@client' => $booking->name));
     $output .= '<br/>';
     $booking_path = 'admin/rooms/bookings/booking/' . $booking->booking_id . '/edit';
     $booking_link = l(t('Edit Booking'), $booking_path);
@@ -451,7 +451,9 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
     '#suffix' => '</div>'
   );
   
-  $content['event_manager_form'] = drupal_get_form('rooms_availability_event_manager_form', $unit->unit_id, $event_id, $start_date, $end_date);
+  if (!$booked) {
+    $content['event_manager_form'] = drupal_get_form('rooms_availability_event_manager_form', $unit->unit_id, $event_id, $start_date, $end_date);
+  }
   
   $output = theme('rooms_event', $content);
   
