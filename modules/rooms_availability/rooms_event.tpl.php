@@ -1,5 +1,3 @@
-<?php //dpm($variables) ?>
-
 <div class="<?php print $variables['classes']?>">
   <?php print render($event_title) ?>
 
