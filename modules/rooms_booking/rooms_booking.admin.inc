@@ -267,6 +267,9 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     if (isset($form_state['values']['unit_type'])) {
       $room_options = rooms_booking_edit_form_get_rooms_callback($form_state['values']['unit_type'], $form_state['values']['start_date'], $form_state['values']['end_date']);
     }
+    elseif (isset($booking->unit_type) && isset($booking->start_date) && isset($booking->end_date)) {
+      $room_options = rooms_booking_edit_form_get_rooms_callback($booking->unit_type, $booking->start_date,$booking->end_date);      
+    }
     elseif (isset($booking->unit_type)) {
       $room_options = rooms_booking_edit_form_get_rooms_callback($booking->unit_type);
     }
@@ -347,7 +350,7 @@ function rooms_booking_edit_form_get_rooms_callback($select, $start_date = 0, $e
     
   }
   
-  return $units;   
+  return $available_units;   
 }
 
 /**
