@@ -31,7 +31,7 @@ function rooms_booking_manager_create_booking_product() {
   }
   
   // Now check for fields and if not there add them
-  $field_data = _rooms_booking_product_type_fields();
+  $field_data = _rooms_booking_manager_product_type_fields();
 
   if ((!field_info_field_types('rooms_booking_dates')) || (!field_info_field_types('rooms_booked_unit_id'))) {
     field_cache_clear();
