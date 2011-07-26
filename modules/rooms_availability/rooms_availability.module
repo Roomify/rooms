@@ -7,22 +7,6 @@
  */
 
 /**
- * Defining some room states that will be used throughout
- * 
- */
-define ('ROOMS_NOT_AVAILABLE', 0);
-define ('ROOMS_AVAILABLE', 1);
-define ('ROOMS_ON_REQUEST', 2);
-define ('ROOMS_ANON_BOOKED', 3);
-
-/**
- * Defining responses for Calendar Updated
- */
-define ('ROOMS_BLOCKED', 100);
-define ('ROOMS_UPDATED', 200);
-define ('ROOMS_WRONG_UNIT', 300);
-
-/**
  * The default path to the FullCalendar plugin.
  */
 define('FULLCALENDAR_PATH', 'sites/all/libraries/fullcalendar');
@@ -601,4 +585,12 @@ function rooms_availability_return_id($id) {
 function rooms_availability_fullcalendar_get_js_path() {
   $fullcalendar_file = array('none' => 'fullcalendar.js', 'min' => 'fullcalendar.min.js');
   return variable_get('rooms_fullcalendar_path', FULLCALENDAR_PATH) . '/' . $fullcalendar_file[variable_get('rooms_fullcalendar_compression_type', 'min')];
+}
+
+/**
+ * Implements hook_colorbox_settings_alter
+ */
+function rooms_availability_colorbox_settings_alter(&$settings, &$style) {
+  dpm($settings);
+  dpm($style);
 }

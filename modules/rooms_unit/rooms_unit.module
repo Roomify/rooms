@@ -4,7 +4,23 @@
  * @file
  * Manage units - Units are things that can be booked on a nightly basis (e.g. rooms - but also villas
  * bangalows, etc).
- */  
+ */
+
+/**
+ * Defining some room states that will be used throughout
+ * 
+ */
+define ('ROOMS_NOT_AVAILABLE', 0);
+define ('ROOMS_AVAILABLE', 1);
+define ('ROOMS_ON_REQUEST', 2);
+define ('ROOMS_ANON_BOOKED', 3);
+
+/**
+ * Defining responses for Calendar Updated
+ */
+define ('ROOMS_BLOCKED', 100);
+define ('ROOMS_UPDATED', 200);
+define ('ROOMS_WRONG_UNIT', 300);
 
 
 /**
