@@ -43,8 +43,13 @@ Drupal.behaviors.rooms_availability = {
         events: Drupal.settings.basePath + 'admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/availability/json/' + value[2] + '/' + value[1],
         eventClick: function(calEvent, jsEvent, view) {
           // Getting the Unix timestamp - JS will only give us milliseconds
+          if (calEvent.end == null) {
+            //We are probably dealing with a single day event
+            calEvent.end = calEvent.start;
+          }
           var sd = Math.round(Date.parse(calEvent.start)/1000);
           var ed = Math.round(Date.parse(calEvent.end)/1000);
+          
           if ($.colorbox) {
             
             var url = Drupal.settings.basePath + 'admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/' + calEvent.id + '/' + sd + '/' + ed; 
