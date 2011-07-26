@@ -589,8 +589,8 @@ function rooms_availability_fullcalendar_get_js_path() {
 
 /**
  * Implements hook_colorbox_settings_alter
+ *
+ * @todo Figure out if this is the right way to get the settings we need
  */
 function rooms_availability_colorbox_settings_alter(&$settings, &$style) {
-  dpm($settings);
-  dpm($style);
 }
