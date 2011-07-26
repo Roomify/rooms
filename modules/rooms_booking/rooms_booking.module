@@ -17,14 +17,14 @@ function rooms_booking_menu() {
     'title' => 'Customers',
     'page callback' => 'rooms_booking_get_client_profiles',
     'access arguments' => array('administer bookings'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
   );
   
   $items['admin/rooms/bookings/room_types'] = array(
     'title' => 'Room Types',
     'page callback' => 'rooms_booking_get_room_types',
     'access arguments' => array('administer bookings'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
   );
 
   return $items;
