@@ -190,7 +190,7 @@ function rooms_unit_types_ids() {
   $unit_types = array();
   $types = rooms_unit_get_types();
   foreach ($types as $type) {
-    $unit_types[$type->id] = $type->label;
+    $unit_types[$type->type] = $type->label;
   }
   
   return $unit_types;
