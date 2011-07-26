@@ -430,7 +430,10 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
           $booking = rooms_booking_create(array('type' => 'basic'));
           $booking->created = time();
           $booking->start_date = $p->rooms_booking_dates['und'][0]['value'];
-          $booking->end_date = $p->rooms_booking_dates['und'][0]['value2'];
+          // End date is actually the checkout date so we nned to add a day
+          $booking_end_day = new DateTime($p->rooms_booking_dates['und'][0]['value2']);
+          $booking_end_day->add(new DateInterval('P1D'));
+          $booking->end_date = $booking_end_day->format('Y-m-d');
           $booking->unit_id = $p->rooms_booked_unit_id['und'][0]['value'];
           
           // Load the unit to get its type
@@ -440,10 +443,12 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
           $booking->name = $profile->commerce_customer_address['und'][0]['name_line'];
           $booking->save();
           
-          // Now let us clock availability
+          // Now let us lock availability
           $id = rooms_availability_assign_id($booking->booking_id);
           $sd = new DateTime($booking->start_date);
-          $ed = new DateTime($booking->end_date);
+          // End date is actually a day less
+          $booking_end_day->sub(new DateInterval('P1D'));
+          $ed = $booking_end_day;
           $be = new BookingEvent($booking->unit_id, $id, $sd, $ed);
           
           // Create UnitCalednar
