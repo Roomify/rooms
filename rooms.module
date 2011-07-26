@@ -35,12 +35,12 @@ function rooms_permission() {
  * @return
  * An array keyed by months
  */
-function rooms_end_of_month_dates($year = 2011, $calendar = CAL_GREGORIAN) {
+function rooms_end_of_month_dates($year) {
   
   $end_of_month_dates = array();
   
   for ($i = 1; $i<=12; $i++) {
-    $end_of_month_dates[$i] = cal_days_in_month(CAL_GREGORIAN, $i, $year);
+     $end_of_month_dates[$i] = date("t", mktime(0, 0, 0, $i, 1, $year));
   }
   
   return $end_of_month_dates;
