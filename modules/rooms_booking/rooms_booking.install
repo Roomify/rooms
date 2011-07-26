@@ -102,6 +102,7 @@ function rooms_booking_schema() {
     ),
     'primary key' => array('booking_id'),
     'indexes' => array(
+      'booking_id' => array('booking_id'),
       'type' => array('type'),
       'customer_id' => array('customer_id'),
     ),
