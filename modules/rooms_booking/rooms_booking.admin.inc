@@ -186,7 +186,6 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   if (isset($booking->customer_id)) {
     $client = $booking->name . ':' . $booking->customer_id;
   }
-  dpm($booking);
   
   $form['client'] = array(
     '#type' => 'textfield', 
