@@ -12,6 +12,7 @@ To try out Rooms in this early stage do the following:
 and place in sites/all/libraries so that you end up with sites/all/libraries/fullcalendar
 
 2. Set up the colorbox module
+2a. Follow the colobox module instructions to install the module and colorbox library
 2a. Go to admin/config/media/colorbox and enable Colorbox load
 2b. In Advanced settings remove the admin* line from the set of pages that should not load the coloborx script
 
@@ -24,12 +25,15 @@ and place in sites/all/libraries so that you end up with sites/all/libraries/ful
 6. Set availability and pricing - clicking on events will bring up a colorbox and allows you to interact with it
 
 7. Create a Booking Type at admin/rooms/booking-types
+7a. Note create at least one Booking Type called Basic (machine-name:basic) - this will be used by the Booking Manager later on
+(todo - automatically create this type when installing the Booking Manager)
 
 8. Create a Customer Profile in Commerce
 
 9. Create a Booking at admin/rooms/bookings/add
 
-10. ---> working on this! Go to /booking and do an availability search
+10. Go to /booking and do an availability search
+
 
 The results of the availability search are the rooms available over the period - adding one to a cart
 will create a Room Booking Unit commerce product for it and place it in the cart. Once checkout is completed
@@ -42,6 +46,6 @@ PHP REQUIREMENTS & DATE REQUIREMENTS
 --------------------------------------
 The use of the DateInterval class means that we need at least PHP5.3
 
-In general this module makes use of latest Calendar and Date functions in so make sure those are
+In general this module makes use of latest Date functions in PHP so make sure those are
 enabled in your PHP setup. We may scale back on this to make things more usable for a wider range of
 setups.
