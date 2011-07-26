@@ -33,7 +33,7 @@ class UnitCalendar {
   public function removeEvents($events) {
     
     $events_to_delete = array();
-    foreach ($events as $event){
+    foreach ($events as $event) {
       // Break any locks
       $event->unlock();
       // Set the events to the default state
@@ -528,7 +528,7 @@ class UnitCalendar {
   /**
    * Returns the default state
    */
-  public function getDefaultState(){
+  public function getDefaultState() {
     return $this->default_state;
   }
   

@@ -212,7 +212,7 @@ class BookingEvent {
       $name = $booking->name;
       $interval = $this->diff();
       if ((strlen($name) > 7) && ($interval->d < 1)) {
-        $event['title'] = substr($booking->name,0, 6) . '...';
+        $event['title'] = substr($booking->name, 0 , 6) . '...';
       }
       else {
         $event['title'] = $booking->name;

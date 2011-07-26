@@ -91,7 +91,7 @@ class AvailabilityAgent {
         'value' => $status,
       )),
     );
-	
+    
     $room_booking->commerce_price = $commerce_price;
     $room_booking->rooms_booking_dates = $commerce_dates;
     $room_booking->rooms_booked_unit_id = $commerce_unit;

@@ -169,7 +169,7 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
   
   // Injest settings in javascript that we will use
   drupal_add_js(array('roomsAvailability' => array('roomID' => $rooms_unit->unit_id)), 'setting');
-  drupal_add_js(array('roomsAvailability' => array ('currentMonth' => $month)), 'setting');
+  drupal_add_js(array('roomsAvailability' => array('currentMonth' => $month)), 'setting');
   drupal_add_js(array('roomsAvailability' => array('currentYear' => $year)), 'setting');
 
   // Calculate forward and back dates for our 3-month view calendar and create links
@@ -396,7 +396,7 @@ function rooms_availability_event($unit, $start_year = '', $start_month = '', $s
 function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_date = 0, $end_date = 0) {
   
   // If any info missing we cannot load the event
-  if ($event_id == NULL || $start_date == 0 || $end_date == 0){
+  if ($event_id == NULL || $start_date == 0 || $end_date == 0) {
     return 'Unable to load event';
   }
     
@@ -505,7 +505,7 @@ function rooms_availability_event_manager_form($form, $form_state, $unit_id, $ev
   unset($state_options[$event_id]);
   
   $form['change_event_status'] = array(
-    '#title' => t("Change the state for this event to: "),
+    '#title' => t("Change the state for this event to:") . ' ',
     '#type' => 'select',
     '#options' => $state_options,
     '#default_value' => $event_id,

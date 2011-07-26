@@ -421,7 +421,7 @@ function rooms_booking_menu_local_tasks_alter(&$data, $router_item, $root_path) 
 }
 
 
-function rooms_booking_get_client_profiles($string = ''){
+function rooms_booking_get_client_profiles($string = '') {
   $matches = array();
   if ($string) {
     $result = db_select('field_data_commerce_customer_address')
@@ -440,7 +440,7 @@ function rooms_booking_get_client_profiles($string = ''){
 }
 
 
-function rooms_booking_get_room_types($string = ''){
+function rooms_booking_get_room_types($string = '') {
   $matches = array();
   if ($string) {
     $result = db_select('rooms_booking_type')

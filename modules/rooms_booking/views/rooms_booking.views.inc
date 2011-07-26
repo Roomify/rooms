@@ -40,7 +40,7 @@ function rooms_booking_views_data_alter(&$data) {
       'handler' => 'rooms_booking_handler_booking_operations_field',
     ),
   );
-  $data['rooms_bookings']['start_date'] = array (
+  $data['rooms_bookings']['start_date'] = array(
     'title' => t('Start Date'),
     'help' => t('The starting date for a booking'),
     'field' => array(
@@ -49,7 +49,7 @@ function rooms_booking_views_data_alter(&$data) {
       'click sortable' => TRUE,
     ),
   );
-  $data['rooms_bookings']['end_date'] = array (
+  $data['rooms_bookings']['end_date'] = array(
     'title' => t('End Date'),
     'help' => t('The end date for a booking'),
     'field' => array(
@@ -58,7 +58,7 @@ function rooms_booking_views_data_alter(&$data) {
       'click sortable' => TRUE,
     ),
   );
-  $data['rooms_bookings']['unit_id'] = array (
+  $data['rooms_bookings']['unit_id'] = array(
     'title' => t('Unit'),
     'help' => t('The unit this booking is in'),
     'field' => array(
@@ -151,6 +151,94 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['fields']['name']['hide_empty'] = 0;
   $handler->display->display_options['fields']['name']['empty_zero'] = 0;
   $handler->display->display_options['fields']['name']['hide_alter_empty'] = 0;
+  /* Field: Bookings: Start Date */
+  $handler->display->display_options['fields']['start_date']['id'] = 'start_date';
+  $handler->display->display_options['fields']['start_date']['table'] = 'rooms_bookings';
+  $handler->display->display_options['fields']['start_date']['field'] = 'start_date';
+  $handler->display->display_options['fields']['start_date']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['start_date']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['start_date']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['start_date']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['start_date']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['start_date']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['start_date']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['start_date']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['start_date']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['start_date']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['start_date']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['start_date']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['start_date']['element_label_colon'] = 1;
+  $handler->display->display_options['fields']['start_date']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['start_date']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['start_date']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['start_date']['hide_alter_empty'] = 0;
+  $handler->display->display_options['fields']['start_date']['date_format'] = 'custom';
+  $handler->display->display_options['fields']['start_date']['custom_date_format'] = 'Y-m-d';
+  /* Field: Bookings: End Date */
+  $handler->display->display_options['fields']['end_date']['id'] = 'end_date';
+  $handler->display->display_options['fields']['end_date']['table'] = 'rooms_bookings';
+  $handler->display->display_options['fields']['end_date']['field'] = 'end_date';
+  $handler->display->display_options['fields']['end_date']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['end_date']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['end_date']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['end_date']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['end_date']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['end_date']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['end_date']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['end_date']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['end_date']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['end_date']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['end_date']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['end_date']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['end_date']['element_label_colon'] = 1;
+  $handler->display->display_options['fields']['end_date']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['end_date']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['end_date']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['end_date']['hide_alter_empty'] = 0;
+  $handler->display->display_options['fields']['end_date']['date_format'] = 'custom';
+  $handler->display->display_options['fields']['end_date']['custom_date_format'] = 'Y-m-d';
+  /* Field: Bookings: Unit */
+  $handler->display->display_options['fields']['unit_id']['id'] = 'unit_id';
+  $handler->display->display_options['fields']['unit_id']['table'] = 'rooms_bookings';
+  $handler->display->display_options['fields']['unit_id']['field'] = 'unit_id';
+  $handler->display->display_options['fields']['unit_id']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['unit_id']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['unit_id']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['unit_id']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['unit_id']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['unit_id']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['unit_id']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['unit_id']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['unit_id']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['unit_id']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['unit_id']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['unit_id']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['unit_id']['element_label_colon'] = 1;
+  $handler->display->display_options['fields']['unit_id']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['unit_id']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['unit_id']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['unit_id']['hide_alter_empty'] = 0;
+  /* Field: Bookings: Type */
+  $handler->display->display_options['fields']['type']['id'] = 'type';
+  $handler->display->display_options['fields']['type']['table'] = 'rooms_bookings';
+  $handler->display->display_options['fields']['type']['field'] = 'type';
+  $handler->display->display_options['fields']['type']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['type']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['type']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['type']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['type']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['type']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['type']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['type']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['type']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['type']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['type']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['type']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['type']['element_label_colon'] = 1;
+  $handler->display->display_options['fields']['type']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['type']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['type']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['type']['hide_alter_empty'] = 0;
   /* Field: Bookings: Operations links */
   $handler->display->display_options['fields']['operations']['id'] = 'operations';
   $handler->display->display_options['fields']['operations']['table'] = 'rooms_bookings';
@@ -185,6 +273,31 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['tab_options']['description'] = 'A list of bookings';
   $handler->display->display_options['tab_options']['weight'] = '0';
   $handler->display->display_options['tab_options']['name'] = 'management';
+  $translatables['bookings'] = array(
+    t('Master'),
+    t('Bookings'),
+    t('more'),
+    t('Apply'),
+    t('Reset'),
+    t('Sort by'),
+    t('Asc'),
+    t('Desc'),
+    t('Items per page'),
+    t('- All -'),
+    t('Offset'),
+    t('Empty Message'),
+    t('No bookings have been created yet.'),
+    t('Bookings ID'),
+    t('.'),
+    t(','),
+    t('Name'),
+    t('Start Date'),
+    t('End Date'),
+    t('Unit'),
+    t('Type'),
+    t('Operations links'),
+    t('Page'),
+  );
 
 
   $views['bookings'] = $view;

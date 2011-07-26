@@ -112,7 +112,7 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $gro
 /**
  * Prepares rooms on a per room basis for presentation
  */
-function rooms_booking_manager_present_individual_rooms($units_per_type, $content, $start_date, $end_date){
+function rooms_booking_manager_present_individual_rooms($units_per_type, $content, $start_date, $end_date) {
   $content['style'] = 'individual';
   foreach ($units_per_type as $type => $price_level) {
     foreach ($price_level as $price => $unit_info) {
@@ -139,7 +139,7 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
 /**
  * Prepares rooms on a per type basis
  */
-function rooms_booking_manager_present_types($units_per_type, $content, $start_date, $end_date){
+function rooms_booking_manager_present_types($units_per_type, $content, $start_date, $end_date) {
   $content['style'] = 'per_type';
   
   $content['units_per_type_form'] = drupal_get_form('book_units_per_type_form', $units_per_type, $start_date, $end_date);
@@ -332,7 +332,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
   
   // Create an "order" based on the form submitted
   $order = array();
-  foreach($form_state['values'] as $value_key => $value){
+  foreach($form_state['values'] as $value_key => $value) {
     $values = explode(':', $value_key);
     if (count($values) == 3) {
       list($type, $price_level, $value_type) = $values;
@@ -347,7 +347,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
   
   // We are going to check that this is still true - but let us try and service the order
   foreach ($order as $type => $price_serving) {
-    foreach ($price_serving as $price_level => $room_order){
+    foreach ($price_serving as $price_level => $room_order) {
       if ($room_order['quantity'] > 0) {
         $available_rooms = $units_per_type[$type][$price_level];
         for ($i = 1; $i <= $room_order['quantity']; $i++) {
@@ -456,11 +456,11 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
           $responses = $rc->updateCalendar(array($be));
 
           if ($responses[$id] == ROOMS_UPDATED) {
-            drupal_set_message('Room Availability Updated');
+            drupal_set_message(t('Room Availability Updated'));
             $be->lock();
           }
           else {
-            drupal_set_message('Room Availability could not be updated');
+            drupal_set_message(t('Room Availability could not be updated'));
           }
         }
       }

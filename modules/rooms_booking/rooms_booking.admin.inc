@@ -337,7 +337,7 @@ function rooms_booking_edit_form_get_rooms_callback($select, $start_date = 0, $e
     foreach ($units as $id => $unit) {
       $rc = new UnitCalendar($id);
       // Get Rooms that are available or available on request
-      if ($rc->stateAvailability($sd, $ed, array(1, 2))){
+      if ($rc->stateAvailability($sd, $ed, array(1, 2))) {
         $available_units[$id] = $unit;
       }
     }
@@ -446,11 +446,11 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
     $responses = $rc->updateCalendar(array($be));
 
     if ($responses[$id] == ROOMS_UPDATED) {
-      drupal_set_message('Room Availability Updated');
+      drupal_set_message(t('Room Availability Updated'));
       $be->lock();
     }
     else {
-      drupal_set_message('Room Availability could not be updated');
+      drupal_set_message(t('Room Availability could not be updated'));
     }
   }
   
