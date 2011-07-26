@@ -40,6 +40,33 @@ function rooms_booking_views_data_alter(&$data) {
       'handler' => 'rooms_booking_handler_booking_operations_field',
     ),
   );
+  $data['rooms_bookings']['start_date'] = array (
+    'title' => t('Start Date'),
+    'help' => t('The starting date for a booking'),
+    'field' => array(
+      'float' => TRUE,
+      'handler' => 'rooms_booking_handler_date_field',
+      'click sortable' => TRUE,
+    ),
+  );
+  $data['rooms_bookings']['end_date'] = array (
+    'title' => t('End Date'),
+    'help' => t('The end date for a booking'),
+    'field' => array(
+      'float' => TRUE,
+      'handler' => 'rooms_booking_handler_date_field',
+      'click sortable' => TRUE,
+    ),
+  );
+  $data['rooms_bookings']['unit_id'] = array (
+    'title' => t('Unit'),
+    'help' => t('The unit this booking is in'),
+    'field' => array(
+      'handler' => 'rooms_booking_handler_unit_field',
+    ),
+  );
+
+  
 }
 
 
