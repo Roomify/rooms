@@ -23,8 +23,8 @@ class AvailabilityAgent {
   
   public function __construct($start_date, $end_date, $group_size = 2, $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)) {
     $this->valid_states = $valid_states;
-    $this->start_date = $start_date;
-    $this->end_date = $end_date;
+    $this->start_date = new DateTime($start_date);
+    $this->end_date = new DateTime($end_date);
     $this->group_size = $group_size;
     $this->booking_units = $booking_units;
   }
@@ -45,7 +45,7 @@ class AvailabilityAgent {
     $unit = rooms_unit_load($unit_id);
     
     // Set the correct departure date for the product name (checkout day)
-    $dd = new DateTime($this->end_date);
+    $dd = new DateTime($this->end_date->format('Y-m-d'));
     $dd->add(new DateInterval('P1D'));
   
     // Create product
@@ -53,13 +53,13 @@ class AvailabilityAgent {
     // SKU's need to be unique so we are adding system time to each product
     $room_booking->sku = 'UNIT' . $unit_id . ' - ' . time();
     // Product name - we set something that will make sense to the user here - this needs to be parametrised of course
-    $room_booking->title = 'Booking for ' . $unit->name . ' Arrival: ' . $this->start_date . ' Departure: ' . $dd->format('Y-m-d');
+    $room_booking->title = 'Booking for ' . $unit->type . ' Arrival: ' . $this->start_date->format('Y-m-d') . ' Departure: ' . $dd->format('Y-m-d');
     // Save the product and then we will add fields to it.
     commerce_product_save($room_booking);
   
     // Calculate the price
     $price_calendar = new UnitPricingCalendar($unit_id);
-    $price = $price_calendar->calculatePrice(new DateTime($this->start_date), new DateTime($this->end_date));
+    $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
     // Convert to integer value as this is what Commerce expects
     $price = commerce_currency_decimal_to_amount($price, commerce_default_currency());
         
@@ -75,8 +75,8 @@ class AvailabilityAgent {
     
     $commerce_dates = array(
       'und' => array( array( 
-        'value' => $this->start_date,
-        'value2' => $this->end_date,
+        'value' => $this->start_date->format('Y-m-d'),
+        'value2' => $this->end_date->format('Y-m-d'),
       )),
     );
   
@@ -169,12 +169,16 @@ class AvailabilityAgent {
         $states = $rc->getStates($this->start_date, $this->end_date);
         $state_diff = array_diff($states, $this->valid_states);
         if (count($state_diff) == 0) {
-          $units[$unit->unit_id]['unit'] = $unit;
+          // Calculate the price as well to add to the array
+          $price_calendar = new UnitPricingCalendar($unit->unit_id);
+          $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
+          $units[$unit->type][$price][$unit->unit_id]['unit'] = $unit;
+          $units[$unit->type][$price][$unit->unit_id]['price'] = $price; 
           if (in_array(ROOMS_ON_REQUEST, $states)) {
-            $units[$unit->unit_id]['state'] = ROOMS_ON_REQUEST;  
+            $units[$unit->type][$price][$unit->unit_id]['state'] = ROOMS_ON_REQUEST;  
           }
           else {
-            $units[$unit->unit_id]['state'] = ROOMS_AVAILABLE;  
+            $units[$unit->type][$price][$unit->unit_id]['state'] = ROOMS_AVAILABLE;  
           }
           
         }
@@ -188,4 +192,5 @@ class AvailabilityAgent {
      return $units; 
     }
   }
+  
 }
