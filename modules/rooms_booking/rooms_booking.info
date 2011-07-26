@@ -10,6 +10,11 @@ dependencies[] = rooms_unit
 dependencies[] = rooms_availability
 dependencies[] = rooms_pricing
 dependencies[] = views
+dependencies[] = commerce
+dependencies[] = commerce_ui
+dependencies[] = commerce_customer
+dependencies[] = commerce_customer_ui
+
 
 
 files[] = rooms_booking.admin.inc
