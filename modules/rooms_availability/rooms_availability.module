@@ -9,12 +9,12 @@
 /**
  * The default path to the FullCalendar plugin.
  */
-define('FULLCALENDAR_PATH', 'sites/all/libraries/fullcalendar');
+define('ROOMS_FC_PATH', 'sites/all/libraries/fullcalendar');
 
 /**
  * The minimum supported version of the FullCalendar plugin.
  */
-define('FULLCALENDAR_MIN_PLUGIN_VERSION', '1.4.10');
+define('ROOMS_FC_MIN_PLUGIN_VERSION', '1.4.10');
 
 
 /**
@@ -24,13 +24,13 @@ function rooms_availability_library() {
   $libraries['rooms_fullcalendar'] = array(
     'title' => 'Rooms FullCalendar',
     'website' => 'http://arshaw.com/fullcalendar',
-    'version' => FULLCALENDAR_MIN_PLUGIN_VERSION,
+    'version' => ROOMS_FC_MIN_PLUGIN_VERSION,
     'js' => array(
       rooms_availability_fullcalendar_get_js_path() => array(),
-      variable_get('rooms_fullcalendar_path', FULLCALENDAR_PATH) . '/gcal.js' => array(),
+      variable_get('rooms_ROOMS_FC_PATH', ROOMS_FC_PATH) . '/gcal.js' => array(),
     ),
     'css' => array(
-      variable_get('rooms_fullcalendar_path', FULLCALENDAR_PATH) . '/fullcalendar.css' => array(
+      variable_get('rooms_ROOMS_FC_PATH', ROOMS_FC_PATH) . '/fullcalendar.css' => array(
         'type' => 'file',
         'media' => 'screen',
       ),
@@ -585,7 +585,7 @@ function rooms_availability_return_id($id) {
  */
 function rooms_availability_fullcalendar_get_js_path() {
   $fullcalendar_file = array('none' => 'fullcalendar.js', 'min' => 'fullcalendar.min.js');
-  return variable_get('rooms_fullcalendar_path', FULLCALENDAR_PATH) . '/' . $fullcalendar_file[variable_get('rooms_fullcalendar_compression_type', 'min')];
+  return variable_get('rooms_ROOMS_FC_PATH', ROOMS_FC_PATH) . '/' . $fullcalendar_file[variable_get('rooms_fullcalendar_compression_type', 'min')];
 }
 
 /**
