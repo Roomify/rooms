@@ -87,7 +87,7 @@ function rooms_pricing_access($rooms_unit) {
   if (user_access('manage booking unit pricing')) {
     return TRUE;
   }
-  return 'FALSE';
+  return FALSE;
 }
 
 
