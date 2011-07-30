@@ -136,8 +136,8 @@ class AvailabilityAgent {
       $query = new EntityFieldQuery();
       $result = $query
         ->entityCondition('entity_type', 'rooms_unit')
+        ->propertyCondition('bookable', 1)
         ->execute();
-      //dpm($result, 'no size or booking units');  
       if (count($result) == 0) {
         return ROOMS_NO_ROOMS;
       }
@@ -149,8 +149,8 @@ class AvailabilityAgent {
       $result = $query
         ->entityCondition('entity_type', 'rooms_unit')
         ->propertyCondition('sleeps', $this->group_size, '>=')
+        ->propertyCondition('bookable', 1)
         ->execute();
-      
       if (count($result) == 0) {
         return ROOMS_SIZE_FAILURE;
       }

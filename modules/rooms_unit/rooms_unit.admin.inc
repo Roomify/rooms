@@ -202,7 +202,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
   $form['bookable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Bookable'),
-    '#description' => t('To remove unit from bookable unit uncheck'),
+    '#description' => t('To remove unit from bookable units uncheck - this will not alter availability states but remove the unit from any searches.'),
     '#default_value' => isset($unit->bookable) ? $unit->bookable : 1,
   );
 

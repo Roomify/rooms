@@ -259,7 +259,7 @@ class UnitCalendar {
       $actual_months =  isset($result[$this->unit_id][$j]) ? count($results[$id][$j]) : 0;
       if ($expected_months>$actual_months) {
         // We have missing months so lets go fill them
-        for ($i = $sm; $i<=$em; $i++) {
+        for ($i = $sm; $i <= $em; $i++) {
           if (!isset($results[$this->unit_id][$j][$i])) {
             $last_day = $eod[$i];
             $month = $this->prepareFullMonthArray(new BookingEvent($this->unit_id,

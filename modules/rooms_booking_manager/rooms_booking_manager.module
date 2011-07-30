@@ -316,8 +316,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 }
 
 
-function book_units_per_type_form_validate(&$form, &$form_state) {
-  
+function book_units_per_type_form_validate(&$form, &$form_state) { 
 }
 
 /**
@@ -351,7 +350,6 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
       if ($room_order['quantity'] > 0) {
         $available_rooms = $units_per_type[$type][$price_level];
         for ($i = 1; $i <= $room_order['quantity']; $i++) {
-          //$room_booking = agent->createProduct
           $room = array_pop($available_rooms);
           // Create the product
           $room_product = $agent->createProduct($room['unit']->unit_id, $room['state']);

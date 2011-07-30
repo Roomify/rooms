@@ -337,11 +337,16 @@ function rooms_booking_edit_form_get_rooms_callback($select, $start_date = 0, $e
     $sd = new DateTime($start_date);
     $ed = new DateTime($end_date);
     $ed->sub(new DateInterval('P1D'));
+    dpm($units);
     foreach ($units as $id => $unit) {
       $rc = new UnitCalendar($id);
       // Get Rooms that are available or available on request
       if ($rc->stateAvailability($sd, $ed, array(1, 2))) {
-        $available_units[$id] = $unit;
+        // Just before showing as available load the unit to check whether it is bookable
+        $unit_to_check = rooms_unit_load($id);
+        if ($unit_to_check->bookable) {
+          $available_units[$id] = $unit;
+        }
       }
     }
     if (count($available_units) == 0) {
