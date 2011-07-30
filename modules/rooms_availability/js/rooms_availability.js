@@ -65,6 +65,16 @@ Drupal.behaviors.rooms_availability = {
             });   
           }
         }
+//        eventMouseover : function(event, jsEvent, view) {
+//          $(value[0]).css('border', '10px solid red');
+//          //event.color = 'yellow';
+//          $(value[0]).fullCalendar('updateEvent', event);
+//        },
+//        eventMouseout : function(event, jsEvent, view) {
+//          //$(this).css('border', '10px solid red');
+//          event.title = 'red';
+//          $(value[0]).fullCalendar('updateEvent', event);
+//        }
       });
     });
     
