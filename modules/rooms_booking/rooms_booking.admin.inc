@@ -197,32 +197,10 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#required' => TRUE,
   );
   
-  $form['date_range']['start_date'] = array(
-    '#prefix' => '<div class="start-date">',    
-    '#suffix' => '</div>',
-    '#type' => 'date_popup',
-    '#title' => t('Check-in Date'),
-    '#date_type' => DATE_DATETIME,
-    '#date_format' => 'Y/m/d',
-    '#date_increment' => 1,
-    '#date_year_range' => '-1:+3',
-    '#default_value' => isset($booking->start_date) ? $booking->start_date : '',
-    '#required' => TRUE,
-  );
+  $form['rooms_date_range'] = rooms_date_range_fields();
+  $form['rooms_date_range']['rooms_start_date']['#default_value'] = isset($booking->start_date) ? $booking->start_date : '';
+  $form['rooms_date_range']['rooms_end_date']['#default_value'] = isset($booking->end_date) ? $booking->end_date : '';
   
-  $form['date_range']['end_date'] = array(
-    '#prefix' => '<div class="end-date">',    
-    '#suffix' => '</div>',
-    '#type' => 'date_popup',
-    '#title' => t('Check-out Date'),
-    '#date_type' => DATE_DATETIME,
-    '#date_format' => 'Y/m/d',
-    '#date_increment' => 1,
-    '#date_year_range' => '-1:+3',
-    '#default_value' => isset($booking->end_date) ? $booking->end_date : '',
-    '#required' => TRUE,
-  );
-
   $room_types = rooms_unit_get_types();
   $types = array('notype' => 'Choose Room Type');
   foreach ($room_types as $type) {
@@ -265,7 +243,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     );
     
     if (isset($form_state['values']['unit_type'])) {
-      $room_options = rooms_booking_edit_form_get_rooms_callback($form_state['values']['unit_type'], $form_state['values']['start_date'], $form_state['values']['end_date']);
+      $room_options = rooms_booking_edit_form_get_rooms_callback($form_state['values']['unit_type'], $form_state['values']['rooms_start_date'], $form_state['values']['end_date']);
     }
     elseif (isset($booking->unit_type) && isset($booking->start_date) && isset($booking->end_date)) {
       $room_options = rooms_booking_edit_form_get_rooms_callback($booking->unit_type, $booking->start_date,$booking->end_date);      
@@ -364,8 +342,8 @@ function rooms_booking_edit_form_get_rooms_callback($select, $start_date = 0, $e
 function rooms_booking_edit_form_validate(&$form, &$form_state) {
   $booking = $form_state['rooms_booking'];
   
-  $date1 = new DateTime($form_state['values']['start_date']);
-  $date2 = new DateTime($form_state['values']['end_date']);
+  $date1 = new DateTime($form_state['values']['rooms_start_date']);
+  $date2 = new DateTime($form_state['values']['rooms_end_date']);
   $diff = $date1->diff($date2);
   // If date1 > date2
   if ($diff->invert) {
@@ -394,8 +372,8 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
   $form_state['values']['customer_id'] = $client_id;
   
 
-  $start_date = $form_state['values']['start_date'];
-  $end_date = $form_state['values']['end_date'];
+  $start_date = $form_state['values']['rooms_start_date'];
+  $end_date = $form_state['values']['rooms_end_date'];
   
   $unit = 0;
   if (!empty($form_state['values']['unit_id'])) {
