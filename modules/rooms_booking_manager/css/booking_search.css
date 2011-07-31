@@ -1,10 +1,11 @@
-#rooms-booking-availability-search-form .arrival-date , #rooms-booking-availability-search-form .departure-date{
+#rooms-booking-availability-search-form .start-date , #rooms-booking-availability-search-form .end-date{
   float:left;
   margin-right:20px;
 }
 
 
 #rooms-booking-availability-search-form .form-item-group-size, #rooms-booking-availability-search-form .form-item-rooms{
+  clear:both;
   float:left;
   margin-right:20px;
 }

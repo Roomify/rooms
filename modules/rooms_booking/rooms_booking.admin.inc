@@ -139,6 +139,10 @@ class RoomsBookingUIController extends EntityDefaultUIController {
 function rooms_booking_form_wrapper($booking) {
   // Add the breadcrumb for the form's location.
   rooms_booking_set_breadcrumb();
+
+  // Add the js for the improved popup handling
+  drupal_add_js(drupal_get_path('module', 'rooms') . '/js/rooms_date_popup.js');
+
   return drupal_get_form('rooms_booking_edit_form', $booking);
 }
 
@@ -153,6 +157,9 @@ function rooms_booking_form_wrapper($booking) {
 function rooms_booking_create_form_wrapper($type) {
   // Add the breadcrumb for the form's location.
   rooms_booking_set_breadcrumb();
+  // Add the js for the improved popup handling
+  drupal_add_js(drupal_get_path('module', 'rooms') . '/js/rooms_date_popup.js');
+  // Create a booking object
   $booking = rooms_booking_create(array('type' => $type));
   return drupal_get_form('rooms_booking_edit_form', $booking);
 }
@@ -315,7 +322,6 @@ function rooms_booking_edit_form_get_rooms_callback($select, $start_date = 0, $e
     $sd = new DateTime($start_date);
     $ed = new DateTime($end_date);
     $ed->sub(new DateInterval('P1D'));
-    dpm($units);
     foreach ($units as $id => $unit) {
       $rc = new UnitCalendar($id);
       // Get Rooms that are available or available on request
