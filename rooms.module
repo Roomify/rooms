@@ -46,6 +46,12 @@ function rooms_end_of_month_dates($year) {
   return $end_of_month_dates;
 }
 
+/**
+ * Utility function - we have a few forms that need a start and end date field and we need to apply
+ * the same javascript to these forms in order to have them behave a bit better.
+ *
+ * This groups the form elements and javascript injection in one place.
+ */ 
 function rooms_date_range_fields() {
   $date_range_fields = array();
   $date_range_fields['rooms_start_date'] = array(
@@ -74,8 +80,14 @@ function rooms_date_range_fields() {
     '#date_year_range' => '-1:+3',
     '#required' => TRUE,
   );
+  
+  drupal_add_js(array('rooms' => array('roomsBookingStartDay' => variable_get('rooms_booking_start_date', 1))), 'setting');
+  drupal_add_js(drupal_get_path('module', 'rooms') . '/js/rooms_date_popup.js');
+
 
   return $date_range_fields;
 }
+
+
 
 

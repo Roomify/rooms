@@ -32,6 +32,15 @@ function rooms_ui_menu() {
     'file path' => drupal_get_path('module', 'system'),
     'file' => 'system.admin.inc',
   );
+  $items['admin/rooms/config/bookings'] = array(
+    'title' => 'Booking Settings',
+    'description' => 'Configure settings and business rules for Bookings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('rooms_booking_settings'),
+    'access arguments' => array('configure rooms'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
   $items['admin/rooms/test'] = array(
     'title' => 'Test',
     'description' => 'Test for Rooms',
@@ -43,4 +52,26 @@ function rooms_ui_menu() {
     'file' => 'system.admin.inc',
   );
   return $items;
+}
+
+
+function rooms_booking_settings(){
+  $form = array();
+  $form['rooms_booking_settings']['rooms_booking_start_date'] = array(
+    '#type' => 'select',
+    '#title' => t('Choose how soon a booking can start'),
+    '#options' => array(
+      '0' => t('Same day bookings'),
+      '1' => t('1 day in advance'),
+      '2' => t('2 days in advance'),
+      '3' => t('3 days in advance'),
+      '4' => t('4 days in advance'),
+      '5' => t('5 days in advance'),
+      '6' => t('6 days in advance'),
+      '7' => t('7 days in advance'),
+    ),
+    '#default_value' => variable_get('rooms_booking_start_date', 1),
+  );
+  
+  return system_settings_form($form);
 }

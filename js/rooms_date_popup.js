@@ -5,7 +5,7 @@ Drupal.behaviors.rooms_date_popup = {
     var dates = $( "#edit-rooms-start-date-datepicker-popup-0, #edit-rooms-end-date-datepicker-popup-0" ).datepicker({
 			dateFormat: 'yy/mm/dd',
       //defaultDate: "+1w",
-      minDate: "+3d",
+      minDate: "+" + Drupal.settings.rooms.roomsBookingStartDay + "d",
       //maxDate: "+2M +10D", // This can be set via a variable to somthing reasonable
 			//changeMonth: true,
 			//numberOfMonths: 1,

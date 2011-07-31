@@ -140,9 +140,6 @@ function rooms_booking_form_wrapper($booking) {
   // Add the breadcrumb for the form's location.
   rooms_booking_set_breadcrumb();
 
-  // Add the js for the improved popup handling
-  drupal_add_js(drupal_get_path('module', 'rooms') . '/js/rooms_date_popup.js');
-
   return drupal_get_form('rooms_booking_edit_form', $booking);
 }
 
@@ -204,7 +201,10 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#required' => TRUE,
   );
   
+  // Get the date range fields and unset a js default
   $form['rooms_date_range'] = rooms_date_range_fields();
+  drupal_add_js(array('rooms' => array('roomsBookingStartDay' => 0)), 'setting');
+  
   $form['rooms_date_range']['rooms_start_date']['#default_value'] = isset($booking->start_date) ? $booking->start_date : '';
   $form['rooms_date_range']['rooms_end_date']['#default_value'] = isset($booking->end_date) ? $booking->end_date : '';
   

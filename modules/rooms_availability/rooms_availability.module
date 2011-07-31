@@ -149,14 +149,14 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
   // Add all the stuff we will need to show the FullCalendar  
   drupal_add_library('rooms_availability', 'rooms_fullcalendar');
   drupal_add_js(drupal_get_path('module', 'rooms_availability') . '/js/rooms_availability.js');
-  drupal_add_js(drupal_get_path('module', 'rooms') . '/js/rooms_date_popup.js');
   drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/fullcalendar.theme.css');
   drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/rooms_availability.css');
   
-  // Injest settings in javascript that we will use
+  // Inject settings in javascript that we will use
   drupal_add_js(array('roomsAvailability' => array('roomID' => $rooms_unit->unit_id)), 'setting');
   drupal_add_js(array('roomsAvailability' => array('currentMonth' => $month)), 'setting');
   drupal_add_js(array('roomsAvailability' => array('currentYear' => $year)), 'setting');
+  
 
   // Calculate forward and back dates for our 3-month view calendar and create links
   $date1 = new DateTime("$year-$month-1");
@@ -216,7 +216,8 @@ function update_availability_calendar_form($form, &$form_state, $unit_id, $year,
   );
   
   $form['rooms_date_range'] = rooms_date_range_fields();
-  
+  // Unset a js setting
+  drupal_add_js(array('rooms' => array('roomsBookingStartDay' => 0)), 'setting');
   
   $form['unit_state'] = array(
     '#type' => 'select',

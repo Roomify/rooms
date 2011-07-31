@@ -62,18 +62,15 @@ function rooms_booking_manager_menu() {
  * @param $group_size
  * How many are to be accommodated
  *
- * @param $rooms
+ * @param $b_units
  * In how many rooms are we to accommodate them
  */
-function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $group_size = 0, $b_units = 0) {
+function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $group_size = 2, $b_units = 1) {
   // The array of content to render
   $content = array();
-  $units = 0;
   
   // Add css to align date boxes
   drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
-  // Add the js for the improved popup handling
-  drupal_add_js(drupal_get_path('module', 'rooms') . '/js/rooms_date_popup.js');
   
   // If no start and end date send a no results message
   if ((gettype($start_date) == 'integer') || (gettype($end_date) == 'integer')) {
@@ -90,7 +87,7 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $gro
   else {
     $content['booking_results'] = 1;
     // Get all the units
-    $agent = new AvailabilityAgent($start_date->format('Y-m-d'), $end_date->format('Y-m-d'));
+    $agent = new AvailabilityAgent($start_date->format('Y-m-d'), $end_date->format('Y-m-d'), $group_size, $b_units);
     $units_per_type = $agent->checkAvailability();
     if ($units_per_type == ROOMS_NO_ROOMS) {
       $content['booking_results'] = 0;
@@ -143,8 +140,9 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
  * Prepares rooms on a per type basis
  */
 function rooms_booking_manager_present_types($units_per_type, $content, $start_date, $end_date) {
+  // Flag used in tpl
   $content['style'] = 'per_type';
-  
+  // We build all the content as a form for now
   $content['units_per_type_form'] = drupal_get_form('book_units_per_type_form', $units_per_type, $start_date, $end_date);
   return $content;
 }
@@ -153,6 +151,8 @@ function rooms_booking_manager_present_types($units_per_type, $content, $start_d
 
 /**
  * Implementation of hook_forms()
+ *
+ * We use this to be able to present a different purhase button for each choice 
  */
 function rooms_booking_manager_forms($form_id, $args) {
 

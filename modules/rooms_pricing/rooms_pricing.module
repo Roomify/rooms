@@ -108,7 +108,6 @@ function rooms_pricing_page(RoomsUnit $rooms_unit, $year='', $month='') {
 
   // Add all the stuff we will need to show the FullCalendar  
   drupal_add_library('rooms_availability', 'rooms_fullcalendar');
-  drupal_add_js(drupal_get_path('module', 'rooms') . '/js/rooms_date_popup.js');
   drupal_add_js(drupal_get_path('module', 'rooms_pricing') . '/js/rooms_pricing.js');
   
   // Injest settings in javascript that we will use
@@ -166,6 +165,8 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
   );
   
   $form['rooms_date_range'] += rooms_date_range_fields();
+  // Unset a js setting that is not relevant for pricing
+  drupal_add_js(array('rooms' => array('roomsBookingStartDay' => 0)), 'setting');
   
   
   $form['op'] = array(
