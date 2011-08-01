@@ -40,7 +40,7 @@ Drupal.behaviors.rooms_availability = {
           center: '',
           right: ''
         },
-        events: Drupal.settings.basePath + 'admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/availability/json/' + value[2] + '/' + value[1],
+        events: Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/availability/json/' + value[2] + '/' + value[1],
         eventClick: function(calEvent, jsEvent, view) {
           // Getting the Unix timestamp - JS will only give us milliseconds
           if (calEvent.end == null) {
@@ -52,7 +52,7 @@ Drupal.behaviors.rooms_availability = {
           
           if ($.colorbox) {
             
-            var url = Drupal.settings.basePath + 'admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/' + calEvent.id + '/' + sd + '/' + ed; 
+            var url = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/' + calEvent.id + '/' + sd + '/' + ed; 
             $.colorbox({
               href: url,
               opacity:0.7,

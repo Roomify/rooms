@@ -39,7 +39,7 @@ Drupal.behaviors.rooms_availability = {
           center: '',
           right: ''
         },
-        events: Drupal.settings.basePath + 'admin/rooms/units/unit/' + Drupal.settings.roomID + '/pricing/json/' + value[2] + '/' + value[1]
+        events: Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomID + '/pricing/json/' + value[2] + '/' + value[1]
       });
     });  
     // Resize takes care of some quirks on occasion
