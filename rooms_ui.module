@@ -59,7 +59,7 @@ function rooms_booking_settings(){
   $form = array();
   $form['rooms_booking_settings']['rooms_booking_start_date'] = array(
     '#type' => 'select',
-    '#title' => t('Choose how soon a booking can start'),
+    '#title' => t('How soon a booking can start'),
     '#options' => array(
       '0' => t('Same day bookings'),
       '1' => t('1 day in advance'),
