@@ -222,6 +222,7 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['fields']['type']['id'] = 'type';
   $handler->display->display_options['fields']['type']['table'] = 'rooms_bookings';
   $handler->display->display_options['fields']['type']['field'] = 'type';
+  $handler->display->display_options['fields']['type']['label'] = 'Booking Type';
   $handler->display->display_options['fields']['type']['alter']['alter_text'] = 0;
   $handler->display->display_options['fields']['type']['alter']['make_link'] = 0;
   $handler->display->display_options['fields']['type']['alter']['absolute'] = 0;
@@ -239,6 +240,29 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['fields']['type']['hide_empty'] = 0;
   $handler->display->display_options['fields']['type']['empty_zero'] = 0;
   $handler->display->display_options['fields']['type']['hide_alter_empty'] = 0;
+  /* Field: Bookings: Order_id */
+  $handler->display->display_options['fields']['order_id']['id'] = 'order_id';
+  $handler->display->display_options['fields']['order_id']['table'] = 'rooms_bookings';
+  $handler->display->display_options['fields']['order_id']['field'] = 'order_id';
+  $handler->display->display_options['fields']['order_id']['label'] = 'Order ID';
+  $handler->display->display_options['fields']['order_id']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['order_id']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['order_id']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['order_id']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['order_id']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['order_id']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['order_id']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['order_id']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['order_id']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['order_id']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['order_id']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['order_id']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['order_id']['element_label_colon'] = 1;
+  $handler->display->display_options['fields']['order_id']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['order_id']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['order_id']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['order_id']['hide_alter_empty'] = 0;
+  $handler->display->display_options['fields']['order_id']['format_plural'] = 0;
   /* Field: Bookings: Operations links */
   $handler->display->display_options['fields']['operations']['id'] = 'operations';
   $handler->display->display_options['fields']['operations']['table'] = 'rooms_bookings';
@@ -273,32 +297,6 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['tab_options']['description'] = 'A list of bookings';
   $handler->display->display_options['tab_options']['weight'] = '0';
   $handler->display->display_options['tab_options']['name'] = 'management';
-  $translatables['bookings'] = array(
-    t('Master'),
-    t('Bookings'),
-    t('more'),
-    t('Apply'),
-    t('Reset'),
-    t('Sort by'),
-    t('Asc'),
-    t('Desc'),
-    t('Items per page'),
-    t('- All -'),
-    t('Offset'),
-    t('Empty Message'),
-    t('No bookings have been created yet.'),
-    t('Bookings ID'),
-    t('.'),
-    t(','),
-    t('Name'),
-    t('Start Date'),
-    t('End Date'),
-    t('Unit'),
-    t('Type'),
-    t('Operations links'),
-    t('Page'),
-  );
-
 
   $views['bookings'] = $view;
   return $views;

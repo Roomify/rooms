@@ -465,7 +465,11 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
           $booking = rooms_booking_create(array('type' => 'basic'));
           $booking->created = time();
           $booking->start_date = $p->rooms_booking_dates['und'][0]['value'];
-          // End date is actually the checkout date so we nned to add a day
+          
+          // Associate it with this order
+          $booking->order_id = $order->order_number;
+          
+          // End date is actually the checkout date so we need to add a day
           $booking_end_day = new DateTime($p->rooms_booking_dates['und'][0]['value2']);
           $booking_end_day->add(new DateInterval('P1D'));
           $booking->end_date = $booking_end_day->format('Y-m-d');
@@ -491,8 +495,8 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
           $responses = $rc->updateCalendar(array($be));
 
           if ($responses[$id] == ROOMS_UPDATED) {
-            drupal_set_message(t('Room Availability Updated'));
             $be->lock();
+            drupal_set_message(t('Room Availability Updated'));
           }
           else {
             drupal_set_message(t('Room Availability could not be updated'));
