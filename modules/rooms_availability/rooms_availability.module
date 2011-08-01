@@ -144,7 +144,7 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
   
   // If year is not set then give it the current date
   $year = ($year == '') ? date('Y', time()) : $year;
-  $month = ($month == '') ? date('m', time()) : $month;
+  $month = ($month == '') ? date('n', time()) : $month;
 
   // Add all the stuff we will need to show the FullCalendar  
   drupal_add_library('rooms_availability', 'rooms_fullcalendar');
