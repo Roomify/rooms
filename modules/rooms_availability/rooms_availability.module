@@ -54,7 +54,6 @@ function rooms_availability_library() {
  * Implements hook_permission().
  */
 function rooms_availability_permission() {
-  print_r('reading permission');
   $permissions = array(
     'manage booking unit availablity' => array(
       'title' => t('Manage Booking Unit availability'),
