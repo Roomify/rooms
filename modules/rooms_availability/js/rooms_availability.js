@@ -32,6 +32,7 @@ Drupal.behaviors.rooms_availability = {
     
     $.each(calendars, function(key, value) {
       $(value[0]).once().fullCalendar({
+        ignoreTimezone:false,
         editable:false,
         month:value[1]-1,
         year:Drupal.settings.roomsAvailability.currentYear,
@@ -47,9 +48,9 @@ Drupal.behaviors.rooms_availability = {
             //We are probably dealing with a single day event
             calEvent.end = calEvent.start;
           }
+          date = $.fullCalendar.parseDate(calEvent.start)
           var sd = Math.round(Date.parse(calEvent.start)/1000);
           var ed = Math.round(Date.parse(calEvent.end)/1000);
-          
           if ($.colorbox) {
             
             var url = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/' + calEvent.id + '/' + sd + '/' + ed; 

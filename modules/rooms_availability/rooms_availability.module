@@ -380,10 +380,10 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
   }
   
   $sd = new DateTime();
-  $sd->setTimestamp($start_date);
+  $sd->setTimezone(new DateTimeZone('UTC'))->setTimestamp($start_date);
   
   $ed = new DateTime();
-  $ed->setTimestamp($end_date); 
+  $ed->setTimezone(new DateTimeZone('UTC'))->setTimestamp($end_date);
 
   if (!$booked) {
     $content['event_title'] = array(
