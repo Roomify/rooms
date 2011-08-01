@@ -253,7 +253,11 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       $room_options = rooms_booking_edit_form_get_rooms_callback($form_state['values']['unit_type'], $form_state['values']['rooms_start_date'], $form_state['values']['end_date']);
     }
     elseif (isset($booking->unit_type) && isset($booking->start_date) && isset($booking->end_date)) {
-      $room_options = rooms_booking_edit_form_get_rooms_callback($booking->unit_type, $booking->start_date,$booking->end_date);      
+      // Get available options
+      $room_options = rooms_booking_edit_form_get_rooms_callback($booking->unit_type, $booking->start_date,$booking->end_date);
+      // Also add the existing option
+      $unit = rooms_unit_load($booking->unit_id);
+      $room_options[$booking->unit_id] = $unit->name;
     }
     elseif (isset($booking->unit_type)) {
       $room_options = rooms_booking_edit_form_get_rooms_callback($booking->unit_type);
@@ -324,7 +328,7 @@ function rooms_booking_edit_form_get_rooms_callback($select, $start_date = 0, $e
     $ed->sub(new DateInterval('P1D'));
     foreach ($units as $id => $unit) {
       $rc = new UnitCalendar($id);
-      // Get Rooms that are available or available on request
+      // Get Rooms that are available, available on request
       if ($rc->stateAvailability($sd, $ed, array(1, 2))) {
         // Just before showing as available load the unit to check whether it is bookable
         $unit_to_check = rooms_unit_load($id);
