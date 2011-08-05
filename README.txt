@@ -34,6 +34,10 @@ and place in sites/all/libraries so that you end up with sites/all/libraries/ful
 
 10. Go to /booking and do an availability search
 
+11. If you want to embed availability information on a calendar in a node (like vacation rentals often do) activate the Rooms Availability Reference Module
+11a. This will give you a new field type "Availability Reference"
+11b. Add the field to any entity and you can point to Booking Units and have the availability information rendered in the node (or any other entity)
+
 
 The results of the availability search are the rooms available over the period - adding one to a cart
 will create a Room Booking Unit commerce product for it and place it in the cart. Once checkout is completed
