@@ -1,0 +1,8 @@
+name = Rooms Availability Reference
+description = Provides a field to reference and display availability information on any fieldable entity
+core = 7.x
+version = 1.x-dev
+
+package = Rooms
+
+dependencies[] = rooms_availability
