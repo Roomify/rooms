@@ -342,7 +342,7 @@ function rooms_unit_page_title(RoomsUnit $unit) {
 
 
 /**
- * Get a list of Unit keyed by id and name in value
+ * Get a list of Units keyed by id and name in value
  *
  * @todo - double check utility of this and perhaps use rooms_unit_load_multiple
  */
