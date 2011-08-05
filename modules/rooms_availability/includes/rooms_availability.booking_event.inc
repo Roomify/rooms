@@ -196,7 +196,7 @@ class BookingEvent {
    * Return event in a format amenable to FullCalendar display or generally
    * sensible json
    */
-  public function formatJson() {
+  public function formatJson($style = ROOMS_AVAILABILITY_ADMIN_STYLE) {
     $event = array(
       'id' => $this->id,
       'start' => $this->startYear() . '-' . $this->startMonth('m') . '-' . $this->startDay('d') . 'T13:00:00Z',
@@ -209,13 +209,18 @@ class BookingEvent {
       // Get the actual booking id
       $booking_id = rooms_availability_return_id($this->id); 
       $booking = rooms_booking_load($booking_id);
-      $name = $booking->name;
-      $interval = $this->diff();
-      if ((strlen($name) > 7) && ($interval->d < 1)) {
-        $event['title'] = substr($booking->name, 0 , 6) . '...';
+      if ($style == 'admin') {
+        $name = $booking->name;
+        $interval = $this->diff();
+        if ((strlen($name) > 7) && ($interval->d < 1)) {
+          $event['title'] = substr($booking->name, 0 , 6) . '...';
+        }
+        else {
+          $event['title'] = $booking->name;
+        }
       }
-      else {
-        $event['title'] = $booking->name;
+      elseif ($style == ROOMS_AVAILABILITY_GENERIC_STYLE) {
+        $this->id = ROOMS_NOT_AVAILABLE;  
       }
     }
     
@@ -236,8 +241,14 @@ class BookingEvent {
         $event['title'] = 'ON-REQ';
         break;        
       case ROOMS_ANON_BOOKED:
-        $event['color'] = '#481600';
-        $event['title'] = 'A-B';
+        if ($style == 'admin') {
+          $event['color'] = '#481600';
+          $event['title'] = 'A-B';
+        }
+        elseif ($style == ROOMS_AVAILABILITY_GENERIC_STYLE) {
+          $event['color']  = 'red';
+          $event['title'] = 'N/A';
+        }
         break;        
       default:
         $event['color'] = 'blue';

@@ -16,6 +16,9 @@ define('ROOMS_FC_PATH', 'sites/all/libraries/fullcalendar');
  */
 define('ROOMS_FC_MIN_PLUGIN_VERSION', '1.4.10');
 
+define('ROOMS_AVAILABILITY_ADMIN_STYLE', 1);
+define('ROOMS_AVAILABILITY_GENERIC_STYLE', 2);
+
 
 /**
  * Implements hook_library().
@@ -85,7 +88,7 @@ function rooms_availability_menu() {
   $items['admin/rooms/units/unit/%availability_unit/availability/json/%/%'] = array(
     'title' =>  'Availability Event',
     'page callback' => 'rooms_availability_event',
-    'page arguments' => array(4, 7, 8, 9, 10, 11, 12),
+    'page arguments' => array(4, 7, 8, 9, 10, 11, 12, 13),
     'access callback' => 'rooms_availability_access',
     'access arguments' => array(4),
     'type' => MENU_CALLBACK,
@@ -302,8 +305,7 @@ function update_availability_calendar_form_submit(&$form, &$form_state) {
  * Creates the necessary json for the date range provided - needs at least start year and month at which point it will
  * return the entire month.
  */
-function rooms_availability_event($unit, $start_year = '', $start_month = '', $start_day = '', $end_year = '', $end_month = '', $end_day = '') {
-
+function rooms_availability_event($unit, $start_year = '', $start_month = '', $start_day = '', $end_year = '', $end_month = '', $end_day = '', $event_style = ROOMS_AVAILABILITY_ADMIN_STYLE) {
   $start_year = (int)$start_year;
   $start_month = (int)$start_month;
   $start_day = (int)$start_day;
@@ -311,6 +313,8 @@ function rooms_availability_event($unit, $start_year = '', $start_month = '', $s
   $end_year = (int)$end_year;
   $end_month = (int)$end_month;
   $end_day = (int)$end_day;
+  
+  $event_style = (int)$event_style;
   
   $eom = rooms_end_of_month_dates($start_year);
     
@@ -343,7 +347,7 @@ function rooms_availability_event($unit, $start_year = '', $start_month = '', $s
   $json_events  = array();
   
   foreach ($events as $event) {
-    $json_events[] = $event->formatJson();
+    $json_events[] = $event->formatJson($event_style);
   }
  
   echo drupal_json_encode($json_events);
