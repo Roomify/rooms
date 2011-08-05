@@ -113,7 +113,6 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
   $result = array();
   $element = array();
   
-  dpm($items);
   
   switch ($display['type']) {
     case 'rooms_availability_reference_default':
@@ -152,7 +151,6 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
           ),
         );
         
-        dpm($js_settings);
         drupal_add_js($js_settings, 'setting');        
 
         $result[$delta] = array(
