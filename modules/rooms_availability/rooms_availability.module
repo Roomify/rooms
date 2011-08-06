@@ -9,7 +9,7 @@
 /**
  * The default path to the FullCalendar plugin.
  */
-define('ROOMS_FC_PATH', 'sites/all/libraries/fullcalendar');
+define('ROOMS_FC_PATH', 'sites/all/libraries/fullcalendar/fullcalendar');
 
 /**
  * The minimum supported version of the FullCalendar plugin.
