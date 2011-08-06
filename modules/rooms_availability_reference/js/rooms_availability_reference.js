@@ -11,7 +11,7 @@ Drupal.behaviors.rooms_availability_reference = {
       header:{
         left: 'today',
 				center: 'title',
-				right: 'next'
+				right: 'prev, next'
       },
       events: Drupal.settings.basePath + '?q=admin/rooms/units/unit/'
                                         + Drupal.settings.roomsAvailabilityRef.unitID
