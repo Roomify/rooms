@@ -101,7 +101,7 @@ function rooms_unit_entity_info_alter(&$entity_info) {
       'admin' => array(
         'path' => 'admin/rooms/units/unit-types/manage/%rooms_unit_type',
         'real path' => 'admin/rooms/units/unit-types/manage/' . $type,
-        'bundle argument' => 4,
+        'bundle argument' => 5,
         'access arguments' => array('administer bookable units'),
       ),
     );

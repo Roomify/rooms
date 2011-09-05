@@ -109,7 +109,7 @@ function rooms_booking_entity_info_alter(&$entity_info) {
       'admin' => array(
         'path' => 'admin/rooms/bookings/booking-types/manage/%rooms_booking_type',
         'real path' => 'admin/rooms/bookings/booking-types/manage/' . $type,
-        'bundle argument' => 4,
+        'bundle argument' => 5,
         'access arguments' => array('administer bookings'),
       ),
     );
