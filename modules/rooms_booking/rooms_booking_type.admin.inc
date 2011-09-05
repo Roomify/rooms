@@ -18,6 +18,7 @@ class RoomsBookingTypeUIController extends EntityDefaultUIController {
     $items[$this->path]['description'] = 'Manage booking types, including adding
 		and removing fields and the display of fields.';
     $items[$this->path]['weight'] = '3';
+    $items[$this->path]['type'] = MENU_LOCAL_TASK;
     return $items;
   }
 }

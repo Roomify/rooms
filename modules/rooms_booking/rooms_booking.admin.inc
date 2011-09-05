@@ -104,7 +104,6 @@ class RoomsBookingUIController extends EntityDefaultUIController {
       'access arguments' => array('view', 1),
       'type' => MENU_CALLBACK,
     );
-
     return $items;
   }
   

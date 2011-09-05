@@ -18,6 +18,7 @@ class RoomsUnitTypeUIController extends EntityDefaultUIController {
     $items[$this->path]['description'] = 'Manage unit types, including adding
 		and removing fields and the display of fields.';
     $items[$this->path]['weight'] = '3';
+		$items[$this->path]['type'] = MENU_LOCAL_TASK;
     return $items;
   }
 }

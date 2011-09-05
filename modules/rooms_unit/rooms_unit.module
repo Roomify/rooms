@@ -76,7 +76,7 @@ function rooms_unit_entity_info() {
     'module' => 'rooms_unit',
     // Enable the entity API's admin UI.
     'admin ui' => array(
-      'path' => 'admin/rooms/unit-types',
+      'path' => 'admin/rooms/units/unit-types',
       'file' => 'rooms_unit_type.admin.inc',
       'controller class' => 'RoomsUnitTypeUIController',
     ),
@@ -99,8 +99,8 @@ function rooms_unit_entity_info_alter(&$entity_info) {
     $entity_info['rooms_unit']['bundles'][$type] = array(
       'label' => $info->label,
       'admin' => array(
-        'path' => 'admin/rooms/unit-types/manage/%rooms_unit_type',
-        'real path' => 'admin/rooms/unit-types/manage/' . $type,
+        'path' => 'admin/rooms/units/unit-types/manage/%rooms_unit_type',
+        'real path' => 'admin/rooms/units/unit-types/manage/' . $type,
         'bundle argument' => 4,
         'access arguments' => array('administer bookable units'),
       ),
