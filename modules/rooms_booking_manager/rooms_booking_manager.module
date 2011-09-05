@@ -71,6 +71,10 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $gro
   // The array of content to render
   $content = array();
   
+  //Make sure variables are clear
+  $group_size = check_plain($group_size);
+  $b_units = check_plain($b_units);
+  
   // Add css to align date boxes
   drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
   
@@ -91,7 +95,7 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $gro
     // Get all the units
     $agent = new AvailabilityAgent($start_date->format('Y-m-d'), $end_date->format('Y-m-d'), $group_size, $b_units);
     $units_per_type = $agent->checkAvailability();
-    if ($units_per_type == ROOMS_NO_ROOMS) {
+    if (($units_per_type == ROOMS_NO_ROOMS) || ($units_per_type == ROOMS_SIZE_FAILURE)) {
       $content['booking_results'] = 0;
       $no_rooms = array(
         '#prefix' => '<div class="no-booking-data">',
@@ -156,8 +160,10 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
 function rooms_booking_manager_present_types($units_per_type, $content, $start_date, $end_date) {
   // Flag used in tpl
   $content['style'] = ROOMS_PER_TYPE;
+  
   // We build all the content as a form for now
   $content['units_per_type_form'] = drupal_get_form('book_units_per_type_form', $units_per_type, $start_date, $end_date);
+  
   return $content;
 }
 
@@ -485,6 +491,7 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
           // Now let us lock availability
           $id = rooms_availability_assign_id($booking->booking_id);
           $sd = new DateTime($booking->start_date);
+          
           // End date is actually a day less
           $booking_end_day->sub(new DateInterval('P1D'));
           $ed = $booking_end_day;
@@ -662,7 +669,7 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
   $units = $form_state['values']['rooms'];
   
   
-  drupal_goto('booking/' . $start_date->format('Y-m-d') . '/' . $end_date->format('Y-m-d'));
+  drupal_goto('booking/' . $start_date->format('Y-m-d') . '/' . $end_date->format('Y-m-d') . '/' . $group_size . '/' . $units);
 }
 
   

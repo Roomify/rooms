@@ -1,7 +1,7 @@
 <?php
 
 /**
- * An AvailabilityAgent provides access to the availability functionality of DrupalRooms and
+ * An AvailabilityAgent provides access to the availability functionality of Rooms and
  * lets you query for availability, get pricing information and create products that can be bought.
  *
  * The Agent essentially acts like a factory creating the appropriate responses for us when needed.
@@ -38,7 +38,7 @@ class AvailabilityAgent {
    * @param $status
    * The status of the room - this will determine the order status
    *
-   * @returns A Commerce product
+   * @returns A Commerce Product
    */
   public function createProduct($unit_id, $status) {
 
@@ -104,7 +104,7 @@ class AvailabilityAgent {
   }
   
   /**
-   * Given a date range and some condition determine which rooms are available
+   * Given a date range and some conditions determine which rooms are available
    *
    * @param $start_date
    * The starting date for the search
@@ -131,14 +131,22 @@ class AvailabilityAgent {
     // Determine the types of rooms that qualify - the sleeping potential of the sum
     // of the rooms should satisfy the group size
     
+    // IF BUs > 1 then the sum of available rooms should accommodate the group - for now
+    // just show all rooms - so we set to zero and go through default below    
+    if ($this->booking_units > 1) {
+      $this->booking_units = 0;
+      $this->group_size = 0;
+    }
+
+    
     // If BUs == 0 and no group size get all available units
     if ($this->group_size == 0 && $this->booking_units == 0) {
       $query = new EntityFieldQuery();
-      $result = $query
+      $results = $query
         ->entityCondition('entity_type', 'rooms_unit')
         ->propertyCondition('bookable', 1)
         ->execute();
-      if (count($result) == 0) {
+      if (count($results) == 0) {
         return ROOMS_NO_ROOMS;
       }
     }
@@ -146,20 +154,20 @@ class AvailabilityAgent {
     // If BUs = 1 then we want rooms that can sleep as big as the group size
     elseif ($this->booking_units == 1) {
       $query = new EntityFieldQuery();
-      $result = $query
+      $results = $query
         ->entityCondition('entity_type', 'rooms_unit')
         ->propertyCondition('sleeps', $this->group_size, '>=')
         ->propertyCondition('bookable', 1)
         ->execute();
-      if (count($result) == 0) {
+      if (count($results) == 0) {
         return ROOMS_SIZE_FAILURE;
       }
     }
     
     
-    if (count($result) > 0) {
-      //dpm($result['rooms_unit'], 'about to check availability');
-      foreach ($result['rooms_unit'] as $unit) {
+    
+    if (count($results) > 0) {
+      foreach ($results['rooms_unit'] as $unit) {
         // Get a calendar and check availability
         $rc = new UnitCalendar($unit->unit_id);
         // We need to make this based on user-set vars
