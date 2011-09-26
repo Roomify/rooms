@@ -195,6 +195,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#title' => t('Customer'), 
     '#maxlength' => 60, 
     '#autocomplete_path' => 'admin/rooms/bookings/customers',
+    '#description' => t('A customer profile must already exist under Customer Profiles in the <a href="@store-profile">store</a>.', array('@store-profile' => url('admin/commerce/customer-profiles'))),
     '#default_value' => $client,
     '#weight' => -1,
     '#required' => TRUE,
