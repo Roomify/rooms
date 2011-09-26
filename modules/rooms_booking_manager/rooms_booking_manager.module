@@ -71,26 +71,19 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $gro
   // The array of content to render
   $content = array();
   
-  //Make sure variables are clear
+  // Make sure variables are clear
   $group_size = check_plain($group_size);
   $b_units = check_plain($b_units);
   
+  
   // Add css to align date boxes
   drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
+   
+  // Check validity of date range - this is repeating what we do in rooms_booking_manager_availability_search_form_validate
+  // but if we want to cater for both direct links and query coming through form need to accommodate both.
+  $datesok = rooms_booking_manager_check_dates($start_date, $end_date);
   
-  // If no start and end date send a no results message
-  if ((gettype($start_date) == 'integer') || (gettype($end_date) == 'integer')) {
-    $content['booking_results'] = 0;
-    $booking_search_form = drupal_get_form('rooms_booking_availability_search_form');
-    $no_results = array(
-      '#prefix' => '<div class="no-booking-data">',
-      '#markup' => '<p>' . t('Perform a search to see availability') . '</p>',
-      '#suffix' => '</div>',
-    );
-    $content['no_results'] = $no_results;
-    $content['booking_search_form'] = $booking_search_form;
-  }
-  else {
+  if ($datesok) {
     $content['booking_results'] = 1;
     // Get all the units
     $agent = new AvailabilityAgent($start_date->format('Y-m-d'), $end_date->format('Y-m-d'), $group_size, $b_units);
@@ -111,13 +104,66 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $gro
     elseif (variable_get('rooms_presentation_style', ROOMS_PER_TYPE) == ROOMS_INDIVIDUAL) {
       $content = rooms_booking_manager_present_individual_rooms($units_per_type, $content, $start_date, $end_date);
     }
-
   }
+  // If no start and end date present the booking form or dates not ok
+  elseif ((gettype($start_date) == 'integer') || (gettype($end_date) == 'integer')) {
+    $content['booking_results'] = 0;
+    $booking_search_form = drupal_get_form('rooms_booking_availability_search_form');
+    $no_results = array(
+      '#prefix' => '<div class="no-booking-data">',
+      '#markup' => '<p>' . t('Perform a search to get availability information') . '</p>',
+      '#suffix' => '</div>',
+    );
+    $content['no_results'] = $no_results;
+    $content['booking_search_form'] = $booking_search_form;
+  }
+  else {
+    $content['booking_results'] = 0;
+    $booking_search_form = drupal_get_form('rooms_booking_availability_search_form');
+    $no_results = array(
+      '#prefix' => '<div class="no-booking-data">',
+      '#markup' => '<p>' . t('Dates sent could not be used - please use booking form') . '</p>',
+      '#suffix' => '</div>',
+    );
+    $content['no_results'] = $no_results;
+    $content['booking_search_form'] = $booking_search_form;    
+  }
+
   
   $output = theme('rooms_booking_results', $content);
   return $output;
 }
 
+
+
+/**
+ * Checks the logical validity of date values coming through URL
+ */
+function rooms_booking_manager_check_dates($start_date, $end_date) {
+  $datesok = TRUE;
+  
+  if ((gettype($start_date) == 'integer') || (gettype($end_date) == 'integer')) {
+    return FALSE;
+  } else {
+    
+    $now = new DateTime();
+  
+    // Ensure start date is after today
+    $diff1 = $now->diff($start_date);
+    if ($diff1->invert) {
+      $datesok = FALSE;
+    }
+  
+    // Ensure end date is after start date
+    $diff2 = $start_date->diff($end_date);
+    // If date1 > date2
+    if ($diff2->invert) {
+      $datesok = FALSE;
+    }
+  }
+    
+  return $datesok;
+}
 
 /**
  * Prepares rooms on a per room basis for presentation
@@ -645,15 +691,22 @@ function rooms_booking_availability_search_form_validate(&$form, &$form_state) {
   $date1 = new DateTime($form_state['values']['rooms_start_date']);
   $date2 = new DateTime($form_state['values']['rooms_end_date']);
   
+  // Ensure start date is after today
   $diff1 = $now->diff($date1);
   if ($diff1->invert) {
     form_set_error('rooms_date_range', t('Start date must be after today'));
   }
   
-  $diff = $date1->diff($date2);
+  // Ensure end date is after start date
+  $diff2 = $date1->diff($date2);
   // If date1 > date2
-  if ($diff->invert) {
+  if ($diff2->invert) {
     form_set_error('rooms_date_range', t('End date must be after start date'));
+  }
+  
+  // Ensure end date and start date are not equal
+  if ($diff2->d == 0) {
+    form_set_error('rooms_date_range', t('Start and end date cannot be on the same day'));
   }
 }
 
