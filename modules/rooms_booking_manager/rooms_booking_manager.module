@@ -514,7 +514,7 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
         $p = commerce_product_load($product[0]['product_id']);
         if ($p->type == 'rooms_booking') {
           // Create a booking
-          $booking = rooms_booking_create(array('type' => 'basic'));
+          $booking = rooms_booking_create(array('type' => 'standard_booking'));
           $booking->created = time();
           $booking->start_date = $p->rooms_booking_dates['und'][0]['value'];
           
