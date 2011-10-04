@@ -517,8 +517,6 @@ class RoomsBookingController extends EntityAPIController {
    */
   public function create(array $values = array()) {
     $booking_type = rooms_booking_type_load($values['type'], TRUE);
-    //$values['base_price'] = $booking_type->data['base_price'];
-    //$values['sleeps'] = $bookign_type->data['sleeps'];
 
     // Add values that are specific to our Room
     $values += array( 
