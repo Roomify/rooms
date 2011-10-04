@@ -8,6 +8,15 @@
 
 
 /**
+ * Implements hook_install()
+ */
+function rooms_booking_install() {
+  // Create a basic booking type
+  rooms_booking_create_booking_type();
+}
+
+
+/**
  * Implements hook_schema().
  */
 function rooms_booking_schema() {
@@ -165,4 +174,10 @@ function rooms_booking_schema() {
   );
 
   return $schema;
+}
+
+
+function rooms_booking_create_booking_type() {
+  $booking = new RoomsBookingType(array('label'=>'Standard Booking', 'type'=>'standard_booking'));
+  rooms_booking_type_save($booking);
 }

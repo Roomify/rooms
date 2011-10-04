@@ -545,7 +545,7 @@ function theme_rooms_booking_add_list($variables) {
   }
   else {
     if (user_access('administer booking types')) {
-      $output = '<p>' . t('Bookings cannot be added because you have not created any booking types yet. Go to the <a href="@create-booking-type">booking type creation page</a> to add a new booking type.', array('@create-booking-type' => url('admin/rooms/booking-types/add'))) . '</p>';
+      $output = '<p>' . t('Bookings cannot be added because you have not created any booking types yet. Go to the <a href="@create-booking-type">booking type creation page</a> to add a new booking type.', array('@create-booking-type' => url('admin/rooms/bookings/booking-types/add'))) . '</p>';
     }
     else {
       $output = '<p>' . t('No booking types have been created yet for you to use.') . '</p>';
