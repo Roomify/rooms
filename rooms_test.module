@@ -43,7 +43,7 @@ function rooms_test_menu() {
 
 
 function rooms_test_availability() {
-	
+
 }
 
 
