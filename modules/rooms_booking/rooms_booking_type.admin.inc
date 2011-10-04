@@ -73,12 +73,12 @@ function rooms_booking_type_form_submit(&$form, &$form_state) {
   $booking_type = entity_ui_form_submit_build_entity($form, $form_state);
   // Save and go back.
   $booking_type->save();
-  $form_state['redirect'] = 'admin/rooms/booking-types';
+  $form_state['redirect'] = 'admin/rooms/bookings/booking-types';
 }
 
 /**
  * Form API submit callback for the delete button.
  */
 function rooms_booking_type_form_submit_delete(&$form, &$form_state) {
-  $form_state['redirect'] = 'admin/rooms/booking_types/manage/' . $form_state['rooms_booking_type']->type . '/delete';
+  $form_state['redirect'] = 'admin/rooms/bookings/booking_types/manage/' . $form_state['rooms_booking_type']->type . '/delete';
 }
