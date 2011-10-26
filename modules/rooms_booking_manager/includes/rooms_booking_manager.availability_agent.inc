@@ -44,6 +44,8 @@ class AvailabilityAgent {
 
     $unit = rooms_unit_load($unit_id);
     
+    $unit_type = rooms_unit_type_load($unit->type);
+    
     // Set the correct departure date for the product name (checkout day)
     $dd = new DateTime($this->end_date->format('Y-m-d'));
     $dd->add(new DateInterval('P1D'));
@@ -53,7 +55,7 @@ class AvailabilityAgent {
     // SKU's need to be unique so we are adding system time to each product
     $room_booking->sku = 'UNIT' . $unit_id . ' - ' . time();
     // Product name - we set something that will make sense to the user here - this needs to be parametrised of course
-    $room_booking->title = 'Booking for ' . $unit->type . ' Arrival: ' . $this->start_date->format('Y-m-d') . ' Departure: ' . $dd->format('Y-m-d');
+    $room_booking->title = 'Booking for ' . $unit_type->label . ' Arrival: ' . $this->start_date->format('Y-m-d') . ' Departure: ' . $dd->format('Y-m-d');
     // Save the product and then we will add fields to it.
     commerce_product_save($room_booking);
   
