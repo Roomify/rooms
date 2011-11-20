@@ -4,29 +4,41 @@
  * An AvailabilityAgent provides access to the availability functionality of Rooms and
  * lets you query for availability, get pricing information and create products that can be bought.
  *
- * The Agent essentially acts like a factory creating the appropriate responses for us when needed.
+ * The Agent is essentially a factory creting the appropriate responses for us as needed based on the
+ * requests and the current status of our bookable units.
+ *
+ * An Agent reasons over a single set of information regarding a booking which are exposes as public
+ * variables to make it easy for us to set and or change them.
  */
 class AvailabilityAgent {
   
   // The states to consider valid for an availability search
   public $valid_states;
   
+  // The start date for availability search
   public $start_date;
   
+  // The departure date
   public $end_date;
   
+  // How many people we are looking to accommodate
   public $group_size;
   
+  // How many booking units are we looking for
   public $booking_units;
+  
+  // What unit types we are looking for
+  public $unit_types;
   
   public $units = array();
   
-  public function __construct($start_date, $end_date, $group_size = 2, $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)) {
+  public function __construct($start_date, $end_date, $group_size = 2, $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST), $unit_types = array()) {
     $this->valid_states = $valid_states;
     $this->start_date = new DateTime($start_date);
     $this->end_date = new DateTime($end_date);
     $this->group_size = $group_size;
     $this->booking_units = $booking_units;
+    $this->unit_types = $unit_types;
   }
   
   /**
@@ -106,21 +118,6 @@ class AvailabilityAgent {
   }
   
   /**
-   * Given a date range and some conditions determine which rooms are available
-   *
-   * @param $start_date
-   * The starting date for the search
-   *
-   * @param $end_date
-   * The end date for the search
-   *
-   * @param $group_size
-   * How many people we need to accommodate
-   *
-   * @param $rooms
-   * In how many booking units can we accommodate the people
-   *
-   * @return
    * If valid units exist an array keyed by valid unit ids containing unit and the states it holds during
    * the requested period or a message as to what caused the failure.
    */
@@ -144,10 +141,15 @@ class AvailabilityAgent {
     // If BUs == 0 and no group size get all available units
     if ($this->group_size == 0 && $this->booking_units == 0) {
       $query = new EntityFieldQuery();
-      $results = $query
-        ->entityCondition('entity_type', 'rooms_unit')
-        ->propertyCondition('bookable', 1)
-        ->execute();
+      $query->entityCondition('entity_type', 'rooms_unit')
+            ->propertyCondition('bookable', 1);
+
+      // Add a unit type condition if this has been defined
+      if (count($this->unit_types) > 0) {
+        $query->propertyCondition('type', $this->unit_types);
+      }
+
+      $results = $query->execute();
       if (count($results) == 0) {
         return ROOMS_NO_ROOMS;
       }
@@ -156,18 +158,25 @@ class AvailabilityAgent {
     // If BUs = 1 then we want rooms that can sleep as big as the group size
     elseif ($this->booking_units == 1) {
       $query = new EntityFieldQuery();
-      $results = $query
-        ->entityCondition('entity_type', 'rooms_unit')
-        ->propertyCondition('sleeps', $this->group_size, '>=')
-        ->propertyCondition('bookable', 1)
-        ->execute();
+      $query->entityCondition('entity_type', 'rooms_unit')
+            ->propertyCondition('sleeps', $this->group_size, '>=')
+            ->propertyCondition('bookable', 1);
+      
+      // Add a unit type condition if this has been defined
+      if (count($this->unit_types) > 0) {
+        $query->propertyCondition('type', $this->unit_types);
+      }
+      
+      // Execute the query and collect the results  
+      $results = $query->execute();
+      
       if (count($results) == 0) {
         return ROOMS_SIZE_FAILURE;
       }
     }
     
     
-    
+    // Of the rooms that fit the criteria lets see what availability we have
     if (count($results) > 0) {
       foreach ($results['rooms_unit'] as $unit) {
         // Get a calendar and check availability
