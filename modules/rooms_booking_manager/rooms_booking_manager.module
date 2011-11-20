@@ -535,18 +535,27 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
           $booking->save();
           
           // Now let us lock availability
+          // First - we get an event id
           $id = rooms_availability_assign_id($booking->booking_id);
+          
+          // Set the start and end dates for the booking event
+          
+          // They are the same as the booking above but the end date is not the departure date
+          // rather it is the last night spend in the room
           $sd = new DateTime($booking->start_date);
           
           // End date is actually a day less
           $booking_end_day->sub(new DateInterval('P1D'));
           $ed = $booking_end_day;
+          
+          // Create a booking event 
           $be = new BookingEvent($booking->unit_id, $id, $sd, $ed);
           
-          // Create UnitCalednar
+          // Call up the UnitCalednar for this booking unit and add the booking event to it
           $rc = new UnitCalendar($booking->unit_id);
           $responses = $rc->updateCalendar(array($be));
 
+          // If the event addition was succesful lock the event
           if ($responses[$id] == ROOMS_UPDATED) {
             $be->lock();
             drupal_set_message(t('Room Availability Updated'));
