@@ -179,6 +179,9 @@ class AvailabilityAgent {
     // Of the rooms that fit the criteria lets see what availability we have
     if (count($results) > 0) {
       foreach ($results['rooms_unit'] as $unit) {
+        // Get the actual entity
+        $unit = rooms_unit_load($unit->unit_id);
+        
         // Get a calendar and check availability
         $rc = new UnitCalendar($unit->unit_id);
         // We need to make this based on user-set vars
