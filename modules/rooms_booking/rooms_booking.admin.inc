@@ -184,11 +184,19 @@ function rooms_booking_delete_form_wrapper($booking) {
  *     with only a booking type defined.
  */
 function rooms_booking_edit_form($form, &$form_state, $booking) {
+  
     
   $client = '';
+
+  // Check to see if we are loading an existing booking (existing bookings
+  // have customer ids set) 
   if (isset($booking->customer_id)) {
+    // Get the client name - we need this to set the Client field
+    $client_name = $booking->name;
+ 
+    // The Client value needs the id as well (to take us back to the Customer Profile in Commerce)
     $client = $booking->name . ':' . $booking->customer_id;
-  }
+   }  
   
   $form['client'] = array(
     '#type' => 'textfield', 
@@ -201,80 +209,141 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#required' => TRUE,
   );
   
-  // Get the date range fields and unset a js default
-  $form['rooms_date_range'] = rooms_date_range_fields();
+  // A fieldset to hold the date range fields
+  $form['rooms_date_range'] = array (
+    '#type' => 'fieldset',
+    '#title' => t('Assign Dates'),
+  );
+
+  $form['rooms_date_range'] = rooms_date_range_fields($form['rooms_date_range']);
+  
+  // Unset the default for max days away for bookings since we are on the admin side here
   drupal_add_js(array('rooms' => array('roomsBookingStartDay' => 0)), 'setting');
   
+  // Set the default values for the dates  
   $form['rooms_date_range']['rooms_start_date']['#default_value'] = isset($booking->start_date) ? $booking->start_date : '';
   $form['rooms_date_range']['rooms_end_date']['#default_value'] = isset($booking->end_date) ? $booking->end_date : '';
-  
-  $room_types = rooms_unit_get_types();
-  $types = array('notype' => 'Choose Room Type');
-  foreach ($room_types as $type) {
-    $types[$type->type] = $type->label;
-  }
-  
-  $selected = '';
-  if (isset($form_state['values']['unit_type'])) {
-    $selected = $form_state['values']['unit_type'];
-  }
-  elseif (isset($booking->unit_type)) {
-    $selected = $booking->unit_type;
-  }
-  else {
-    $selected = key($types);
-  }
-
-  $form['unit_type'] = array(
-    '#type' => 'select', 
-    '#title' => t('Unit Type'), 
-    '#options' => $types,
-    '#default_value' => $selected,
+    
+  // Access to availability information 
+  $form['get_availability'] = array(
+    '#type' => 'submit',
+    '#value' => isset($booking->unit_id) ? t('Re-assign Unit') : t('Assign Room'),
+    '#submit' => array('rooms_booking_edit_form_availability_submit'),
+    '#validate' => array('rooms_booking_edit_form_availability_validate'),
     '#ajax' => array(
-      'callback' => 'rooms_booking_edit_form_unit_type_callback',
-      'wrapper' => 'unit-wrapper',
+      'callback' => 'rooms_booking_edit_form_availability_callback',
+      'wrapper' => 'availability-wrapper',
     ),
-
   );
     
-  $form['unit_fieldset'] = array(
-    '#type' => 'fieldset',
-    '#prefix' => '<div id="unit-wrapper">',
-    '#suffix' => '</div>',
+  // If a unit is assigned get the unit type label
+  if (isset($booking->unit_id)) {
+    $type_obj = rooms_unit_type_load($booking->unit_type);
+    $unit = rooms_unit_load($booking->unit_id);
+  }
+  $unit_selected = isset($booking->unit_id) ? t('Currently assigned unit: @unit_name / @type', array('@type' => $type_obj->label, '@unit_name' => $unit->name)) : t('No Unit assigned');
+
+  $form['availability_fieldset'] = array(
+      '#type' => 'fieldset',
+      '#title' => 'Availability',
+      '#description' => $unit_selected,
+      '#prefix' => '<div id="availability-wrapper">',
+      '#suffix' => '</div>',
   );
 
-  if ((!empty($form_state['values']['unit_type']) && $form_state['values']['unit_type'] != 'notype') || (isset($booking->unit_id))) {
-    $form['unit_fieldset']['instructions'] = array(
-      '#markup' => t('Choose a room from the list of available rooms below - if the dates above are set we only show
+  // If submit above pressed and we have dates we can process to assign a unit
+  if (isset($form_state['show_availability_options'])) {
+    $room_types = rooms_unit_get_types();
+    $types = array('notype' => 'Choose Room Type');
+    foreach ($room_types as $type) {
+      $types[$type->type] = $type->label;
+    }
+    
+    // Figure out which is the current unit and mark that as selected
+    $selected = '';
+    if (isset($form_state['values']['unit_type'])) {
+      $selected = $form_state['values']['unit_type'];
+    }
+    elseif (isset($booking->unit_type)) {
+      $selected = $booking->unit_type;
+    }
+
+    // Set the unit types - everytme a different type is chosen the available
+    // units for that type pop-up.
+    $form['availability_fieldset']['unit_type'] = array(
+      '#type' => 'select', 
+      '#title' => t('Unit Type'), 
+      '#options' => $types,
+      '#default_value' => $selected,
+      '#ajax' => array(
+        'callback' => 'rooms_booking_edit_form_unit_type_callback',
+        'wrapper' => 'unit-wrapper',
+      ),  
+    );
+
+    // This is where the available untis will pop up
+    $form['availability_fieldset']['unit_fieldset'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Units'),
+      '#prefix' => '<div id="unit-wrapper">',
+      '#suffix' => '</div>',
+    );
+
+    
+    $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
+      '#markup' => t('Choose a unit from the list of available rooms below - we only show
                      units with availability for the dates selected.'),
     );
     
-    if (isset($form_state['values']['unit_type'])) {
-      $room_options = rooms_booking_edit_form_get_rooms_callback($form_state['values']['unit_type'], $form_state['values']['rooms_start_date'], $form_state['values']['rooms_end_date']);
+    // If the user has selected a unit type or we already have a unit assigned
+    // show all the available units of that type (including the already assign unit)
+    if (isset($form_state['values']['unit_type']) || isset($booking->unit_type)) {
+      
+      $search_unit_type = '';
+      if (isset($form_state['values']['unit_type'])) {
+        $search_unit_type =  $form_state['values']['unit_type'];
+      }
+      elseif(isset($booking->unit_type)) {
+        $search_unit_type = $booking->unit_type;
+      }
+
+      $available_units = rooms_booking_edit_form_get_rooms($search_unit_type, $form_state['input']['rooms_start_date']['date'], $form_state['input']['rooms_end_date']['date'], $booking);
+      if ($available_units == 2) {
+        $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
+          '#markup' => t('No @search_unit_type are available', array('@search_unit_type' => $search_unit_type)),
+        );
+      } else {
+        foreach ($available_units as $type => $units_per_price) {
+          // Load the type obj and set a title
+          $type_obj = rooms_unit_type_load($type);
+          $form['availability_fieldset']['unit_fieldset']['type'] = array(
+            '#type' => 'fieldset',
+            '#title' => t($type_obj->label),
+          );
+  
+          $options = array(); 
+          // Create elements based on type/price categorisation
+          foreach ($units_per_price as $price => $units) {
+            foreach ($units as $unit) {
+              $options[$unit['unit']->unit_id] = $unit['unit']->name . ' - ' . t('Cost:') . ' ' . $units[key($units)]['price'] . commerce_default_currency();
+            }
+          }
+  
+          $form['availability_fieldset']['unit_fieldset']['type']['unit_id'] = array(
+            '#title' => t('Units'),
+            '#type' => 'radios',
+            '#options' => $options,
+            '#default_value' => isset($booking->unit_id) ? $booking->unit_id : '',
+          );            
+        }
+      }
     }
-    elseif (isset($booking->unit_type) && isset($booking->start_date) && isset($booking->end_date)) {
-      // Get available options
-      $room_options = rooms_booking_edit_form_get_rooms_callback($booking->unit_type, $booking->start_date,$booking->end_date);
-      // Also add the existing option
-      $unit = rooms_unit_load($booking->unit_id);
-      $room_options[$booking->unit_id] = $unit->name;
-    }
-    elseif (isset($booking->unit_type)) {
-      $room_options = rooms_booking_edit_form_get_rooms_callback($booking->unit_type);
-    }
-    
-    $form['unit_fieldset']['unit_id'] = array(
-      '#type' => 'select',
-      '#title' => t('Unit'),
-      '#options' => $room_options,
-      '#default_value' => isset($booking->unit_id) ? $booking->unit_id : '',
-    ); 
   }
-    
+
   // Add the field related form elements.
   $form_state['rooms_booking'] = $booking;
   field_attach_form('rooms_booking', $booking, $form, $form_state);
-
+  
   $form['actions'] = array(
     '#type' => 'container',
     '#attributes' => array('class' => array('form-actions')),
@@ -312,56 +381,86 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 }
 
 
-function rooms_booking_edit_form_unit_type_callback($form, $form_state) {
-  return $form['unit_fieldset'];
+/**
+ * Validate function for the assign unit functionality - just a place holder
+ */
+function rooms_booking_edit_form_availability_validate(&$form, &$form_state) {
 }
 
 
-function rooms_booking_edit_form_get_rooms_callback($select, $start_date = 0, $end_date = 0) {
-  // Get the possible units
-  $units = rooms_unit_ids($select);
+/**
+ * When the user presses the assign unit button we rebuild the form and
+ * show the available units
+ */
+function rooms_booking_edit_form_availability_submit($form, &$form_state) {
+  $form_state['show_availability_options'] = TRUE;
+  $form_state['rebuild'] = TRUE;
+}
+
+
+/**
+ * Simply returns the placeholder for all the relevant unit assignment
+ * functionality.
+ */
+function rooms_booking_edit_form_availability_callback(&$form, $form_state) {  
+  return $form['availability_fieldset'];
+}
+
+
+/**
+ * Callback for the actual list of available units
+ */
+function rooms_booking_edit_form_unit_type_callback(&$form, $form_state) {  
+  return $form['availability_fieldset']['unit_fieldset'];
+}
+
+
+/**
+ * Returns a set of available units given a unit type, start and end dates.
+ *
+ * It makes special provisions for the currently selected unit - to consider that
+ * as "available" as well.
+ */
+function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date = 0, $current_booking) {
+  // Set the unit types
+  $unit_types = array($select);
+
   $available_units = array();
   
-  if ($start_date != 0 && $end_date != 0) {
-    $sd = new DateTime($start_date);
-    $ed = new DateTime($end_date);
-    $ed->sub(new DateInterval('P1D'));
-    foreach ($units as $id => $unit) {
-      $rc = new UnitCalendar($id);
-      // Get Rooms that are available, available on request
-      if ($rc->stateAvailability($sd, $ed, array(1, 2))) {
-        // Just before showing as available load the unit to check whether it is bookable
-        $unit_to_check = rooms_unit_load($id);
-        if ($unit_to_check->bookable) {
-          $available_units[$id] = $unit;
-        }
-      }
-    }
-    if (count($available_units) == 0) {
-      $units = array('No Available Units of this type');
-    }
-    
-  }
+  // The current unit for this booking should also return as available
+  $current_booking_state = isset($current_booking->booking_id) ? rooms_availability_assign_id($current_booking->booking_id) : '';
   
+  $ac = new AvailabilityAgent($start_date, $end_date, 2, 1, array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, $current_booking_state), $unit_types);
+  $available_units = $ac->checkAvailability();
+    
   return $available_units;   
 }
+
 
 /**
  * Form API validate callback for the room form
  */
 function rooms_booking_edit_form_validate(&$form, &$form_state) {
-  $booking = $form_state['rooms_booking'];
   
-  $date1 = new DateTime($form_state['values']['rooms_start_date']);
-  $date2 = new DateTime($form_state['values']['rooms_end_date']);
-  $diff = $date1->diff($date2);
-  // If date1 > date2
-  if ($diff->invert) {
-    form_set_error('date_range', t('End date must be after start date'));
+  $booking = $form_state['rooms_booking'];
+
+  if ($form_state['values']['rooms_start_date']['date']=='' || $form_state['values']['rooms_end_date']['date']=='' ) {
+  } else {
+    $date1 = new DateTime($form_state['values']['rooms_start_date']);
+    $date2 = new DateTime($form_state['values']['rooms_end_date']);
+    $diff = $date1->diff($date2);
+    // If date1 > date2
+    if ($diff->invert) {
+      form_set_error('date_range', t('End date must be after start date'));
+    }
+  }
+  
+  if (!isset($form_state['values']['unit_id']) && (!isset($booking->unit_id))) {
+      form_set_error('availability_fieldset', t('A unit has not been assigned for this booking'));    
   }
 
-  
-  // Notify field widgets to validate their data.
+
+  //Notify field widgets to validate their data.
   field_attach_form_validate('rooms_booking', $booking, $form, $form_state);
   
 }
@@ -381,6 +480,10 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
   $form_state['values']['name'] = $client_name;
   $form_state['values']['customer_id'] = $client_id;
   
+  // We also need appropriate named variables for start and end date
+  // It's simpler to do this than change all the other code for now
+  $form_state['values']['start_date'] = $form_state['values']['rooms_start_date'];
+  $form_state['values']['end_date'] = $form_state['values']['rooms_end_date'];
 
   $start_date = $form_state['values']['rooms_start_date'];
   $end_date = $form_state['values']['rooms_end_date'];
