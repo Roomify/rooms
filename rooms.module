@@ -52,8 +52,7 @@ function rooms_end_of_month_dates($year) {
  *
  * This groups the form elements and javascript injection in one place.
  */ 
-function rooms_date_range_fields() {
-  $date_range_fields = array();
+function rooms_date_range_fields($date_range_fields = array()) {
   $date_range_fields['rooms_start_date'] = array(
     '#prefix' => '<div class="start-date">',    
     '#suffix' => '</div>',
