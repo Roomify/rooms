@@ -546,14 +546,15 @@ function rooms_availability_theme() {
  * @todo - Make this depend on a paramenter
  */
 function rooms_availability_assign_id($id) {
-  // Add eleven for now 
+  // Add eleven for now - this allows for 10 states that do not
+  // refer to a specific booking
   $id = $id + 11;
   return $id;
 }
 
 
 /**
- * Returns the valid event id
+ * Returns the valid booking id
  */
 function rooms_availability_return_id($id) {
   $id = $id - 11;
