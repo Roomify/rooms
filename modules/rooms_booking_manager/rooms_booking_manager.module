@@ -724,7 +724,6 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
   
   $start_date = new DateTime($form_state['values']['rooms_start_date']);
   $end_date = new DateTime($form_state['values']['rooms_end_date']);
-  $end_date->sub(new DateInterval('P1D'));
   
   $group_size = $form_state['values']['group_size'];
   

@@ -35,7 +35,11 @@ class AvailabilityAgent {
   public function __construct($start_date, $end_date, $group_size = 2, $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST), $unit_types = array()) {
     $this->valid_states = $valid_states;
     $this->start_date = new DateTime($start_date);
-    $this->end_date = new DateTime($end_date);
+    $checkout_date = new DateTime($end_date);
+    
+    // For availability purposes the end date is a day earlier than the checkout date
+    $this->end_date = $checkout_date->sub(new DateInterval('P1D'));
+    
     $this->group_size = $group_size;
     $this->booking_units = $booking_units;
     $this->unit_types = $unit_types;
