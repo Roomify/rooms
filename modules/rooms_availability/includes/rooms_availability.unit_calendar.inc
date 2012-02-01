@@ -279,7 +279,10 @@ class UnitCalendar {
     // for each month - this will save code downstream from having to worry about it
     foreach ($results[$this->unit_id] as $year => $months) {
       foreach ($months as $mid => $days) {
-        // There is undoubtetly a smarter way to do this - but will live with this for now
+        // Get the end of month values again to make sure we have the right year because it might change
+        // for queries spanning years
+        $eod = rooms_end_of_month_dates($year);
+        // There is undoubtetly a smarter way to do the clean up below - but will live with this for now
         if (count($days['days']) != $eod[$mid]) {
           switch ($eod[$mid]) {
             case 30:
