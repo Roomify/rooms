@@ -2,7 +2,7 @@
 
 class BookingEvent {
   
-  // The room the event is relevant to
+  // The booking unit the event is relevant to
   public $unit_id;
   
   // The start date for the event
