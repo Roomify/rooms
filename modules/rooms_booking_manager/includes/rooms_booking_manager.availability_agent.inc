@@ -121,6 +121,15 @@ class AvailabilityAgent {
     return $room_booking;  
   }
   
+  
+  /**
+   * Sets the valid states for an availability search - default is "ROOMS_AVAILABLE" and
+   * "ROOMS_ON_REQUEST"
+   */
+  public function setValidStates($states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)) {
+    $this->valid_states = $states;
+  }
+  
   /**
    * If valid units exist an array keyed by valid unit ids containing unit and the states it holds during
    * the requested period or a message as to what caused the failure.

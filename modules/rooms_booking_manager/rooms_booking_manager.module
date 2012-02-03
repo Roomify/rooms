@@ -87,6 +87,8 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $gro
     $content['booking_results'] = 1;
     // Get all the units
     $agent = new AvailabilityAgent($start_date->format('Y-m-d'), $end_date->format('Y-m-d'), $group_size, $b_units);
+    $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
+
     $units_per_type = $agent->checkAvailability();
     if (($units_per_type == ROOMS_NO_ROOMS) || ($units_per_type == ROOMS_SIZE_FAILURE)) {
       $content['booking_results'] = 0;
@@ -221,15 +223,25 @@ function rooms_booking_manager_present_types($units_per_type, $content, $start_d
 function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'rooms_booking_settings') {
     $form['rooms_presentation_style'] = array(
-    '#type' => 'radios',
-    '#title' => t('Results presentation style'),
-    '#options' => array(
-      ROOMS_PER_TYPE => t('Show availability on a per-type basis'),
-      ROOMS_INDIVIDUAL => t('Show availability of individual units'),
-    ),
-    '#default_value' => variable_get('rooms_presentation_style', ROOMS_PER_TYPE),
-  );
-
+      '#type' => 'radios',
+      '#title' => t('Results presentation style'),
+      '#options' => array(
+        ROOMS_PER_TYPE => t('Show availability on a per-type basis'),
+        ROOMS_INDIVIDUAL => t('Show availability of individual units'),
+      ),
+      '#default_value' => variable_get('rooms_presentation_style', ROOMS_PER_TYPE),
+    );
+    
+    $form['rooms_valid_availability_states'] = array(
+      '#type' => 'checkboxes',
+      '#title' => t('Valid availability states'),
+      '#description' => t('Select the states for which rooms should show as available in a search'),
+      '#options' => array(
+        ROOMS_AVAILABLE => t('Rooms marked as available'),
+        ROOMS_ON_REQUEST => t('Rooms marked as available on request'),
+      ),
+      '#default_value' => variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)),
+    );
   }
 }
 
@@ -316,6 +328,8 @@ function book_unit_form_submit(&$form, &$form_state) {
   $status = $form_state['values']['status'];
   
   $agent = new AvailabilityAgent($sd, $ed);
+  $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
+
   $room_booking = $agent->createProduct($unit_id, $status);
   
   // Add to cart
