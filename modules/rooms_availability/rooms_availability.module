@@ -63,6 +63,10 @@ function rooms_availability_permission() {
       'description' => t('Allows users to manage availability settings for Rooms'),
       'restrict access' => TRUE,
     ),
+    'view availability information' => array(
+      'title' => t('View availability information'),
+      'description' => t('Allow users to view availability info (especially via availability reference field)'),
+    )
   );
   return $permissions;
 }
@@ -78,17 +82,17 @@ function rooms_availability_menu() {
     'title' => 'Manage Availability',
     'page callback' =>  'rooms_availability_page',
     'page arguments' => array(4, 6, 7),
-    'access callback' => 'rooms_availability_access',
+    'access callback' => 'rooms_availability_admin_access',
     'access arguments' => array(4),
     'type' => MENU_LOCAL_TASK,
     'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
     'weight' => '20',
   );
   
-  $items['admin/rooms/units/unit/%availability_unit/availability/json/%/%'] = array(
+  $items['rooms/units/unit/%availability_unit/availability/json/%/%'] = array(
     'title' =>  'Availability Event',
     'page callback' => 'rooms_availability_event',
-    'page arguments' => array(4, 7, 8, 9, 10, 11, 12, 13),
+    'page arguments' => array(3, 6, 7, 8, 9, 10, 11, 12),
     'access callback' => 'rooms_availability_access',
     'access arguments' => array(4),
     'type' => MENU_CALLBACK,
@@ -121,12 +125,22 @@ function availability_unit_load($unit_id) {
 
 
 /**
- * Room availability access callback
+ * Room availability admin access callback
  * @todo check unauthorised access for calendar js
- * @todo either improve or remove
+ */ 
+function rooms_availability_admin_access($rooms_unit) {
+  if (user_access('manage booking unit availability')) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+
+/**
+ * Room availability access callback
  */ 
 function rooms_availability_access($rooms_unit) {
-  if (user_access('manage booking unit availability')) {
+  if (user_access('view availability information')) {
     return TRUE;
   }
   return FALSE;

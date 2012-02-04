@@ -15,7 +15,6 @@ function rooms_availability_reference_permission() {
     'reference booking unit availability' => array(
       'title' => t('Reference Booking Unit availability'),
       'description' => t('Allows users to embed availability information in other nodes'),
-      'restrict access' => TRUE,
     ),
   );
   return $permissions;

@@ -13,7 +13,7 @@ Drupal.behaviors.rooms_availability_reference = {
 				center: 'title',
 				right: 'prev, next'
       },
-      events: Drupal.settings.basePath + '?q=admin/rooms/units/unit/'
+      events: Drupal.settings.basePath + '?q=rooms/units/unit/'
                                         + Drupal.settings.roomsAvailabilityRef.unitID
                                         + '/availability/json/'
                                         + Drupal.settings.roomsAvailabilityRef.startyear

@@ -21,7 +21,6 @@ function rooms_booking_manager_permission() {
     'book units' => array(
       'title' => t('Book units'),
       'description' => t('Allows users to book units'),
-      'restrict access' => TRUE,
     ),
   );
   return $permissions;
