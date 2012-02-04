@@ -948,3 +948,32 @@ function rooms_booking_manager_rules_action_info() {
 function rooms_booking_cancel_order_booking() {
   
 }
+
+
+/**
+ * Implements hook_block_info()
+ */
+function rooms_booking_manager_block_info() {
+  $blocks = array();
+
+  $blocks['rooms_availability_search'] = array(
+    'info' => t('Rooms Availability Search'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+  
+  return $blocks;
+}
+
+
+/**
+ * Implements hook_block_view()
+ */
+function rooms_booking_manager_block_view($block_name = '') {
+  if ($block_name == 'rooms_availability_search') {
+    $block = array(
+      'title' => t('Availability Search'),
+      'content' => drupal_get_form('rooms_booking_availability_search_form'),
+    );
+    return $block;
+  }
+}
