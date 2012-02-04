@@ -710,23 +710,39 @@ function rooms_booking_availability_search_form($form, $form_state) {
 
 function rooms_booking_availability_search_form_validate(&$form, &$form_state) {
   
-  $now = new DateTime();
-  $date1 = new DateTime($form_state['values']['rooms_start_date']);
-  $date2 = new DateTime($form_state['values']['rooms_end_date']);
+  $date1 = $form_state['values']['rooms_start_date'];
+  $date2 = $form_state['values']['rooms_end_date'];
   
+  // First check that the dates are set as we would expect them
+  if ($date1['date'] == '' || $date2['date'] == '') {
+    form_set_error('rooms_date_range', t('Please choose dates.'));
+    return TRUE;
+  }
+  
+  // Dates should be coming through with some value so lets try and load them
+  $date1 = start_date_load($form_state['values']['rooms_start_date']);  
+  $date2 = end_date_load($form_state['values']['rooms_end_date']);
+  if (!is_object($date1) || !is_object($date2)){
+    form_set_error('rooms_date_range', t('Please choose dates.'));
+    return TRUE;
+  }
+
+  $now = new DateTime();
+
   // Ensure start date is after today
   $diff1 = $now->diff($date1);
   if ($diff1->invert) {
     form_set_error('rooms_date_range', t('Start date must be after today'));
   }
-  
+
   // Ensure end date is after start date
   $diff2 = $date1->diff($date2);
+
   // If date1 > date2
   if ($diff2->invert) {
     form_set_error('rooms_date_range', t('End date must be after start date'));
   }
-  
+
   // Ensure end date and start date are not equal
   if ($diff2->d == 0) {
     form_set_error('rooms_date_range', t('Start and end date cannot be on the same day'));
@@ -742,7 +758,6 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
   $group_size = $form_state['values']['group_size'];
   
   $units = $form_state['values']['rooms'];
-  
   
   drupal_goto('booking/' . $start_date->format('Y-m-d') . '/' . $end_date->format('Y-m-d') . '/' . $group_size . '/' . $units);
 }
