@@ -67,7 +67,7 @@ Drupal.behaviors.rooms_availability = {
           var ed = Math.round(Date.parse(calEvent.end)/1000);
           if ($.colorbox) {
             
-            var url = Drupal.settings.basePath + '?q=rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/' + calEvent.id + '/' + sd + '/' + ed; 
+            var url = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/' + calEvent.id + '/' + sd + '/' + ed; 
             $.colorbox({
               href: url,
               opacity:0.7,
