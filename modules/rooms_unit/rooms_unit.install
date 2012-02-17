@@ -57,8 +57,10 @@ function rooms_unit_schema() {
       ),
       'base_price' => array(
         'description' => 'The default cost per night for the unit',
-        'type' => 'int',
+        'type' => 'numeric',
         'not null' => TRUE,
+        'precision' => 10,
+        'scale' => 2,
         'default' => 0,
       ),
       'default_state' => array(
@@ -152,4 +154,23 @@ function rooms_unit_schema() {
   );
 
   return $schema;
+}
+
+/**
+ * Changes bace_price field to numeric storage
+ */
+function rooms_unit_update_7001() {
+  $base_price_field_spec = array(
+    'description' => 'The default cost per night for the unit',
+    'type' => 'numeric',
+    'not null' => TRUE,
+    'precision' => 10,
+    'scale' => 2,
+    'default' => 0,
+  );
+    
+  db_change_field('rooms_units', 'base_price', 'base_price', $base_price_field_spec);
+  
+  return t('Schema for the commerce_order and commerce_order_revision tables has been updated.');
+
 }
