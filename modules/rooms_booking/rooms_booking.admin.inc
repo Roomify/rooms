@@ -430,7 +430,7 @@ function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date =
   // The current unit for this booking should also return as available
   $current_booking_state = isset($current_booking->booking_id) ? rooms_availability_assign_id($current_booking->booking_id) : '';
   
-  $ac = new AvailabilityAgent($start_date, $end_date, 2, 1, array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, $current_booking_state), $unit_types);
+  $ac = new AvailabilityAgent($start_date, $end_date, 1, 1, array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, $current_booking_state), $unit_types);
   $available_units = $ac->checkAvailability();
     
   return $available_units;   

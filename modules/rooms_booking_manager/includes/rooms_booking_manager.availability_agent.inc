@@ -32,7 +32,7 @@ class AvailabilityAgent {
   
   public $units = array();
   
-  public function __construct($start_date, $end_date, $group_size = 2, $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST), $unit_types = array()) {
+  public function __construct($start_date, $end_date, $group_size = 1, $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST), $unit_types = array()) {
     $this->valid_states = $valid_states;
     $this->start_date = new DateTime($start_date);
     $checkout_date = new DateTime($end_date);
