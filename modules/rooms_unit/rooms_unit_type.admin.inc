@@ -80,18 +80,17 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#maxlength' => 2,
   );
   
-<<<<<<< HEAD
-	$form['rooms_description'] = array(
-          '#type' => 'textfield',
-          '#title' => t('Select description'),
-          '#size' => 30,
-          '#maxlength' => 60,
-          '#autocomplete_path' => 'rooms-unit/autocomplete',
-          '#default_value' => '',
-          '#weight' => -1,
-        );
+	$form['data']['rooms_description_source'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Select Unit Description source'),
+    '#description' => t('The node you choose here will be rendered in the booking results'),
+    '#size' => 30,
+    '#maxlength' => 60,
+    '#autocomplete_path' => 'admin/rooms/unit-type/description-source',
+    '#default_value' => isset($unit_type->data['rooms_description_source']) ? $unit_type->data['rooms_description_source'] : '',
+    '#weight' => 3,
+  );
 	
-=======
   $form['data']['singlediscount'] = array(
     '#type' => 'textfield',
     '#size' => 5,
@@ -101,7 +100,6 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#description' => t('The percentage stated will be removed from the final price'),
   );
   
->>>>>>> Saving discount values for rooms for single occupancy
   $form['actions'] = array('#type' => 'actions');
   $form['actions']['submit'] = array(
     '#type' => 'submit',

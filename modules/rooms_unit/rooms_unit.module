@@ -23,6 +23,24 @@ define ('ROOMS_UPDATED', 200);
 define ('ROOMS_WRONG_UNIT', 300);
 
 
+
+/**
+ * Implement hook_menu()
+ */
+function rooms_unit_menu() {
+  $items  =  array();
+  
+  $items['admin/rooms/unit-type/description-source'] = array(
+    'title' => 'Unit type description source',
+    'page callback' => 'rooms_unit_type_description_source',
+    'access arguments' => array('administer bookable units'),
+    'type' => MENU_CALLBACK,
+  );
+  
+  return $items;
+}
+
+
 /**
  * Implement hook_entity_info().
  */
@@ -108,7 +126,7 @@ function rooms_unit_entity_info_alter(&$entity_info) {
   }
   // Create custom build mode
   $entity_info['node']['view modes']['rooms_list'] = array(
-    'label' => t('Rooms View'),
+    'label' => t('Rooms Results View'),
     'custom settings' => FALSE,
   ); 
 }
@@ -418,7 +436,29 @@ function rooms_unit_theme() {
       'template' => 'rooms_unit-extra-data',
     ),
   );
-}  
+}
+
+
+/**
+ *
+ */
+function rooms_unit_type_description_source($string = '') {
+  $matches = array();
+  
+  if ($string) {
+    $result = db_select('node', 'n')
+      ->fields('n', array('title', 'nid'))
+      ->condition('title', db_like($string) . '%', 'LIKE')
+      ->condition('n.type', 'room_description')
+      ->range(0, 10)
+      ->execute();
+    foreach ($result as $description) {
+      dpm($description);
+      $matches[$description->title . ':' . $description->nid] = check_plain($description->title);
+    }
+  }
+  drupal_json_output($matches);
+}
 
 
 /**
