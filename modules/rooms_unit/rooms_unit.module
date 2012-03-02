@@ -106,8 +106,14 @@ function rooms_unit_entity_info_alter(&$entity_info) {
       ),
     );
   }
+  // Create custom build mode
+  $entity_info['node']['view modes']['rooms_list'] = array(
+    'label' => t('Rooms View'),
+    'custom settings' => FALSE,
+  ); 
 }
-  
+
+ 
 
 /**
  * Implements hook_permission().
