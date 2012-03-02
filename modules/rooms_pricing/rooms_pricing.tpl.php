@@ -1,6 +1,9 @@
 <div class="<?php print $variables['classes']?>">
 <h1 style="text-transform:capitalize"><?php print $type ?> - <?php print $name ?> Pricing View </h1>
 
+<?php print render($variables['update_form']); ?>
+
+
 <table>
   <tr>
     <td style="width:33%;text-align:left;">
@@ -24,17 +27,4 @@
 <div style="clear:both"></div>
 
 
-
-
-
-
-<div style="clear:both"></div>
-
-
-<h2>Update Room Pricing</h2>
-
-<p>Careful this will overwrite any existing pricing info.</p>
-
-
-<?php print render($variables['update_form']); ?>
 </div>

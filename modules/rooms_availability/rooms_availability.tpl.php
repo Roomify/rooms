@@ -2,6 +2,14 @@
 
 <?php print render($title) ?>
 
+<div class="availability-updates">
+
+<?php //print render($update_form_into); ?>
+
+<?php print render($update_form); ?>
+</div>
+
+
 <table>
   <tr>
     <td style="width:33%;text-align:left;">
@@ -24,11 +32,5 @@
 
 <div style="clear:both"></div>
 
-<div class="availability-updates">
-
-<?php print render($update_form_into); ?>
-
-<?php print render($update_form); ?>
-</div>
 
 </div>

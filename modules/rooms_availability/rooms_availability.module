@@ -226,16 +226,23 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
  */
 function update_availability_calendar_form($form, &$form_state, $unit_id, $year, $month) {
   
-  $form['unit_id'] = array(
+  $form['rooms_update_availability'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Update Availability',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  
+  $form['rooms_update_availability']['unit_id'] = array(
     '#type' => 'hidden',
     '#value' => $unit_id,
   );
   
-  $form['rooms_date_range'] = rooms_date_range_fields();
+  $form['rooms_update_availability']['rooms_date_range'] = rooms_date_range_fields();
   // Unset a js setting
   drupal_add_js(array('rooms' => array('roomsBookingStartDay' => 0)), 'setting');
   
-  $form['unit_state'] = array(
+  $form['rooms_update_availability']['unit_state'] = array(
     '#type' => 'select',
     '#title' => t('Bookable Unit State'),
     '#options' => array(
@@ -247,7 +254,7 @@ function update_availability_calendar_form($form, &$form_state, $unit_id, $year,
     '#description' => t('Choose what state to put the unit in for the dates chosen above'),
   );
   
-  $form['actions'] = array(
+  $form['rooms_update_availability']['actions'] = array(
     '#type' => 'container',
     '#attributes' => array('class' => array('form-actions')),
     '#weight' => 400,
@@ -257,11 +264,11 @@ function update_availability_calendar_form($form, &$form_state, $unit_id, $year,
   // handler to preserve any submit handlers added by a form callback_wrapper.
   $submit = array();
 
-  if (!empty($form['#submit'])) {
-    $submit += $form['#submit'];
+  if (!empty($form['rooms_update_availability']['#submit'])) {
+    $submit += $form['rooms_update_availability']['#submit'];
   }
   
-  $form['actions']['submit'] = array(
+  $form['rooms_update_availability']['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Update Room Availability'),
     '#submit' => $submit + array('update_availability_calendar_form_submit'),

@@ -151,32 +151,40 @@ function rooms_pricing_page(RoomsUnit $rooms_unit, $year='', $month='') {
  * A basic form that allows us to update the state of the calendar
  */
 function update_unit_pricing_form($form, &$form_state, $unit_id) {
+
+  $form['rooms_update_pricing'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Update Pricing',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#description' => t('Careful this will overwrite any existing pricing info.'),
+  );
   
-  $form['unit_id'] = array(
+  $form['rooms_update_pricing']['unit_id'] = array(
     '#type' => 'hidden',
     '#value' => $unit_id,
   );
   
-  $form['rooms_date_range'] = array(
+  $form['rooms_update_pricing']['rooms_date_range'] = array(
     '#title' => t('Date Range'),
     '#type' => 'fieldset',
     '#collapsible' => TRUE, 
     '#collapsed' => FALSE,
   );
   
-  $form['rooms_date_range'] += rooms_date_range_fields();
+  $form['rooms_update_pricing']['rooms_date_range'] += rooms_date_range_fields();
   // Unset a js setting that is not relevant for pricing
   drupal_add_js(array('rooms' => array('roomsBookingStartDay' => 0)), 'setting');
   
   
-  $form['op'] = array(
+  $form['rooms_update_pricing']['op'] = array(
     '#title' => t('Operation'),
     '#type' => 'fieldset',
     '#collapsible' => TRUE, 
     '#collapsed' => FALSE,
   );
   
-  $form['op']['operation'] = array(
+  $form['rooms_update_pricing']['op']['operation'] = array(
     '#type' => 'select',
     '#title' => 'Operation',
     '#options' => array(
@@ -189,7 +197,7 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
     '#default_value' =>  'replace',
   );
   
-  $form['op']['amount'] = array(
+  $form['rooms_update_pricing']['op']['amount'] = array(
     '#type' => 'textfield',
     '#title' => t('Amount'),
     '#default_value' => '',
@@ -200,7 +208,7 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
   );
   
   
-  $form['actions'] = array(
+  $form['rooms_update_pricing']['actions'] = array(
     '#type' => 'container',
     '#attributes' => array('class' => array('form-actions')),
     '#weight' => 400,
@@ -210,11 +218,11 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
   // handler to preserve any submit handlers added by a form callback_wrapper.
   $submit = array();
 
-  if (!empty($form['#submit'])) {
-    $submit += $form['#submit'];
+  if (!empty($form['rooms_update_pricing']['#submit'])) {
+    $submit += $form['rooms_update_pricing']['#submit'];
   }
   
-  $form['actions']['submit'] = array(
+  $form['rooms_update_pricing']['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Update Room Pricing'),
     '#submit' => $submit + array('update_unit_pricing_form_submit'),
