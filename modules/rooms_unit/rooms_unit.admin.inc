@@ -334,13 +334,11 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
 
 
 /**
- * Form API validate callback for the room form
+ * Form API validate callback for the booking unit form
  */
 function rooms_unit_edit_form_validate(&$form, &$form_state) {
   $unit = $form_state['rooms_unit'];
-  
-  dpm($form_state['values']);
-  
+    
   // Notify field widgets to validate their data.
   field_attach_form_validate('rooms_unit', $unit, $form, $form_state);
   
@@ -354,7 +352,7 @@ function rooms_unit_edit_form_validate(&$form, &$form_state) {
     form_set_error('Discount value error', t('%name: you must enter a numeric value for the discount from 1 to 100%.', array('%name' => 'Single Discount')));
   }
   
-  if (($form_state['values']['data']['singlediscount'] > 100) || ($form_state['values']['data']['singlediscount'] < 1)) {
+  if ((($form_state['values']['data']['singlediscount'] > 100) || ($form_state['values']['data']['singlediscount'] < 1)) && ($form_state['values']['data']['singlediscount'] != '')) {
     form_set_error('Discount value error', t('%name: you must enter a numeric value for the discount from 1 to 100%.', array('%name' => 'Single Discount')));
   }
 
