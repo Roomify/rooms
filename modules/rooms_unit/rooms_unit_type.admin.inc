@@ -80,6 +80,16 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#maxlength' => 2,
   );
   
+	$form['rooms_description'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Select description'),
+          '#size' => 30,
+          '#maxlength' => 60,
+          '#autocomplete_path' => 'rooms-unit/autocomplete',
+          '#default_value' => '',
+          '#weight' => -1,
+        );
+	
   $form['actions'] = array('#type' => 'actions');
   $form['actions']['submit'] = array(
     '#type' => 'submit',

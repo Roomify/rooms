@@ -49,6 +49,15 @@ class RoomsUnitUIController extends EntityDefaultUIController {
 
     );
     
+    $items['rooms-unit/autocomplete'] = array(
+    'title' => 'Rooms type autocomplete',
+    'page callback' => 'rooms_type_description_autocomplete',
+    'access callback' => 'user_access',
+    'access arguments' => array('access user profiles'),
+    'type' => MENU_CALLBACK,
+    //'file' => 'user.pages.inc',
+    );
+    
     // Add menu items to add each different type of room.
     foreach (rooms_unit_get_types() as $type) {
       $items[$this->path . '/add/' . $type->type] = array(
@@ -495,5 +504,24 @@ function rooms_unit_set_breadcrumb() {
   drupal_set_breadcrumb($breadcrumb);
 }
 
+/**
+ * Callback function for autocomplete on Rooms unit type editing.
+ */
+function rooms_type_description_autocomplete($string = '') {
 
+  $matches = array();
+  if ($string) {
+    $result = db_select('node')
+          ->fields('title', array('name'))
+          ->condition('title', db_like($string) . '%', 'LIKE')
+          ->range(0, 10)
+          ->execute();
+    foreach ($result as $node) {
+      $matches[$node->title] = check_plain($node->title);
+    }
+  }
+  
+  dpm($matches);
+  drupal_json_output($matches);
+}
 
