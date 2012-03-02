@@ -47,7 +47,6 @@ function rooms_unit_views_data_alter(&$data) {
       'handler' => 'rooms_unit_handler_unit_operations_field',
     ),
   );
-  dpm($data);
 
 }
 
