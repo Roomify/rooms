@@ -457,11 +457,11 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
         $available_rooms = $units_per_type[$type][$price_level];
         for ($i = 1; $i <= $room_order['quantity']; $i++) {
           $room = array_pop($available_rooms);
-          // Create the product
-          $room_product = $agent->createProduct($room['unit']->unit_id, $room['state']);
-          
-          // Add to cart
-          $line_item = commerce_product_line_item_new($room_product, 1, 0, array(), 'product');
+
+          // Create line item
+          $line_item = $agent->createLineItem($room);
+
+          // Add line item to cart
           $line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
         }
       }
@@ -1039,4 +1039,61 @@ function rooms_booking_manager_commerce_product_type_info() {
       'description' => t('Products bookable with Rooms.'),
     ),
   );
+}
+
+/**
+ * Implements hook_ommerce_cart_line_item_refresh().
+ *
+ * When commerce recalculates the prices of the items in the cart, it doesn't take
+ * into account the price when the line item was save, and it uses the price from
+ * the product entity.
+ *
+ * Here we recalculate the item price based in the rooms price calculation.
+ */
+function rooms_booking_manager_commerce_cart_line_item_refresh($line_item, $order_wrapper) {
+  if ($line_item->type == 'rooms_booking') {
+    $start_date = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value']);
+    $end_date = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
+
+    $unit_id = $line_item->rooms_booked_unit_id[LANGUAGE_NONE][0]['value'];
+    $price_calendar = new UnitPricingCalendar($unit_id);
+    $price = $price_calendar->calculatePrice($start_date, $end_date);
+
+    // Convert to integer value as this is what Commerce expects
+    $price = commerce_currency_decimal_to_amount($price, commerce_default_currency());
+
+    $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'] = $price;
+  }
+}
+
+/**
+ * Implements hook_enable().
+ *
+ * Creates a product that can be reference from line items.
+ */
+function rooms_booking_manager_enable() {
+  $types = commerce_product_types();
+  if ($types['rooms_product']) {
+    $previous_product_id = variable_get('rooms_booking_manager_booking_product_id', 0);
+    if (!($previous_product_id && commerce_product_load($previous_product_id))) {
+      $product = commerce_product_new('rooms_product');
+      $product->sku = 'ROOMS-BASIC-BOOKING';
+      $product->title = 'Rooms Basic Booking';
+      $product->commerce_price = array(
+        'und' => array(
+            array(
+            'amount' => 0,
+            'currency_code' => commerce_default_currency(),
+            'data' => array(''),
+          ),
+        ),
+      );
+
+      commerce_product_save($product);
+      variable_set('rooms_booking_manager_booking_product_id', $product->product_id);
+    }
+  }
+  else {
+    drupal_set_message(t('There was an error creating the rooms product to handle bookings.'));
+  }
 }

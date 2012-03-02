@@ -120,8 +120,82 @@ class AvailabilityAgent {
     
     return $room_booking;  
   }
-  
-  
+
+  /**
+   * Creates products for each booking unit
+   *
+   * @param $unit_id
+   * The id of the booking unit for which we are creating a product
+   *
+   * @param $status
+   * The status of the room - this will determine the order status
+   *
+   * @returns A Commerce Product
+   */
+  public function createLineItem($room) {
+    $unit_id = $room['unit']->unit_id;
+    $status = $room['state'];
+
+    $unit = rooms_unit_load($unit_id);
+
+    $unit_type = rooms_unit_type_load($unit->type);
+
+    // Set the correct departure date for the product name (checkout day)
+    $dd = new DateTime($this->end_date->format('Y-m-d'));
+    $dd->add(new DateInterval('P1D'));
+
+    $product_id = variable_get('rooms_booking_manager_booking_product_id', 0);
+    $room_product = commerce_product_load($product_id);
+    $line_item = commerce_product_line_item_new($room_product, 1, 0, array(), 'rooms_booking');
+
+    // Product name - we set something that will make sense to the user here - this needs to be parametrised of course
+    $line_item_label = 'Booking for ' . $unit_type->label . ' Arrival: ' . $this->start_date->format('Y-m-d') . ' Departure: ' . $dd->format('Y-m-d');
+    $line_item->line_item_label = $line_item_label;
+
+    // Calculate the price
+    $price_calendar = new UnitPricingCalendar($unit_id);
+    $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
+    // Convert to integer value as this is what Commerce expects
+    $price = commerce_currency_decimal_to_amount($price, commerce_default_currency());
+
+    $commerce_unit_price = array(
+      'und' => array(
+          array(
+          'amount' => $price,
+          'currency_code' => commerce_default_currency(),
+          'data' => array(''),
+        ),
+      ),
+    );
+
+    $commerce_dates = array(
+      'und' => array( array(
+        'value' => $this->start_date->format('Y-m-d'),
+        'value2' => $this->end_date->format('Y-m-d'),
+      )),
+    );
+
+    $commerce_unit = array(
+      'und' => array( array(
+        'value' => $unit->unit_id,
+      )),
+    );
+
+    $commerce_status = array(
+      'und' => array(array(
+        'value' => $status,
+      )),
+    );
+
+    $line_item->commerce_unit_price = $commerce_unit_price;
+    $line_item->rooms_booking_dates = $commerce_dates;
+    $line_item->rooms_booked_unit_id = $commerce_unit;
+    $line_item->rooms_booked_status = $commerce_status;
+
+    return $line_item;
+  }
+
+
   /**
    * Sets the valid states for an availability search - default is "ROOMS_AVAILABLE" and
    * "ROOMS_ON_REQUEST"
