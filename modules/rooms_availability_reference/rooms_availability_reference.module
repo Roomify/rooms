@@ -129,9 +129,6 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
       $endday = $eod[$endmonth];
       $time->format('n');
       
-      
-      
-      
       drupal_add_library('rooms_availability', 'rooms_fullcalendar');
       drupal_add_js(drupal_get_path('module', 'rooms_availability_reference') . '/js/rooms_availability_reference.js');
 
