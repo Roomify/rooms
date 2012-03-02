@@ -71,7 +71,6 @@ function rooms_booking_views_data_alter(&$data) {
     'handler' => 'rooms_booking_handler_booking_type_field',
   );
 
-  dpm($data);
 }
 
 
