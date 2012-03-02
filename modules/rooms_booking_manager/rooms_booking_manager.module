@@ -1027,3 +1027,16 @@ function rooms_booking_manager_line_item_configuration($line_item_type) {
     }
   }
 }
+
+/**
+ * Implements hook_commerce_product_type_info().
+ */
+function rooms_booking_manager_commerce_product_type_info() {
+  return array(
+    'rooms_product' => array(
+      'type' => 'rooms_product',
+      'name' => t('Rooms product'),
+      'description' => t('Products bookable with Rooms.'),
+    ),
+  );
+}
