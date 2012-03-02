@@ -457,11 +457,11 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
         $available_rooms = $units_per_type[$type][$price_level];
         for ($i = 1; $i <= $room_order['quantity']; $i++) {
           $room = array_pop($available_rooms);
-          // Create the product
-          $room_product = $agent->createProduct($room['unit']->unit_id, $room['state']);
-          
-          // Add to cart
-          $line_item = commerce_product_line_item_new($room_product, 1, 0, array(), 'product');
+
+          // Create line item
+          $line_item = $agent->createLineItem($room);
+
+          // Add line item to cart
           $line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
         }
       }
@@ -771,141 +771,145 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
 /**
  * Implementation of hook_commerce_product_type_info()
  */
-function _rooms_booking_manager_product_type_fields() {
+function _rooms_booking_manager_line_item_type_fields() {
   $field_data = array(
-    'rooms_booking_dates' => array(
-      'field_name' => 'rooms_booking_dates',
-      'label' => t('Booking Dates'),
-      'cardinality' => 1,
-      'type' => 'date',
-      'module' => 'date',
-      'active' => '1',
-      'locked' => '1',
-      'settings' => array(
-        'repeat' => 0,
-        'todate' => 'required',
-        'granularity' => array(
-          'year' => 'year',
-          'month' => 'month',
-          'day' => 'day',
-        ),
-        'tz_handling' => 'none',
-        'timezone_db' => '',
-      ),
-    ),
-    'rooms_booking_dates_instance' => array(
-      'field_name' => 'rooms_booking_dates',
-      'label' => t('Booking Dates'),
-      'entity_type' => 'commerce_product',
-      'bundle' => 'rooms_booking',
-      'required' => FALSE,
-      'widget' => array(
-        'type' => 'date_popup',
+    'fields' => array(
+      'rooms_booking_dates' => array(
+        'field_name' => 'rooms_booking_dates',
+        'label' => t('Booking Dates'),
+        'cardinality' => 1,
+        'type' => 'date',
         'module' => 'date',
+        'active' => '1',
+        'locked' => '1',
         'settings' => array(
-          'default_value' => 'now',
-          'default_format' => 'medium',
-        ),
-      ),
-    ),
-    'rooms_booked_unit_id' => array(
-      'field_name' => 'rooms_booked_unit_id',
-      'label' => t('Booked Unit ID'),
-      'cardinality' => 1,
-      'type' => 'number_integer',
-      'module' => 'number',
-      'active' => 1,
-      'locked' => 1,
-      'settings' => array(
-        'size' => 8,
-        'max_length' => 10,
-        'text_processins' => 0,        
-      ),
-    ),
-    'rooms_booked_unit_id_instance' => array(
-      'field_name' => 'rooms_booked_unit_id',
-      'label' => t('Booked Unit ID'),
-      'entity_type' => 'commerce_product',
-      'bundle' => 'rooms_booking',
-      'required' => TRUE,
-      'settings' => array(
-        'size' => 8,
-        'max_length' => 10,
-        'text_processing' => 0,
-      ),
-      'widget' => array(
-        'type' => 'text_textfield',
-      ),
-      'display' => array(
-        'default' => array(
-          'label' => 'above',
-          'module' => 'number',
-          'settings' => array(
-            'decimal_separator' => '.',
-            'prefix_suffix' => TRUE,
-            'scale' => 0,
-            'thousand_separator' => ' ',
+          'repeat' => 0,
+          'todate' => 'required',
+          'granularity' => array(
+            'year' => 'year',
+            'month' => 'month',
+            'day' => 'day',
           ),
-          'type' => 'number_integer',
-          'weight' => 11,
+          'tz_handling' => 'none',
+          'timezone_db' => '',
         ),
-        'teaser' => array(
-          'label' => 'above',
-          'settings' => array(),
-          'type' => 'hidden',
-          'weight' => 0,
+      ),
+      'rooms_booked_unit_id' => array(
+        'field_name' => 'rooms_booked_unit_id',
+        'label' => t('Booked Unit ID'),
+        'cardinality' => 1,
+        'type' => 'number_integer',
+        'module' => 'number',
+        'active' => 1,
+        'locked' => 1,
+        'settings' => array(
+          'size' => 8,
+          'max_length' => 10,
+          'text_processins' => 0,        
+        ),
+      ),
+      'rooms_booked_status' => array(
+        'field_name' => 'rooms_booked_status',
+        'label' => t('Booked Unit Status'),
+        'cardinality' => 1,
+        'type' => 'number_integer',
+        'module' => 'number',
+        'active' => 1,
+        'locked' => 1,
+        'settings' => array(
+          'size' => 8,
+          'max_length' => 10,
+          'text_processins' => 0,        
         ),
       ),
     ),
-    'rooms_booked_status' => array(
-      'field_name' => 'rooms_booked_status',
-      'label' => t('Booked Unit Status'),
-      'cardinality' => 1,
-      'type' => 'number_integer',
-      'module' => 'number',
-      'active' => 1,
-      'locked' => 1,
-      'settings' => array(
-        'size' => 8,
-        'max_length' => 10,
-        'text_processins' => 0,        
-      ),
-    ),
-    'rooms_booked_status_instance' => array(
-      'field_name' => 'rooms_booked_status',
-      'label' => t('Booked Unit Status'),
-      'entity_type' => 'commerce_product',
-      'bundle' => 'rooms_booking',
-      'required' => TRUE,
-      'settings' => array(
-        'size' => 8,
-        'max_length' => 10,
-        'text_processing' => 0,
-      ),
-      'widget' => array(
-        'type' => 'text_textfield',
-      ),
-      'display' => array(
-        'default' => array(
-          'label' => 'above',
-          'module' => 'number',
+    'instances' => array(
+      'rooms_booking_dates_instance' => array(
+        'field_name' => 'rooms_booking_dates',
+        'label' => t('Booking Dates'),
+        'entity_type' => 'commerce_line_item',
+        'bundle' => 'rooms_booking',
+        'required' => FALSE,
+        'widget' => array(
+          'type' => 'date_popup',
+          'module' => 'date',
           'settings' => array(
-            'decimal_separator' => '.',
-            'prefix_suffix' => TRUE,
-            'scale' => 0,
-            'thousand_separator' => ' ',
+            'default_value' => 'now',
+            'default_format' => 'medium',
           ),
-          'type' => 'number_integer',
-          'weight' => 11,
-        ),
-        'teaser' => array(
-          'label' => 'above',
-          'settings' => array(),
-          'type' => 'hidden',
-          'weight' => 0,
         ),
       ),
-    )
+      'rooms_booked_unit_id_instance' => array(
+        'field_name' => 'rooms_booked_unit_id',
+        'label' => t('Booked Unit ID'),
+        'entity_type' => 'commerce_line_item',
+        'bundle' => 'rooms_booking',
+        'required' => TRUE,
+        'settings' => array(
+          'size' => 8,
+          'max_length' => 10,
+          'text_processing' => 0,
+        ),
+        'widget' => array(
+          'type' => 'text_textfield',
+        ),
+        'display' => array(
+          'default' => array(
+            'label' => 'above',
+            'module' => 'number',
+            'settings' => array(
+              'decimal_separator' => '.',
+              'prefix_suffix' => TRUE,
+              'scale' => 0,
+              'thousand_separator' => ' ',
+            ),
+            'type' => 'number_integer',
+            'weight' => 11,
+          ),
+          'teaser' => array(
+            'label' => 'above',
+            'settings' => array(),
+            'type' => 'hidden',
+            'weight' => 0,
+          ),
+        ),
+      ),
+      'rooms_booked_status_instance' => array(
+        'field_name' => 'rooms_booked_status',
+        'label' => t('Booked Unit Status'),
+        'entity_type' => 'commerce_line_item',
+        'bundle' => 'rooms_booking',
+        'required' => TRUE,
+        'settings' => array(
+          'size' => 8,
+          'max_length' => 10,
+          'text_processing' => 0,
+        ),
+        'widget' => array(
+          'type' => 'text_textfield',
+        ),
+        'display' => array(
+          'default' => array(
+            'label' => 'above',
+            'module' => 'number',
+            'settings' => array(
+              'decimal_separator' => '.',
+              'prefix_suffix' => TRUE,
+              'scale' => 0,
+              'thousand_separator' => ' ',
+            ),
+            'type' => 'number_integer',
+            'weight' => 11,
+          ),
+          'teaser' => array(
+            'label' => 'above',
+            'settings' => array(),
+            'type' => 'hidden',
+            'weight' => 0,
+          ),
+        ),
+      ),
+    ),
   );
 
   return $field_data;
@@ -979,5 +983,117 @@ function rooms_booking_manager_block_view($block_name = '') {
       'content' => drupal_get_form('rooms_booking_availability_search_form'),
     );
     return $block;
+  }
+}
+
+/**
+ * Implements hook_commerce_line_item_type_info().
+ */
+function rooms_booking_manager_commerce_line_item_type_info() {
+  return array(
+    'rooms_booking' => array(
+      'name' => t('Rooms Booking'),
+      'description' => t('Represents a booking of a Rooms product.'),
+      'product' => TRUE,
+      'add_form_submit_value' => t('Add product'),
+      'base' => 'rooms_booking_manager_line_item',
+    ),
+  );
+}
+
+/**
+ * Ensures the booking line item type contains a product reference field and
+ * all other rooms fields required for a booking.
+ */
+function rooms_booking_manager_line_item_configuration($line_item_type) {
+  $type = $line_item_type['type'];
+
+  // Get the info about the fields and instances we need to create
+  $field_data = _rooms_booking_manager_line_item_type_fields();
+
+  // Create the product reference field for the line item type.
+  commerce_product_reference_create_instance('commerce_product', 'commerce_line_item', $type, t('Product'));
+
+  // For each field, check whether it already exists create it if it doesn't
+  foreach ($field_data['fields'] as $field_name => $field_info) {
+    $field = field_info_field($field_name);
+    $instance = field_info_instance('commerce_line_item', $field_name, $type);
+
+    if (empty($field)) {
+      field_create_field($field_data['fields'][$field_name]);
+    }
+    if (empty($instance)) {
+      field_create_instance($field_data['instances'][$field_name .'_instance']);
+    }
+  }
+}
+
+/**
+ * Implements hook_commerce_product_type_info().
+ */
+function rooms_booking_manager_commerce_product_type_info() {
+  return array(
+    'rooms_product' => array(
+      'type' => 'rooms_product',
+      'name' => t('Rooms product'),
+      'description' => t('Products bookable with Rooms.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_ommerce_cart_line_item_refresh().
+ *
+ * When commerce recalculates the prices of the items in the cart, it doesn't take
+ * into account the price when the line item was save, and it uses the price from
+ * the product entity.
+ *
+ * Here we recalculate the item price based in the rooms price calculation.
+ */
+function rooms_booking_manager_commerce_cart_line_item_refresh($line_item, $order_wrapper) {
+  if ($line_item->type == 'rooms_booking') {
+    $start_date = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value']);
+    $end_date = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
+
+    $unit_id = $line_item->rooms_booked_unit_id[LANGUAGE_NONE][0]['value'];
+    $price_calendar = new UnitPricingCalendar($unit_id);
+    $price = $price_calendar->calculatePrice($start_date, $end_date);
+
+    // Convert to integer value as this is what Commerce expects
+    $price = commerce_currency_decimal_to_amount($price, commerce_default_currency());
+
+    $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'] = $price;
+  }
+}
+
+/**
+ * Implements hook_enable().
+ *
+ * Creates a product that can be reference from line items.
+ */
+function rooms_booking_manager_enable() {
+  $types = commerce_product_types();
+  if ($types['rooms_product']) {
+    $previous_product_id = variable_get('rooms_booking_manager_booking_product_id', 0);
+    if (!($previous_product_id && commerce_product_load($previous_product_id))) {
+      $product = commerce_product_new('rooms_product');
+      $product->sku = 'ROOMS-BASIC-BOOKING';
+      $product->title = 'Rooms Basic Booking';
+      $product->commerce_price = array(
+        'und' => array(
+            array(
+            'amount' => 0,
+            'currency_code' => commerce_default_currency(),
+            'data' => array(''),
+          ),
+        ),
+      );
+
+      commerce_product_save($product);
+      variable_set('rooms_booking_manager_booking_product_id', $product->product_id);
+    }
+  }
+  else {
+    drupal_set_message(t('There was an error creating the rooms product to handle bookings.'));
   }
 }
