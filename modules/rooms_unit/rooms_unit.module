@@ -453,7 +453,6 @@ function rooms_unit_type_description_source($string = '') {
       ->range(0, 10)
       ->execute();
     foreach ($result as $description) {
-      dpm($description);
       $matches[$description->title . ':' . $description->nid] = check_plain($description->title);
     }
   }
