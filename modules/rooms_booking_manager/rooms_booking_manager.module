@@ -1072,8 +1072,11 @@ function rooms_booking_manager_commerce_cart_line_item_refresh($line_item, $orde
  * Creates a product that can be reference from line items.
  */
 function rooms_booking_manager_enable() {
+  // Reset product types cache to have our rooms_product available
+  commerce_product_types_reset();
+
   $types = commerce_product_types();
-  if ($types['rooms_product']) {
+  if (isset($types['rooms_product']) && !empty($types['rooms_product'])) {
     $previous_product_id = variable_get('rooms_booking_manager_booking_product_id', 0);
     if (!($previous_product_id && commerce_product_load($previous_product_id))) {
       $product = commerce_product_new('rooms_product');
