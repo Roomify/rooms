@@ -822,9 +822,17 @@ function _rooms_booking_manager_line_item_type_fields() {
           'text_processins' => 0,        
         ),
       ),
+      'commerce_display_path' => array(
+        'field_name' => 'commerce_display_path',
+        'type' => 'text',
+        'cardinality' => 1,
+        'entity_types' => array('commerce_line_item'),
+        'translatable' => FALSE,
+        'locked' => TRUE,
+      ),
     ),
     'instances' => array(
-      'rooms_booking_dates_instance' => array(
+      'rooms_booking_dates' => array(
         'field_name' => 'rooms_booking_dates',
         'label' => t('Booking Dates'),
         'entity_type' => 'commerce_line_item',
@@ -839,7 +847,7 @@ function _rooms_booking_manager_line_item_type_fields() {
           ),
         ),
       ),
-      'rooms_booked_unit_id_instance' => array(
+      'rooms_booked_unit_id' => array(
         'field_name' => 'rooms_booked_unit_id',
         'label' => t('Booked Unit ID'),
         'entity_type' => 'commerce_line_item',
@@ -874,7 +882,7 @@ function _rooms_booking_manager_line_item_type_fields() {
           ),
         ),
       ),
-      'rooms_booked_status_instance' => array(
+      'rooms_booked_status' => array(
         'field_name' => 'rooms_booked_status',
         'label' => t('Booked Unit Status'),
         'entity_type' => 'commerce_line_item',
@@ -905,6 +913,26 @@ function _rooms_booking_manager_line_item_type_fields() {
             'label' => 'above',
             'settings' => array(),
             'type' => 'hidden',
+            'weight' => 0,
+          ),
+        ),
+      ),
+      'commerce_display_path' => array(
+        'field_name' => 'commerce_display_path',
+        'entity_type' => 'commerce_line_item',
+        'bundle' => 'rooms_booking',
+        'label' => t('Display path'),
+        'required' => TRUE,
+        'settings' => array(),
+
+        'widget' => array(
+          'type' => 'text_textfield',
+          'weight' => 0,
+        ),
+
+        'display' => array(
+          'display' => array(
+            'label' => 'hidden',
             'weight' => 0,
           ),
         ),
@@ -1023,7 +1051,7 @@ function rooms_booking_manager_line_item_configuration($line_item_type) {
       field_create_field($field_data['fields'][$field_name]);
     }
     if (empty($instance)) {
-      field_create_instance($field_data['instances'][$field_name .'_instance']);
+      field_create_instance($field_data['instances'][$field_name]);
     }
   }
 }
