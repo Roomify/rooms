@@ -159,7 +159,7 @@ class AvailabilityAgent {
     $price = commerce_currency_decimal_to_amount($price, commerce_default_currency());
 
     $commerce_unit_price = array(
-      'und' => array(
+      LANGUAGE_NONE => array(
           array(
           'amount' => $price,
           'currency_code' => commerce_default_currency(),
@@ -169,20 +169,20 @@ class AvailabilityAgent {
     );
 
     $commerce_dates = array(
-      'und' => array( array(
+      LANGUAGE_NONE => array( array(
         'value' => $this->start_date->format('Y-m-d'),
         'value2' => $this->end_date->format('Y-m-d'),
       )),
     );
 
     $commerce_unit = array(
-      'und' => array( array(
+      LANGUAGE_NONE => array( array(
         'value' => $unit->unit_id,
       )),
     );
 
     $commerce_status = array(
-      'und' => array(array(
+      LANGUAGE_NONE => array(array(
         'value' => $status,
       )),
     );

@@ -1090,7 +1090,16 @@ function rooms_booking_manager_commerce_cart_line_item_refresh($line_item, $orde
     // Convert to integer value as this is what Commerce expects
     $price = commerce_currency_decimal_to_amount($price, commerce_default_currency());
 
-    $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'] = $price;
+    $commerce_unit_price = array(
+      LANGUAGE_NONE => array(
+        array(
+          'amount' => $price,
+          'currency_code' => commerce_default_currency(),
+          'data' => array(''),
+        ),
+      ),
+    );
+    $line_item->commerce_unit_price = $commerce_unit_price;
   }
 }
 
