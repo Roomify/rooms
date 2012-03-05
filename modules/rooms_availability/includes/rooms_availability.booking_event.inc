@@ -227,26 +227,26 @@ class BookingEvent {
     //set the color
     switch ($this->id) {
       case ROOMS_NOT_AVAILABLE:
-        $event['color']  = 'red';
+        $event['color']  = variable_get('rooms_not_available_color');//'red';
         $event['title'] = 'N/A';
         break;
       case ROOMS_AVAILABLE:
-        $event['color'] = '#8CBF62';
+        $event['color'] = variable_get('rooms_available_color');//'#8CBF62';
         $event['borderColor'] = '#04711B';
         //$event['backgroundColor'] = 'green';
         $event['title'] = 'AV';
         break;
       case ROOMS_ON_REQUEST:
-        $event['color'] = '#C5C5C5';
+        $event['color'] = variable_get('rooms_on_request_color');//'#C5C5C5';
         $event['title'] = 'ON-REQ';
         break;        
       case ROOMS_ANON_BOOKED:
         if ($style == 'admin') {
-          $event['color'] = '#481600';
+          $event['color'] = variable_get('rooms_anon_booked_color');//'#481600';
           $event['title'] = 'A-B';
         }
         elseif ($style == ROOMS_AVAILABILITY_GENERIC_STYLE) {
-          $event['color']  = 'red';
+          $event['color']  = variable_get('rooms_not_available_color');//'red';
           $event['title'] = 'N/A';
         }
         break;        
