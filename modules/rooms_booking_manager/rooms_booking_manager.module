@@ -1157,10 +1157,10 @@ function rooms_booking_manager_commerce_product_type_info() {
 }
 
 /**
- * Implements hook_ommerce_cart_line_item_refresh().
+ * Implements hook_commerce_cart_line_item_refresh().
  *
  * When commerce recalculates the prices of the items in the cart, it doesn't take
- * into account the price when the line item was save, and it uses the price from
+ * into account the price when the line item was saved, and it uses the price from
  * the product entity.
  *
  * Here we recalculate the item price based in the rooms price calculation.
@@ -1193,7 +1193,7 @@ function rooms_booking_manager_commerce_cart_line_item_refresh($line_item, $orde
 /**
  * Implements hook_enable().
  *
- * Creates a product that can be reference from line items.
+ * Creates a product that can be referenced from line items.
  */
 function rooms_booking_manager_enable() {
   // Reset product types cache to have our rooms_product available

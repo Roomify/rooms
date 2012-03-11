@@ -3,7 +3,6 @@
 /**
  * @file
  * Install for Rooms Booking Manager module
- * table
  */
 
 function rooms_booking_manager_install() {
