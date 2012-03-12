@@ -4,4 +4,6 @@ core = 7.x
 version = 1.x-dev
 php = 5.3
 
+files[] = test/rooms_test.test
+
 package = Rooms
