@@ -5,6 +5,10 @@ version = 1.x-dev
 
 package = Rooms
 
+files[] = includes/rooms_pricing.unit_pricing_calendar.inc
+files[] = includes/rooms_pricing.pricing_event.inc
+
+
 dependencies[] = rooms_unit
 dependencies[] = rooms_availability
 dependencies[] = commerce
