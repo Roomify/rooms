@@ -9,18 +9,27 @@ class UnitPricingCalendar {
   // The bookable unit the Calendar is relevant to  
   protected $unit_id;
   
+  // The actual unit relevant to this Calendar
+  protected $unit;
+  
   // The default state for the room if it has no specific booking
   protected $default_state;
   
   // The default price for the room
   protected $default_price;
   
-  public function __construct($unit_id) {
+  // Price modfiers - an array of operations to be performed to the price. Operations
+  // are performed in the sequence they are found in the array
+  protected $price_modifiers;
+  
+  public function __construct($unit_id, $price_modifiers = array()) {
     $this->unit_id = $unit_id;
     // Load the booking unit
-    $unit = rooms_unit_load($unit_id);
-    $this->default_state = $unit->default_state;
-    $this->default_price = $unit->base_price;
+    $this->unit = rooms_unit_load($unit_id);
+    $this->default_state = $this->unit->default_state;
+    $this->default_price = $this->unit->base_price;
+    
+    $this->price_modifiers = $price_modifiers;
   }
   
   
@@ -57,9 +66,48 @@ class UnitPricingCalendar {
       $price = $price + ($days * $event->amount);
     }
     
+    $price = $this->applyPriceModifiers($price);
     return $price;
   }
   
+  /**
+   * Apply price modifiers to base price
+   * @param $price
+   * The price to modify
+   *
+   * @return
+   * The modified price
+   */
+  public function applyPriceModifiers($price) {
+    if (!empty($this->price_modifiers)) {
+      foreach ($this->price_modifiers as $modifiers) {
+        if ($modifiers['#type'] == ROOMS_PRICE_SINGLE_OCCUPANCY) {
+          $price -= $price * $this->unit->data['singlediscount'] / 100;
+        }
+        elseif ($modifiers['#type'] == ROOMS_DYNAMIC_MODIFIER) {
+          switch ($modifiers['#op_type']) {
+            case ROOMS_ADD:
+              $price += $modifiers['#amount'];
+              break;
+            case ROOMS_SUB:
+              $price -= $modifiers['#amount'];
+              break;
+            case ROOMS_REPLACE:
+              $price = $modifiers['#amount'];
+              break;
+            case ROOMS_INCREASE:
+              $price += $price * $modifiers['#amount'] / 100;
+              break;
+            case ROOMS_DECREASE:
+              $price -= $price * $modifiers['#amount'] / 100;
+              break;
+          }
+        }
+      }
+    }
+    return $price;
+  }
+
   
   /**
    * Given a date range returns an array of PricingEvents. The heavy lifting really takes place in
@@ -76,10 +124,8 @@ class UnitPricingCalendar {
    */
   public function getEvents(DateTime $start_date, DateTime $end_date) {
 
-    
     $start_day = $start_date->format('j');
     $end_day = $end_date->format('j');
-    
     
     // Get the raw day results
     $results = $this->getRawDayData($start_date, $end_date);
