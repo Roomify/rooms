@@ -138,7 +138,6 @@ class AvailabilityAgent {
           }    
     
           $price_modifiers = module_invoke_all('rooms_price_modifier_alter', $price_modifiers);
-          dpm($price_modifiers);
 
           $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
           $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
