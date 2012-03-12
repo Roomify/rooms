@@ -1,0 +1,196 @@
+<?php
+
+/**
+ * @file
+ */
+
+
+class RoomsUnitTestMain extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Rooms Unit Test Main',
+      'description' => t('Rooms Unit Test Main'),
+      'group' => 'Rooms',
+    );
+  }
+
+  public function setUp() {
+    // Enable module Rooms Unit
+    parent::setUp('rooms_unit');
+
+    // Create a new user with permissions of Configure rooms settings
+    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'administer bookable units'));
+    $this->drupalLogin($admin);
+  }
+
+  public function testRoomsMain() {
+    $this->drupalGet('admin/rooms');
+
+    $this->assertText('Bookable Units');
+    $this->assertText('Create units that can be booked such as rooms for a hotel');
+  }
+}
+
+
+class RoomsUnitTestBookable extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Rooms Unit Test Bookable',
+      'description' => t('Rooms Unit Test Bookable'),
+      'group' => 'Rooms',
+    );
+  }
+
+  public function setUp() {
+    // Enable module Rooms Unit
+    parent::setUp('rooms_unit');
+
+    // Create a new user with permissions of Configure rooms settings
+    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'administer bookable units'));
+    $this->drupalLogin($admin);
+  }
+
+  public function testRoomsBookable() {
+    $this->drupalGet('admin/rooms/units');
+
+    $this->assertText('Add a Bookable Unit');
+    $this->assertText('No bookable units have been created yet.');
+    $this->assertText('Bookable Units List');
+    $this->assertText('Bookable Units Types');
+
+    $this->drupalGet('admin/rooms/units/add');
+
+    $this->assertText('No bookable unit types have been created yet for you to use.');
+  }
+}
+
+
+class RoomsUnitTestUnitTypes extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Rooms Unit Test Unit Types',
+      'description' => t('Rooms Unit Test Unit Types'),
+      'group' => 'Rooms',
+    );
+  }
+
+  public function setUp() {
+    // Enable module Rooms Unit
+    parent::setUp('rooms_unit');
+
+    // Create a new user with permissions of Configure rooms settings
+    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'administer bookable units'));
+    $this->drupalLogin($admin);
+  }
+
+  public function testRoomsUnitTypes() {
+    $this->drupalGet('admin/rooms/units/unit-types');
+
+    $this->assertText('Add bookable unit type');
+    $this->assertText('Import bookable unit type');
+
+    $this->drupalGet('admin/rooms/units/unit-types/import');
+
+    $this->assertText('Paste an exported Bookable Unit Type here.');
+    $this->assertText('If checked, any existing Bookable Unit Type with the same identifier will be replaced by the import.');
+
+    $this->drupalGet('admin/rooms/units/unit-types/add');
+
+    $this->assertText('The human-readable name of this unit type.');
+    $this->assertText('Base price is per unit per night - the price you set here will be the default price for all units of this type. You can then change the default base price on a per unit basis');
+    $this->assertText('The default number of people that can sleeps in units of this type');
+    $this->assertText('The percentage stated will be removed from the final price');
+    $this->assertText('The node you choose here will be rendered in the booking results');
+  }
+}
+
+
+class RoomsUnitTestAddUnitType extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Rooms Unit Test Add Unit Type',
+      'description' => t('Rooms Unit Test Add Unit Type'),
+      'group' => 'Rooms',
+    );
+  }
+
+  public function setUp() {
+    // Enable module Rooms Unit
+    parent::setUp('rooms_unit');
+
+    // Create a new user with permissions of Configure rooms settings
+    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'administer bookable units'));
+    $this->drupalLogin($admin);
+  }
+
+  public function testRoomsAddUnitType() {
+    $this->drupalPost('admin/rooms/units/unit-types/add',
+        array(
+          'label' => 'Single Rooms',
+          'type' => 'single_rooms',
+          'data[base_price]' => '100',
+          'data[sleeps]' => '2',
+          'data[singlediscount]' => '10',
+        ),
+      t('Save unit type'));
+
+    $this->assertText('Single Rooms');
+    $this->assertText('edit');
+    $this->assertText('manage fields');
+    $this->assertText('manage display');
+  }
+}
+
+
+class RoomsUnitTestAddBookableUnit extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Rooms Unit Test Add Bookable Unit',
+      'description' => t('Rooms Unit Test Add Bookable Unit'),
+      'group' => 'Rooms',
+    );
+  }
+
+  public function setUp() {
+    // Enable module Rooms Unit
+    parent::setUp('rooms_unit');
+
+    // Create a new user with permissions of Configure rooms settings
+    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'administer bookable units'));
+    $this->drupalLogin($admin);
+  }
+
+  public function testRoomsAddBookableUnit() {
+    $this->drupalPost('admin/rooms/units/unit-types/add',
+        array(
+          'label' => 'Single Rooms',
+          'type' => 'single_rooms',
+          'data[base_price]' => '100',
+          'data[sleeps]' => '2',
+          'data[singlediscount]' => '10',
+        ),
+      t('Save unit type'));
+
+    $this->drupalGet('admin/rooms/units/add/single_rooms');
+
+    $this->assertRaw('name="base_price" value="100"');
+    $this->assertRaw('name="sleeps" value="2"');
+    $this->assertRaw('name="data[singlediscount]" value="10"');
+
+    $this->drupalPost('admin/rooms/units/add/single_rooms',
+        array(
+          'name' => 'Room 100',
+          'sleeps' => '2',
+          'base_price' => '100',
+          'bookable' => 1,
+          'default_state' => 1,
+          'data[singlediscount]' => '10',
+        ),
+      t('Save Unit'));
+
+    $this->assertText('Single Rooms');
+    $this->assertText('Room 100');
+    $this->assertText('Edit');
+    $this->assertText('Delete');
+  }
+}
