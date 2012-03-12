@@ -184,8 +184,6 @@ function rooms_booking_delete_form_wrapper($booking) {
  *     with only a booking type defined.
  */
 function rooms_booking_edit_form($form, &$form_state, $booking) {
-  
-    
   $client = '';
 
   // Check to see if we are loading an existing booking (existing bookings
@@ -208,13 +206,28 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#weight' => -1,
     '#required' => TRUE,
   );
-  
+  $form['data']['#tree'] = TRUE;
+  $form['data']['group_size'] = array(
+    '#type' => 'select',
+    '#title' => 'Group Size',
+    '#options' => array(
+      '1' => '1',
+      '2' => '2',
+      '3' => '3',
+      '4' => '4',
+      '5' => '5',
+      '6' => '6',
+    ),
+    '#default_value' =>  isset($booking->data['group_size']) ? $booking->data['group_size'] : '2',
+    '#description' => t('The number of people staying in this room'),
+  );  
+
   // A fieldset to hold the date range fields
   $form['rooms_date_range'] = array (
     '#type' => 'fieldset',
     '#title' => t('Assign Dates'),
   );
-
+  
   $form['rooms_date_range'] = rooms_date_range_fields($form['rooms_date_range']);
   
   // Unset the default for max days away for bookings since we are on the admin side here
@@ -307,7 +320,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
         $search_unit_type = $booking->unit_type;
       }
 
-      $available_units = rooms_booking_edit_form_get_rooms($search_unit_type, $form_state['input']['rooms_start_date']['date'], $form_state['input']['rooms_end_date']['date'], $booking);
+      $available_units = rooms_booking_edit_form_get_rooms($search_unit_type, $form_state['input']['rooms_start_date']['date'], $form_state['input']['rooms_end_date']['date'], $form_state['input']['data']['group_size'], $booking);
       if ($available_units == 2) {
         $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
           '#markup' => t('No @search_unit_type are available', array('@search_unit_type' => $search_unit_type)),
@@ -421,16 +434,15 @@ function rooms_booking_edit_form_unit_type_callback(&$form, $form_state) {
  * It makes special provisions for the currently selected unit - to consider that
  * as "available" as well.
  */
-function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date = 0, $current_booking) {
-  // Set the unit types
+function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date = 0, $group_size, $current_booking) {
+  // Set the unit types,
   $unit_types = array($select);
 
   $available_units = array();
   
   // The current unit for this booking should also return as available
   $current_booking_state = isset($current_booking->booking_id) ? rooms_availability_assign_id($current_booking->booking_id) : '';
-  
-  $ac = new AvailabilityAgent($start_date, $end_date, 1, 1, array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, $current_booking_state), $unit_types);
+  $ac = new AvailabilityAgent($start_date, $end_date, $group_size, 1, array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, $current_booking_state), $unit_types);
   $available_units = $ac->checkAvailability();
     
   return $available_units;   
@@ -489,7 +501,7 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
   $end_date = $form_state['values']['rooms_end_date'];
   
   $unit = 0;
-  if (!empty($form_state['values']['unit_id'])) {
+  if (isset($form_state['values']['unit_id'])) {
     $unit = $form_state['values']['unit_id'];
   } 
   
@@ -525,6 +537,10 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
     
     $booking = entity_ui_controller('rooms_booking')->entityFormSubmitBuildEntity($form, $form_state);
     $booking->changed = time();
+    
+    // Get the unit id from the booking to be used further down as it is not in the form_values because
+    // of how unit ids are assigned
+    $unit = $booking->unit_id;
   }
   
   $booking->save();
@@ -549,7 +565,7 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
       $be->lock();
     }
     else {
-      drupal_set_message(t('Room Availability could not be updated'));
+      drupal_set_message(t('Room Availability could not be updated'), 'error');
     }
   }
   
