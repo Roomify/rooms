@@ -16,3 +16,5 @@ dependencies[] = date
 dependencies[] = date_api
 dependencies[] = date_popup
 dependencies[] = colorbox
+
+files[] = test/rooms_availability_test.test
