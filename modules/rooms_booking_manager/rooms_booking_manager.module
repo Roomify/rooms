@@ -542,14 +542,14 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
   
   // We are going to check that this is still true - but let us try and service the order
   foreach ($order as $type => $price_serving) {
-    foreach ($price_serving as $price_level => $room_order) {
-      if ($room_order['quantity'] > 0) {
-        $available_rooms = $units_per_type[$type][$price_level];
-        for ($i = 1; $i <= $room_order['quantity']; $i++) {
-          $room = array_pop($available_rooms);
+    foreach ($price_serving as $price_level => $unit_order) {
+      if ($unit_order['quantity'] > 0) {
+        $available_units = $units_per_type[$type][$price_level];
+        for ($i = 1; $i <= $unit_order['quantity']; $i++) {
+          $unit = array_pop($available_unit);
 
           // Create line item
-          $line_item = $agent->createLineItem($room);
+          $line_item = rooms_create_line_item($unit, $agent);
 
           // Add line item to cart
           $line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);

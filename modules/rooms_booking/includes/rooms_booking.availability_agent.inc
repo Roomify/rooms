@@ -45,156 +45,6 @@ class AvailabilityAgent {
     $this->unit_types = $unit_types;
   }
   
-  /**
-   * Creates products for each booking unit
-   *
-   * @param $unit_id
-   * The id of the booking unit for which we are creating a product
-   *
-   * @param $status
-   * The status of the room - this will determine the order status
-   *
-   * @returns A Commerce Product
-   */
-  public function createProduct($unit_id, $status) {
-
-    $unit = rooms_unit_load($unit_id);
-    
-    $unit_type = rooms_unit_type_load($unit->type);
-    
-    // Set the correct departure date for the product name (checkout day)
-    $dd = new DateTime($this->end_date->format('Y-m-d'));
-    $dd->add(new DateInterval('P1D'));
-  
-    // Create product
-    $room_booking = commerce_product_new('rooms_booking');
-    // SKU's need to be unique so we are adding system time to each product
-    $room_booking->sku = 'UNIT' . $unit_id . ' - ' . time();
-    // Product name - we set something that will make sense to the user here - this needs to be parametrised of course
-    $room_booking->title = 'Booking for ' . $unit_type->label . ' Arrival: ' . $this->start_date->format('Y-m-d') . ' Departure: ' . $dd->format('Y-m-d');
-    // Save the product and then we will add fields to it.
-    commerce_product_save($room_booking);
-  
-    // Calculate the price
-    $price_calendar = new UnitPricingCalendar($unit_id);
-    $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
-    // Convert to integer value as this is what Commerce expects
-    $price = commerce_currency_decimal_to_amount($price, commerce_default_currency());
-        
-    $commerce_price = array(
-      'und' => array(
-          array( 
-          'amount' => $price,
-          'currency_code' => commerce_default_currency(),
-          'data' => array(''),
-        ),
-      ),
-    );
-    
-    $commerce_dates = array(
-      'und' => array( array( 
-        'value' => $this->start_date->format('Y-m-d'),
-        'value2' => $this->end_date->format('Y-m-d'),
-      )),
-    );
-  
-    $commerce_unit = array(
-      'und' => array( array(
-        'value' => $unit->unit_id,
-      )),
-    );
-  
-    $commerce_status = array(
-      'und' => array(array(
-        'value' => $status,
-      )),
-    );
-    
-    $room_booking->commerce_price = $commerce_price;
-    $room_booking->rooms_booking_dates = $commerce_dates;
-    $room_booking->rooms_booked_unit_id = $commerce_unit;
-    $room_booking->rooms_booked_status = $commerce_status;
-
-    // Save the fields as well and return the product
-    field_attach_update('commerce_product', $room_booking);
-    
-    return $room_booking;  
-  }
-
-  /**
-   * Creates products for each booking unit
-   *
-   * @param $unit_id
-   * The id of the booking unit for which we are creating a product
-   *
-   * @param $status
-   * The status of the room - this will determine the order status
-   *
-   * @returns A Commerce Product
-   */
-  public function createLineItem($room) {
-    $unit_id = $room['unit']->unit_id;
-    $status = $room['state'];
-
-    $unit = rooms_unit_load($unit_id);
-
-    $unit_type = rooms_unit_type_load($unit->type);
-
-    // Set the correct departure date for the product name (checkout day)
-    $dd = new DateTime($this->end_date->format('Y-m-d'));
-    $dd->add(new DateInterval('P1D'));
-
-    $product_id = variable_get('rooms_booking_manager_booking_product_id', 0);
-    $room_product = commerce_product_load($product_id);
-    $line_item = commerce_product_line_item_new($room_product, 1, 0, array(), 'rooms_booking');
-
-    // Product name - we set something that will make sense to the user here - this needs to be parametrised of course
-    $line_item_label = 'Booking for ' . $unit_type->label . ' Arrival: ' . $this->start_date->format('Y-m-d') . ' Departure: ' . $dd->format('Y-m-d');
-    $line_item->line_item_label = $line_item_label;
-
-    // Calculate the price
-    $price_calendar = new UnitPricingCalendar($unit_id);
-    $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
-    // Convert to integer value as this is what Commerce expects
-    $price = commerce_currency_decimal_to_amount($price, commerce_default_currency());
-
-    $commerce_unit_price = array(
-      LANGUAGE_NONE => array(
-          array(
-          'amount' => $price,
-          'currency_code' => commerce_default_currency(),
-          'data' => array(''),
-        ),
-      ),
-    );
-
-    $commerce_dates = array(
-      LANGUAGE_NONE => array( array(
-        'value' => $this->start_date->format('Y-m-d'),
-        'value2' => $this->end_date->format('Y-m-d'),
-      )),
-    );
-
-    $commerce_unit = array(
-      LANGUAGE_NONE => array( array(
-        'value' => $unit->unit_id,
-      )),
-    );
-
-    $commerce_status = array(
-      LANGUAGE_NONE => array(array(
-        'value' => $status,
-      )),
-    );
-
-    $line_item->commerce_unit_price = $commerce_unit_price;
-    $line_item->rooms_booking_dates = $commerce_dates;
-    $line_item->rooms_booked_unit_id = $commerce_unit;
-    $line_item->rooms_booked_status = $commerce_status;
-
-    return $line_item;
-  }
-
 
   /**
    * Sets the valid states for an availability search - default is "ROOMS_AVAILABLE" and
@@ -279,7 +129,18 @@ class AvailabilityAgent {
         $state_diff = array_diff($states, $this->valid_states);
         if (count($state_diff) == 0) {
           // Calculate the price as well to add to the array
-          $price_calendar = new UnitPricingCalendar($unit->unit_id);
+          
+          // First set up price modifiers
+          $price_modifiers = array();
+    
+          if ($this->group_size == 1) {
+            $price_modifiers['single'] = array('#type' => ROOMS_PRICE_SINGLE_OCCUPANCY);
+          }    
+    
+          $price_modifiers = module_invoke_all('rooms_price_modifier_alter', $price_modifiers);
+          dpm($price_modifiers);
+
+          $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
           $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
           $units[$unit->type][$price][$unit->unit_id]['unit'] = $unit;
           $units[$unit->type][$price][$unit->unit_id]['price'] = $price; 
