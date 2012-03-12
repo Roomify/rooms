@@ -95,7 +95,7 @@ function rooms_booking_schema() {
         'not null' => FALSE,
         'description' => 'The end date for the booking.',
       ),
-        'order_id' => array(
+      'order_id' => array(
         'description' => 'The order_id this booking may be tied to.',
         'type' => 'int',
         'not null' => TRUE,
