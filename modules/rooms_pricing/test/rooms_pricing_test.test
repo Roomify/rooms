@@ -1,0 +1,109 @@
+<?php
+
+/**
+ * @file
+ */
+
+
+class RoomsPricingTestMain extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Rooms Pricing Test Main',
+      'description' => t('Rooms Pricing Test Main'),
+      'group' => 'Rooms',
+    );
+  }
+
+  public function setUp() {
+    // Enable module Rooms Unit
+    parent::setUp('rooms_pricing');
+
+    // Create a new user with permissions of Configure rooms settings
+    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view availability information', 'administer bookable units', 'manage booking unit pricing'));
+    $this->drupalLogin($admin);
+  }
+
+  public function testRoomsPricing() {
+    $this->drupalPost('admin/rooms/units/unit-types/add',
+        array(
+          'label' => 'Single Rooms',
+          'type' => 'single_rooms',
+          'data[base_price]' => '100',
+          'data[sleeps]' => '2',
+          'data[singlediscount]' => '10',
+        ),
+      t('Save unit type'));
+
+    $this->drupalPost('admin/rooms/units/add/single_rooms',
+        array(
+          'name' => 'Room 100',
+          'sleeps' => '2',
+          'base_price' => '100',
+          'bookable' => 1,
+          'default_state' => 1,
+          'data[singlediscount]' => '10',
+        ),
+      t('Save Unit'));
+
+    $this->drupalGet('admin/rooms/units');
+
+    $this->assertText('Manage Pricing');
+
+    $this->drupalPost('admin/rooms/units/unit/1/pricing',
+        array(
+          'rooms_start_date[date]' => '2012/03/13',
+          'rooms_end_date[date]' => '2012/03/17',
+          'operation' => 'replace',
+          'amount' => 200,
+        ),
+      t('Update Room Pricing'));
+
+    $this->drupalPost('admin/rooms/units/unit/1/pricing',
+        array(
+          'rooms_start_date[date]' => '2012/03/21',
+          'rooms_end_date[date]' => '2012/03/24',
+          'operation' => 'add',
+          'amount' => 20,
+        ),
+      t('Update Room Pricing'));
+
+    $this->drupalPost('admin/rooms/units/unit/1/pricing',
+        array(
+          'rooms_start_date[date]' => '2012/04/21',
+          'rooms_end_date[date]' => '2012/04/24',
+          'operation' => 'sub',
+          'amount' => 40,
+        ),
+      t('Update Room Pricing'));
+
+    $this->drupalPost('admin/rooms/units/unit/1/pricing',
+        array(
+          'rooms_start_date[date]' => '2012/04/26',
+          'rooms_end_date[date]' => '2012/04/28',
+          'operation' => 'increase',
+          'amount' => 3,
+        ),
+      t('Update Room Pricing'));
+
+    $this->drupalPost('admin/rooms/units/unit/1/pricing',
+        array(
+          'rooms_start_date[date]' => '2012/05/01',
+          'rooms_end_date[date]' => '2012/05/30',
+          'operation' => 'decrease',
+          'amount' => 4,
+        ),
+      t('Update Room Pricing'));
+
+    $this->drupalGet('admin/rooms/units/unit/1/pricing/json/2012/3&_=1331565982061&start=1330210800&end=1333836000');
+
+    $this->assertText('[{"id":100,"start":"2012-03-01","end":"2012-03-12","color":"green","title":"100"},{"id":200,"start":"2012-03-13","end":"2012-03-17","color":"green","title":"200"},{"id":100,"start":"2012-03-18","end":"2012-03-20","color":"green","title":"100"},{"id":120,"start":"2012-03-21","end":"2012-03-24","color":"green","title":"120"},{"id":100,"start":"2012-03-25","end":"2012-03-31","color":"green","title":"100"}]');
+
+    $this->drupalGet('admin/rooms/units/unit/1/pricing/json/2012/4&_=1331565982109&start=1333231200&end=1336860000');
+
+    $this->assertText('[{"id":100,"start":"2012-04-01","end":"2012-04-20","color":"green","title":"100"},{"id":60,"start":"2012-04-21","end":"2012-04-24","color":"orange","title":"60"},{"id":100,"start":"2012-04-25","end":"2012-04-25","color":"green","title":"100"},{"id":103,"start":"2012-04-26","end":"2012-04-28","color":"green","title":"103"},{"id":100,"start":"2012-04-29","end":"2012-04-30","color":"green","title":"100"}]');
+
+    $this->drupalGet('admin/rooms/units/unit/1/pricing/json/2012/5&_=1331565982158&start=1335650400&end=1339279200');
+
+    $this->assertText('[{"id":96,"start":"2012-05-01","end":"2012-05-30","color":"orange","title":"96"},{"id":100,"start":"2012-05-31","end":"2012-05-31","color":"green","title":"100"}]');
+  }
+}
