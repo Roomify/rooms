@@ -566,11 +566,17 @@ function rooms_availability_theme() {
  *
  * @todo - Make this depend on a paramenter
  */
-function rooms_availability_assign_id($id) {
+function rooms_availability_assign_id($id, $status) {
   // Add eleven for now - this allows for 10 states that do not
   // refer to a specific booking
   $id = $id + 11;
-  return $id;
+
+  if ($status == '0') {
+    return -($id);
+  }
+  else {
+    return $id;
+  }
 }
 
 
