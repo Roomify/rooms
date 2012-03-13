@@ -1,0 +1,179 @@
+<?php
+
+/**
+ * @file
+ */
+
+
+class RoomsBookingTestMain extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Rooms Booking Test Main',
+      'description' => t('Rooms Booking Test Main'),
+      'group' => 'Rooms',
+    );
+  }
+
+  public function setUp() {
+    // Enable module Rooms Unit
+    parent::setUp('rooms_booking');
+
+    // Create a new user with permissions of Configure rooms settings
+    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view availability information', 'administer bookable units', 'manage booking unit pricing', 'administer booking types', 'administer bookings'));
+    $this->drupalLogin($admin);
+  }
+
+  public function testRoomsBooking() {
+    $this->drupalPost('admin/rooms/units/unit-types/add',
+        array(
+          'label' => 'Single Rooms',
+          'type' => 'single_rooms',
+          'data[base_price]' => '100',
+          'data[sleeps]' => '2',
+          'data[singlediscount]' => '10',
+        ),
+      t('Save unit type'));
+
+    $this->drupalPost('admin/rooms/units/add/single_rooms',
+        array(
+          'name' => 'Room 100',
+          'sleeps' => '2',
+          'base_price' => '100',
+          'bookable' => 1,
+          'default_state' => 1,
+          'data[singlediscount]' => '10',
+        ),
+      t('Save Unit'));
+
+    $this->drupalGet('admin/rooms/bookings');
+
+    $this->assertText('No bookings have been created yet.');
+
+    $this->drupalPostAJAX('admin/rooms/bookings/add/standard_booking',
+      array(
+        'client' => 'user1',
+        'rooms_start_date[date]' => '2012/06/05',
+        'rooms_end_date[date]' => '2012/06/06',
+        'data[group_size]' => 2,
+      ),
+      array('op' => 'Assign Room'));
+
+    $this->drupalPostAJAX(NULL,
+      array(
+        'client' => 'user1',
+        'rooms_start_date[date]' => '2012/06/05',
+        'rooms_end_date[date]' => '2012/06/06',
+        'data[group_size]' => 2,
+        'unit_type' => 'single_rooms',
+      ),
+      'unit_type');
+
+    $this->assertText('Room 100 - Cost: 100USD');
+
+    $this->drupalPost(NULL,
+        array(
+          'client' => 'user1',
+          'rooms_start_date[date]' => '2012/06/05',
+          'rooms_end_date[date]' => '2012/06/06',
+          'data[group_size]' => 2,
+          'unit_type' => 'single_rooms',
+          'unit_id' => 1,
+        ),
+      t('Save Booking'));
+
+    $this->assertText('Bookings List');
+    $this->assertText('user1');
+    $this->assertText('2012-06-05');
+    $this->assertText('2012-06-06');
+    $this->assertText('Room 100');
+    $this->assertText('Standard Booking');
+    $this->assertText('Delete');
+  }
+}
+
+
+class RoomsBookingTestSingleOccupancy extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Rooms Booking Test Single Occupancy',
+      'description' => t('Rooms Booking Test Single Occupancy'),
+      'group' => 'Rooms',
+    );
+  }
+
+  public function setUp() {
+    // Enable module Rooms Unit
+    parent::setUp('rooms_booking');
+
+    // Create a new user with permissions of Configure rooms settings
+    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view availability information', 'administer bookable units', 'manage booking unit pricing', 'administer booking types', 'administer bookings'));
+    $this->drupalLogin($admin);
+  }
+
+  public function testRoomsBookingSingleOccupancy() {
+    $this->drupalPost('admin/rooms/units/unit-types/add',
+        array(
+          'label' => 'Single Rooms',
+          'type' => 'single_rooms',
+          'data[base_price]' => '100',
+          'data[sleeps]' => '2',
+          'data[singlediscount]' => '10',
+        ),
+      t('Save unit type'));
+
+    $this->drupalPost('admin/rooms/units/add/single_rooms',
+        array(
+          'name' => 'Room 100',
+          'sleeps' => '2',
+          'base_price' => '100',
+          'bookable' => 1,
+          'default_state' => 1,
+          'data[singlediscount]' => '10',
+        ),
+      t('Save Unit'));
+
+    $this->drupalGet('admin/rooms/bookings');
+
+    $this->assertText('No bookings have been created yet.');
+
+    $this->drupalPostAJAX('admin/rooms/bookings/add/standard_booking',
+      array(
+        'client' => 'user1',
+        'rooms_start_date[date]' => '2012/08/01',
+        'rooms_end_date[date]' => '2012/08/08',
+        'data[group_size]' => 1,
+      ),
+      array('op' => 'Assign Room'));
+
+    $this->drupalPostAJAX(NULL,
+      array(
+        'client' => 'user1',
+        'rooms_start_date[date]' => '2012/08/01',
+        'rooms_end_date[date]' => '2012/08/08',
+        'data[group_size]' => 1,
+        'unit_type' => 'single_rooms',
+      ),
+      'unit_type');
+
+    $this->assertText('Room 100 - Cost: 630USD');
+
+    $this->drupalPost(NULL,
+        array(
+          'client' => 'user1',
+          'rooms_start_date[date]' => '2012/08/01',
+          'rooms_end_date[date]' => '2012/08/08',
+          'data[group_size]' => 1,
+          'unit_type' => 'single_rooms',
+          'unit_id' => 1,
+        ),
+      t('Save Booking'));
+
+    $this->assertText('Bookings List');
+    $this->assertText('user1');
+    $this->assertText('2012-08-01');
+    $this->assertText('2012-08-08');
+    $this->assertText('Room 100');
+    $this->assertText('Standard Booking');
+    $this->assertText('Delete');
+  }
+}
