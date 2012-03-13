@@ -592,6 +592,97 @@ function rooms_availability_fullcalendar_get_js_path() {
 }
 
 /**
+ * Implementation of hook_form_alter()
+ */
+function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'rooms_booking_settings') {    
+    $form['rooms_not_available_color'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Not available rooms color'),
+      '#size' => 10,
+      '#maxlength' => 7,
+      '#default_value' => variable_get('rooms_not_available_color', '#FF0000'),
+      '#element_validate' => array('rooms_booking_manager_validate_hex_color'), 
+      '#dependency' => array('edit-row-options-colors-legend' => array('type')), 
+      '#prefix' => '<div class="rooms-colorpicker-wrapper">', 
+      '#suffix' => '<div class="rooms-colorpicker"></div></div>', 
+      '#attributes' => array('class' => array('rooms-edit-colorpicker')), 
+      '#attached' => array(
+        // Add Farbtastic color picker.
+        'library' => array(
+          array('system', 'farbtastic'),
+        ),
+        // Add javascript to trigger the colorpicker. 
+        'js' => array(drupal_get_path('module', 'rooms_availability') . '/js/rooms_color.js'),
+      ),
+    );
+
+    $form['rooms_available_color'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Available rooms color'),
+      '#size' => 10,
+      '#maxlength' => 7,
+      '#default_value' => variable_get('rooms_available_color', '#8CBF62'),
+      '#element_validate' => array('rooms_booking_manager_validate_hex_color'), 
+      '#dependency' => array('edit-row-options-colors-legend' => array('type')), 
+      '#prefix' => '<div class="rooms-colorpicker-wrapper">', 
+      '#suffix' => '<div class="rooms-colorpicker"></div></div>', 
+      '#attributes' => array('class' => array('rooms-edit-colorpicker')), 
+      '#attached' => array(
+        // Add Farbtastic color picker.
+        'library' => array(
+          array('system', 'farbtastic'),
+        ),
+        // Add javascript to trigger the colorpicker. 
+        'js' => array(drupal_get_path('module', 'rooms_availability') . '/js/rooms_color.js'),
+      ),
+    );
+
+    $form['rooms_on_request_color'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Available on request rooms color'),
+      '#size' => 10,
+      '#maxlength' => 7,
+      '#default_value' => variable_get('rooms_on_request_color', '#C5C5C5'),
+      '#element_validate' => array('rooms_booking_manager_validate_hex_color'), 
+      '#dependency' => array('edit-row-options-colors-legend' => array('type')), 
+      '#prefix' => '<div class="rooms-colorpicker-wrapper">', 
+      '#suffix' => '<div class="rooms-colorpicker"></div></div>', 
+      '#attributes' => array('class' => array('rooms-edit-colorpicker')), 
+      '#attached' => array(
+        // Add Farbtastic color picker.
+        'library' => array(
+          array('system', 'farbtastic'),
+        ),
+        // Add javascript to trigger the colorpicker. 
+        'js' => array(drupal_get_path('module', 'rooms_availability') . '/js/rooms_color.js'),
+      ),
+    );
+
+    $form['rooms_anon_booked_color'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Anonymous rooms color'),
+      '#size' => 10,
+      '#maxlength' => 7,
+      '#default_value' => variable_get('rooms_anon_booked_color', '#481600'),
+      '#element_validate' => array('rooms_booking_manager_validate_hex_color'), 
+      '#dependency' => array('edit-row-options-colors-legend' => array('type')), 
+      '#prefix' => '<div class="rooms-colorpicker-wrapper">', 
+      '#suffix' => '<div class="rooms-colorpicker"></div></div>', 
+      '#attributes' => array('class' => array('rooms-edit-colorpicker')), 
+      '#attached' => array(
+        // Add Farbtastic color picker.
+        'library' => array(
+          array('system', 'farbtastic'),
+        ),
+        // Add javascript to trigger the colorpicker. 
+        'js' => array(drupal_get_path('module', 'rooms_availability') . '/js/rooms_color.js'),
+      ),
+    );
+  }
+}
+
+/**
  * Implements hook_colorbox_settings_alter
  *
  * @todo Figure out if this is the right way to get the settings we need
