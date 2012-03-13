@@ -1,0 +1,113 @@
+<?php
+
+/**
+ * @file
+ */
+
+
+class RoomsAvailabilityReferenceTestMain extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Rooms Availability Reference Test Main',
+      'description' => t('Rooms Availability Reference Test Main'),
+      'group' => 'Rooms',
+    );
+  }
+
+  public function setUp() {
+    // Enable module Rooms Unit
+    parent::setUp(array('rooms_availability_reference', 'rooms_pricing', 'rooms_booking'));
+
+    // Create a new user with permissions of Configure rooms settings
+    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view availability information', 'administer bookable units', 'manage booking unit pricing', 'administer booking types', 'administer bookings', 'reference booking unit availability', 'administer content types', 'create article content'));
+    $this->drupalLogin($admin);
+  }
+
+  public function testRoomsAvailabilityReference() {
+        $this->drupalPost('admin/rooms/units/unit-types/add',
+        array(
+          'label' => 'Single Rooms',
+          'type' => 'single_rooms',
+          'data[base_price]' => '100',
+          'data[sleeps]' => '2',
+          'data[singlediscount]' => '10',
+        ),
+      t('Save unit type'));
+
+    $this->drupalPost('admin/rooms/units/add/single_rooms',
+        array(
+          'name' => 'Room 100',
+          'sleeps' => '2',
+          'base_price' => '100',
+          'bookable' => 1,
+          'default_state' => 1,
+          'data[singlediscount]' => '10',
+        ),
+      t('Save Unit'));
+
+    $this->drupalPost('admin/rooms/units/unit/1/availability/2012/3',
+        array(
+          'rooms_start_date[date]' => '2012/03/13',
+          'rooms_end_date[date]' => '2012/03/17',
+          'unit_state' => 0,
+        ),
+      t('Update Room Availability'));
+
+    $this->drupalPost('admin/rooms/units/unit/1/availability/2012/3',
+        array(
+          'rooms_start_date[date]' => '2012/03/19',
+          'rooms_end_date[date]' => '2012/03/20',
+          'unit_state' => 2,
+        ),
+      t('Update Room Availability'));
+
+    $this->drupalPost('admin/rooms/units/unit/1/availability/2012/3',
+        array(
+          'rooms_start_date[date]' => '2012/04/10',
+          'rooms_end_date[date]' => '2012/04/20',
+          'unit_state' => 3,
+        ),
+      t('Update Room Availability'));
+
+    $this->drupalPost('admin/rooms/units/unit/1/availability/2012/3',
+        array(
+          'rooms_start_date[date]' => '2012/05/01',
+          'rooms_end_date[date]' => '2012/05/27',
+          'unit_state' => 0,
+        ),
+      t('Update Room Availability'));
+
+    $this->drupalPost('admin/structure/types/manage/article/fields',
+        array(
+          'fields[_add_new_field][label]' => 'Avail Reference',
+          'fields[_add_new_field][field_name]' => 'article_availreference',
+          'fields[_add_new_field][type]' => 'rooms_availability_reference',
+          'fields[_add_new_field][widget_type]' => 'rooms_availability_reference_autocomplete',
+        ),
+      t('Save'));
+
+    $this->drupalPost(NULL,
+        array(
+          'field[settings][referenceable_unit_types][single_rooms]' => 'single_rooms',
+        ),
+      t('Save field settings'));
+
+    $this->drupalPost(NULL, array(), t('Save settings'));
+
+    $this->drupalPost('node/add/article',
+        array(
+          'title' => 'Article example rooms',
+          'field_article_availreference[und][0][unit_id]' => 'Room 100 [unit_id:1]',
+        ),
+      t('Save'));
+
+    $this->drupalGet('node/1');
+
+    $this->assertText('Article example rooms');
+    $this->assertText('Room 100');
+
+    $this->drupalGet('rooms/units/unit/1/availability/json/12/3/1/13/3/31/2&_=1331654449944&start=1330210800&end=1333836000');
+
+    $this->assertText('[{"id":"1","start":"2012-03-01T13:00:00Z","end":"2012-03-12T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"0","start":"2012-03-13T13:00:00Z","end":"2012-03-17T13:00:00Z","title":"N\/A","color":null},{"id":"1","start":"2012-03-18T13:00:00Z","end":"2012-03-18T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"2","start":"2012-03-19T13:00:00Z","end":"2012-03-20T13:00:00Z","title":"ON-REQ","color":null},{"id":"1","start":"2012-03-21T13:00:00Z","end":"2012-03-31T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"1","start":"2012-04-01T13:00:00Z","end":"2012-04-09T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"3","start":"2012-04-10T13:00:00Z","end":"2012-04-20T13:00:00Z","title":"N\/A","color":null},{"id":"1","start":"2012-04-21T13:00:00Z","end":"2012-04-30T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"0","start":"2012-05-01T13:00:00Z","end":"2012-05-27T13:00:00Z","title":"N\/A","color":null},{"id":"1","start":"2012-05-28T13:00:00Z","end":"2012-05-31T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"1","start":"2012-06-01T13:00:00Z","end":"2012-06-30T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"1","start":"2012-07-01T13:00:00Z","end":"2012-07-31T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"1","start":"2012-08-01T13:00:00Z","end":"2012-08-31T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"1","start":"2012-09-01T13:00:00Z","end":"2012-09-30T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"1","start":"2012-10-01T13:00:00Z","end":"2012-10-31T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"1","start":"2012-11-01T13:00:00Z","end":"2012-11-30T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"1","start":"2012-12-01T13:00:00Z","end":"2012-12-31T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"1","start":"2013-01-01T13:00:00Z","end":"2013-01-31T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"1","start":"2013-02-01T13:00:00Z","end":"2013-02-28T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"1","start":"2013-03-01T13:00:00Z","end":"2013-03-31T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"}]');
+  }
+}

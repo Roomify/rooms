@@ -6,3 +6,5 @@ version = 1.x-dev
 package = Rooms
 
 dependencies[] = rooms_availability
+
+files[] = test/rooms_availability_reference_test.test
