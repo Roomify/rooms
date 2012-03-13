@@ -2,12 +2,11 @@
 
 /**
  * @file
- * Contains the main integration pint with Drupal Commerce - eventually all commerce-related functions should move
+ * Contains the main integration points with Drupal Commerce - eventually all commerce-related functions should move here
  * here.
  */
 
-
-
+ 
 function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
     
     $unit_id = $unit_to_book['unit']->unit_id;
@@ -38,7 +37,9 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
       $price_modifiers['single'] = array('#type' => ROOMS_PRICE_SINGLE_OCCUPANCY);
     }    
     
-    module_invoke_all('rooms_price_modifier_alter', $price_modfiers);
+    $price_modifiers = module_invoke_all('rooms_price_modifier_alter', $price_modifiers);
+    dpm($unit);
+    $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
     
     $price = $price_calendar->calculatePrice($agent->start_date, $agent->end_date, $price_modifiers);
     

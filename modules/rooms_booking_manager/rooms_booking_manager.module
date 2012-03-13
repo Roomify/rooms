@@ -520,6 +520,9 @@ function book_units_per_type_form_validate(&$form, &$form_state) {
  *@todo - fix the user ownership of products
  */
 function book_units_per_type_form_submit(&$form, &$form_state) {
+  
+  module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.commerce');
+  
   global $user;
   
   $start_date = $form_state['values']['start_date'];
@@ -546,7 +549,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
       if ($unit_order['quantity'] > 0) {
         $available_units = $units_per_type[$type][$price_level];
         for ($i = 1; $i <= $unit_order['quantity']; $i++) {
-          $unit = array_pop($available_unit);
+          $unit = array_pop($available_units);
 
           // Create line item
           $line_item = rooms_create_line_item($unit, $agent);
@@ -1172,8 +1175,11 @@ function rooms_booking_manager_commerce_cart_line_item_refresh($line_item, $orde
 
     $unit_id = $line_item->rooms_booked_unit_id[LANGUAGE_NONE][0]['value'];
     $price_calendar = new UnitPricingCalendar($unit_id);
-    $price = $price_calendar->calculatePrice($start_date, $end_date);
 
+    $price_modifiers = array();
+    $price_modifiers = module_invoke_all('rooms_price_modifier_alter', $price_modifiers);    
+    
+    $price = $price_calendar->calculatePrice($start_date, $end_date);
     // Convert to integer value as this is what Commerce expects
     $price = commerce_currency_decimal_to_amount($price, commerce_default_currency());
 
