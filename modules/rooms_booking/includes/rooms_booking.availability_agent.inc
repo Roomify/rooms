@@ -132,12 +132,12 @@ class AvailabilityAgent {
           
           // First set up price modifiers
           $price_modifiers = array();
-    
+
           if ($this->group_size == 1) {
             $price_modifiers['single'] = array('#type' => ROOMS_PRICE_SINGLE_OCCUPANCY);
-          }    
-    
-          $price_modifiers = module_invoke_all('rooms_price_modifier_alter', $price_modifiers);
+          }
+
+          module_invoke_all('rooms_price_modifier_alter', $price_modifiers);
 
           $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
           $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
