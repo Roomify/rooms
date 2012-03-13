@@ -1,0 +1,96 @@
+<?php
+
+/**
+ * @file
+ */
+
+
+class RoomsAvailabilityTestMain extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Rooms Availability Test Main',
+      'description' => t('Rooms Availability Test Main'),
+      'group' => 'Rooms',
+    );
+  }
+
+  public function setUp() {
+    // Enable module Rooms Unit
+    parent::setUp('rooms_availability');
+
+    // Create a new user with permissions of Configure rooms settings
+    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view availability information', 'administer bookable units'));
+    $this->drupalLogin($admin);
+  }
+
+  public function testRoomsAddBookableUnit() {
+    $this->drupalPost('admin/rooms/units/unit-types/add',
+        array(
+          'label' => 'Single Rooms',
+          'type' => 'single_rooms',
+          'data[base_price]' => '100',
+          'data[sleeps]' => '2',
+          'data[singlediscount]' => '10',
+        ),
+      t('Save unit type'));
+
+    $this->drupalPost('admin/rooms/units/add/single_rooms',
+        array(
+          'name' => 'Room 100',
+          'sleeps' => '2',
+          'base_price' => '100',
+          'bookable' => 1,
+          'default_state' => 1,
+          'data[singlediscount]' => '10',
+        ),
+      t('Save Unit'));
+
+    $this->drupalGet('admin/rooms/units');
+
+    $this->assertText('Manage Availability');
+
+    $this->drupalPost('admin/rooms/units/unit/1/availability/2012/3',
+        array(
+          'rooms_start_date[date]' => '2012/03/13',
+          'rooms_end_date[date]' => '2012/03/17',
+          'unit_state' => 0,
+        ),
+      t('Update Room Availability'));
+
+    $this->drupalPost('admin/rooms/units/unit/1/availability/2012/3',
+        array(
+          'rooms_start_date[date]' => '2012/03/19',
+          'rooms_end_date[date]' => '2012/03/20',
+          'unit_state' => 2,
+        ),
+      t('Update Room Availability'));
+
+    $this->drupalPost('admin/rooms/units/unit/1/availability/2012/3',
+        array(
+          'rooms_start_date[date]' => '2012/04/10',
+          'rooms_end_date[date]' => '2012/04/20',
+          'unit_state' => 3,
+        ),
+      t('Update Room Availability'));
+
+    $this->drupalPost('admin/rooms/units/unit/1/availability/2012/3',
+        array(
+          'rooms_start_date[date]' => '2012/05/01',
+          'rooms_end_date[date]' => '2012/05/27',
+          'unit_state' => 0,
+        ),
+      t('Update Room Availability'));
+
+    $this->drupalGet('rooms/units/unit/1/availability/json/2012/3&_=1331553821012&start=1330210800&end=1333836000');
+
+    $this->assertText('[{"id":"1","start":"2012-03-01T13:00:00Z","end":"2012-03-12T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"0","start":"2012-03-13T13:00:00Z","end":"2012-03-17T13:00:00Z","title":"N\/A","color":null},{"id":"1","start":"2012-03-18T13:00:00Z","end":"2012-03-18T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"2","start":"2012-03-19T13:00:00Z","end":"2012-03-20T13:00:00Z","title":"ON-REQ","color":null},{"id":"1","start":"2012-03-21T13:00:00Z","end":"2012-03-31T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"}]');
+
+    $this->drupalGet('rooms/units/unit/1/availability/json/2012/4&_=1331561292818&start=1333231200&end=1336860000');
+
+    $this->assertText('[{"id":"1","start":"2012-04-01T13:00:00Z","end":"2012-04-09T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"3","start":"2012-04-10T13:00:00Z","end":"2012-04-20T13:00:00Z","title":"A-B","color":null},{"id":"1","start":"2012-04-21T13:00:00Z","end":"2012-04-30T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"}]');
+
+    $this->drupalGet('rooms/units/unit/1/availability/json/2012/5&_=1331562112753&start=1335650400&end=1339279200');
+
+    $this->assertText('[{"id":"0","start":"2012-05-01T13:00:00Z","end":"2012-05-27T13:00:00Z","title":"N\/A","color":null},{"id":"1","start":"2012-05-28T13:00:00Z","end":"2012-05-31T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"}]');
+  }
+}

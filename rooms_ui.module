@@ -41,16 +41,6 @@ function rooms_ui_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
-  $items['admin/rooms/test'] = array(
-    'title' => 'Test',
-    'description' => 'Test for Rooms',
-    'page callback' => 'system_admin_menu_block_page',
-    'access arguments' => array('access administration pages'),
-    'type' => MENU_NORMAL_ITEM,
-    'weight' => 9,
-    'file path' => drupal_get_path('module', 'system'),
-    'file' => 'system.admin.inc',
-  );
   return $items;
 }
 

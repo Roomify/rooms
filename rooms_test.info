@@ -1,6 +1,0 @@
-name = Rooms Tests
-description = Testing for Rooms - currently just a scratchboard
-core = 7.x
-version = 1.x-dev
-
-package = Rooms

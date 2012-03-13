@@ -1,0 +1,87 @@
+<?php
+
+/**
+ * @file
+ */
+
+
+class RoomsTestMain extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Rooms Test Main',
+      'description' => t('Rooms Test Main'),
+      'group' => 'Rooms',
+    );
+  }
+
+  public function setUp() {
+    // Enable module Rooms UI
+    parent::setUp('rooms_ui');
+
+    // Create a new user with permissions of Configure rooms settings
+    $admin = $this->drupalCreateUser(array('access administration pages', 'configure rooms'));
+    $this->drupalLogin($admin);
+  }
+
+  public function testRoomsMain() {
+    $this->drupalGet('admin/rooms');
+
+    $this->assertText('Configuration');
+    $this->assertText('Configure settings and business rules for Rooms management.');
+  }
+}
+
+
+class RoomsTestConfig extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Rooms Test Config',
+      'description' => t('Rooms Test Config'),
+      'group' => 'Rooms',
+    );
+  }
+
+  public function setUp() {
+    // Enable module Rooms UI
+    parent::setUp('rooms_ui');
+
+    // Create a new user with permissions of Configure rooms settings
+    $admin = $this->drupalCreateUser(array('access administration pages', 'configure rooms'));
+    $this->drupalLogin($admin);
+  }
+
+  public function testRoomsConfig() {
+    $this->drupalGet('admin/rooms/config');
+
+    $this->assertText('Booking Settings');
+    $this->assertText('Configure settings and business rules for Bookings');
+  }
+}
+
+
+class RoomsTestBookingsSetDate extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Rooms Test Bookings Set Date',
+      'description' => t('Rooms Test Bookings Set Date'),
+      'group' => 'Rooms',
+    );
+  }
+
+  public function setUp() {
+    // Enable module Rooms UI
+    parent::setUp('rooms_ui');
+
+    // Create a new user with permissions of Configure rooms settings
+    $admin = $this->drupalCreateUser(array('access administration pages', 'configure rooms'));
+    $this->drupalLogin($admin);
+  }
+
+  public function testRoomsBookingsSetDate() {
+    $this->drupalGet('admin/rooms/config/bookings');
+
+    $this->assertText('How soon a booking can start');
+
+    $this->drupalPost('admin/rooms/config/bookings', array('rooms_booking_start_date' => 5), t('Save configuration'));
+  }
+}
