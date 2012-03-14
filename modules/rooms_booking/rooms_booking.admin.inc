@@ -264,7 +264,11 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       '#suffix' => '</div>',
   );
 
-  $form['booking_status'] = array(
+  $form['b_status'] = array (
+    '#type' => 'fieldset',
+    '#title' => t('Booking Status'),
+  );
+  $form['b_status']['booking_status'] = array(
     '#type' => 'checkbox',
     '#title' => 'Booking Confirmed',
     '#options' => array(
@@ -449,12 +453,20 @@ function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date =
   $unit_types = array($select);
 
   $available_units = array();
-  
+
   // The current unit for this booking should also return as available
-  $current_booking_state = isset($current_booking->booking_id) ? rooms_availability_assign_id($current_booking->booking_id) : '';
-  $ac = new AvailabilityAgent($start_date, $end_date, $group_size, 1, array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, $current_booking_state), $unit_types);
+  $current_booking_state = isset($current_booking->booking_id) ? rooms_availability_assign_id($current_booking->booking_id, $current_booking->booking_status) : '';
+
+  $valid_states = variable_get('rooms_valid_availability_states');
+
+  if (isset($current_booking->booking_id)) {
+    $ac = new AvailabilityAgent($start_date, $end_date, $group_size, 1, array($valid_states[ROOMS_AVAILABLE], $valid_states[ROOMS_ON_REQUEST], ROOMS_UNCORFIMED_BOOKINGS), $unit_types);
+  }
+  else {
+    $ac = new AvailabilityAgent($start_date, $end_date, $group_size, 1, array($valid_states[ROOMS_AVAILABLE], $valid_states[ROOMS_ON_REQUEST], $valid_states[ROOMS_UNCORFIMED_BOOKINGS], $current_booking_state), $unit_types);
+  }
   $available_units = $ac->checkAvailability();
-    
+
   return $available_units;   
 }
 

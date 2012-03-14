@@ -144,7 +144,12 @@ class UnitCalendar {
     foreach ($results[$this->unit_id] as $year => $months) {
       foreach ($months as $mid => $month) {
         foreach ($month['states'] as $state) {
-          $states[] = $state['state'];  
+          if ($state['state'] < 0) {
+            $states[] = -1;
+          }
+          else {
+            $states[] = $state['state'];
+          }
         } 
       }
     }
