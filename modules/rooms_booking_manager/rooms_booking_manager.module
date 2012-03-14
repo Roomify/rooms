@@ -90,7 +90,7 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $gro
     $content['booking_results'] = 1;
     // Get all the units
     $agent = new AvailabilityAgent($start_date->format('Y-m-d'), $end_date->format('Y-m-d'), $group_size, $b_units);
-    $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCORFIMED_BOOKINGS)));
+    $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS)));
 
     $units_per_type = $agent->checkAvailability();
     if (($units_per_type == ROOMS_NO_ROOMS) || ($units_per_type == ROOMS_SIZE_FAILURE)) {
@@ -248,9 +248,9 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
       '#options' => array(
         ROOMS_AVAILABLE => t('Rooms marked as available'),
         ROOMS_ON_REQUEST => t('Rooms marked as available on request'),
-        ROOMS_UNCORFIMED_BOOKINGS => t('Uncorfimed Bookings'),
+        ROOMS_UNCONFIRMED_BOOKINGS => t('Unconfirmed Bookings'),
       ),
-      '#default_value' => variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCORFIMED_BOOKINGS)),
+      '#default_value' => variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS)),
     );
   }
 }

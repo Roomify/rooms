@@ -460,10 +460,10 @@ function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date =
   $valid_states = variable_get('rooms_valid_availability_states');
 
   if (isset($current_booking->booking_id)) {
-    $ac = new AvailabilityAgent($start_date, $end_date, $group_size, 1, array($valid_states[ROOMS_AVAILABLE], $valid_states[ROOMS_ON_REQUEST], ROOMS_UNCORFIMED_BOOKINGS), $unit_types);
+    $ac = new AvailabilityAgent($start_date, $end_date, $group_size, 1, array($valid_states[ROOMS_AVAILABLE], $valid_states[ROOMS_ON_REQUEST], $valid_states[ROOMS_UNCONFIRMED_BOOKINGS]), $unit_types);
   }
   else {
-    $ac = new AvailabilityAgent($start_date, $end_date, $group_size, 1, array($valid_states[ROOMS_AVAILABLE], $valid_states[ROOMS_ON_REQUEST], $valid_states[ROOMS_UNCORFIMED_BOOKINGS], $current_booking_state), $unit_types);
+    $ac = new AvailabilityAgent($start_date, $end_date, $group_size, 1, array($valid_states[ROOMS_AVAILABLE], $valid_states[ROOMS_ON_REQUEST], $valid_states[ROOMS_UNCONFIRMED_BOOKINGS], $current_booking_state), $unit_types);
   }
   $available_units = $ac->checkAvailability();
 
