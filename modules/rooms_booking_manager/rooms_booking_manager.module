@@ -563,11 +563,13 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
         $booking->unit_type = $unit->type;
         $booking->customer_id = $order->commerce_customer_billing['und'][0]['profile_id'];
         $booking->name = $profile->commerce_customer_address['und'][0]['name_line'];
+
+        $booking->booking_status = 1;
         $booking->save();
 
         // Now let us lock availability
         // First - we get an event id
-        $id = rooms_availability_assign_id($booking->booking_id);
+        $id = rooms_availability_assign_id($booking->booking_id, '1');
 
         // Set the start and end dates for the booking event
 
