@@ -136,9 +136,10 @@ class AvailabilityAgent {
           if ($this->group_size == 1) {
             $price_modifiers['single'] = array('#type' => ROOMS_PRICE_SINGLE_OCCUPANCY);
           }
-
-          module_invoke_all('rooms_price_modifier_alter', $price_modifiers);
-
+          
+          // Give other modules a chance to change the price modifiers
+          drupal_alter('rooms_price_modifier', $price_modifiers);
+          
           $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
           $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
           $units[$unit->type][$price][$unit->unit_id]['unit'] = $unit;
