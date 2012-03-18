@@ -581,9 +581,12 @@ function rooms_availability_assign_id($id, $status) {
 
 
 /**
- * Returns the valid booking id
+ * Given an event state it returns the valid booking id
  */
 function rooms_availability_return_id($id) {
+  // Make sure we are not looking for negative ids;
+  $id = abs($id);
+  
   $id = $id - 11;
   
   return $id;
@@ -601,10 +604,17 @@ function rooms_availability_fullcalendar_get_js_path() {
  * Implementation of hook_form_alter()
  */
 function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == 'rooms_booking_settings') {    
-    $form['rooms_not_available_color'] = array(
+  if ($form_id == 'rooms_booking_settings') {
+    $form['color_statuses'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Calendar Color Codes'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    
+    $form['color_statuses']['rooms_not_available_color'] = array(
       '#type' => 'textfield',
-      '#title' => t('Not available rooms color'),
+      '#title' => t('Room no available'),
       '#size' => 10,
       '#maxlength' => 7,
       '#default_value' => variable_get('rooms_not_available_color', '#FF0000'),
@@ -623,9 +633,9 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
       ),
     );
 
-    $form['rooms_available_color'] = array(
+    $form['color_statuses']['rooms_available_color'] = array(
       '#type' => 'textfield',
-      '#title' => t('Available rooms color'),
+      '#title' => t('Room Available'),
       '#size' => 10,
       '#maxlength' => 7,
       '#default_value' => variable_get('rooms_available_color', '#8CBF62'),
@@ -644,9 +654,9 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
       ),
     );
 
-    $form['rooms_on_request_color'] = array(
+    $form['color_statuses']['rooms_on_request_color'] = array(
       '#type' => 'textfield',
-      '#title' => t('Available on request rooms color'),
+      '#title' => t('Room available on request'),
       '#size' => 10,
       '#maxlength' => 7,
       '#default_value' => variable_get('rooms_on_request_color', '#C5C5C5'),
@@ -665,12 +675,12 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
       ),
     );
 
-    $form['rooms_anon_booked_color'] = array(
+    $form['color_statuses']['rooms_anon_booking_color'] = array(
       '#type' => 'textfield',
-      '#title' => t('Anonymous rooms color'),
+      '#title' => t('Anonymous booking'),
       '#size' => 10,
       '#maxlength' => 7,
-      '#default_value' => variable_get('rooms_anon_booked_color', '#481600'),
+      '#default_value' => variable_get('rooms_anon_booking_color', '#481600'),
       '#element_validate' => array('rooms_booking_manager_validate_hex_color'), 
       '#dependency' => array('edit-row-options-colors-legend' => array('type')), 
       '#prefix' => '<div class="rooms-colorpicker-wrapper">', 
@@ -685,6 +695,29 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
         'js' => array(drupal_get_path('module', 'rooms_availability') . '/js/rooms_color.js'),
       ),
     );
+
+    $form['color_statuses']['rooms_unconfirmed_booking_color'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Unconfirmed booking'),
+      '#size' => 10,
+      '#maxlength' => 7,
+      '#default_value' => variable_get('rooms_unconfirmed_booking_color', '#481600'),
+      '#element_validate' => array('rooms_booking_manager_validate_hex_color'), 
+      '#dependency' => array('edit-row-options-colors-legend' => array('type')), 
+      '#prefix' => '<div class="rooms-colorpicker-wrapper">', 
+      '#suffix' => '<div class="rooms-colorpicker"></div></div>', 
+      '#attributes' => array('class' => array('rooms-edit-colorpicker')), 
+      '#attached' => array(
+        // Add Farbtastic color picker.
+        'library' => array(
+          array('system', 'farbtastic'),
+        ),
+        // Add javascript to trigger the colorpicker. 
+        'js' => array(drupal_get_path('module', 'rooms_availability') . '/js/rooms_color.js'),
+      ),
+    );
+
+
   }
 }
 
