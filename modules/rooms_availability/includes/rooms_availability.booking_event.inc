@@ -205,7 +205,7 @@ class BookingEvent {
     );
 
     // Check if we are dealing with a booking
-    if ($this->id > 10) {
+    if ($this->id > 10 || $this->id < -10) {
       // Get the actual booking id
       $booking_id = rooms_availability_return_id($this->id); 
       $booking = rooms_booking_load($booking_id);
@@ -239,7 +239,10 @@ class BookingEvent {
       case ROOMS_ON_REQUEST:
         $event['color'] = variable_get('rooms_on_request_color');//'#C5C5C5';
         $event['title'] = 'ON-REQ';
-        break;        
+        break;
+      case ($this->id < 0):
+        $event['color'] = variable_get('rooms_unconfirmed_booking_color');//'#8CBF62';
+        break;
       case ROOMS_ANON_BOOKED:
         if ($style == 'admin') {
           $event['color'] = variable_get('rooms_anon_booked_color');//'#481600';
