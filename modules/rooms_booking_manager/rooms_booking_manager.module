@@ -1099,12 +1099,17 @@ function rooms_booking_manager_commerce_cart_line_item_refresh($line_item, $orde
     $end_date = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
 
     $unit_id = $line_item->rooms_booked_unit_id[LANGUAGE_NONE][0]['value'];
-    $price_calendar = new UnitPricingCalendar($unit_id);
+    $unit = rooms_unit_load($unit_id);
 
+    // First set up price modifiers
     $price_modifiers = array();
-    $price_modifiers = module_invoke_all('rooms_price_modifier_alter', $price_modifiers);    
     
+    // Give other modules a chance to change the price modifiers
+    drupal_alter('rooms_price_modifier', $price_modifiers);
+    
+    $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
     $price = $price_calendar->calculatePrice($start_date, $end_date);
+
     // Convert to integer value as this is what Commerce expects
     $price = commerce_currency_decimal_to_amount($price, commerce_default_currency());
 
@@ -1118,6 +1123,11 @@ function rooms_booking_manager_commerce_cart_line_item_refresh($line_item, $orde
       ),
     );
     $line_item->commerce_unit_price = $commerce_unit_price;
+    
+    // After we added the price to the line item we rebase (!) it to make
+    // sure it gets picked up in the order data and the totals are correct.
+    commerce_line_item_rebase_unit_price(&$line_item);
+  
   }
 }
 
