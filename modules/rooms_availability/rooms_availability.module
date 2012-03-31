@@ -702,7 +702,7 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
       '#size' => 10,
       '#maxlength' => 7,
       '#default_value' => variable_get('rooms_unconfirmed_booking_color', '#481600'),
-      '#element_validate' => array('rooms_booking_manager_validate_hex_color'), 
+      '#element_validate' => array('rooms_availability_validate_hex_color'), 
       '#dependency' => array('edit-row-options-colors-legend' => array('type')), 
       '#prefix' => '<div class="rooms-colorpicker-wrapper">', 
       '#suffix' => '<div class="rooms-colorpicker"></div></div>', 
