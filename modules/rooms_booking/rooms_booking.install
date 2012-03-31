@@ -101,6 +101,12 @@ function rooms_booking_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'booking_status' => array(
+        'description' => 'The booking status (1 published, 0 unpublished).',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'data' => array(
         'type' => 'blob',
         'not null' => FALSE,
@@ -180,4 +186,23 @@ function rooms_booking_schema() {
 function rooms_booking_create_booking_type() {
   $booking = new RoomsBookingType(array('label'=>'Standard Booking', 'type'=>'standard_booking'));
   rooms_booking_type_save($booking);
+}
+
+
+/**
+ * Create booking_status field in rooms_booking table
+ */
+function rooms_booking_update_7001() {
+  $booking_status = array(
+    'description' => 'The booking status (1 published, 0 unpublished).',
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+    'initial' => 1,
+  );
+    
+  db_add_field('rooms_bookings', 'booking_status', $booking_status);
+  
+  return t('Add field booking_status in Rooms Booking table.');
+
 }

@@ -32,7 +32,7 @@ class AvailabilityAgent {
   
   public $units = array();
   
-  public function __construct($start_date, $end_date, $group_size = 1, $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST), $unit_types = array()) {
+  public function __construct($start_date, $end_date, $group_size = 1, $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS), $unit_types = array()) {
     $this->valid_states = $valid_states;
     $this->start_date = new DateTime($start_date);
     $checkout_date = new DateTime($end_date);
@@ -50,7 +50,7 @@ class AvailabilityAgent {
    * Sets the valid states for an availability search - default is "ROOMS_AVAILABLE" and
    * "ROOMS_ON_REQUEST"
    */
-  public function setValidStates($states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)) {
+  public function setValidStates($states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS)) {
     $this->valid_states = $states;
   }
   
@@ -136,9 +136,10 @@ class AvailabilityAgent {
           if ($this->group_size == 1) {
             $price_modifiers['single'] = array('#type' => ROOMS_PRICE_SINGLE_OCCUPANCY);
           }
-
-          module_invoke_all('rooms_price_modifier_alter', $price_modifiers);
-
+          
+          // Give other modules a chance to change the price modifiers
+          drupal_alter('rooms_price_modifier', $price_modifiers);
+          
           $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
           $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
           $units[$unit->type][$price][$unit->unit_id]['unit'] = $unit;

@@ -37,11 +37,11 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
       $price_modifiers['single'] = array('#type' => ROOMS_PRICE_SINGLE_OCCUPANCY);
     }    
     
-    $price_modifiers = module_invoke_all('rooms_price_modifier_alter', $price_modifiers);
-    dpm($unit);
+    // Give other modules a chance to change the price modifiers
+    drupal_alter('rooms_price_modifier', $price_modifiers);
+
     $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
-    
-    $price = $price_calendar->calculatePrice($agent->start_date, $agent->end_date, $price_modifiers);
+    $price = $price_calendar->calculatePrice($agent->start_date, $agent->end_date);
     
     // Convert to integer value as this is what Commerce expects
     $price = commerce_currency_decimal_to_amount($price, commerce_default_currency());
@@ -79,6 +79,10 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
     $line_item->rooms_booking_dates = $commerce_dates;
     $line_item->rooms_booked_unit_id = $commerce_unit;
     $line_item->rooms_booked_status = $commerce_status;
-
+    
+    // After we added the price to the line item we rebase (!) it to make
+    // sure it gets picked up in the order data and the totals are correct.
+    commerce_line_item_rebase_unit_price(&$line_item);
+    
     return $line_item;
 }

@@ -15,6 +15,8 @@ define ('ROOMS_AVAILABLE', 1);
 define ('ROOMS_ON_REQUEST', 2);
 define ('ROOMS_ANON_BOOKED', 3);
 
+define ('ROOMS_UNCONFIRMED_BOOKINGS', -1);
+
 /**
  * Defining responses for Calendar Updated
  */
@@ -539,7 +541,7 @@ class RoomsUnitController extends EntityAPIController {
     $unit_type = rooms_unit_type_load($values['type'], TRUE);
     $values['base_price'] = $unit_type->data['base_price'];
     $values['sleeps'] = $unit_type->data['sleeps'];
-    $values['singlediscount'] = $unit_type->data['singlediscount'];
+    $values['data']['singlediscount'] = $unit_type->data['singlediscount'];
 
     // Add values that are specific to our Room
     $values += array( 
@@ -549,7 +551,6 @@ class RoomsUnitController extends EntityAPIController {
       'title' => '',
       'created' => '',
       'changed' => '',
-      'data' => array(),
     );
     
     $unit = parent::create($values);

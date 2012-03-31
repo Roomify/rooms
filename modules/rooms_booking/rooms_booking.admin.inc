@@ -264,6 +264,20 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       '#suffix' => '</div>',
   );
 
+  $form['b_status'] = array (
+    '#type' => 'fieldset',
+    '#title' => t('Booking Status'),
+  );
+  $form['b_status']['booking_status'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Booking Confirmed',
+    '#options' => array(
+      '0' => '0',
+      '1' => '1',
+    ),
+    '#default_value' =>  isset($booking->booking_status) ? $booking->booking_status : '0',
+  );
+
   // If submit above pressed and we have dates we can process to assign a unit
   if (isset($form_state['show_availability_options'])) {
     $room_types = rooms_unit_get_types();
@@ -439,12 +453,20 @@ function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date =
   $unit_types = array($select);
 
   $available_units = array();
-  
+
   // The current unit for this booking should also return as available
-  $current_booking_state = isset($current_booking->booking_id) ? rooms_availability_assign_id($current_booking->booking_id) : '';
-  $ac = new AvailabilityAgent($start_date, $end_date, $group_size, 1, array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, $current_booking_state), $unit_types);
+  $current_booking_state = isset($current_booking->booking_id) ? rooms_availability_assign_id($current_booking->booking_id, $current_booking->booking_status) : '';
+
+  $valid_states = variable_get('rooms_valid_availability_states');
+
+  if (isset($current_booking->booking_id)) {
+    $ac = new AvailabilityAgent($start_date, $end_date, $group_size, 1, array($valid_states[ROOMS_AVAILABLE], $valid_states[ROOMS_ON_REQUEST], $valid_states[ROOMS_UNCONFIRMED_BOOKINGS]), $unit_types);
+  }
+  else {
+    $ac = new AvailabilityAgent($start_date, $end_date, $group_size, 1, array($valid_states[ROOMS_AVAILABLE], $valid_states[ROOMS_ON_REQUEST], $valid_states[ROOMS_UNCONFIRMED_BOOKINGS], $current_booking_state), $unit_types);
+  }
   $available_units = $ac->checkAvailability();
-    
+
   return $available_units;   
 }
 
@@ -529,7 +551,7 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
       $uc = new UnitCalendar($booking->unit_id);
       // Create an event representing the event to remove
       $be = new BookingEvent($booking->unit_id,
-                             rooms_availability_assign_id($booking->booking_id),
+                             rooms_availability_assign_id($booking->booking_id, $booking->booking_status),
                              new DateTime($booking->start_date),
                              new DateTime($booking->end_date));
       $uc->removeEvents(array($be));
@@ -548,7 +570,7 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
   // We have a unit defined so lets block availability there
   if ($unit != 0) {
     // Set the event_id
-    $id = rooms_availability_assign_id($booking->booking_id);
+    $id = rooms_availability_assign_id($booking->booking_id, $booking->booking_status);
     $sd = new DateTime($start_date);
     $ed = new DateTime($end_date);
     $ed->sub(new DateInterval('P1D'));
