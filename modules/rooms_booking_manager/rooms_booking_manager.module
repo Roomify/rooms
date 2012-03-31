@@ -248,9 +248,9 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
       '#options' => array(
         ROOMS_AVAILABLE => t('Rooms marked as available'),
         ROOMS_ON_REQUEST => t('Rooms marked as available on request'),
-        ROOMS_UNCONFIRMED_BOOKINGS => t('Unconfirmed Bookings'),
+        //ROOMS_UNCONFIRMED_BOOKINGS => t('Unconfirmed Bookings'),
       ),
-      '#default_value' => variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS)),
+      '#default_value' => variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)),
     );
   }
 }
