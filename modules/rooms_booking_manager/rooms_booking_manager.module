@@ -361,9 +361,9 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     '#value' => $group_size,
   );
 
-  
   foreach ($units_per_type as $type => $units_per_price) {
     // Load the type obj and set a title
+        
     $type_obj = rooms_unit_type_load($type);
     $form[$type]['title'][$type . ':title'] = array(
       '#prefix' => '<h2>',
@@ -372,9 +372,28 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     );
 
     foreach ($units_per_price as $price => $units) {
+
+      $form[$type . ':' . $price][$type . ':' . $price . ':open-markup'] = array(
+        '#markup' => '<table>',
+      );
+      
+      // Check if a description source is loaded and if so render
+      if ($type_obj->data['rooms_description_source'] != '') {
+        $source_ref = explode(':', $type_obj->data['rooms_description_source']);
+        $node_id = $source_ref[1];
+        $node = node_load($node_id);
+        $node_html = render(node_view($node,'rooms_list'));
+      
+        $form[$type . ':' . $price][$type . ':' . $price . ':description'] = array(
+          '#prefix' => '<tr><td colspan="2">',
+          '#markup' => $node_html,
+          '#suffix' => '</td></tr>',
+        );
+      }
+
       // Element to display price
       $form[$type . ':' . $price][$type . ':' . $price . ':price'] = array(
-        '#prefix' => '<div class="unit_price" style="font-weight:bold">',
+        '#prefix' => '<tr><td><div class="unit_price" style="font-weight:bold">',
         '#markup' =>  t('Cost:') . ' ' . $units[key($units)]['price'] . commerce_default_currency(),
         '#suffix' => '</div>'
       );
@@ -383,6 +402,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
       $form[$type . ':' . $price][$type . ':' . $price . ':price_value'] = array(
         '#type' => 'hidden',
         '#value' => $units[key($units)]['price'],
+        '#suffix' => '</td>',
       );
       
       // Dropdown to select quantity
@@ -391,14 +411,20 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         $options[$i] = $i;
       }
       $form[$type . ':' . $price][$type . ':' . $price . ':quantity'] = array(
+        '#prefix' => '<td>',
         '#title' => t('Units'),
         '#type' => 'select',
         '#options' => $options,
+        '#suffix' => '</td></tr>',
       );
-
+      
+      $form[$type . ':' . $price][$type . ':' . $price . ':close-markup'] = array(
+      '#markup' => '</table>',
+      );
     }
+    
   }
-  
+    
   $form['actions'] = array(
     '#type' => 'container',
     '#attributes' => array('class' => array('form-actions')),
