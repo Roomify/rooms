@@ -186,9 +186,9 @@ function rooms_unit_access($op, $unit = NULL, $account = NULL) {
   if (user_access('administer bookable units', $account)) {
     return TRUE;
   }
-  if (isset($room) && $type_name = $room->type) {
+  if ((isset($unit)) && ($type_name == $unit->type)) {
     $op = ($op == 'view') ? 'view' : 'edit';
-    if (user_access("$op any $type_name room", $account)) {
+    if (user_access("$op any $type_name bookable unit", $account)) {
       return TRUE;
     }
   }
