@@ -37,14 +37,14 @@ function rooms_booking_manager_menu() {
   $items  =  array();
   
   $items['booking'] = array(
-    'title' => 'Booking',
+    'title' => t('Booking'),
     'page callback' => 'rooms_booking_manager_results_page',
     'access arguments' => array('book units'),
     'type' => MENU_NORMAL_ITEM,
   );
   
   $items['booking/%start_date/%end_date'] = array(
-    'title' => 'Booking',
+    'title' => t('Booking'),
     'page callback' =>  'rooms_booking_manager_results_page',
     'page arguments' => array(1, 2),
     'access arguments' => array('book units'),
@@ -714,7 +714,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
   
   $form['conditions']['group_size'] = array(
     '#type' => 'select',
-    '#title' => 'Group Size',
+    '#title' => t('Group Size'),
     '#options' => array(
       '1' => '1',
       '2' => '2',
@@ -728,7 +728,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
   
   $form['conditions']['rooms'] = array(
     '#type' => 'select',
-    '#title' => 'Rooms',
+    '#title' => t('Rooms'),
     '#options' => array(
       '1' => '1',
       '2' => '2',
@@ -1191,7 +1191,7 @@ function rooms_booking_manager_enable() {
     if (!($previous_product_id && commerce_product_load($previous_product_id))) {
       $product = commerce_product_new('rooms_product');
       $product->sku = 'ROOMS-BASIC-BOOKING';
-      $product->title = 'Rooms Basic Booking';
+      $product->title = t('Rooms Basic Booking');
       $product->commerce_price = array(
         'und' => array(
             array(
