@@ -346,7 +346,6 @@ function book_unit_form_submit(&$form, &$form_state) {
   
   // Let us make sure our bookable unit is still available
   $available_units = $agent->checkAvailabilityForUnit($unit_id);
-  dpm($available_units);
   
   if (count($available_units) > 0) {
     
@@ -415,6 +414,14 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
       if ($type_obj->data['rooms_description_source'] != '') {
         $source_ref = explode(':', $type_obj->data['rooms_description_source']);
         $node_id = $source_ref[1];
+
+        if (module_exists('translation')) {
+          $node_translations = translation_node_get_translations($node_id);
+          if (!empty($node_translations)) {
+            $node_id = $node_translations[$GLOBALS['language']->language]->nid;
+          }
+        }
+
         $node = node_load($node_id);
         $node_html = render(node_view($node,'rooms_list'));
       
