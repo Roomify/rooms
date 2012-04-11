@@ -28,61 +28,66 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
     $line_item_label = 'Booking for ' . $unit_type->label . ' Arrival: ' . $agent->start_date->format('Y-m-d') . ' Departure: ' . $dd->format('Y-m-d');
     $line_item->line_item_label = $line_item_label;
 
-    // Going to calculate the price now
-    
-    // First set up price modifiers
-    $price_modifiers = array();
-    
-    if ($agent->group_size == 1) {
-      $price_modifiers['single'] = array('#type' => ROOMS_PRICE_SINGLE_OCCUPANCY);
-    }    
-    
-    // Give other modules a chance to change the price modifiers
-    drupal_alter('rooms_price_modifier', $price_modifiers);
+    $unit_info = $agent->checkAvailabilityForUnit($unit_id);
 
-    $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
-    $price = $price_calendar->calculatePrice($agent->start_date, $agent->end_date);
-    
-    // Convert to integer value as this is what Commerce expects
-    $price = commerce_currency_decimal_to_amount($price, commerce_default_currency());
+    // Check $unit_info to make sure we still have availbility
+    if ($unit_info == ROOMS_NO_ROOMS) {
+      form_set_error('', t('Rooms is no longer availbility.'));
+    }
+    else {
+      // If available set price and create line item
+      $unit_first = array_pop($unit_info);
+      $price = $unit_first['price'];
 
-    $commerce_unit_price = array(
-      LANGUAGE_NONE => array(
+      // Convert to integer value as this is what Commerce expects
+      $price = commerce_currency_decimal_to_amount($price, commerce_default_currency());
+
+      $commerce_unit_price = array(
+        LANGUAGE_NONE => array(
           array(
-          'amount' => $price,
-          'currency_code' => commerce_default_currency(),
-          'data' => array(''),
+            'amount' => $price,
+            'currency_code' => commerce_default_currency(),
+            'data' => array(''),
+          ),
         ),
-      ),
-    );
+      );
 
-    $commerce_dates = array(
-      LANGUAGE_NONE => array( array(
-        'value' => $agent->start_date->format('Y-m-d'),
-        'value2' => $agent->end_date->format('Y-m-d'),
-      )),
-    );
+      $commerce_dates = array(
+        LANGUAGE_NONE => array( array(
+          'value' => $agent->start_date->format('Y-m-d'),
+          'value2' => $agent->end_date->format('Y-m-d'),
+        )),
+      );
 
-    $commerce_unit = array(
-      LANGUAGE_NONE => array( array(
-        'value' => $unit->unit_id,
-      )),
-    );
+      $commerce_unit = array(
+        LANGUAGE_NONE => array( array(
+          'value' => $unit->unit_id,
+        )),
+      );
 
-    $commerce_status = array(
-      LANGUAGE_NONE => array(array(
-        'value' => $status,
-      )),
-    );
+      $commerce_status = array(
+        LANGUAGE_NONE => array(array(
+          'value' => $status,
+        )),
+      );
 
-    $line_item->commerce_unit_price = $commerce_unit_price;
-    $line_item->rooms_booking_dates = $commerce_dates;
-    $line_item->rooms_booked_unit_id = $commerce_unit;
-    $line_item->rooms_booked_status = $commerce_status;
-    
-    // After we added the price to the line item we rebase (!) it to make
-    // sure it gets picked up in the order data and the totals are correct.
-    commerce_line_item_rebase_unit_price(&$line_item);
-    
-    return $line_item;
+      $commerce_price = array(
+        LANGUAGE_NONE => array(array(
+          'value' => $price,
+        )),
+      );
+
+
+      $line_item->commerce_unit_price = $commerce_unit_price;
+      $line_item->rooms_booking_dates = $commerce_dates;
+      $line_item->rooms_booked_unit_id = $commerce_unit;
+      $line_item->rooms_booked_status = $commerce_status;
+      $line_item->rooms_booked_price = $commerce_price;
+      
+      // After we added the price to the line item we rebase (!) it to make
+      // sure it gets picked up in the order data and the totals are correct.
+      commerce_line_item_rebase_unit_price(&$line_item);
+
+      return $line_item;
+    }
 }

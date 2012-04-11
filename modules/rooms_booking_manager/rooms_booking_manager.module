@@ -369,6 +369,14 @@ function book_unit_form_submit(&$form, &$form_state) {
 
 
 function book_units_per_type_form($form, $form_state, $units_per_type, $start_date, $end_date, $group_size) {
+
+  // We add the form's #submit array to this button along with the actual submit
+  // handler to preserve any submit handlers added by a form callback_wrapper.
+  $submit = array();
+
+  if (!empty($form['#submit'])) {
+    $submit += $form['#submit'];
+  }
   
   $form['start_date'] = array(
     '#type' => 'hidden',
@@ -384,6 +392,8 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     '#type' => 'hidden',
     '#value' => $group_size,
   );
+
+  $index = 0;
 
   foreach ($units_per_type as $type => $units_per_price) {
     // Load the type obj and set a title
@@ -409,7 +419,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         $node_html = render(node_view($node,'rooms_list'));
       
         $form[$type . ':' . $price][$type . ':' . $price . ':description'] = array(
-          '#prefix' => '<tr><td colspan="2">',
+          '#prefix' => '<tr><td colspan="3">',
           '#markup' => $node_html,
           '#suffix' => '</td></tr>',
         );
@@ -439,8 +449,25 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         '#title' => t('Units'),
         '#type' => 'select',
         '#options' => $options,
-        '#suffix' => '</td></tr>',
+        '#suffix' => '</td>',
       );
+
+      if ($index == 0) {
+        $form[$type . ':' . $price]['submit'] = array(
+          '#prefix' => '<td style="width:20%;">',
+          '#type' => 'submit',
+          '#value' => t('Place Booking'),
+          '#submit' => $submit + array('book_units_per_type_form_submit'),
+          '#suffix' => '</td></tr>',
+        );
+
+        $index = 1;
+      } else {
+        $form[$type . ':' . $price]['submit'] = array(
+          '#prefix' => '<td style="width:20%;">',
+          '#suffix' => '</td></tr>',
+        );
+      }
       
       $form[$type . ':' . $price][$type . ':' . $price . ':close-markup'] = array(
       '#markup' => '</table>',
@@ -455,20 +482,6 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     '#weight' => 400,
   );
   
-  // We add the form's #submit array to this button along with the actual submit
-  // handler to preserve any submit handlers added by a form callback_wrapper.
-  $submit = array();
-
-  if (!empty($form['#submit'])) {
-    $submit += $form['#submit'];
-  }
-  
-  $form['actions']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Place Booking'),
-    '#submit' => $submit + array('book_units_per_type_form_submit'),
-  );
-  
   // We append the validate handler to #validate in case a form callback_wrapper
   // is used to add validate handlers earlier.
   $form['#validate'][] = 'book_units_per_type_form_validate';
@@ -477,7 +490,18 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 }
 
 
-function book_units_per_type_form_validate(&$form, &$form_state) { 
+function book_units_per_type_form_validate(&$form, &$form_state) {
+  foreach ($form_state['complete form'] as $key => $value) {
+    if (isset($value['submit'])) {
+      if (isset($value[$key . ':quantity']) && is_array($value)) {
+        if ($value[$key . ':quantity']['#value'] != 0) {
+          return;
+        }
+      }
+    }
+  }
+
+  form_set_error('', t('You must select a units before continue.'));
 }
 
 /**
@@ -501,7 +525,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
     if (count($values) == 3) {
       list($type, $price_level, $value_type) = $values;
       $order[$type][$price_level][$value_type] = $value;  
-    }    
+    }
   }
 
   // Let us get the available rooms again and match the order against actual rooms
@@ -523,7 +547,9 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
           $line_item = rooms_create_line_item($unit, $agent);
 
           // Add line item to cart
-          $line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
+          if (!empty($line_item)) {
+            $line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
+          }
         }
       }
     }
@@ -882,6 +908,20 @@ function _rooms_booking_manager_line_item_type_fields() {
           'text_processins' => 0,        
         ),
       ),
+      'rooms_booked_price' => array(
+        'field_name' => 'rooms_booked_price',
+        'label' => t('Booked Unit Price'),
+        'cardinality' => 1,
+        'type' => 'number_integer',
+        'module' => 'number',
+        'active' => 1,
+        'locked' => 1,
+        'settings' => array(
+          'size' => 8,
+          'max_length' => 10,
+          'text_processins' => 0,        
+        ),
+      ),
       'commerce_display_path' => array(
         'field_name' => 'commerce_display_path',
         'type' => 'text',
@@ -945,6 +985,41 @@ function _rooms_booking_manager_line_item_type_fields() {
       'rooms_booked_status' => array(
         'field_name' => 'rooms_booked_status',
         'label' => t('Booked Unit Status'),
+        'entity_type' => 'commerce_line_item',
+        'bundle' => 'rooms_booking',
+        'required' => TRUE,
+        'settings' => array(
+          'size' => 8,
+          'max_length' => 10,
+          'text_processing' => 0,
+        ),
+        'widget' => array(
+          'type' => 'text_textfield',
+        ),
+        'display' => array(
+          'default' => array(
+            'label' => 'above',
+            'module' => 'number',
+            'settings' => array(
+              'decimal_separator' => '.',
+              'prefix_suffix' => TRUE,
+              'scale' => 0,
+              'thousand_separator' => ' ',
+            ),
+            'type' => 'number_integer',
+            'weight' => 11,
+          ),
+          'teaser' => array(
+            'label' => 'above',
+            'settings' => array(),
+            'type' => 'hidden',
+            'weight' => 0,
+          ),
+        ),
+      ),
+      'rooms_booked_price' => array(
+        'field_name' => 'rooms_booked_price',
+        'label' => t('Booked Unit Price'),
         'entity_type' => 'commerce_line_item',
         'bundle' => 'rooms_booking',
         'required' => TRUE,
@@ -1146,22 +1221,10 @@ function rooms_booking_manager_commerce_cart_line_item_refresh($line_item, $orde
     $unit_id = $line_item->rooms_booked_unit_id[LANGUAGE_NONE][0]['value'];
     $unit = rooms_unit_load($unit_id);
 
-    // First set up price modifiers
-    $price_modifiers = array();
-    
-    // Give other modules a chance to change the price modifiers
-    drupal_alter('rooms_price_modifier', $price_modifiers);
-    
-    $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
-    $price = $price_calendar->calculatePrice($start_date, $end_date);
-
-    // Convert to integer value as this is what Commerce expects
-    $price = commerce_currency_decimal_to_amount($price, commerce_default_currency());
-
     $commerce_unit_price = array(
       LANGUAGE_NONE => array(
         array(
-          'amount' => $price,
+          'amount' => $line_item->rooms_booked_price[LANGUAGE_NONE][0]['value'],
           'currency_code' => commerce_default_currency(),
           'data' => array(''),
         ),
@@ -1172,7 +1235,7 @@ function rooms_booking_manager_commerce_cart_line_item_refresh($line_item, $orde
     // After we added the price to the line item we rebase (!) it to make
     // sure it gets picked up in the order data and the totals are correct.
     commerce_line_item_rebase_unit_price(&$line_item);
-  
+
   }
 }
 
@@ -1192,15 +1255,8 @@ function rooms_booking_manager_enable() {
       $product = commerce_product_new('rooms_product');
       $product->sku = 'ROOMS-BASIC-BOOKING';
       $product->title = t('Rooms Basic Booking');
-      $product->commerce_price = array(
-        'und' => array(
-            array(
-            'amount' => 0,
-            'currency_code' => commerce_default_currency(),
-            'data' => array(''),
-          ),
-        ),
-      );
+      $product->commerce_price[LANGUAGE_NONE][0]['amount'] = 0;
+      $product->commerce_price[LANGUAGE_NONE][0]['currency_code'] = commerce_default_currency();
 
       commerce_product_save($product);
       variable_set('rooms_booking_manager_booking_product_id', $product->product_id);
