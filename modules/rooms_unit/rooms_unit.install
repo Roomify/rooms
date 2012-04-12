@@ -178,10 +178,10 @@ function rooms_unit_schema() {
 function rooms_description_content_type_install() {
   $t = get_t();
   // We define the node type as an associative array.
-  if (!in_array('room_description', node_type_get_names())) {
-    $room_description = array(
-      'type' => 'room_description',
-      'name' => $t('Room Description'),
+  if (!in_array('unit_description', node_type_get_names())) {
+    $unit_description = array(
+      'type' => 'unit_description',
+      'name' => $t('Unit Description'),
       'base' => 'node_content',
       'description' => $t('Bookable Unit Description.'),
       'title_label' => $t('Title'),
@@ -189,7 +189,7 @@ function rooms_description_content_type_install() {
     );
   }
 
-  $content_type = node_type_set_defaults($room_description);
+  $content_type = node_type_set_defaults($unit_description);
   
   foreach (_rooms_description_installed_fields() as $field) {
     field_create_field($field);
@@ -197,7 +197,7 @@ function rooms_description_content_type_install() {
   
   foreach (_rooms_description_installed_instances() as $instance) {
     $instance['entity_type'] = 'node';
-    $instance['bundle'] = $room_description['type'];
+    $instance['bundle'] = $unit_description['type'];
     field_create_instance($instance);
   }
 
@@ -212,13 +212,13 @@ function rooms_description_content_type_install() {
 function _rooms_description_installed_fields() {
   $t = get_t();
   return array(
-    'room_description_description' => array(
-      'field_name' => 'room_description_description',
+    'unit_description_description' => array(
+      'field_name' => 'unit_description_description',
       'type'        => 'text',
       'label' => $t('Room type description'), 
     ),
-    'room_description_image' => array(
-      'field_name' => 'room_description_image',
+    'unit_description_image' => array(
+      'field_name' => 'unit_description_image',
       'type'       => 'image',
       'cardinality' => 1,
       'label' => 'Image', 
@@ -230,21 +230,21 @@ function _rooms_description_installed_fields() {
 function _rooms_description_installed_instances() {
   $t = get_t();
   return array(
-    'room_description_description' => array(
-      'field_name' => 'room_description_description',
+    'unit_description_description' => array(
+      'field_name' => 'unit_description_description',
       'label'       => $t('A description of this room type unit'),
       'widget'      => array(
         'type'    => 'text_textarea',
       ),
       'display' => array(
-        'room_description_list' => array(
+        'unit_description_list' => array(
           'label' => 'hidden',
-          'type' => 'room_description_description',
+          'type' => 'unit_description_description',
         ),
       ),
     ),
-    'room_description_image' => array(
-      'field_name'  => 'room_description_image',
+    'unit_description_image' => array(
+      'field_name'  => 'unit_description_image',
       'label'       => $t('Image'),
       'required'    => FALSE,
       'widget' => array(
@@ -252,7 +252,7 @@ function _rooms_description_installed_instances() {
         'weight'  => 2.10,
       ),
       'display' => array(
-        'room_description_list' => array(
+        'unit_description_list' => array(
           'label' => 'hidden',
           'type' => 'image_link_content__thumbnail',
         ),
@@ -263,13 +263,13 @@ function _rooms_description_installed_instances() {
 
 
 /*
- * Remove content type Room Description
+ * Remove content type Unit Description
  */
  
 function rooms_description_content_type_uninstall() {
 
   $sql = 'SELECT nid FROM {node} n WHERE n.type = :type';
-  $result = db_query($sql, array(':type' => 'room_description'));
+  $result = db_query($sql, array(':type' => 'unit_description'));
   $nids = array();
   foreach ($result as $row) {
     $nids[] = $row->nid;
@@ -277,16 +277,16 @@ function rooms_description_content_type_uninstall() {
 
   node_delete_multiple($nids);
 
-  foreach (array_keys(_room_description_installed_fields()) as $field) {
+  foreach (array_keys(_rooms_description_installed_fields()) as $field) {
     field_delete_field($field);
   }
 
-  $instances = field_info_instances('node', 'room_description');
+  $instances = field_info_instances('node', 'unit_description');
   foreach ($instances as $instance_name => $instance) {
     field_delete_instance($instance);
   }
 
-  node_type_delete('room_description');
+  node_type_delete('unit_description');
 
   field_purge_batch(1000);
 }

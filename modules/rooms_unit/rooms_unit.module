@@ -451,7 +451,7 @@ function rooms_unit_type_description_source($string = '') {
     $result = db_select('node', 'n')
       ->fields('n', array('title', 'nid'))
       ->condition('title', db_like($string) . '%', 'LIKE')
-      ->condition('n.type', 'room_description')
+      ->condition('n.type', 'unit_description')
       ->range(0, 10)
       ->execute();
     foreach ($result as $description) {
