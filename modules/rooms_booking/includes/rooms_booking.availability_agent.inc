@@ -142,13 +142,15 @@ class AvailabilityAgent {
           
           $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
           $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
-          $units[$unit->type][$price][$unit->unit_id]['unit'] = $unit;
-          $units[$unit->type][$price][$unit->unit_id]['price'] = $price; 
+          $full_price = $price['full_price'];
+          $units[$unit->type][$full_price][$unit->unit_id]['unit'] = $unit;
+          $units[$unit->type][$full_price][$unit->unit_id]['price'] = $full_price;
+          $units[$unit->type][$full_price][$unit->unit_id]['booking_price'] = $price['booking_price'];
           if (in_array(ROOMS_ON_REQUEST, $states)) {
-            $units[$unit->type][$price][$unit->unit_id]['state'] = ROOMS_ON_REQUEST;  
+            $units[$unit->type][$full_price][$unit->unit_id]['state'] = ROOMS_ON_REQUEST;  
           }
           else {
-            $units[$unit->type][$price][$unit->unit_id]['state'] = ROOMS_AVAILABLE;  
+            $units[$unit->type][$full_price][$unit->unit_id]['state'] = ROOMS_AVAILABLE;  
           }
           
         }
@@ -202,7 +204,8 @@ class AvailabilityAgent {
       $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
       $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
       $units[$unit->unit_id]['unit'] = $unit;
-      $units[$unit->unit_id]['price'] = $price; 
+      $units[$unit->unit_id]['price'] = $price['full_price'];
+      $units[$unit->unit_id]['booking_price'] = $price['booking_price'];
       if (in_array(ROOMS_ON_REQUEST, $states)) {
         $units[$unit->unit_id]['state'] = ROOMS_ON_REQUEST;  
       }

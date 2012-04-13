@@ -15,6 +15,10 @@ define ('ROOMS_NO_ROOMS', 2);
 define ('ROOMS_PER_TYPE', 'rooms_per_type');
 define ('ROOMS_INDIVIDUAL', 'rooms_individual');
 
+define ('FULL_PAYMENT', 10);
+define ('PERCENTUAL_PAYMENT', 11);
+define ('FIRST_NIGHT_PAYMENT', 12);
+
 
 /**
  * Implements hook_permission()
@@ -245,9 +249,62 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
       ),
       '#default_value' => variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)),
     );
+
+    $form['rooms_payment_options'] = array(
+      '#type' => 'item',
+      '#title' => t('Payment options'),
+      '#description' => t('Select the payment option'),
+    );
+
+    $form['rooms_payment_options'][FULL_PAYMENT] = array(
+      '#type' => 'radio',
+      '#title' => t('Full price'),
+      '#return_value' => FULL_PAYMENT,
+      '#parents' => array('rooms_payment_options'),
+      '#default_value' => variable_get('rooms_payment_options', FULL_PAYMENT),
+    );
+
+    $form['rooms_payment_options'][PERCENTUAL_PAYMENT] = array(
+      '#prefix' => '<div class="container-inline form-item">',
+    );
+
+    $form['rooms_payment_options'][PERCENTUAL_PAYMENT]['perc_option'] = array(
+      '#type' => 'radio',
+      '#title' => t('Percentual price:'),
+      '#return_value' => PERCENTUAL_PAYMENT,
+      '#parents' => array('rooms_payment_options'),
+      '#default_value' => variable_get('rooms_payment_options', FULL_PAYMENT),
+    );
+
+    $form['rooms_payment_options'][PERCENTUAL_PAYMENT]['perc_textfield'] = array(
+      '#type' => 'textfield',
+      '#default_value' => '',
+      '#size' => 10,
+      '#suffix' => '</div>',
+      '#default_value' => variable_get('rooms_payment_options_percentual'),
+      //'#attributes' => array('onClick' => '$("input[name=rooms_payment_options][value=11]").attr("checked", true);'),
+    );
+
+    $form['rooms_payment_options'][FIRST_NIGHT_PAYMENT] = array(
+      '#type' => 'radio',
+      '#title' => t('First night'),
+      '#return_value' => FIRST_NIGHT_PAYMENT,
+      '#parents' => array('rooms_payment_options'),
+      '#default_value' => variable_get('rooms_payment_options', FULL_PAYMENT),
+    );
+
+    $form['#submit'][] = 'rooms_booking_manager_settings_form_submit';
   }
 }
 
+function rooms_booking_manager_settings_form_submit($form, &$form_state) {
+  if($form_state['values']['rooms_payment_options'] == PERCENTUAL_PAYMENT) {
+    variable_set('rooms_payment_options_percentual', $form_state['values']['perc_textfield']);
+  }
+  else {
+    variable_set('rooms_payment_options_percentual', '');
+  }
+}
 
 /**
  * Implementation of hook_forms()
@@ -354,7 +411,7 @@ function book_unit_form_submit(&$form, &$form_state) {
     $line_item = rooms_create_line_item($unit, $agent);
 
     // Add line item to cart
-    $line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);    
+    $line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
 
     // Send user to cart
     drupal_goto('cart');  
@@ -392,7 +449,23 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     '#value' => $group_size,
   );
 
-  $index = 0;
+  $form['legend1'] = array(
+    '#prefix' => '<table class="booking_legend"><tr><td class="room_type_legend">',
+    '#markup' => '',
+    '#suffix' => '</td>',
+  );
+
+  $form['legend2'] = array(
+    '#prefix' => '<td style="width:15%;" class="room_nrooms_legend">',
+    '#markup' => 'N° Rooms',
+    '#suffix' => '</td>',
+  );
+
+  $form['legend3'] = array(
+    '#prefix' => '<td style="width:15%;" class="room_booking_legend">',
+    '#markup' => 'Booking',
+    '#suffix' => '</td></tr></table>',
+  );
 
   foreach ($units_per_type as $type => $units_per_price) {
     // Load the type obj and set a title
@@ -409,7 +482,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
       $form[$type . ':' . $price][$type . ':' . $price . ':open-markup'] = array(
         '#markup' => '<table>',
       );
-      
+
       // Check if a description source is loaded and if so render
       if ($type_obj->data['rooms_description_source'] != '') {
         $source_ref = explode(':', $type_obj->data['rooms_description_source']);
@@ -426,9 +499,9 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         $node_html = render(node_view($node,'rooms_list'));
       
         $form[$type . ':' . $price][$type . ':' . $price . ':description'] = array(
-          '#prefix' => '<tr><td colspan="3">',
+          '#prefix' => '<tr><td class="room_description">',
           '#markup' => $node_html,
-          '#suffix' => '</td></tr>',
+          '#suffix' => '</td><td></td><td></td></tr>',
         );
       }
 
@@ -452,35 +525,35 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         $options[$i] = $i;
       }
       $form[$type . ':' . $price][$type . ':' . $price . ':quantity'] = array(
-        '#prefix' => '<td>',
+        '#prefix' => '<td style="width:15%;" class="room_units">',
         '#title' => t('Units'),
         '#type' => 'select',
         '#options' => $options,
         '#suffix' => '</td>',
       );
 
-      if ($index == 0) {
-        $form[$type . ':' . $price]['submit'] = array(
-          '#prefix' => '<td style="width:20%;">',
-          '#type' => 'submit',
-          '#value' => t('Place Booking'),
-          '#submit' => $submit + array('book_units_per_type_form_submit'),
-          '#suffix' => '</td></tr>',
-        );
-
-        $index = 1;
-      } else {
-        $form[$type . ':' . $price]['submit'] = array(
-          '#prefix' => '<td style="width:20%;">',
-          '#suffix' => '</td></tr>',
-        );
-      }
+      $form[$type . ':' . $price]['submit'] = array(
+        '#prefix' => '<td style="width:15%;" class="room_placebooking">',
+        '#suffix' => '</td></tr>',
+      );
       
       $form[$type . ':' . $price][$type . ':' . $price . ':close-markup'] = array(
       '#markup' => '</table>',
       );
+
+      $last_type = $type . ':' . $price;
     }
     
+  }
+
+  if (isset($last_type)) {
+    $form[$last_type]['submit'] = array(
+      '#prefix' => '<td style="width:15%;" class="room_placebooking">',
+      '#type' => 'submit',
+      '#value' => t('Place Booking'),
+      '#submit' => $submit + array('book_units_per_type_form_submit'),
+      '#suffix' => '</td></tr>',
+    );
   }
     
   $form['actions'] = array(
@@ -929,6 +1002,20 @@ function _rooms_booking_manager_line_item_type_fields() {
           'text_processins' => 0,        
         ),
       ),
+      'rooms_booked_bookingprice' => array(
+        'field_name' => 'rooms_booked_bookingprice',
+        'label' => t('Booking Price'),
+        'cardinality' => 1,
+        'type' => 'number_integer',
+        'module' => 'number',
+        'active' => 1,
+        'locked' => 1,
+        'settings' => array(
+          'size' => 8,
+          'max_length' => 10,
+          'text_processins' => 0,        
+        ),
+      ),
       'commerce_display_path' => array(
         'field_name' => 'commerce_display_path',
         'type' => 'text',
@@ -1027,6 +1114,41 @@ function _rooms_booking_manager_line_item_type_fields() {
       'rooms_booked_price' => array(
         'field_name' => 'rooms_booked_price',
         'label' => t('Booked Unit Price'),
+        'entity_type' => 'commerce_line_item',
+        'bundle' => 'rooms_booking',
+        'required' => TRUE,
+        'settings' => array(
+          'size' => 8,
+          'max_length' => 10,
+          'text_processing' => 0,
+        ),
+        'widget' => array(
+          'type' => 'text_textfield',
+        ),
+        'display' => array(
+          'default' => array(
+            'label' => 'above',
+            'module' => 'number',
+            'settings' => array(
+              'decimal_separator' => '.',
+              'prefix_suffix' => TRUE,
+              'scale' => 0,
+              'thousand_separator' => ' ',
+            ),
+            'type' => 'number_integer',
+            'weight' => 11,
+          ),
+          'teaser' => array(
+            'label' => 'above',
+            'settings' => array(),
+            'type' => 'hidden',
+            'weight' => 0,
+          ),
+        ),
+      ),
+      'rooms_booked_bookingprice' => array(
+        'field_name' => 'rooms_booked_bookingprice',
+        'label' => t('Booking Price'),
         'entity_type' => 'commerce_line_item',
         'bundle' => 'rooms_booking',
         'required' => TRUE,

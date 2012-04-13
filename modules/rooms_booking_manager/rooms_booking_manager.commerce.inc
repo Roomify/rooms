@@ -25,7 +25,7 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
     $line_item = commerce_product_line_item_new($room_product, 1, 0, array(), 'rooms_booking');
 
     // Product name - we set something that will make sense to the user here - this needs to be parametrised of course
-    $line_item_label = 'Booking for ' . $unit_type->label . ' Arrival: ' . $agent->start_date->format('Y-m-d') . ' Departure: ' . $dd->format('Y-m-d');
+    $line_item_label = 'Booking for ' . $unit_type->label . ' (Arrival: ' . $agent->start_date->format('Y-m-d') . ' Departure: ' . $dd->format('Y-m-d') . ')';
     $line_item->line_item_label = $line_item_label;
 
     $unit_info = $agent->checkAvailabilityForUnit($unit_id);
@@ -77,12 +77,19 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
         )),
       );
 
+      $booking_price = array(
+        LANGUAGE_NONE => array(array(
+          'value' => $unit_first['booking_price'],
+        )),
+      );
+
 
       $line_item->commerce_unit_price = $commerce_unit_price;
       $line_item->rooms_booking_dates = $commerce_dates;
       $line_item->rooms_booked_unit_id = $commerce_unit;
       $line_item->rooms_booked_status = $commerce_status;
       $line_item->rooms_booked_price = $commerce_price;
+      $line_item->rooms_booked_bookingprice = $booking_price;
       
       // After we added the price to the line item we rebase (!) it to make
       // sure it gets picked up in the order data and the totals are correct.

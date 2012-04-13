@@ -55,7 +55,7 @@ class UnitPricingCalendar {
    * The end date for the search
    *  
    * @return
-   * The price of the room for that period
+   * The array holding full price and booking price of the room for that period
    */
   public function calculatePrice(DateTime $start_date, DateTime $end_date) {
     
@@ -67,7 +67,21 @@ class UnitPricingCalendar {
     }
     
     $price = $this->applyPriceModifiers($price);
-    return $price;
+
+    $payment_option = variable_get('rooms_payment_options');
+    switch ($payment_option) {
+      case FULL_PAYMENT:
+        $booking_price = $price;
+        break;
+      case PERCENTUAL_PAYMENT:
+        $booking_price = $price / 100 * variable_get('rooms_payment_options_percentual');
+        break;
+      case FIRST_NIGHT_PAYMENT:
+        $booking_price = $price / $days;
+        break;
+    }
+
+    return array('full_price' => $price, 'booking_price' => $booking_price);
   }
   
   /**
