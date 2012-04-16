@@ -312,7 +312,7 @@ function rooms_pricing_json($unit, $start_year = '', $start_month = '', $start_d
   }
   else{
     $start_date = new DateTime("$start_year-$start_month-$start_day");
-    $end_date = new DateTime("$end_year-$end_month-$end_day");    
+    $end_date = new DateTime("$end_year-$end_month-$end_day");
   }
 
   $rc = new UnitPricingCalendar($unit->unit_id);

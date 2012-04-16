@@ -147,7 +147,7 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
           ),
         );
         
-        drupal_add_js($js_settings, 'setting');        
+        drupal_add_js($js_settings, 'setting');
 
         $result[$delta] = array(
           '#prefix' => '<div class="availability-title">',

@@ -135,7 +135,7 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $gro
       '#suffix' => '</div>',
     );
     $content['no_results'] = $no_results;
-    $content['booking_search_form'] = $booking_search_form;    
+    $content['booking_search_form'] = $booking_search_form;
   }
 
   
@@ -197,7 +197,7 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
           '#prefix' => '<div class="unit_price" style="font-weight:bold">',
           '#markup' =>  t('Cost:') . ' ' . $unit['price'] . commerce_default_currency(),
           '#suffix' => '</div>'
-        );          
+        );
         // Add purchase forms - passing through hook_forms to handle multiple forms on the page
         $form = 'book_unit_form_' . $unit_id;
         $content['units_per_type'][$type][$price][$unit_id]['book_unit_form'] = drupal_get_form($form, $unit_obj, $start_date, $end_date, $unit['state']);

@@ -77,7 +77,7 @@ Drupal.behaviors.rooms_availability = {
                 $(value[0]).fullCalendar('refetchEvents');  
                 //$('#calendar').fullCalendar('rerender');
               }
-            });   
+            });
           }
         }
 //        eventMouseover : function(event, jsEvent, view) {

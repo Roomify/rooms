@@ -217,7 +217,7 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
   // Send everything for theming
   $output = theme('rooms_availability', $content);
 
-  return $output;  
+  return $output;
 }
 
 
@@ -359,7 +359,7 @@ function rooms_availability_event($unit, $start_year = '', $start_month = '', $s
   }
   else{
     $start_date = new DateTime("$start_year-$start_month-$start_day");
-    $end_date = new DateTime("$end_year-$end_month-$end_day");    
+    $end_date = new DateTime("$end_year-$end_month-$end_day");
   }
 
   $rc = new UnitCalendar($unit->unit_id, $unit->default_state);
@@ -430,7 +430,7 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
       '#prefix' => '<h2>',
       '#markup' => $output,
       '#suffix' => '</h2>'
-    );    
+    );
   }
   $content['event_details'] = array(
     '#prefix' => '<div class="event-details">',

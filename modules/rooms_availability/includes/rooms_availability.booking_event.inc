@@ -69,7 +69,7 @@ class BookingEvent {
     if ($this->startYear() == $this->endYear()) {
       return TRUE;
     }
-    return FALSE;    
+    return FALSE;
   }
   
   /**
@@ -165,7 +165,7 @@ class BookingEvent {
       $ed = new DateTime();
       $ed->setDate($this->endYear(), $this->endMonth(), $this->endDay());
       $be = new BookingEvent($this->unit_id, $this->id, $sd, $ed);
-      return array($be);      
+      return array($be);
     }
     $months = rooms_end_of_month_dates($this->startYear());
 
@@ -252,7 +252,7 @@ class BookingEvent {
           $event['color']  = variable_get('rooms_not_available_color');//'red';
           $event['title'] = 'N/A';
         }
-        break;        
+        break;
       default:
         $event['color'] = 'blue';
         break;

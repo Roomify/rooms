@@ -361,7 +361,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
             '#type' => 'radios',
             '#options' => $options,
             '#default_value' => isset($booking->unit_id) ? $booking->unit_id : '',
-          );            
+          );
         }
       }
     }
@@ -467,7 +467,7 @@ function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date =
   }
   $available_units = $ac->checkAvailability();
 
-  return $available_units;   
+  return $available_units;
 }
 
 
@@ -490,7 +490,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
   }
   
   if (!isset($form_state['values']['unit_id']) && (!isset($booking->unit_id))) {
-      form_set_error('availability_fieldset', t('A unit has not been assigned for this booking'));    
+      form_set_error('availability_fieldset', t('A unit has not been assigned for this booking'));
   }
 
 

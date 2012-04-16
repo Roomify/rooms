@@ -186,7 +186,7 @@ class UnitPricingCalendar {
     
     // Create a dummy PricingEvent to represent the range we are searching over
     // This gives us access to handy functions that PricingEvents have
-    $s = new PricingEvent($this->unit_id, 0, $start_date, $end_date);    
+    $s = new PricingEvent($this->unit_id, 0, $start_date, $end_date);
     
     $results = array();
     
@@ -200,7 +200,7 @@ class UnitPricingCalendar {
       $query->condition('a.year', $s->startYear());
       $query->condition('a.month', $s->startMonth(), '>=');
       $query->condition('a.month', $s->endMonth(), '<=');
-      $months = $query->execute()->fetchAll(PDO::FETCH_ASSOC);   
+      $months = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
       if (count($months) > 0) {
         foreach ($months as $month) {
           $m = $month['month'];
@@ -439,7 +439,7 @@ class UnitPricingCalendar {
     // Do an insert for a new month
     else {
       // Prepare the days array
-      $days = $this->prepareFullMonthArray($event);      
+      $days = $this->prepareFullMonthArray($event);
       $month_row = array(
         'unit_id' => $this->unit_id,
         'year' => $event->startYear(),

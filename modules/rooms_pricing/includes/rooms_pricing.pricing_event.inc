@@ -71,7 +71,7 @@ class PricingEvent {
     if ($this->startYear() == $this->endYear()) {
       return TRUE;
     }
-    return FALSE;    
+    return FALSE;
   }
   
   
@@ -154,7 +154,7 @@ class PricingEvent {
       $ed = new DateTime();
       $ed->setDate($this->endYear(), $this->endMonth(), $this->endDay());
       $be = new PricingEvent($this->unit_id, $this->amount, $sd, $ed, $this->operation);
-      return array($be);      
+      return array($be);
     }
     $months = rooms_end_of_month_dates($this->startYear());
 

@@ -381,7 +381,7 @@ function rooms_unit_ids($bundle = '') {
   $query->entityCondition('entity_type', 'rooms_unit');
   
   if ($bundle != ''){
-    $query->entityCondition('bundle', $bundle);  
+    $query->entityCondition('bundle', $bundle);
   }
   
   $result = $query->execute();
@@ -389,7 +389,7 @@ function rooms_unit_ids($bundle = '') {
   if (count($result) > 0 ) { 
     $entities = entity_load('rooms_unit', array_keys($result['rooms_unit']));
     foreach ($entities as $unit) {
-      $wrapper = entity_metadata_wrapper('rooms_unit', $unit);      
+      $wrapper = entity_metadata_wrapper('rooms_unit', $unit);
       $units[$wrapper->unit_id->value()] = $wrapper->name->value();
     }
   }

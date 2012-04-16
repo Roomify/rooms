@@ -352,7 +352,7 @@ function rooms_booking_ids($conditions = array()) {
   if (count($result) > 0 ) { 
     $entities = entity_load('rooms_booking', array_keys($result['rooms_booking']));
     foreach ($entities as $booking) {
-      $wrapper = entity_metadata_wrapper('rooms_booking', $booking);      
+      $wrapper = entity_metadata_wrapper('rooms_booking', $booking);
       $bookings[$wrapper->booking_id->value()] = $wrapper->name->value();
     }
   }
