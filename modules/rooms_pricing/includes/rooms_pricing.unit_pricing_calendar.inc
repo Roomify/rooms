@@ -73,11 +73,11 @@ class UnitPricingCalendar {
       case FULL_PAYMENT:
         $booking_price = $price;
         break;
-      case PERCENTUAL_PAYMENT:
+      case PERCENT_PAYMENT:
         $booking_price = $price / 100 * variable_get('rooms_payment_options_percentual');
         break;
       case FIRST_NIGHT_PAYMENT:
-        $booking_price = $price / $days;
+        $booking_price = $pricing_events[0]->amount;
         break;
     }
 

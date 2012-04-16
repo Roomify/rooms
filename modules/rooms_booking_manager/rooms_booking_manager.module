@@ -16,7 +16,7 @@ define ('ROOMS_PER_TYPE', 'rooms_per_type');
 define ('ROOMS_INDIVIDUAL', 'rooms_individual');
 
 define ('FULL_PAYMENT', 10);
-define ('PERCENTUAL_PAYMENT', 11);
+define ('PERCENT_PAYMENT', 11);
 define ('FIRST_NIGHT_PAYMENT', 12);
 
 
@@ -253,7 +253,7 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
     $form['rooms_payment_options'] = array(
       '#type' => 'item',
       '#title' => t('Payment options'),
-      '#description' => t('Select the payment option'),
+      '#description' => t('Select payment option for booking confirmation'),
     );
 
     $form['rooms_payment_options'][FULL_PAYMENT] = array(
@@ -264,19 +264,19 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
       '#default_value' => variable_get('rooms_payment_options', FULL_PAYMENT),
     );
 
-    $form['rooms_payment_options'][PERCENTUAL_PAYMENT] = array(
+    $form['rooms_payment_options'][PERCENT_PAYMENT] = array(
       '#prefix' => '<div class="container-inline form-item">',
     );
 
-    $form['rooms_payment_options'][PERCENTUAL_PAYMENT]['perc_option'] = array(
+    $form['rooms_payment_options'][PERCENT_PAYMENT]['perc_option'] = array(
       '#type' => 'radio',
       '#title' => t('Percentual price:'),
-      '#return_value' => PERCENTUAL_PAYMENT,
+      '#return_value' => PERCENT_PAYMENT,
       '#parents' => array('rooms_payment_options'),
       '#default_value' => variable_get('rooms_payment_options', FULL_PAYMENT),
     );
 
-    $form['rooms_payment_options'][PERCENTUAL_PAYMENT]['perc_textfield'] = array(
+    $form['rooms_payment_options'][PERCENT_PAYMENT]['perc_textfield'] = array(
       '#type' => 'textfield',
       '#default_value' => '',
       '#size' => 10,
@@ -299,7 +299,7 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
 }
 
 function rooms_booking_manager_settings_form_submit($form, &$form_state) {
-  if($form_state['values']['rooms_payment_options'] == PERCENTUAL_PAYMENT) {
+  if($form_state['values']['rooms_payment_options'] == PERCENT_PAYMENT) {
     variable_set('rooms_payment_options_percentual', $form_state['values']['perc_textfield']);
   }
   else {
@@ -972,7 +972,7 @@ function _rooms_booking_manager_line_item_type_fields() {
         'settings' => array(
           'size' => 8,
           'max_length' => 10,
-          'text_processins' => 0,        
+          'text_processing' => 0,
         ),
       ),
       'rooms_booked_status' => array(
@@ -986,7 +986,7 @@ function _rooms_booking_manager_line_item_type_fields() {
         'settings' => array(
           'size' => 8,
           'max_length' => 10,
-          'text_processins' => 0,        
+          'text_processing' => 0,
         ),
       ),
       'rooms_booked_price' => array(
@@ -1000,7 +1000,7 @@ function _rooms_booking_manager_line_item_type_fields() {
         'settings' => array(
           'size' => 8,
           'max_length' => 10,
-          'text_processins' => 0,        
+          'text_processing' => 0,
         ),
       ),
       'rooms_booked_bookingprice' => array(
@@ -1014,7 +1014,7 @@ function _rooms_booking_manager_line_item_type_fields() {
         'settings' => array(
           'size' => 8,
           'max_length' => 10,
-          'text_processins' => 0,        
+          'text_processing' => 0,
         ),
       ),
       'commerce_display_path' => array(
