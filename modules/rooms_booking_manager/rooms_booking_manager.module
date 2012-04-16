@@ -282,7 +282,6 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
       '#size' => 10,
       '#suffix' => '</div>',
       '#default_value' => variable_get('rooms_payment_options_percentual'),
-      //'#attributes' => array('onClick' => '$("input[name=rooms_payment_options][value=11]").attr("checked", true);'),
     );
 
     $form['rooms_payment_options'][FIRST_NIGHT_PAYMENT] = array(
@@ -292,6 +291,8 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
       '#parents' => array('rooms_payment_options'),
       '#default_value' => variable_get('rooms_payment_options', FULL_PAYMENT),
     );
+
+    drupal_add_js(drupal_get_path('module', 'rooms_booking_manager') . '/js/rooms_booking_manager_checked.js');
 
     $form['#submit'][] = 'rooms_booking_manager_settings_form_submit';
   }
