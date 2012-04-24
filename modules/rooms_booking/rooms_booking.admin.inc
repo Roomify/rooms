@@ -340,6 +340,9 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
           '#markup' => t('No @search_unit_type are available', array('@search_unit_type' => $search_unit_type)),
         );
       } else {
+        $currency_setting = commerce_currency_load(commerce_default_currency());
+        $currency_symbol = $currency_setting['symbol'];
+
         foreach ($available_units as $type => $units_per_price) {
           // Load the type obj and set a title
           $type_obj = rooms_unit_type_load($type);
@@ -352,7 +355,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
           // Create elements based on type/price categorisation
           foreach ($units_per_price as $price => $units) {
             foreach ($units as $unit) {
-              $options[$unit['unit']->unit_id] = $unit['unit']->name . ' - ' . t('Cost:') . ' ' . $units[key($units)]['price'] . commerce_default_currency();
+              $options[$unit['unit']->unit_id] = $unit['unit']->name . ' - ' . t('Cost:') . ' ' . $units[key($units)]['price'] . ' ' . $currency_symbol;
             }
           }
   

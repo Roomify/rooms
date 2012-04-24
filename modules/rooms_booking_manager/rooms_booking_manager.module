@@ -218,6 +218,10 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
       '#markup' =>  t($type_obj->label),
       '#suffix' => '</h2>'
     );
+
+    $currency_setting = commerce_currency_load(commerce_default_currency());
+    $currency_symbol = $currency_setting['symbol'];
+
     foreach ($price_level as $price => $units) {
       foreach ($units as $unit_id => $unit) {
         // Load the unit and render
@@ -227,7 +231,7 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
         $content['units_per_type'][$type][$price][$unit_id]['unit'] = $unit_content;
         $content['units_per_type'][$type][$price][$unit_id]['price'] = array(
           '#prefix' => '<div class="unit_price" style="font-weight:bold">',
-          '#markup' =>  t('Cost:') . ' ' . $unit['price'] . commerce_default_currency(),
+          '#markup' =>  t('Cost:') . ' ' . $unit['price'] . ' ' . $currency_symbol,
           '#suffix' => '</div>'
         );
         // Add purchase forms - passing through hook_forms to handle multiple forms on the page
@@ -552,6 +556,9 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     '#suffix' => '</td></tr></table>',
   );
 
+  $currency_setting = commerce_currency_load(commerce_default_currency());
+  $currency_symbol = $currency_setting['symbol'];
+
   foreach ($units_per_type as $type => $units_per_price) {
     // Load the type obj and set a title
         
@@ -593,7 +600,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
       // Element to display price
       $form[$type . ':' . $price][$type . ':' . $price . ':price'] = array(
         '#prefix' => '<tr><td><div class="unit_price" style="font-weight:bold">',
-        '#markup' =>  t('Cost:') . ' ' . $units[key($units)]['price'] . commerce_default_currency(),
+        '#markup' =>  t('Cost:') . ' ' . $units[key($units)]['price'] . ' ' . $currency_symbol,
         '#suffix' => '</div>'
       );
       
