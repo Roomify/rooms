@@ -432,9 +432,10 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
       '#suffix' => '</h2>'
     );
   }
+  $date_format = variable_get('rooms_date_format');
   $content['event_details'] = array(
     '#prefix' => '<div class="event-details">',
-    '#markup' => t('Duration: @startdate to @enddate', array('@startdate' => $sd->format('Y-m-d'), '@enddate' => $ed->format('Y-m-d'))),
+    '#markup' => t('Duration: @startdate to @enddate', array('@startdate' => $sd->format($date_format), '@enddate' => $ed->format($date_format))),
     '#suffix' => '</div>'
   );
   

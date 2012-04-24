@@ -8,7 +8,8 @@
 
  
 function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
-    
+    $date_format = variable_get('rooms_date_format');
+
     $unit_id = $unit_to_book['unit']->unit_id;
     $status = $unit_to_book['state'];
 
@@ -26,7 +27,7 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
 
     // Product name - we set something that will make sense to the user here - this needs to be parametrised of course
     $nights = $dd->diff($agent->start_date);
-    $line_item_label = 'Booking for ' . $unit_type->label . ' (' . $nights->d . ' Nights; Arrival: ' . $agent->start_date->format('Y-m-d') . ' Departure: ' . $dd->format('Y-m-d') . ')';
+    $line_item_label = 'Booking for ' . $unit_type->label . ' (' . $nights->d . ' Nights; Arrival: ' . $agent->start_date->format($date_format) . ' Departure: ' . $dd->format($date_format) . ')';
     $line_item->line_item_label = $line_item_label;
 
     $unit_info = $agent->checkAvailabilityForUnit($unit_id);

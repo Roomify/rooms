@@ -357,7 +357,7 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
 
     $form['rooms_payment_options'][PERCENT_PAYMENT]['perc_option'] = array(
       '#type' => 'radio',
-      '#title' => t('Percentual price:'),
+      '#title' => t('Percentual price:&nbsp;'),
       '#return_value' => PERCENT_PAYMENT,
       '#parents' => array('rooms_payment_options'),
       '#default_value' => variable_get('rooms_payment_options', FULL_PAYMENT),
@@ -365,7 +365,6 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
 
     $form['rooms_payment_options'][PERCENT_PAYMENT]['perc_textfield'] = array(
       '#type' => 'textfield',
-      '#default_value' => '',
       '#size' => 10,
       '#suffix' => '</div>',
       '#default_value' => variable_get('rooms_payment_options_percentual'),
@@ -380,6 +379,19 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
     );
 
     drupal_add_js(drupal_get_path('module', 'rooms_booking_manager') . '/js/rooms_booking_manager_checked.js');
+
+    $form['rooms_date_format'] = array(
+      '#type' => 'item',
+      '#title' => t('Rooms PHP Date Format'),
+    );
+
+    $form['rooms_date_format']['date_format'] = array(
+      '#type' => 'textfield',
+      '#size' => 12,
+      '#prefix' => '<div class="container-inline form-item">Date format: &nbsp;',
+      '#suffix' => '</div>',
+      '#default_value' => variable_get('rooms_date_format', 'Y-m-d'),
+    );
 
     $form['#submit'][] = 'rooms_booking_manager_settings_form_submit';
   }
@@ -537,10 +549,11 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     '#value' => $group_size,
   );
 
+  $date_format = variable_get('rooms_date_format');
   $nights = $end_date->diff($start_date);
   $form['legend1'] = array(
     '#prefix' => '<table class="booking_legend"><tr><td class="room_type_legend">',
-    '#markup' => 'Arrival Date: '.$start_date->format('Y-m-d').' &nbsp;Departure Date: '.$end_date->format('Y-m-d').' &nbsp;Nights: '.$nights->d,
+    '#markup' => 'Arrival Date: '.$start_date->format($date_format).' &nbsp;Departure Date: '.$end_date->format($date_format).' &nbsp;Nights: '.$nights->d,
     '#suffix' => '</td>',
   );
 
