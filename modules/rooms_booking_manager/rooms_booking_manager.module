@@ -554,13 +554,13 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
   $date_format = variable_get('rooms_date_format');
   $nights = $end_date->diff($start_date);
   $form['legend1'] = array(
-    '#prefix' => '<table class="booking_legend"><tr><td class="room_type_legend">',
+    '#prefix' => '<table class="booking_legend"><tr><td colspan="3" class="room_type_legend">',
     '#markup' => 'Arrival Date: '.$start_date->format($date_format).' &nbsp;Departure Date: '.$end_date->format($date_format).' &nbsp;Nights: '.$nights->d,
-    '#suffix' => '</td>',
+    '#suffix' => '</td></tr>',
   );
 
   $form['legend2'] = array(
-    '#prefix' => '<td style="width:15%;" class="room_nrooms_legend">',
+    '#prefix' => '<tr><td></td><td style="width:15%;" class="room_nrooms_legend">',
     '#markup' => 'N° Rooms',
     '#suffix' => '</td>',
   );
@@ -571,8 +571,14 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     '#suffix' => '</td></tr></table>',
   );
 
+  drupal_add_js(drupal_get_path('module', 'rooms_booking_manager') . '/js/rooms_booking_manager_button_scroll.js');
+
+  drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/button_float.css');
+
   $currency_setting = commerce_currency_load(commerce_default_currency());
   $currency_symbol = $currency_setting['symbol'];
+
+  $index = 0;
 
   foreach ($units_per_type as $type => $units_per_price) {
     // Load the type obj and set a title
@@ -639,30 +645,31 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         '#suffix' => '</td>',
       );
 
-      $form[$type . ':' . $price]['submit'] = array(
-        '#prefix' => '<td style="width:15%;" class="room_placebooking">',
-        '#suffix' => '</td></tr>',
-      );
+      if ($index == 0) {
+        $form[$type . ':' . $price]['submit'] = array(
+          '#prefix' => '<td style="width:15%;" class="room_placebooking"><div id="rooms_booking_button">',
+          '#type' => 'submit',
+          '#value' => t('Place Booking'),
+          '#submit' => $submit + array('book_units_per_type_form_submit'),
+          '#suffix' => '</div></td></tr>',
+        );
+
+        $index++;
+      }
+      else {
+        $form[$type . ':' . $price]['submit'] = array(
+          '#prefix' => '<td style="width:15%;" class="room_placebooking">',
+          '#suffix' => '</td></tr>',
+        );
+      }
       
       $form[$type . ':' . $price][$type . ':' . $price . ':close-markup'] = array(
       '#markup' => '</table>',
       );
-
-      $last_type = $type . ':' . $price;
     }
     
   }
 
-  if (isset($last_type)) {
-    $form[$last_type]['submit'] = array(
-      '#prefix' => '<td style="width:15%;" class="room_placebooking">',
-      '#type' => 'submit',
-      '#value' => t('Place Booking'),
-      '#submit' => $submit + array('book_units_per_type_form_submit'),
-      '#suffix' => '</td></tr>',
-    );
-  }
-    
   $form['actions'] = array(
     '#type' => 'container',
     '#attributes' => array('class' => array('form-actions')),
