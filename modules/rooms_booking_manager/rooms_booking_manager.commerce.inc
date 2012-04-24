@@ -25,7 +25,8 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
     $line_item = commerce_product_line_item_new($room_product, 1, 0, array(), 'rooms_booking');
 
     // Product name - we set something that will make sense to the user here - this needs to be parametrised of course
-    $line_item_label = 'Booking for ' . $unit_type->label . ' (Arrival: ' . $agent->start_date->format('Y-m-d') . ' Departure: ' . $dd->format('Y-m-d') . ')';
+    $nights = $dd->diff($agent->start_date);
+    $line_item_label = 'Booking for ' . $unit_type->label . ' (' . $nights->d . ' Nights; Arrival: ' . $agent->start_date->format('Y-m-d') . ' Departure: ' . $dd->format('Y-m-d') . ')';
     $line_item->line_item_label = $line_item_label;
 
     $unit_info = $agent->checkAvailabilityForUnit($unit_id);

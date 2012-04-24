@@ -96,9 +96,10 @@ class AvailabilityAgent {
     elseif ($this->booking_units == 1) {
       $query = new EntityFieldQuery();
       $query->entityCondition('entity_type', 'rooms_unit')
+            ->propertyOrderBy('sleeps', 'ASC')
             ->propertyCondition('sleeps', $this->group_size, '>=')
             ->propertyCondition('bookable', 1);
-      
+
       // Add a unit type condition if this has been defined
       if (count($this->unit_types) > 0) {
         $query->propertyCondition('type', $this->unit_types);
@@ -106,7 +107,7 @@ class AvailabilityAgent {
       
       // Execute the query and collect the results  
       $results = $query->execute();
-      
+
       if (count($results) == 0) {
         return ROOMS_SIZE_FAILURE;
       }

@@ -54,8 +54,40 @@ function rooms_booking_manager_menu() {
     'access arguments' => array('book units'),
     'type' => MENU_CALLBACK,
   );
+
+  $items['bookings'] = array(
+    'title' => 'Booking cart',
+    'page callback' => 'rooms_booking_manager_cart_view',
+    'access arguments' => array('access content'),
+  );
   
   return $items;
+}
+
+
+/**
+ * Displays the shopping cart form and associated information.
+ */
+function rooms_booking_manager_cart_view() {
+  global $user;
+
+  // Default to displaying an empty message.
+  $content = theme('commerce_cart_empty_page');
+
+  // First check to make sure we have a valid order.
+  if ($order = commerce_cart_order_load($user->uid)) {
+    $wrapper = entity_metadata_wrapper('commerce_order', $order);
+
+    // Only show the cart form if we found product line items.
+    if (commerce_line_items_quantity($wrapper->commerce_line_items, commerce_product_line_item_types()) > 0) {
+      drupal_add_css(drupal_get_path('module', 'commerce_cart') . '/theme/commerce_cart.theme.css');
+
+      // Add the form for editing the cart contents.
+      $content = commerce_embed_view('booking_cart_form', 'default', array($order->order_id), 'cart');
+    }
+  }
+
+  return $content;
 }
 
 
@@ -227,6 +259,57 @@ function rooms_booking_manager_present_types($units_per_type, $content, $start_d
  * Implementation of hook_form_alter()
  */
 function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'commerce_checkout_form_checkout') {
+    // Extract the View and display keys from the cart contents pane setting.
+    list($view_id, $display_id) = explode('|', variable_get('commerce_cart_contents_pane_view', 'commerce_cart_summary|default'));
+
+    global $user;
+    $order = commerce_cart_order_load($user->uid);
+
+    $form['cart_contents']['cart_contents_view'] = array(
+      '#markup' => commerce_embed_view('booking_checkout_form', 'booking_checkout_form', array($order->order_id)),
+    );
+  }
+
+  if (strpos($form_id, 'views_form_booking_cart_form_') === 0) {
+    unset($form['actions']['submit']);
+    $form['#action'] = '/bookings';
+
+    // Change any Delete buttons to say Remove.
+    if (!empty($form['edit_delete'])) {
+      foreach(element_children($form['edit_delete']) as $key) {
+        // Load and wrap the line item to have the title in the submit phase.
+        if (!empty($form['edit_delete'][$key]['#line_item_id'])) {
+          $line_item_id = $form['edit_delete'][$key]['#line_item_id'];
+          $form_state['line_items'][$line_item_id] = commerce_line_item_load($line_item_id);
+
+          $form['edit_delete'][$key]['#value'] = t('Remove');
+          $form['edit_delete'][$key]['#submit'] = array_merge($form['#submit'], array('commerce_cart_line_item_delete_form_submit'));
+        }
+      }
+    }
+
+    $form['actions']['checkout'] = array(
+      '#type' => 'submit',
+      '#value' => t('Checkout'),
+      '#weight' => 5,
+      '#access' => user_access('access checkout'),
+      '#submit' => array_merge($form['#submit'], array('commerce_checkout_line_item_views_form_submit')),
+    );
+  }
+  elseif (strpos($form_id, 'commerce_checkout_form_') === 0 && !empty($form['buttons']['cancel'])) {
+    // Override the submit handler for changing the order status on checkout cancel.
+    foreach ($form['buttons']['cancel']['#submit'] as $key => &$value) {
+      if ($value == 'commerce_checkout_form_cancel_submit') {
+        $value = 'commerce_cart_checkout_form_cancel_submit';
+      }
+    }
+  }
+  elseif (strpos($form_id, 'views_form_commerce_cart_block') === 0) {
+    // No point in having a "Save" button on the shopping cart block.
+    unset($form['actions']);
+  }
+
   if ($form_id == 'rooms_booking_settings') {    
     $form['rooms_presentation_style'] = array(
       '#type' => 'radios',
@@ -415,7 +498,7 @@ function book_unit_form_submit(&$form, &$form_state) {
     $line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
 
     // Send user to cart
-    drupal_goto('cart');  
+    drupal_goto('bookings');  
 
   } else {
     drupal_set_message(t('We apologize it seems the room is no longer available'));
@@ -450,9 +533,10 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     '#value' => $group_size,
   );
 
+  $nights = $end_date->diff($start_date);
   $form['legend1'] = array(
     '#prefix' => '<table class="booking_legend"><tr><td class="room_type_legend">',
-    '#markup' => '',
+    '#markup' => 'Arrival Date: '.$start_date->format('Y-m-d').' &nbsp;Departure Date: '.$end_date->format('Y-m-d').' &nbsp;Nights: '.$nights->d,
     '#suffix' => '</td>',
   );
 
@@ -637,7 +721,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
   }
 
   // Send user to cart
-  drupal_goto('cart');
+  drupal_goto('bookings');
 }
 
 
@@ -914,7 +998,7 @@ function rooms_booking_availability_search_form_validate(&$form, &$form_state) {
   }
 
   // Ensure end date and start date are not equal
-  if ($diff2->d == 0) {
+  if ($diff2->d == 0 && $diff2->m == 0) {
     form_set_error('rooms_date_range', t('Start and end date cannot be on the same day'));
   }
 }
@@ -1396,4 +1480,14 @@ function rooms_booking_manager_enable() {
   else {
     drupal_set_message(t('There was an error creating the rooms product to handle bookings.'));
   }
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function rooms_booking_manager_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'rooms_booking_manager') . '/views',
+  );
 }

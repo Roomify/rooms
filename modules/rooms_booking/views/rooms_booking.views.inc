@@ -87,7 +87,7 @@ function rooms_booking_views_default_views() {
   $view->base_table = 'rooms_bookings';
   $view->human_name = 'Bookings';
   $view->core = 7;
-  $view->api_version = '3.0-alpha1';
+  $view->api_version = '3.0';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
   
   /* Display: Master */
