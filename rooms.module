@@ -46,11 +46,16 @@ function rooms_end_of_month_dates($year) {
   return $end_of_month_dates;
 }
 
+
 /**
  * Utility function - we have a few forms that need a start and end date field and we need to apply
- * the same javascript to these forms in order to have them behave a bit better.
+ * the same javascript to these forms in order to have a specific consistent behaviour and groups
+ * the form elements and javascript injection in one place.
  *
- * This groups the form elements and javascript injection in one place.
+ * @param array $data_range_fields If you are adding extra information pass the fields first keeping
+ * in mind that any key values that are set in the function will be overidden.
+ *
+ * @return array The array holding the field definitions
  */ 
 function rooms_date_range_fields($date_range_fields = array()) {
   $date_format = str_replace('-', '/', variable_get('rooms_date_format'));
@@ -93,6 +98,9 @@ function rooms_date_range_fields($date_range_fields = array()) {
 }
 
 
+/**
+ * Transfom from PHP conventions to jQueryUI conventions for dates
+ */
 function rooms_dateFormatTojQueryUIDatePickerFormat($dateFormat) { 
   $chars = array( 
     // Day
