@@ -30,9 +30,8 @@
 }
 
 #update-availability-calendar-form .form-item-unit-state{
-float:left;
+  float:left;
 }
-
 
 #update-availability-calendar-form .form-item{
   padding:0px;
@@ -47,3 +46,60 @@ float:left;
   clear:both;
   padding:10px 0px;
 }
+
+.page-admin-rooms-units-bulk-unit-management table.fc-header {
+  display: none;
+}
+.page-admin-rooms-units-bulk-unit-management #calendar0 table.fc-header {
+  display: inline-table;
+  border: none;
+  margin: 0;
+}
+
+.page-admin-rooms-units-bulk-unit-management #calendar0 table.fc-header tr td:last-child {
+  border: none;
+}
+
+.page-admin-rooms-units-bulk-unit-management table td {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.page-admin-rooms-units-bulk-unit-management .start-date,
+.page-admin-rooms-units-bulk-unit-management .end-date {
+  float: left;
+  margin-right: 20px;
+}
+
+.page-admin-rooms-units-bulk-unit-management #rooms-availability-update-status-form {
+  clear: both;
+}
+
+.page-admin-rooms-units-bulk-unit-management #rooms-availability-update-status-form .form-item-change-event-status {
+  float: left;
+  padding: 0;
+}
+
+.page-admin-rooms-units-bulk-unit-management #rooms-availability-update-status-form .form-actions {
+  clear: both;
+  padding: 10px 0px;
+}
+
+#rooms-availability-filter-month-form .form-item-month,
+#rooms-availability-filter-month-form .form-item-year,
+#rooms-availability-filter-month-form .form-item-type {
+  float: left;
+  margin-right: 25px;
+}
+
+#rooms-availability-filter-month-form .form-item-month label,
+#rooms-availability-filter-month-form .form-item-year label,
+#rooms-availability-filter-month-form .form-item-type label {
+  display: inline;
+  margin-right: 4px;
+}
+
+#rooms-availability-filter-month-form .form-actions {
+  padding-top: 6px;
+}
+
