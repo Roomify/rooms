@@ -1478,7 +1478,7 @@ function rooms_booking_manager_commerce_cart_line_item_refresh($line_item, $orde
     
     // After we added the price to the line item we rebase (!) it to make
     // sure it gets picked up in the order data and the totals are correct.
-    commerce_line_item_rebase_unit_price(&$line_item);
+    commerce_line_item_rebase_unit_price($line_item);
 
   }
 }
