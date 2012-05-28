@@ -1,5 +1,12 @@
 (function ($) {
 
+$(document).ready(function()
+{
+  $("form#rooms-availability-filter-month-form select").change(function() {
+    $("form#rooms-availability-filter-month-form").submit();
+  });
+});
+
 Drupal.behaviors.rooms_availability = {
   attach: function(context) {
         

@@ -66,9 +66,15 @@
 }
 
 .page-admin-rooms-units-bulk-unit-management .start-date,
-.page-admin-rooms-units-bulk-unit-management .end-date {
+.page-admin-rooms-units-bulk-unit-management .end-date,
+.page-admin-rooms-units-bulk-pricing-management .start-date,
+.page-admin-rooms-units-bulk-pricing-management .end-date {
   float: left;
   margin-right: 20px;
+}
+
+.page-admin-rooms-units-bulk-pricing-management fieldset {
+  clear: both;
 }
 
 .page-admin-rooms-units-bulk-unit-management #rooms-availability-update-status-form {

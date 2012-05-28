@@ -26,7 +26,7 @@ function rooms_ui_menu() {
     'title' => 'Configuration',
     'description' => 'Configure settings and business rules for Rooms management.',
     'page callback' => 'system_admin_menu_block_page',
-    'access arguments' => array('access administration pages', 'configure room settings'),
+    'access arguments' => array('configure room settings'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => 10,
     'file path' => drupal_get_path('module', 'system'),

@@ -249,7 +249,7 @@ function update_unit_pricing_form_validate(&$form, &$form_state) {
     form_set_error('date_range', t('End date must be after start date'));
   }
   
-   // Make sure amount entered is numeric
+  // Make sure amount entered is numeric
   if (!empty($form_state['values']['amount']) && !is_numeric($form_state['values']['amount'])) {
     form_set_error('amount', t('%name: you must enter a numeric value for the price.', array('%name' => 'Amount')));
   }
