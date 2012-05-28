@@ -5,6 +5,11 @@ $(document).ready(function()
   $("form#rooms-availability-filter-month-form select").change(function() {
     $("form#rooms-availability-filter-month-form").submit();
   });
+
+  $('#edit-select-all').click(function() {
+    var table = $(this).closest('table')[0];
+    $('input[id^="edit-rooms"]:not(:disabled)', table).attr('checked', this.checked);
+  });
 });
 
 Drupal.behaviors.rooms_availability = {

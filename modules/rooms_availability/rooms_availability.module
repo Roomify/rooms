@@ -163,17 +163,12 @@ function rooms_availability_bulk_unit_management($year='', $month='', $type='all
 
   $output = render(drupal_get_form('rooms_availability_filter_month_form', $month, $year));
 
-  $output .= render(drupal_get_form('rooms_availability_update_status_form', $month, $year, $type));
+  $output .= render(drupal_get_form('rooms_availability_update_status_form', $month, $year, $type, $rooms_units));
 
   $rooms_id = array();
-  $output .= '<table>';
-  foreach ($rooms_units as $key => $value) {
-    $output .= '<tr><td>' . $value->name . '</td>';
-    $output .= '<td><div id="calendar' . $key . '"></div></td></tr>';
-
+  foreach ($rooms_units as $value) {
     $rooms_id[] = $value->unit_id;
   }
-  $output .= '</table>';
 
   if ($n_total_row / 20 > 1) {
     $output .= '<div class="item-list"><ul class="pager">';
@@ -232,17 +227,12 @@ function rooms_availability_bulk_pricing_management($year='', $month='', $type='
 
   $output = render(drupal_get_form('rooms_availability_filter_month_form', $month, $year));
 
-  $output .= render(drupal_get_form('rooms_availability_pricing_update_form', $month, $year, $type));
+  $output .= render(drupal_get_form('rooms_availability_pricing_update_form', $month, $year, $type ,$rooms_units));
 
   $rooms_id = array();
-  $output .= '<table>';
-  foreach ($rooms_units as $key => $value) {
-    $output .= '<tr><td>' . $value->name . '</td>';
-    $output .= '<td><div id="calendar' . $key . '"></div></td></tr>';
-
+  foreach ($rooms_units as $value) {
     $rooms_id[] = $value->unit_id;
   }
-  $output .= '</table>';
 
   if ($n_total_row / 20 > 1) {
     $output .= '<div class="item-list"><ul class="pager">';
@@ -354,7 +344,7 @@ function rooms_availability_filter_month_form_submit(&$form, &$form_state) {
 }
 
 
-function rooms_availability_pricing_update_form($form, &$form_state, $month, $year, $type) {
+function rooms_availability_pricing_update_form($form, &$form_state, $month, $year, $type, $rooms_units) {
     $form['rooms_pricing_update'] = array(
     '#type' => 'fieldset',
     '#title' => 'Update Pricing',
@@ -422,6 +412,30 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
 
   $form['#validate'][] = 'rooms_availability_pricing_update_form_validate';
 
+  $form['rooms_data'] = array (
+    '#prefix' => '<table>',
+    '#type' => 'container',
+    '#suffix' => '</table>',
+  );
+
+  if (count($rooms_units) > 0) {
+    $form['rooms_data']['select-all'] = array(
+      '#type' => 'checkbox',
+      '#title' => 'Select all',
+      '#prefix' => '<tr><td>',
+      '#suffix' => '</td><td></td></tr>',
+    );
+  }
+
+  foreach ($rooms_units as $key => $value) {
+    $form['rooms_data']['rooms-'.$value->unit_id] = array (
+      '#type' => 'checkbox',
+      '#title' => $value->name,
+      '#prefix' => '<tr><td>',
+      '#suffix' => '</td><td><div id="calendar' . $key . '"></div></td></tr>',
+    );
+  }
+
   return $form;
 }
 
@@ -462,28 +476,22 @@ function rooms_availability_pricing_update_form_submit(&$form, &$form_state) {
   $operation = $form_state['values']['operation'];
   $amount = $form_state['values']['amount'];
 
-  $type = $form_state['values']['curr_type'];
-  
-  $query = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
-  if ($type != 'all') {
-    $query->condition('type', $type , '=');
-  }
-  $rooms_units = $query->execute()->fetchAll();
+  foreach ($form_state['values'] as $key => $value) {
+    if (strpos($key, 'rooms-') === 0 && $value == '1') {
+      $unit_id = str_replace('rooms-', '', $key);
 
-  foreach ($rooms_units as $units) {
-    $unit_id = $units->unit_id;
+      // Get all the pricing events for the date range
+      $rc = new UnitPricingCalendar($unit_id);
+      $pe = new PricingEvent($unit_id, $amount, $start_date, $end_date, $operation);
+      $events = array($pe);
 
-    // Get all the pricing events for the date range
-    $rc = new UnitPricingCalendar($unit_id);
-    $pe = new PricingEvent($unit_id, $amount, $start_date, $end_date, $operation);
-    $events = array($pe);
-
-    $rc->updateCalendar($events);
+      $rc->updateCalendar($events);
+    }
   }
 }
 
 
-function rooms_availability_update_status_form($form, &$form_state, $month, $year, $type) {
+function rooms_availability_update_status_form($form, &$form_state, $month, $year, $type, $rooms_units) {
   $form['rooms_availability_update'] = array(
     '#type' => 'fieldset',
     '#title' => 'Update Availability',
@@ -536,6 +544,30 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
 
   $form['#validate'][] = 'rooms_availability_update_status_form_validate';
 
+  $form['rooms_data'] = array (
+    '#prefix' => '<table>',
+    '#type' => 'container',
+    '#suffix' => '</table>',
+  );
+
+  if (count($rooms_units) > 0) {
+    $form['rooms_data']['select-all'] = array(
+      '#type' => 'checkbox',
+      '#title' => 'Select all',
+      '#prefix' => '<tr><td>',
+      '#suffix' => '</td><td></td></tr>',
+    );
+  }
+
+  foreach ($rooms_units as $key => $value) {
+    $form['rooms_data']['rooms-'.$value->unit_id] = array (
+      '#type' => 'checkbox',
+      '#title' => $value->name,
+      '#prefix' => '<tr><td>',
+      '#suffix' => '</td><td><div id="calendar' . $key . '"></div></td></tr>',
+    );
+  }
+
   return $form;
 }
 
@@ -573,27 +605,21 @@ function rooms_availability_update_status_form_submit(&$form, &$form_state) {
   $end_date = new DateTime($form_state['values']['rooms_end_date']);
   $event_id = $form_state['values']['change_event_status'];
 
-  $type = $form_state['values']['curr_type'];
-  
-  $query = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
-  if ($type != 'all') {
-    $query->condition('type', $type , '=');
-  }
-  $rooms_units = $query->execute()->fetchAll();
+  foreach ($form_state['values'] as $key => $value) {
+    if (strpos($key, 'rooms-') === 0 && $value == '1') {
+      $unit_id = str_replace('rooms-', '', $key);
 
-  foreach ($rooms_units as $units) {
-    $unit_id = $units->unit_id;
-    
-    // Create a new Booking Event
-    $be = new BookingEvent($unit_id, $event_id, $start_date, $end_date);
-    $events = array($be);
-    $rc = new UnitCalendar($unit_id);
-    $response = $rc->updateCalendar($events);
-    if ($response[$event_id] == ROOMS_BLOCKED) {
-      drupal_set_message(t($units->name . ' - Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period'));
-    }
-    elseif ($response[$event_id] == ROOMS_UPDATED) {
-      drupal_set_message(t($units->name . ' - Calendar Updated'));
+      // Create a new Booking Event
+      $be = new BookingEvent($unit_id, $event_id, $start_date, $end_date);
+      $events = array($be);
+      $rc = new UnitCalendar($unit_id);
+      $response = $rc->updateCalendar($events);
+      if ($response[$event_id] == ROOMS_BLOCKED) {
+        drupal_set_message(t($form_state['complete form']['rooms_data'][$key]['#title'] . ' - Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period'));
+      }
+      elseif ($response[$event_id] == ROOMS_UPDATED) {
+        drupal_set_message(t($form_state['complete form']['rooms_data'][$key]['#title'] . ' - Calendar Updated'));
+      }
     }
   }
 }

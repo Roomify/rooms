@@ -47,10 +47,12 @@
   padding:10px 0px;
 }
 
-.page-admin-rooms-units-bulk-unit-management table.fc-header {
+.page-admin-rooms-units-bulk-unit-management table.fc-header,
+.page-admin-rooms-units-bulk-pricing-management table.fc-header {
   display: none;
 }
-.page-admin-rooms-units-bulk-unit-management #calendar0 table.fc-header {
+.page-admin-rooms-units-bulk-unit-management #calendar0 table.fc-header,
+.page-admin-rooms-units-bulk-pricing-management #calendar0 table.fc-header {
   display: inline-table;
   border: none;
   margin: 0;
@@ -58,11 +60,6 @@
 
 .page-admin-rooms-units-bulk-unit-management #calendar0 table.fc-header tr td:last-child {
   border: none;
-}
-
-.page-admin-rooms-units-bulk-unit-management table td {
-  padding-top: 5px;
-  padding-bottom: 5px;
 }
 
 .page-admin-rooms-units-bulk-unit-management .start-date,
