@@ -128,9 +128,41 @@ function rooms_availability_menu() {
     'weight' => 10,
   );
 
+  $items['admin/rooms/select-all-pages-av'] = array(
+    'title' => t('AJAX Select all availability pages callback'),
+    'type' => MENU_CALLBACK,
+    'page callback' => 'rooms_availability_av_ajax_callback',
+    'access arguments' => array('view availability information'),
+  );
+
+  $items['admin/rooms/select-all-pages-pr'] = array(
+    'title' => t('AJAX Select all pricing pages callback'),
+    'type' => MENU_CALLBACK,
+    'page callback' => 'rooms_availability_pr_ajax_callback',
+    'access arguments' => array('manage booking unit pricing'),
+  );
+
   return $items;
 }
 
+
+function rooms_availability_av_ajax_callback() {
+  if ($_POST['select-all'] == '1') {
+    variable_set('ROOMS_SELECT_ALL_PAGES_AV', 'true');
+  }
+  else {
+    variable_set('ROOMS_SELECT_ALL_PAGES_AV', 'false');
+  }
+}
+
+function rooms_availability_pr_ajax_callback() {
+  if ($_POST['select-all'] == '1') {
+    variable_set('ROOMS_SELECT_ALL_PAGES_PR', 'true');
+  }
+  else {
+    variable_set('ROOMS_SELECT_ALL_PAGES_PR', 'false');
+  }
+}
 
 
 function rooms_availability_bulk_unit_management($year='', $month='', $type='all', $page='0', $action='', $start='', $end='') {
@@ -326,6 +358,13 @@ function rooms_availability_filter_month_form($form, &$form_state, $month, $year
 
 
 function rooms_availability_filter_month_form_submit(&$form, &$form_state) {
+  if (arg(3) == 'bulk_pricing_management') {
+    variable_set('ROOMS_SELECT_ALL_PAGES_PR', 'false');
+  }
+  elseif (arg(3) == 'bulk_unit_management') {
+    variable_set('ROOMS_SELECT_ALL_PAGES_AV', 'false');
+  }
+
   $year = $form_state['values']['year'] + 2010;
   $month = $form_state['values']['month'];
   $type = $form_state['values']['type'];
@@ -420,11 +459,15 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
 
   if (count($rooms_units) > 0) {
     $form['rooms_data']['select-all'] = array(
-      '#type' => 'checkbox',
-      '#title' => 'Select all',
+      '#type' => 'select',
       '#prefix' => '<tr><td>',
+      '#options' => array ('Select...', 'All (this page)', 'All (all pages)', 'None'),
       '#suffix' => '</td><td></td></tr>',
     );
+
+    if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'true') {
+      $form['rooms_data']['select-all']['#default_value'] = '2';
+    }
   }
 
   foreach ($rooms_units as $key => $value) {
@@ -434,6 +477,10 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
       '#prefix' => '<tr><td>',
       '#suffix' => '</td><td><div id="calendar' . $key . '"></div></td></tr>',
     );
+
+    if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'true') {
+      $form['rooms_data']['rooms-'.$value->unit_id]['#default_value'] = '1';
+    }
   }
 
   return $form;
@@ -552,11 +599,15 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
 
   if (count($rooms_units) > 0) {
     $form['rooms_data']['select-all'] = array(
-      '#type' => 'checkbox',
-      '#title' => 'Select all',
+      '#type' => 'select',
       '#prefix' => '<tr><td>',
+      '#options' => array ('Select...', 'All (this page)', 'All (all pages)', 'None'),
       '#suffix' => '</td><td></td></tr>',
     );
+
+    if (variable_get('ROOMS_SELECT_ALL_PAGES_AV') == 'true') {
+      $form['rooms_data']['select-all']['#default_value'] = '2';
+    }
   }
 
   foreach ($rooms_units as $key => $value) {
@@ -566,6 +617,10 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
       '#prefix' => '<tr><td>',
       '#suffix' => '</td><td><div id="calendar' . $key . '"></div></td></tr>',
     );
+
+    if (variable_get('ROOMS_SELECT_ALL_PAGES_AV') == 'true') {
+      $form['rooms_data']['rooms-'.$value->unit_id]['#default_value'] = '1';
+    }
   }
 
   return $form;

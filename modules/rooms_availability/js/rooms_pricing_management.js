@@ -6,9 +6,37 @@ $(document).ready(function()
     $("form#rooms-availability-filter-month-form").submit();
   });
 
-  $('#edit-select-all').click(function() {
-    var table = $(this).closest('table')[0];
-    $('input[id^="edit-rooms"]:not(:disabled)', table).attr('checked', this.checked);
+  $('#edit-select-all').change(function() {
+    if (this.options.selectedIndex == 1) {
+      var table = $(this).closest('table')[0];
+      $('input[id^="edit-rooms"]:not(:disabled)', table).attr('checked', true);
+
+      jQuery.ajax({
+        type: 'POST',
+        url: Drupal.settings.basePath + '?q=admin/rooms/select-all-pages-pr',
+        data: {'select-all': '0'},
+      });
+    }
+    else if (this.options.selectedIndex == 2) {
+      jQuery.ajax({
+        type: 'POST',
+        url: Drupal.settings.basePath + '?q=admin/rooms/select-all-pages-pr',
+        data: {'select-all': '1'},
+      });
+
+      var table = $(this).closest('table')[0];
+      $('input[id^="edit-rooms"]:not(:disabled)', table).attr('checked', true);
+    }
+    else if (this.options.selectedIndex == 3) {
+      var table = $(this).closest('table')[0];
+      $('input[id^="edit-rooms"]:not(:disabled)', table).attr('checked', false);
+
+      jQuery.ajax({
+        type: 'POST',
+        url: Drupal.settings.basePath + '?q=admin/rooms/select-all-pages-pr',
+        data: {'select-all': '0'},
+      });
+    }
   });
 });
 
