@@ -58,7 +58,7 @@ class UnitPricingCalendar {
    * The array holding full price and booking price of the room for that period
    */
   public function calculatePrice(DateTime $start_date, DateTime $end_date) {
-    
+
     $price = 0;
     $pricing_events = $this->getEvents($start_date, $end_date);
     foreach ($pricing_events as $event) {
@@ -375,7 +375,7 @@ class UnitPricingCalendar {
     foreach ($events as $event) {
       // Make sure event refers to the unit for this calendar
       if ($event->unit_id == $this->unit_id) {
-        
+
         // Get all the pricing events that fit within this event
         $affected_events = $this->getEvents($event->start_date, $event->end_date);
         $monthly_events = array();

@@ -946,7 +946,7 @@ function rooms_availability_event($unit, $start_year = '', $start_month = '', $s
   }
 
   $rc = new UnitCalendar($unit->unit_id, $unit->default_state);
-  
+
   $events = $rc->getEvents($start_date, $end_date);
   $json_events  = array();
   

@@ -257,11 +257,11 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   $unit_selected = isset($booking->unit_id) ? t('Currently assigned unit: @unit_name / @type', array('@type' => $type_obj->label, '@unit_name' => $unit->name)) : t('No Unit assigned');
 
   $form['availability_fieldset'] = array(
-      '#type' => 'fieldset',
-      '#title' => 'Availability',
-      '#description' => $unit_selected,
-      '#prefix' => '<div id="availability-wrapper">',
-      '#suffix' => '</div>',
+    '#type' => 'fieldset',
+    '#title' => 'Availability',
+    '#description' => $unit_selected,
+    '#prefix' => '<div id="availability-wrapper">',
+    '#suffix' => '</div>',
   );
 
   $form['b_status'] = array (
@@ -363,6 +363,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
             '#title' => t('Units'),
             '#type' => 'radios',
             '#options' => $options,
+            '#validated' => TRUE,
             '#default_value' => isset($booking->unit_id) ? $booking->unit_id : '',
           );
         }
@@ -412,9 +413,16 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
 
 /**
- * Validate function for the assign unit functionality - just a place holder
+ * Validate function for the assign unit functionality
  */
 function rooms_booking_edit_form_availability_validate(&$form, &$form_state) {
+  $date_format = str_replace('-', '/', variable_get('rooms_date_format'));
+  $start_date = DateTime::createFromFormat($date_format, $form_state['input']['rooms_start_date']['date']);
+  $end_date = DateTime::createFromFormat($date_format, $form_state['input']['rooms_end_date']['date']);
+
+  if ($end_date <= $start_date) {
+    form_set_error('rooms_start_date', t('End date must have after start date'));
+  }
 }
 
 
@@ -432,7 +440,7 @@ function rooms_booking_edit_form_availability_submit($form, &$form_state) {
  * Simply returns the placeholder for all the relevant unit assignment
  * functionality.
  */
-function rooms_booking_edit_form_availability_callback(&$form, $form_state) {  
+function rooms_booking_edit_form_availability_callback(&$form, $form_state) {
   return $form['availability_fieldset'];
 }
 
