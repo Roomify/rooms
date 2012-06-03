@@ -36,8 +36,8 @@ class AvailabilityAgent {
     $this->valid_states = $valid_states;
 
     $date_format = str_replace('-', '/', variable_get('rooms_date_format'));
-    $this->start_date = DateTime::createFromFormat($date_format, $start_date);
-    $checkout_date = DateTime::createFromFormat($date_format, $end_date);
+    $this->start_date = DateTime::createFromFormat($date_format, str_replace('-', '/',$start_date));
+    $checkout_date = DateTime::createFromFormat($date_format, str_replace('-', '/', $end_date));
 
     // For availability purposes the end date is a day earlier than the checkout date
     $this->end_date = $checkout_date->sub(new DateInterval('P1D'));
