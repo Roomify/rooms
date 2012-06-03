@@ -76,11 +76,11 @@ function rooms_availability_permission() {
  * Implements hook_menu().
  */
 function rooms_availability_menu() {
-  $items  =  array();
+  $items = array();
   
   $items['admin/rooms/units/unit/%availability_unit/availability'] = array(
     'title' => 'Manage Availability',
-    'page callback' =>  'rooms_availability_page',
+    'page callback' => 'rooms_availability_page',
     'page arguments' => array(4, 6, 7),
     'access callback' => 'rooms_availability_admin_access',
     'access arguments' => array(4),
@@ -101,7 +101,7 @@ function rooms_availability_menu() {
 
   $items['admin/rooms/units/unit/%availability_unit/event'] = array(
     'title' => 'Event Management',
-    'page callback' =>  'rooms_availability_event_manager_page',
+    'page callback' => 'rooms_availability_event_manager_page',
     'page arguments' => array(4),
     'access callback' => 'rooms_availability_access',
     'access arguments' => array(4),
@@ -109,9 +109,575 @@ function rooms_availability_menu() {
     'weight' => 30,
   );
 
+  $items['admin/rooms/units/bulk_unit_management'] = array(
+    'title' => 'Bulk availability management',
+    'page callback' => 'rooms_availability_bulk_unit_management',
+    'page arguments' => array(4, 5, 6, 7),
+    'access callback' => 'rooms_availability_access',
+    'access arguments' => array(4),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10,
+  );
+
+  $items['admin/rooms/units/bulk_pricing_management'] = array(
+    'title' => 'Bulk pricing management',
+    'page callback' => 'rooms_availability_bulk_pricing_management',
+    'page arguments' => array(4, 5, 6, 7),
+    'access callback' => 'rooms_bulk_pricing_access',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10,
+  );
+
+  $items['admin/rooms/select-all-pages-av'] = array(
+    'title' => t('AJAX Select all availability pages callback'),
+    'type' => MENU_CALLBACK,
+    'page callback' => 'rooms_availability_av_ajax_callback',
+    'access arguments' => array('view availability information'),
+  );
+
+  $items['admin/rooms/select-all-pages-pr'] = array(
+    'title' => t('AJAX Select all pricing pages callback'),
+    'type' => MENU_CALLBACK,
+    'page callback' => 'rooms_availability_pr_ajax_callback',
+    'access arguments' => array('manage booking unit pricing'),
+  );
+
   return $items;
 }
 
+
+function rooms_availability_av_ajax_callback() {
+  if ($_POST['select-all'] == '1') {
+    variable_set('ROOMS_SELECT_ALL_PAGES_AV', 'true');
+  }
+  else {
+    variable_set('ROOMS_SELECT_ALL_PAGES_AV', 'false');
+  }
+}
+
+function rooms_availability_pr_ajax_callback() {
+  if ($_POST['select-all'] == '1') {
+    variable_set('ROOMS_SELECT_ALL_PAGES_PR', 'true');
+  }
+  else {
+    variable_set('ROOMS_SELECT_ALL_PAGES_PR', 'false');
+  }
+}
+
+
+function rooms_availability_bulk_unit_management($year='', $month='', $type='all', $page='0', $action='', $start='', $end='') {
+  // If year is not set then give it the current date
+  $year = ($year == '') ? date('Y', time()) : $year;
+  $month = ($month == '') ? date('n', time()) : $month;
+  $type = ($type == '') ? 'all' : $type;
+
+  if ($page < 0) $page = 0;
+
+  drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/rooms_availability.css');
+  drupal_add_library('rooms_availability', 'rooms_fullcalendar');
+  drupal_add_js(drupal_get_path('module', 'rooms_availability') . '/js/rooms_unit_management.js');
+
+  $query = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
+  $query2 = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
+  if ($type != 'all') {
+    $query->condition('type', $type , '=');
+    $query2->condition('type', $type , '=');
+  }
+  $query->range($page * 20, 20);
+  $rooms_units = $query->execute()->fetchAll();
+
+  $n_total_row = $query2->countQuery()->execute()->fetchField();
+
+  // Inject settings in javascript that we will use
+  drupal_add_js(array('roomsUnitManagement' => array('roomsNumber' => count($rooms_units))), 'setting');
+  drupal_add_js(array('roomsUnitManagement' => array('currentMonth' => $month)), 'setting');
+  drupal_add_js(array('roomsUnitManagement' => array('currentYear' => $year)), 'setting');
+
+  $output = render(drupal_get_form('rooms_availability_filter_month_form', $month, $year));
+
+  $output .= render(drupal_get_form('rooms_availability_update_status_form', $month, $year, $type, $rooms_units));
+
+  $rooms_id = array();
+  foreach ($rooms_units as $value) {
+    $rooms_id[] = $value->unit_id;
+  }
+
+  if ($n_total_row / 20 > 1) {
+    $output .= '<div class="item-list"><ul class="pager">';
+    if ($page != 0) {
+      $output .= '<li class="pager-first first"><a href="http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/0">« first</a></li>';
+      $output .= '<li class="pager-previous"><a href="http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($page - 1) . '">‹ previous</a></li>';
+    }
+    for ($i = 0; $i < $n_total_row / 20; $i++) {
+      if ($i == $page) {
+        $output .= '<li class="pager-current">' . ($page + 1) . '</li>';
+      }
+      else {
+        $output .= '<li class="pager-item"><a href="http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . $i . '">' . ($i + 1) . '</a></li>';
+      }
+    }
+    if ($page + 1 < $n_total_row / 20) {
+      $output .= '<li class="pager-next"><a href="http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($page + 1) . '">next ›</a></li>';
+      $output .= '<li class="pager-last last"><a href="http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($n_total_row / 20 - 1) . '">last »</a></li>';
+    }
+    $output .= '</ul></div>';
+  }
+
+  drupal_add_js(array('roomsUnitManagement' => array('roomsId' => $rooms_id)), 'setting');
+
+  return $output;
+}
+
+
+function rooms_availability_bulk_pricing_management($year='', $month='', $type='all', $page='0', $action='', $start='', $end='') {
+  // If year is not set then give it the current date
+  $year = ($year == '') ? date('Y', time()) : $year;
+  $month = ($month == '') ? date('n', time()) : $month;
+  $type = ($type == '') ? 'all' : $type;
+
+  if ($page < 0) $page = 0;
+
+  drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/rooms_availability.css');
+  drupal_add_library('rooms_availability', 'rooms_fullcalendar');
+  drupal_add_js(drupal_get_path('module', 'rooms_availability') . '/js/rooms_pricing_management.js');
+
+  $query = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
+  $query2 = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
+  if ($type != 'all') {
+    $query->condition('type', $type , '=');
+    $query2->condition('type', $type , '=');
+  }
+  $query->range($page * 20, 20);
+  $rooms_units = $query->execute()->fetchAll();
+
+  $n_total_row = $query2->countQuery()->execute()->fetchField();
+
+  // Inject settings in javascript that we will use
+  drupal_add_js(array('roomsUnitManagement' => array('roomsNumber' => count($rooms_units))), 'setting');
+  drupal_add_js(array('roomsUnitManagement' => array('currentMonth' => $month)), 'setting');
+  drupal_add_js(array('roomsUnitManagement' => array('currentYear' => $year)), 'setting');
+
+  $output = render(drupal_get_form('rooms_availability_filter_month_form', $month, $year));
+
+  $output .= render(drupal_get_form('rooms_availability_pricing_update_form', $month, $year, $type ,$rooms_units));
+
+  $rooms_id = array();
+  foreach ($rooms_units as $value) {
+    $rooms_id[] = $value->unit_id;
+  }
+
+  if ($n_total_row / 20 > 1) {
+    $output .= '<div class="item-list"><ul class="pager">';
+    if ($page != 0) {
+      $output .= '<li class="pager-first first"><a href="http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/0">« first</a></li>';
+      $output .= '<li class="pager-previous"><a href="http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($page - 1) . '">‹ previous</a></li>';
+    }
+    for ($i = 0; $i < $n_total_row / 20; $i++) {
+      if ($i == $page) {
+        $output .= '<li class="pager-current">' . ($page + 1) . '</li>';
+      }
+      else {
+        $output .= '<li class="pager-item"><a href="http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . $i . '">' . ($i + 1) . '</a></li>';
+      }
+    }
+    if ($page + 1 < $n_total_row / 20) {
+      $output .= '<li class="pager-next"><a href="http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($page + 1) . '">next ›</a></li>';
+      $output .= '<li class="pager-last last"><a href="http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($n_total_row / 20 - 1) . '">last »</a></li>';
+    }
+    $output .= '</ul></div>';
+  }
+
+  drupal_add_js(array('roomsUnitManagement' => array('roomsId' => $rooms_id)), 'setting');
+
+  return $output;
+}
+
+
+function rooms_availability_filter_month_form($form, &$form_state, $month, $year) {
+  $month_options = array(
+    1 => 'January',
+    2 => 'February',
+    3 => 'March',
+    4 => 'April',
+    5 => 'May',
+    6 => 'June',
+    7 => 'July',
+    8 => 'August',
+    9 => 'September',
+    10 => 'October',
+    11 => 'November',
+    12 => 'December',
+  );
+
+  $form['rooms_availability_filter_month']['month'] = array(
+    '#title' => t("Month"),
+    '#type' => 'select',
+    '#options' => $month_options,
+    '#default_value' => $month,
+  );
+
+  $year_options = range(date('Y', time()) - 2, date('Y', time()) + 5);
+
+  $form['rooms_availability_filter_month']['year'] = array(
+    '#title' => t("Year"),
+    '#type' => 'select',
+    '#options' => $year_options,
+    '#default_value' => $year-2010,
+  );
+
+  $query = db_select('rooms_unit_type', 'n')->fields('n', array('type', 'label'));
+  $unit_type = $query->execute()->fetchAll();
+
+  $type_options['all'] = 'All types';
+  foreach ($unit_type as $unit) {
+    $type_options[$unit->type] = $unit->label;
+  }
+
+  $form['rooms_availability_filter_month']['type'] = array(
+    '#title' => t("Type"),
+    '#type' => 'select',
+    '#options' => $type_options,
+    '#default_value' => (arg(6) == '') ? 'all' : arg(6),
+  );
+
+  $form['rooms_availability_filter_month']['actions'] = array(
+    '#type' => 'container',
+    '#attributes' => array('class' => array('form-actions')),
+    '#weight' => 400,
+  );
+
+  $form['rooms_availability_filter_month']['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Filter'),
+  );
+
+  hide($form['rooms_availability_filter_month']['actions']['submit']);
+
+  return $form;
+}
+
+
+function rooms_availability_filter_month_form_submit(&$form, &$form_state) {
+  if (arg(3) == 'bulk_pricing_management') {
+    variable_set('ROOMS_SELECT_ALL_PAGES_PR', 'false');
+  }
+  elseif (arg(3) == 'bulk_unit_management') {
+    variable_set('ROOMS_SELECT_ALL_PAGES_AV', 'false');
+  }
+
+  $year = $form_state['values']['year'] + 2010;
+  $month = $form_state['values']['month'];
+  $type = $form_state['values']['type'];
+
+  $address = 'http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/' . arg(3) . '/' . $year . '/' . $month;
+  if ($type != 'all') {
+    $address .= '/' . $type;
+  }
+
+  if (arg(7) != '') {
+    if ($type == 'all') $address .= '/all/' . arg(7);
+    else $address .= $type . arg(7);
+  }
+
+  drupal_goto($address);
+}
+
+
+function rooms_availability_pricing_update_form($form, &$form_state, $month, $year, $type, $rooms_units) {
+    $form['rooms_pricing_update'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Update Pricing',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $form['rooms_pricing_update']['curr_month'] = array(
+    '#type' => 'hidden',
+    '#value' => $month,
+  );
+
+  $form['rooms_pricing_update']['curr_year'] = array(
+    '#type' => 'hidden',
+    '#value' => $year,
+  );
+
+  $form['rooms_pricing_update']['curr_type'] = array(
+    '#type' => 'hidden',
+    '#value' => $type,
+  );
+
+  $form['rooms_pricing_update']['rooms_date_range'] = rooms_availability_date_range_fields($year, $month);
+  
+  $form['rooms_pricing_update']['op'] = array(
+    '#title' => t('Operation'),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE, 
+    '#collapsed' => FALSE,
+  );
+
+  $form['rooms_pricing_update']['op']['operation'] = array(
+    '#type' => 'select',
+    '#title' => 'Operation',
+    '#options' => array(
+      ROOMS_ADD => 'Add to price',
+      ROOMS_SUB => 'Subtract from price',
+      ROOMS_REPLACE => 'Replace price',
+      ROOMS_INCREASE => 'Increase price by % amount',
+      ROOMS_DECREASE => 'Decrease price by % amount',
+    ),
+    '#default_value' =>  'replace',
+  );
+
+  $form['rooms_pricing_update']['op']['amount'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Amount'),
+    '#default_value' => '',
+    '#size' => '5',
+    '#description' => 'Amount to apply for rule',
+    '#maxlength' => 10,
+    '#required' => TRUE,
+  );
+
+  $form['rooms_pricing_update']['actions'] = array(
+    '#type' => 'container',
+    '#attributes' => array('class' => array('form-actions')),
+    '#weight' => 400,
+  );
+
+  $form['rooms_pricing_update']['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Update Room Pricing'),
+  );
+
+  $form['#validate'][] = 'rooms_availability_pricing_update_form_validate';
+
+  $form['rooms_data'] = array (
+    '#prefix' => '<table>',
+    '#type' => 'container',
+    '#suffix' => '</table>',
+  );
+
+  if (count($rooms_units) > 0) {
+    $form['rooms_data']['select-all'] = array(
+      '#type' => 'select',
+      '#prefix' => '<tr><td>',
+      '#options' => array ('Select...', 'All (this page)', 'All (all pages)', 'None'),
+      '#suffix' => '</td><td></td></tr>',
+    );
+
+    if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'true') {
+      $form['rooms_data']['select-all']['#default_value'] = '2';
+    }
+  }
+
+  foreach ($rooms_units as $key => $value) {
+    $form['rooms_data']['rooms-'.$value->unit_id] = array (
+      '#type' => 'checkbox',
+      '#title' => $value->name,
+      '#prefix' => '<tr><td>',
+      '#suffix' => '</td><td><div id="calendar' . $key . '"></div></td></tr>',
+    );
+
+    if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'true') {
+      $form['rooms_data']['rooms-'.$value->unit_id]['#default_value'] = '1';
+    }
+  }
+
+  return $form;
+}
+
+
+function rooms_availability_pricing_update_form_validate(&$form, &$form_state) {
+  // Check date validity
+  if ($form_state['values']['rooms_start_date']['date'] == '') {
+    return;
+  }
+  if ($form_state['values']['rooms_end_date']['date'] == '') {
+    return;
+  }
+
+  // Make sure amount entered is numeric
+  if (!empty($form_state['values']['amount']) && !is_numeric($form_state['values']['amount'])) {
+    form_set_error('amount', t('%name: you must enter a numeric value for the price.', array('%name' => 'Amount')));
+  }
+
+  $date1 = new DateTime($form_state['values']['rooms_start_date']);
+  $date2 = new DateTime($form_state['values']['rooms_end_date']);
+  $diff = $date1->diff($date2);
+  // If date1 > date2
+  if ($diff->invert) {
+    form_set_error('date_range', t('End date must be after start date'));
+  }
+  $curr_month = $form_state['values']['curr_month'];
+  $curr_year = $form_state['values']['curr_year'];
+  if ($date1->format('n') != $curr_month || $date2->format('n') != $curr_month
+      || $date1->format('Y') != $curr_year || $date2->format('Y') != $curr_year) {
+    form_set_error('date_range', t('End date and start date are out of current month'));
+  }
+}
+
+
+function rooms_availability_pricing_update_form_submit(&$form, &$form_state) {
+  $start_date = new DateTime($form_state['values']['rooms_start_date']);
+  $end_date = new DateTime($form_state['values']['rooms_end_date']);
+  $operation = $form_state['values']['operation'];
+  $amount = $form_state['values']['amount'];
+
+  foreach ($form_state['values'] as $key => $value) {
+    if (strpos($key, 'rooms-') === 0 && $value == '1') {
+      $unit_id = str_replace('rooms-', '', $key);
+
+      // Get all the pricing events for the date range
+      $rc = new UnitPricingCalendar($unit_id);
+      $pe = new PricingEvent($unit_id, $amount, $start_date, $end_date, $operation);
+      $events = array($pe);
+
+      $rc->updateCalendar($events);
+    }
+  }
+}
+
+
+function rooms_availability_update_status_form($form, &$form_state, $month, $year, $type, $rooms_units) {
+  $form['rooms_availability_update'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Update Availability',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $form['rooms_update_availability']['curr_month'] = array(
+    '#type' => 'hidden',
+    '#value' => $month,
+  );
+
+  $form['rooms_update_availability']['curr_year'] = array(
+    '#type' => 'hidden',
+    '#value' => $year,
+  );
+
+  $form['rooms_update_availability']['curr_type'] = array(
+    '#type' => 'hidden',
+    '#value' => $type,
+  );
+
+  $form['rooms_availability_update']['rooms_date_range'] = rooms_availability_date_range_fields($year, $month);
+  
+  $state_options = array(
+    '-1' => 'Choose a new status',
+    ROOMS_NOT_AVAILABLE => 'Unavailable',
+    ROOMS_AVAILABLE => 'Available',
+    ROOMS_ON_REQUEST => 'On Request',
+    ROOMS_ANON_BOOKED => 'Anonymous Booking',
+  );
+  
+  $form['rooms_availability_update']['change_event_status'] = array(
+    '#title' => t("Bookable Unit State"),
+    '#type' => 'select',
+    '#options' => $state_options,
+    '#description' => t('Choose what state to put the unit in for the dates chosen above'),
+  );
+
+  $form['rooms_availability_update']['actions'] = array(
+    '#type' => 'container',
+    '#attributes' => array('class' => array('form-actions')),
+    '#weight' => 400,
+  );
+
+  $form['rooms_availability_update']['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Update Room Availability'),
+  );
+
+  $form['#validate'][] = 'rooms_availability_update_status_form_validate';
+
+  $form['rooms_data'] = array (
+    '#prefix' => '<table>',
+    '#type' => 'container',
+    '#suffix' => '</table>',
+  );
+
+  if (count($rooms_units) > 0) {
+    $form['rooms_data']['select-all'] = array(
+      '#type' => 'select',
+      '#prefix' => '<tr><td>',
+      '#options' => array ('Select...', 'All (this page)', 'All (all pages)', 'None'),
+      '#suffix' => '</td><td></td></tr>',
+    );
+
+    if (variable_get('ROOMS_SELECT_ALL_PAGES_AV') == 'true') {
+      $form['rooms_data']['select-all']['#default_value'] = '2';
+    }
+  }
+
+  foreach ($rooms_units as $key => $value) {
+    $form['rooms_data']['rooms-'.$value->unit_id] = array (
+      '#type' => 'checkbox',
+      '#title' => $value->name,
+      '#prefix' => '<tr><td>',
+      '#suffix' => '</td><td><div id="calendar' . $key . '"></div></td></tr>',
+    );
+
+    if (variable_get('ROOMS_SELECT_ALL_PAGES_AV') == 'true') {
+      $form['rooms_data']['rooms-'.$value->unit_id]['#default_value'] = '1';
+    }
+  }
+
+  return $form;
+}
+
+
+function rooms_availability_update_status_form_validate(&$form, &$form_state) {
+  // Check date validity
+  if ($form_state['values']['rooms_start_date']['date'] == '') {
+    return;
+  }
+  if ($form_state['values']['rooms_end_date']['date'] == '') {
+    return;
+  }
+  if ($form_state['values']['change_event_status'] == -1) {
+    form_set_error('change_event_status', t('Select a valid status'));
+  }
+  $date1 = new DateTime($form_state['values']['rooms_start_date']);
+  $date2 = new DateTime($form_state['values']['rooms_end_date']);
+  $diff = $date1->diff($date2);
+  // If date1 > date2
+  if ($diff->invert) {
+    form_set_error('date_range', t('End date must be after start date'));
+  }
+  $curr_month = $form_state['values']['curr_month'];
+  $curr_year = $form_state['values']['curr_year'];
+  if ($date1->format('n') != $curr_month || $date2->format('n') != $curr_month
+      || $date1->format('Y') != $curr_year || $date2->format('Y') != $curr_year) {
+    form_set_error('date_range', t('End date and start date are out of current month'));
+  }
+}
+
+
+function rooms_availability_update_status_form_submit(&$form, &$form_state) {
+
+  $start_date = new DateTime($form_state['values']['rooms_start_date']);
+  $end_date = new DateTime($form_state['values']['rooms_end_date']);
+  $event_id = $form_state['values']['change_event_status'];
+
+  foreach ($form_state['values'] as $key => $value) {
+    if (strpos($key, 'rooms-') === 0 && $value == '1') {
+      $unit_id = str_replace('rooms-', '', $key);
+
+      // Create a new Booking Event
+      $be = new BookingEvent($unit_id, $event_id, $start_date, $end_date);
+      $events = array($be);
+      $rc = new UnitCalendar($unit_id);
+      $response = $rc->updateCalendar($events);
+      if ($response[$event_id] == ROOMS_BLOCKED) {
+        drupal_set_message(t($form_state['complete form']['rooms_data'][$key]['#title'] . ' - Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period'));
+      }
+      elseif ($response[$event_id] == ROOMS_UPDATED) {
+        drupal_set_message(t($form_state['complete form']['rooms_data'][$key]['#title'] . ' - Calendar Updated'));
+      }
+    }
+  }
+}
 
 
 /**
@@ -141,6 +707,17 @@ function rooms_availability_admin_access($rooms_unit) {
  */ 
 function rooms_availability_access($rooms_unit) {
   if (user_access('view availability information')) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+
+/**
+ * Room availability access callback
+ */ 
+function rooms_bulk_pricing_access() {
+  if (user_access('manage booking unit pricing')) {
     return TRUE;
   }
   return FALSE;
@@ -285,6 +862,12 @@ function update_availability_calendar_form($form, &$form_state, $unit_id, $year,
 
 function update_availability_calendar_form_validate(&$form, &$form_state) {
   // Check date validity
+  if ($form_state['values']['rooms_start_date']['date'] == '') {
+    return;
+  }
+  if ($form_state['values']['rooms_end_date']['date'] == '') {
+    return;
+  }
   $date1 = new DateTime($form_state['values']['rooms_start_date']);
   $date2 = new DateTime($form_state['values']['rooms_end_date']);
   $diff = $date1->diff($date2);
@@ -363,7 +946,7 @@ function rooms_availability_event($unit, $start_year = '', $start_month = '', $s
   }
 
   $rc = new UnitCalendar($unit->unit_id, $unit->default_state);
-  
+
   $events = $rc->getEvents($start_date, $end_date);
   $json_events  = array();
   
@@ -597,6 +1180,7 @@ function rooms_availability_return_id($id) {
  * Returns the path to the FullCalendar plugin.
  */
 function rooms_availability_fullcalendar_get_js_path() {
+  //$fullcalendar_file = array('none' => 'fullcalendar.js', 'min' => 'fullcalendar.min.js');
   $fullcalendar_file = array('none' => 'fullcalendar.js', 'min' => 'fullcalendar.min.js');
   return variable_get('rooms_ROOMS_FC_PATH', ROOMS_FC_PATH) . '/' . $fullcalendar_file[variable_get('rooms_fullcalendar_compression_type', 'min')];
 }
@@ -739,4 +1323,43 @@ function rooms_availability_validate_hex_color($element, &$form_state) {
  * @todo Figure out if this is the right way to get the settings we need
  */
 function rooms_availability_colorbox_settings_alter(&$settings, &$style) {
+}
+
+function rooms_availability_date_range_fields($year, $month) {
+  $date_range_fields = array();
+
+  $date_format = str_replace('-', '/', variable_get('rooms_date_format'));
+
+  $date_range_fields['rooms_start_date'] = array(
+    '#prefix' => '<div class="start-date">',    
+    '#suffix' => '</div>',
+    '#type' => 'date_popup',
+    '#title' => t('Start Date'),
+    '#date_type' => DATE_DATETIME,
+    '#date_format' => $date_format,
+    '#date_increment' => 1,
+    '#date_year_range' => '-1:+3',
+    '#required' => TRUE,
+  );
+
+  $date_range_fields['rooms_end_date'] = array(
+    '#prefix' => '<div class="end-date">',    
+    '#suffix' => '</div>',
+    '#type' => 'date_popup',
+    '#title' => t('End Date'),
+    '#date_type' => DATE_DATETIME,
+    '#date_format' => $date_format,
+    '#date_increment' => 1,
+    '#date_year_range' => '-1:+3',
+    '#required' => TRUE,
+  );
+  
+  drupal_add_js(array('rooms' => array(
+      'roomsStartYear' => $year,
+      'roomsStartMonth' => $month,
+      'roomsDateFormat' => rooms_dateFormatTojQueryUIDatePickerFormat($date_format),
+    )), 'setting');
+  drupal_add_js(drupal_get_path('module', 'rooms_availability') . '/js/rooms_availability_date_popup.js');
+
+  return $date_range_fields;
 }

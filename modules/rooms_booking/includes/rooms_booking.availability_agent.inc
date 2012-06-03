@@ -34,9 +34,11 @@ class AvailabilityAgent {
   
   public function __construct($start_date, $end_date, $group_size = 1, $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS), $unit_types = array()) {
     $this->valid_states = $valid_states;
-    $this->start_date = new DateTime($start_date);
-    $checkout_date = new DateTime($end_date);
-    
+
+    $date_format = str_replace('-', '/', variable_get('rooms_date_format'));
+    $this->start_date = DateTime::createFromFormat($date_format, str_replace('-', '/',$start_date));
+    $checkout_date = DateTime::createFromFormat($date_format, str_replace('-', '/', $end_date));
+
     // For availability purposes the end date is a day earlier than the checkout date
     $this->end_date = $checkout_date->sub(new DateInterval('P1D'));
     
@@ -140,7 +142,7 @@ class AvailabilityAgent {
           
           // Give other modules a chance to change the price modifiers
           drupal_alter('rooms_price_modifier', $price_modifiers);
-          
+
           $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
           $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
           $full_price = $price['full_price'];
@@ -201,7 +203,7 @@ class AvailabilityAgent {
       
       // Give other modules a chance to change the price modifiers
       drupal_alter('rooms_price_modifier', $price_modifiers);
-      
+
       $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
       $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
       $units[$unit->unit_id]['unit'] = $unit;

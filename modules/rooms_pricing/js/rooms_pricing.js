@@ -53,7 +53,7 @@ Drupal.behaviors.rooms_availability = {
         },
         events: Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsPricing.roomID + '/pricing/json/' + value[2] + '/' + phpmonth
       });
-    });  
+    });
     // Resize takes care of some quirks on occasion
     $(window).resize();
   }

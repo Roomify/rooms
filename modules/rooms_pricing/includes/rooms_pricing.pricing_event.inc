@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @file
+ * A pricing event represent a price over a set of continious dates. As soon as the
+ * price changes that is a different pricing event
+ */
+
 class PricingEvent {
   
   // The room the event is relevant to
