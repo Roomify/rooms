@@ -8,7 +8,7 @@
 
  
 function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
-    $date_format = variable_get('rooms_date_format');
+    $date_format = variable_get('rooms_date_format', 'd-m-Y');
 
     $unit_id = $unit_to_book['unit']->unit_id;
     $status = $unit_to_book['state'];
@@ -34,7 +34,7 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
 
     // Check $unit_info to make sure we still have availbility
     if ($unit_info == ROOMS_NO_ROOMS) {
-      form_set_error('', t('Rooms is no longer availbility.'));
+      form_set_error('', t('We are soory, booking unit is no longer available.'));
     }
     else {
       // If available set price and create line item

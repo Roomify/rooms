@@ -417,7 +417,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
  * Validate function for the assign unit functionality
  */
 function rooms_booking_edit_form_availability_validate(&$form, &$form_state) {
-  $date_format = str_replace('-', '/', variable_get('rooms_date_format'));
+  $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
   $start_date = DateTime::createFromFormat($date_format, $form_state['input']['rooms_start_date']['date']);
   $end_date = DateTime::createFromFormat($date_format, $form_state['input']['rooms_end_date']['date']);
 
@@ -469,7 +469,7 @@ function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date =
   // The current unit for this booking should also return as available
   $current_booking_state = isset($current_booking->booking_id) ? rooms_availability_assign_id($current_booking->booking_id, $current_booking->booking_status) : '';
 
-  $valid_states = variable_get('rooms_valid_availability_states');
+  $valid_states = variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST));
 
   if (isset($current_booking->booking_id)) {
     $ac = new AvailabilityAgent($start_date, $end_date, $group_size, 1, array($valid_states[ROOMS_AVAILABLE], $valid_states[ROOMS_ON_REQUEST], $valid_states[ROOMS_UNCONFIRMED_BOOKINGS]), $unit_types);

@@ -68,7 +68,7 @@ class UnitPricingCalendar {
     
     $price = $this->applyPriceModifiers($price);
 
-    $payment_option = variable_get('rooms_payment_options');
+    $payment_option = variable_get('rooms_payment_options', FULL_PAYMENT);
     switch ($payment_option) {
       case FULL_PAYMENT:
         $booking_price = $price;

@@ -227,29 +227,29 @@ class BookingEvent {
     //set the color
     switch ($this->id) {
       case ROOMS_NOT_AVAILABLE:
-        $event['color']  = variable_get('rooms_not_available_color');//'red';
+        $event['color']  = variable_get('rooms_not_available_color', 'red');//'red';
         $event['title'] = 'N/A';
         break;
       case ROOMS_AVAILABLE:
-        $event['color'] = variable_get('rooms_available_color');//'#8CBF62';
+        $event['color'] = variable_get('rooms_available_color', '#8CBF62');//'#8CBF62';
         $event['borderColor'] = '#04711B';
         //$event['backgroundColor'] = 'green';
         $event['title'] = 'AV';
         break;
       case ROOMS_ON_REQUEST:
-        $event['color'] = variable_get('rooms_on_request_color');//'#C5C5C5';
+        $event['color'] = variable_get('rooms_on_request_color', '#C5C5C5');//'#C5C5C5';
         $event['title'] = 'ON-REQ';
         break;
       case ($this->id < 0):
-        $event['color'] = variable_get('rooms_unconfirmed_booking_color');//'#8CBF62';
+        $event['color'] = variable_get('rooms_unconfirmed_booking_color', '#8CBF62');//'#8CBF62';
         break;
       case ROOMS_ANON_BOOKED:
         if ($style == 'admin') {
-          $event['color'] = variable_get('rooms_anon_booked_color');//'#481600';
+          $event['color'] = variable_get('rooms_anon_booked_color', '#481600');//'#481600';
           $event['title'] = 'A-B';
         }
         elseif ($style == ROOMS_AVAILABILITY_GENERIC_STYLE) {
-          $event['color']  = variable_get('rooms_not_available_color');//'red';
+          $event['color']  = variable_get('rooms_not_available_color', 'red');//'red';
           $event['title'] = 'N/A';
         }
         break;
