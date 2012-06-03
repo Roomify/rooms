@@ -18,7 +18,7 @@ class RoomsUnitTypeUIController extends EntityDefaultUIController {
     $items[$this->path]['description'] = 'Manage unit types, including adding
 		and removing fields and the display of fields.';
     $items[$this->path]['weight'] = '3';
-		$items[$this->path]['type'] = MENU_LOCAL_TASK;
+    $items[$this->path]['type'] = MENU_LOCAL_TASK;
     return $items;
   }
 }
@@ -80,7 +80,7 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#maxlength' => 2,
   );
   
-	$form['data']['rooms_description_source'] = array(
+  $form['data']['rooms_description_source'] = array(
     '#type' => 'textfield',
     '#title' => t('Select Unit Description source'),
     '#description' => t('The node you choose here will be rendered in the booking results'),
@@ -90,7 +90,7 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#default_value' => isset($unit_type->data['rooms_description_source']) ? $unit_type->data['rooms_description_source'] : '',
     '#weight' => 3,
   );
-	
+  
   $form['data']['singlediscount'] = array(
     '#type' => 'textfield',
     '#size' => 5,

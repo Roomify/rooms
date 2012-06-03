@@ -223,7 +223,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   );  
 
   // A fieldset to hold the date range fields
-  $form['rooms_date_range'] = array (
+  $form['rooms_date_range'] = array(
     '#type' => 'fieldset',
     '#title' => t('Assign Dates'),
   );
@@ -264,7 +264,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#suffix' => '</div>',
   );
 
-  $form['b_status'] = array (
+  $form['b_status'] = array(
     '#type' => 'fieldset',
     '#title' => t('Booking Status'),
   );
@@ -330,7 +330,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       if (isset($form_state['values']['unit_type'])) {
         $search_unit_type =  $form_state['values']['unit_type'];
       }
-      elseif(isset($booking->unit_type)) {
+      elseif (isset($booking->unit_type)) {
         $search_unit_type = $booking->unit_type;
       }
 
@@ -339,7 +339,8 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
         $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
           '#markup' => t('No @search_unit_type are available', array('@search_unit_type' => $search_unit_type)),
         );
-      } else {
+      }
+      else {
         $currency_setting = commerce_currency_load(commerce_default_currency());
         $currency_symbol = $currency_setting['symbol'];
 

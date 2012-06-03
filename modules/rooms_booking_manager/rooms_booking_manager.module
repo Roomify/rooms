@@ -357,7 +357,7 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
 
     $form['rooms_payment_options'][PERCENT_PAYMENT]['perc_option'] = array(
       '#type' => 'radio',
-      '#title' => t('Percentual price:&nbsp;'),
+      '#title' => t('Price Percentage:&nbsp;'),
       '#return_value' => PERCENT_PAYMENT,
       '#parents' => array('rooms_payment_options'),
       '#default_value' => variable_get('rooms_payment_options', FULL_PAYMENT),
@@ -695,7 +695,7 @@ function book_units_per_type_form_validate(&$form, &$form_state) {
     }
   }
 
-  form_set_error('', t('You must select a units before continue.'));
+  form_set_error('', t('Please select a unit in order to continue with booking'));
 }
 
 /**
@@ -984,7 +984,6 @@ function rooms_booking_availability_search_form($form, $form_state) {
   // We append the validate handler to #validate in case a form callback_wrapper
   // is used to add validate handlers earlier.
   $form['#validate'][] = 'rooms_booking_availability_search_form_validate';
-  
   
   return $form;
 

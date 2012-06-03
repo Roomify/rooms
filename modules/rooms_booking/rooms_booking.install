@@ -184,7 +184,7 @@ function rooms_booking_schema() {
 
 
 function rooms_booking_create_booking_type() {
-  $booking = new RoomsBookingType(array('label'=>'Standard Booking', 'type'=>'standard_booking'));
+  $booking = new RoomsBookingType(array('label' => 'Standard Booking', 'type' => 'standard_booking'));
   rooms_booking_type_save($booking);
 }
 
