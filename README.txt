@@ -7,9 +7,11 @@ It builds on the Drupal CMS (drupal.org) and its modules.
 
 To try out Rooms in this early stage do the following:
 
-1. Download the FullCalendar library from http://arshaw.com/fullcalendar/downloads/fullcalendar-1.5.1.zip
-and place in sites/all/libraries so that you end up with sites/all/libraries/fullcalendar/fullcalendar
+1.  Download the FullCalendar library from http://www.drupalrooms.com/sites/default/files/fullcalendar-1.5.3.zip and place in sites/all/libraries so that you end up with sites/all/libraries/fullcalendar/fullcalendar
 
+We use FullCalendar to easily display date information regarding availability and prices for rooms.
+
+There version of the FullCalendar is necessary and not the one on the FullCalendar website as we have added an extra view to FullCalendar. Once tested more extensively this will be submitted as a merge request back into the original FullCalendar Library.
 2. Install the colorbox module - http://drupal.org/project/colorbox
 
 2a. Follow the colobox module instructions to install the module and colorbox library
