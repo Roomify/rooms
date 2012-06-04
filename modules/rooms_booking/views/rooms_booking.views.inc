@@ -177,7 +177,7 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['fields']['start_date']['empty_zero'] = 0;
   $handler->display->display_options['fields']['start_date']['hide_alter_empty'] = 0;
   $handler->display->display_options['fields']['start_date']['date_format'] = 'custom';
-  $handler->display->display_options['fields']['start_date']['custom_date_format'] = 'Y-m-d';
+  $handler->display->display_options['fields']['start_date']['custom_date_format'] = variable_get('rooms_date_format', 'd-m-Y');
   /* Field: Bookings: End Date */
   $handler->display->display_options['fields']['end_date']['id'] = 'end_date';
   $handler->display->display_options['fields']['end_date']['table'] = 'rooms_bookings';
@@ -200,7 +200,7 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['fields']['end_date']['empty_zero'] = 0;
   $handler->display->display_options['fields']['end_date']['hide_alter_empty'] = 0;
   $handler->display->display_options['fields']['end_date']['date_format'] = 'custom';
-  $handler->display->display_options['fields']['end_date']['custom_date_format'] = 'Y-m-d';
+  $handler->display->display_options['fields']['end_date']['custom_date_format'] = variable_get('rooms_date_format', 'd-m-Y');
   /* Field: Bookings: Unit */
   $handler->display->display_options['fields']['unit_id']['id'] = 'unit_id';
   $handler->display->display_options['fields']['unit_id']['table'] = 'rooms_bookings';
