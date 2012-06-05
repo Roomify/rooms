@@ -75,29 +75,7 @@ Drupal.behaviors.rooms_availability = {
           right: ''
         },
         events: Drupal.settings.basePath + '?q=rooms/units/unit/' + Drupal.settings.roomsUnitManagement.roomsId[c] + '/availability/json/' + value[2] + '/' + phpmonth,
-        eventClick: function(calEvent, jsEvent, view) {
-          // Getting the Unix timestamp - JS will only give us milliseconds
-          if (calEvent.end == null) {
-            //We are probably dealing with a single day event
-            calEvent.end = calEvent.start;
-          }
-          date = $.fullCalendar.parseDate(calEvent.start)
-          var sd = Math.round(Date.parse(calEvent.start)/1000);
-          var ed = Math.round(Date.parse(calEvent.end)/1000);
-          if ($.colorbox) {
-            
-            var url = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsUnitManagement.roomsId[c] + '/event/' + calEvent.id + '/' + sd + '/' + ed; 
-            $.colorbox({
-              href: url,
-              opacity:0.7,
-              width: 400,
-              height: 400,
-              onClosed:function(){
-                $(value[0]).fullCalendar('refetchEvents');
-              }
-            });
-          }
-        }
+        
 
       });
 

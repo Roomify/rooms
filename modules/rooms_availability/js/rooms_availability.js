@@ -65,8 +65,8 @@ Drupal.behaviors.rooms_availability = {
           date = $.fullCalendar.parseDate(calEvent.start)
           var sd = Math.round(Date.parse(calEvent.start)/1000);
           var ed = Math.round(Date.parse(calEvent.end)/1000);
-          if ($.colorbox) {
-            
+          // This fires up Colobox to display info relevant to event from Drupal
+          if ($.colorbox) {  
             var url = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/' + calEvent.id + '/' + sd + '/' + ed; 
             $.colorbox({
               href: url,
