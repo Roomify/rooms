@@ -16,7 +16,7 @@ class RoomsBookingTestMain extends DrupalWebTestCase {
 
   public function setUp() {
     // Enable module Rooms Unit
-    parent::setUp('rooms_booking');
+    parent::setUp(array('rooms_booking', 'rooms_booking_manager'));
 
     // Create a new user with permissions of Configure rooms settings
     $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view availability information', 'administer bookable units', 'manage booking unit pricing', 'administer booking types', 'administer bookings'));
@@ -52,8 +52,8 @@ class RoomsBookingTestMain extends DrupalWebTestCase {
     $this->drupalPostAJAX('admin/rooms/bookings/add/standard_booking',
       array(
         'client' => 'user1',
-        'rooms_start_date[date]' => '2012/06/05',
-        'rooms_end_date[date]' => '2012/06/06',
+        'rooms_start_date[date]' => '05/06/2012',
+        'rooms_end_date[date]' => '06/06/2012',
         'data[group_size]' => 2,
       ),
       array('op' => 'Assign Room'));
@@ -61,20 +61,20 @@ class RoomsBookingTestMain extends DrupalWebTestCase {
     $this->drupalPostAJAX(NULL,
       array(
         'client' => 'user1',
-        'rooms_start_date[date]' => '2012/06/05',
-        'rooms_end_date[date]' => '2012/06/06',
+        'rooms_start_date[date]' => '05/06/2012',
+        'rooms_end_date[date]' => '06/06/2012',
         'data[group_size]' => 2,
         'unit_type' => 'single_rooms',
       ),
       'unit_type');
 
-    $this->assertText('Room 100 - Cost: 100USD');
+    $this->assertText('Room 100 - Cost: 100 $');
 
     $this->drupalPost(NULL,
         array(
           'client' => 'user1',
-          'rooms_start_date[date]' => '2012/06/05',
-          'rooms_end_date[date]' => '2012/06/06',
+          'rooms_start_date[date]' => '05/06/2012',
+          'rooms_end_date[date]' => '06/06/2012',
           'data[group_size]' => 2,
           'unit_type' => 'single_rooms',
           'unit_id' => 1,
@@ -83,8 +83,8 @@ class RoomsBookingTestMain extends DrupalWebTestCase {
 
     $this->assertText('Bookings List');
     $this->assertText('user1');
-    $this->assertText('2012-06-05');
-    $this->assertText('2012-06-06');
+    $this->assertText('05-06-2012');
+    $this->assertText('06-06-2012');
     $this->assertText('Room 100');
     $this->assertText('Standard Booking');
     $this->assertText('Delete');
@@ -103,7 +103,7 @@ class RoomsBookingTestSingleOccupancy extends DrupalWebTestCase {
 
   public function setUp() {
     // Enable module Rooms Unit
-    parent::setUp('rooms_booking');
+    parent::setUp(array('rooms_booking', 'rooms_booking_manager'));
 
     // Create a new user with permissions of Configure rooms settings
     $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view availability information', 'administer bookable units', 'manage booking unit pricing', 'administer booking types', 'administer bookings'));
@@ -139,8 +139,8 @@ class RoomsBookingTestSingleOccupancy extends DrupalWebTestCase {
     $this->drupalPostAJAX('admin/rooms/bookings/add/standard_booking',
       array(
         'client' => 'user1',
-        'rooms_start_date[date]' => '2012/08/01',
-        'rooms_end_date[date]' => '2012/08/08',
+        'rooms_start_date[date]' => '01/08/2012',
+        'rooms_end_date[date]' => '08/08/2012',
         'data[group_size]' => 1,
       ),
       array('op' => 'Assign Room'));
@@ -148,20 +148,20 @@ class RoomsBookingTestSingleOccupancy extends DrupalWebTestCase {
     $this->drupalPostAJAX(NULL,
       array(
         'client' => 'user1',
-        'rooms_start_date[date]' => '2012/08/01',
-        'rooms_end_date[date]' => '2012/08/08',
+        'rooms_start_date[date]' => '01/08/2012',
+        'rooms_end_date[date]' => '08/08/2012',
         'data[group_size]' => 1,
         'unit_type' => 'single_rooms',
       ),
       'unit_type');
 
-    $this->assertText('Room 100 - Cost: 630USD');
+    $this->assertText('Room 100 - Cost: 630 $');
 
     $this->drupalPost(NULL,
         array(
           'client' => 'user1',
-          'rooms_start_date[date]' => '2012/08/01',
-          'rooms_end_date[date]' => '2012/08/08',
+          'rooms_start_date[date]' => '01/08/2012',
+          'rooms_end_date[date]' => '08/08/2012',
           'data[group_size]' => 1,
           'unit_type' => 'single_rooms',
           'unit_id' => 1,
@@ -170,8 +170,8 @@ class RoomsBookingTestSingleOccupancy extends DrupalWebTestCase {
 
     $this->assertText('Bookings List');
     $this->assertText('user1');
-    $this->assertText('2012-08-01');
-    $this->assertText('2012-08-08');
+    $this->assertText('01-08-2012');
+    $this->assertText('08-08-2012');
     $this->assertText('Room 100');
     $this->assertText('Standard Booking');
     $this->assertText('Delete');

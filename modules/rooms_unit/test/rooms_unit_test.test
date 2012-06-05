@@ -56,7 +56,7 @@ class RoomsUnitTestBookable extends DrupalWebTestCase {
     $this->assertText('Add a Bookable Unit');
     $this->assertText('No bookable units have been created yet.');
     $this->assertText('Bookable Units List');
-    $this->assertText('Bookable Units Types');
+    $this->assertText('Bookable Unit Types');
 
     $this->drupalGet('admin/rooms/units/add');
 

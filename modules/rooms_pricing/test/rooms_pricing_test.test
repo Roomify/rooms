@@ -51,8 +51,8 @@ class RoomsPricingTestMain extends DrupalWebTestCase {
 
     $this->drupalPost('admin/rooms/units/unit/1/pricing',
         array(
-          'rooms_start_date[date]' => '2012/03/13',
-          'rooms_end_date[date]' => '2012/03/17',
+          'rooms_start_date[date]' => '13/03/2012',
+          'rooms_end_date[date]' => '17/03/2012',
           'operation' => 'replace',
           'amount' => 200,
         ),
@@ -60,8 +60,8 @@ class RoomsPricingTestMain extends DrupalWebTestCase {
 
     $this->drupalPost('admin/rooms/units/unit/1/pricing',
         array(
-          'rooms_start_date[date]' => '2012/03/21',
-          'rooms_end_date[date]' => '2012/03/24',
+          'rooms_start_date[date]' => '21/03/2012',
+          'rooms_end_date[date]' => '24/03/2012',
           'operation' => 'add',
           'amount' => 20,
         ),
@@ -69,8 +69,8 @@ class RoomsPricingTestMain extends DrupalWebTestCase {
 
     $this->drupalPost('admin/rooms/units/unit/1/pricing',
         array(
-          'rooms_start_date[date]' => '2012/04/21',
-          'rooms_end_date[date]' => '2012/04/24',
+          'rooms_start_date[date]' => '21/04/2012',
+          'rooms_end_date[date]' => '24/04/2012',
           'operation' => 'sub',
           'amount' => 40,
         ),
@@ -78,8 +78,8 @@ class RoomsPricingTestMain extends DrupalWebTestCase {
 
     $this->drupalPost('admin/rooms/units/unit/1/pricing',
         array(
-          'rooms_start_date[date]' => '2012/04/26',
-          'rooms_end_date[date]' => '2012/04/28',
+          'rooms_start_date[date]' => '26/04/2012',
+          'rooms_end_date[date]' => '28/04/2012',
           'operation' => 'increase',
           'amount' => 3,
         ),
@@ -87,8 +87,8 @@ class RoomsPricingTestMain extends DrupalWebTestCase {
 
     $this->drupalPost('admin/rooms/units/unit/1/pricing',
         array(
-          'rooms_start_date[date]' => '2012/05/01',
-          'rooms_end_date[date]' => '2012/05/30',
+          'rooms_start_date[date]' => '01/05/2012',
+          'rooms_end_date[date]' => '30/05/2012',
           'operation' => 'decrease',
           'amount' => 4,
         ),

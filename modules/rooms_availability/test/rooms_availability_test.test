@@ -51,46 +51,46 @@ class RoomsAvailabilityTestMain extends DrupalWebTestCase {
 
     $this->drupalPost('admin/rooms/units/unit/1/availability/2012/3',
         array(
-          'rooms_start_date[date]' => '2012/03/13',
-          'rooms_end_date[date]' => '2012/03/17',
+          'rooms_start_date[date]' => '13/03/2012',
+          'rooms_end_date[date]' => '17/03/2012',
           'unit_state' => 0,
         ),
       t('Update Room Availability'));
 
     $this->drupalPost('admin/rooms/units/unit/1/availability/2012/3',
         array(
-          'rooms_start_date[date]' => '2012/03/19',
-          'rooms_end_date[date]' => '2012/03/20',
+          'rooms_start_date[date]' => '19/03/2012',
+          'rooms_end_date[date]' => '20/03/2012',
           'unit_state' => 2,
         ),
       t('Update Room Availability'));
 
     $this->drupalPost('admin/rooms/units/unit/1/availability/2012/3',
         array(
-          'rooms_start_date[date]' => '2012/04/10',
-          'rooms_end_date[date]' => '2012/04/20',
+          'rooms_start_date[date]' => '10/04/2012',
+          'rooms_end_date[date]' => '20/04/2012',
           'unit_state' => 3,
         ),
       t('Update Room Availability'));
 
     $this->drupalPost('admin/rooms/units/unit/1/availability/2012/3',
         array(
-          'rooms_start_date[date]' => '2012/05/01',
-          'rooms_end_date[date]' => '2012/05/27',
+          'rooms_start_date[date]' => '01/05/2012',
+          'rooms_end_date[date]' => '27/05/2012',
           'unit_state' => 0,
         ),
       t('Update Room Availability'));
 
     $this->drupalGet('rooms/units/unit/1/availability/json/2012/3&_=1331553821012&start=1330210800&end=1333836000');
 
-    $this->assertText('[{"id":"1","start":"2012-03-01T13:00:00Z","end":"2012-03-12T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"0","start":"2012-03-13T13:00:00Z","end":"2012-03-17T13:00:00Z","title":"N\/A","color":null},{"id":"1","start":"2012-03-18T13:00:00Z","end":"2012-03-18T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"2","start":"2012-03-19T13:00:00Z","end":"2012-03-20T13:00:00Z","title":"ON-REQ","color":null},{"id":"1","start":"2012-03-21T13:00:00Z","end":"2012-03-31T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"}]');
+    $this->assertText('[{"id":"1","start":"2012-03-01T13:00:00Z","end":"2012-03-12T13:00:00Z","title":"AV","color":"#8CBF62","borderColor":"#04711B"},{"id":"0","start":"2012-03-13T13:00:00Z","end":"2012-03-17T13:00:00Z","title":"N\/A","color":"red"},{"id":"1","start":"2012-03-18T13:00:00Z","end":"2012-03-18T13:00:00Z","title":"AV","color":"#8CBF62","borderColor":"#04711B"},{"id":"2","start":"2012-03-19T13:00:00Z","end":"2012-03-20T13:00:00Z","title":"ON-REQ","color":"#C5C5C5"},{"id":"1","start":"2012-03-21T13:00:00Z","end":"2012-03-31T13:00:00Z","title":"AV","color":"#8CBF62","borderColor":"#04711B"}]');
 
     $this->drupalGet('rooms/units/unit/1/availability/json/2012/4&_=1331561292818&start=1333231200&end=1336860000');
 
-    $this->assertText('[{"id":"1","start":"2012-04-01T13:00:00Z","end":"2012-04-09T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"},{"id":"3","start":"2012-04-10T13:00:00Z","end":"2012-04-20T13:00:00Z","title":"A-B","color":null},{"id":"1","start":"2012-04-21T13:00:00Z","end":"2012-04-30T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"}]');
+    $this->assertText('[{"id":"1","start":"2012-04-01T13:00:00Z","end":"2012-04-09T13:00:00Z","title":"AV","color":"#8CBF62","borderColor":"#04711B"},{"id":"3","start":"2012-04-10T13:00:00Z","end":"2012-04-20T13:00:00Z","title":"A-B","color":"#481600"},{"id":"1","start":"2012-04-21T13:00:00Z","end":"2012-04-30T13:00:00Z","title":"AV","color":"#8CBF62","borderColor":"#04711B"}]');
 
     $this->drupalGet('rooms/units/unit/1/availability/json/2012/5&_=1331562112753&start=1335650400&end=1339279200');
 
-    $this->assertText('[{"id":"0","start":"2012-05-01T13:00:00Z","end":"2012-05-27T13:00:00Z","title":"N\/A","color":null},{"id":"1","start":"2012-05-28T13:00:00Z","end":"2012-05-31T13:00:00Z","title":"AV","color":null,"borderColor":"#04711B"}]');
+    $this->assertText('[{"id":"0","start":"2012-05-01T13:00:00Z","end":"2012-05-27T13:00:00Z","title":"N\/A","color":"red"},{"id":"1","start":"2012-05-28T13:00:00Z","end":"2012-05-31T13:00:00Z","title":"AV","color":"#8CBF62","borderColor":"#04711B"}]');
   }
 }

@@ -19,7 +19,7 @@ class RoomsTestMain extends DrupalWebTestCase {
     parent::setUp('rooms_ui');
 
     // Create a new user with permissions of Configure rooms settings
-    $admin = $this->drupalCreateUser(array('access administration pages', 'configure rooms'));
+    $admin = $this->drupalCreateUser(array('access administration pages', 'configure room settings'));
     $this->drupalLogin($admin);
   }
 
@@ -73,7 +73,7 @@ class RoomsTestBookingsSetDate extends DrupalWebTestCase {
     parent::setUp('rooms_ui');
 
     // Create a new user with permissions of Configure rooms settings
-    $admin = $this->drupalCreateUser(array('access administration pages', 'configure rooms settings'));
+    $admin = $this->drupalCreateUser(array('access administration pages', 'configure room settings'));
     $this->drupalLogin($admin);
   }
 
