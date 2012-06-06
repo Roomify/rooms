@@ -1391,7 +1391,7 @@ function rooms_booking_manager_block_info() {
 function rooms_booking_manager_block_view($block_name = '') {
   if ($block_name == 'rooms_availability_search') {
     $block = array(
-      'title' => t('Availability Search'),
+      'subject' => t('Availability Search'),
       'content' => drupal_get_form('rooms_booking_availability_search_form'),
     );
     return $block;
