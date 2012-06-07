@@ -278,7 +278,7 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
 
   if (strpos($form_id, 'views_form_booking_cart_form_') === 0) {
     unset($form['actions']['submit']);
-    $form['#action'] = '/bookings';
+    $form['#action'] = str_replace('cart', 'bookings', $form['#action']);
 
     // Change any Delete buttons to say Remove.
     if (!empty($form['edit_delete'])) {
