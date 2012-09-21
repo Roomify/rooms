@@ -737,18 +737,18 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
   
   // Let us get the available rooms again and match the order against actual rooms
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
-  $agent = new AvailabilityAgent($sd->format($date_format), $ed->format($date_format), $group_size);
-  $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
 
-  $units_per_type = $agent->checkAvailability();
-  
-  
   // We are going to check that this is still true - but let us try and service the order
   foreach ($order as $type => $price_serving) {
     foreach ($price_serving as $price_level => $unit_order) {
       if ($unit_order['quantity'] > 0) {
-        $available_units = $units_per_type[$type][$price_level];
         for ($i = 1; $i <= $unit_order['quantity']; $i++) {
+          $agent = new AvailabilityAgent($sd->format($date_format), $ed->format($date_format), 1, 1, array(), array($type));
+          $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
+
+          $units_per_type = $agent->checkAvailability();
+          $available_units = $units_per_type[$type][$price_level];
+
           $unit = array_pop($available_units);
 
           // Create line item

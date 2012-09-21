@@ -93,7 +93,7 @@ class AvailabilityAgent {
         return ROOMS_NO_ROOMS;
       }
     }
-    
+
     // If BUs = 1 then we want rooms that can sleep as big as the group size
     elseif ($this->booking_units == 1) {
       $query = new EntityFieldQuery();
