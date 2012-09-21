@@ -174,7 +174,7 @@ function rooms_unit_permission() {
  * @param $op
  *   The operation being performed. One of 'view', 'update', 'create', 'delete'
  *   or just 'edit' (being the same as 'create' or 'update').
- * @param $room
+ * @param $unit
  *   Optionally a unit or a unit type to check access for. If nothing is
  *   given, access for all units is determined.
  * @param $account
@@ -186,9 +186,9 @@ function rooms_unit_access($op, $unit = NULL, $account = NULL) {
   if (user_access('administer bookable units', $account)) {
     return TRUE;
   }
-  if ((isset($unit)) && ($type_name == $unit->type)) {
+  if (isset($unit)) {
     $op = ($op == 'view') ? 'view' : 'edit';
-    if (user_access("$op any $type_name bookable unit", $account)) {
+    if (user_access("$op any $unit->type bookable unit", $account)) {
       return TRUE;
     }
   }
