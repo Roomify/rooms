@@ -703,7 +703,7 @@ function rooms_availability_update_status_form_submit(&$form, &$form_state) {
       $rc = new UnitCalendar($unit_id);
       $response = $rc->updateCalendar($events);
       if ($response[$event_id] == ROOMS_BLOCKED) {
-        drupal_set_message(t($room->name . ' - Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period'));
+        drupal_set_message(t($room->name . ' - Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period'), 'warning');
       }
       elseif ($response[$event_id] == ROOMS_UPDATED) {
         drupal_set_message(t($room->name . ' - Calendar Updated'));
@@ -721,7 +721,7 @@ function rooms_availability_update_status_form_submit(&$form, &$form_state) {
         $rc = new UnitCalendar($unit_id);
         $response = $rc->updateCalendar($events);
         if ($response[$event_id] == ROOMS_BLOCKED) {
-          drupal_set_message(t($form_state['complete form']['rooms_data'][$key]['#title'] . ' - Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period'));
+          drupal_set_message(t($form_state['complete form']['rooms_data'][$key]['#title'] . ' - Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period'), 'warning');
         }
         elseif ($response[$event_id] == ROOMS_UPDATED) {
           drupal_set_message(t($form_state['complete form']['rooms_data'][$key]['#title'] . ' - Calendar Updated'));
@@ -950,7 +950,7 @@ function update_availability_calendar_form_submit(&$form, &$form_state) {
   $rc = new UnitCalendar($unit_id);
   $response = $rc->updateCalendar($events);
   if ($response[$event_id] == ROOMS_BLOCKED) {
-    drupal_set_message(t('Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period'));
+    drupal_set_message(t('Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period'), 'warning');
   }
   elseif ($response[$event_id] == ROOMS_UPDATED) {
     drupal_set_message(t('Calendar Updated'));
