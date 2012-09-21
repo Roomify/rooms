@@ -203,22 +203,24 @@ function rooms_availability_bulk_unit_management($year='', $month='', $type='all
   }
 
   if ($n_total_row / 20 > 1) {
+    global $base_url;
+
     $output .= '<div class="item-list"><ul class="pager">';
     if ($page != 0) {
-      $output .= '<li class="pager-first first"><a href="http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/0">« first</a></li>';
-      $output .= '<li class="pager-previous"><a href="http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($page - 1) . '">‹ previous</a></li>';
+      $output .= '<li class="pager-first first"><a href="' . $base_url . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/0">« first</a></li>';
+      $output .= '<li class="pager-previous"><a href="' . $base_url . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($page - 1) . '">‹ previous</a></li>';
     }
     for ($i = 0; $i < $n_total_row / 20; $i++) {
       if ($i == $page) {
         $output .= '<li class="pager-current">' . ($page + 1) . '</li>';
       }
       else {
-        $output .= '<li class="pager-item"><a href="http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . $i . '">' . ($i + 1) . '</a></li>';
+        $output .= '<li class="pager-item"><a href="' . $base_url . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . $i . '">' . ($i + 1) . '</a></li>';
       }
     }
     if ($page + 1 < $n_total_row / 20) {
-      $output .= '<li class="pager-next"><a href="http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($page + 1) . '">next ›</a></li>';
-      $output .= '<li class="pager-last last"><a href="http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($n_total_row / 20 - 1) . '">last »</a></li>';
+      $output .= '<li class="pager-next"><a href="' . $base_url . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($page + 1) . '">next ›</a></li>';
+      $output .= '<li class="pager-last last"><a href="' . $base_url . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($n_total_row / 20 - 1) . '">last »</a></li>';
     }
     $output .= '</ul></div>';
   }
@@ -269,20 +271,20 @@ function rooms_availability_bulk_pricing_management($year='', $month='', $type='
   if ($n_total_row / 20 > 1) {
     $output .= '<div class="item-list"><ul class="pager">';
     if ($page != 0) {
-      $output .= '<li class="pager-first first"><a href="http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/0">« first</a></li>';
-      $output .= '<li class="pager-previous"><a href="http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($page - 1) . '">‹ previous</a></li>';
+      $output .= '<li class="pager-first first"><a href="' . $base_url . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/0">« first</a></li>';
+      $output .= '<li class="pager-previous"><a href="' . $base_url . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($page - 1) . '">‹ previous</a></li>';
     }
     for ($i = 0; $i < $n_total_row / 20; $i++) {
       if ($i == $page) {
         $output .= '<li class="pager-current">' . ($page + 1) . '</li>';
       }
       else {
-        $output .= '<li class="pager-item"><a href="http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . $i . '">' . ($i + 1) . '</a></li>';
+        $output .= '<li class="pager-item"><a href="' . $base_url . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . $i . '">' . ($i + 1) . '</a></li>';
       }
     }
     if ($page + 1 < $n_total_row / 20) {
-      $output .= '<li class="pager-next"><a href="http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($page + 1) . '">next ›</a></li>';
-      $output .= '<li class="pager-last last"><a href="http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($n_total_row / 20 - 1) . '">last »</a></li>';
+      $output .= '<li class="pager-next"><a href="' . $base_url . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($page + 1) . '">next ›</a></li>';
+      $output .= '<li class="pager-last last"><a href="' . $base_url . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($n_total_row / 20 - 1) . '">last »</a></li>';
     }
     $output .= '</ul></div>';
   }
@@ -358,6 +360,8 @@ function rooms_availability_filter_month_form($form, &$form_state, $month, $year
 
 
 function rooms_availability_filter_month_form_submit(&$form, &$form_state) {
+  global $base_url;
+
   if (arg(3) == 'bulk_pricing_management') {
     variable_set('ROOMS_SELECT_ALL_PAGES_PR', 'false');
   }
@@ -369,7 +373,7 @@ function rooms_availability_filter_month_form_submit(&$form, &$form_state) {
   $month = $form_state['values']['month'];
   $type = $form_state['values']['type'];
 
-  $address = 'http://' . $_SERVER['HTTP_HOST'] . '/admin/rooms/units/' . arg(3) . '/' . $year . '/' . $month;
+  $address = $base_url . '/admin/rooms/units/' . arg(3) . '/' . $year . '/' . $month;
   if ($type != 'all') {
     $address .= '/' . $type;
   }
