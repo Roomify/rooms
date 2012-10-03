@@ -292,21 +292,21 @@ function rooms_unit_views_default_views() {
   $handler->display->display_options['filters']['type']['expose']['identifier'] = 'type';
   $handler->display->display_options['filters']['type']['expose']['multiple'] = 1;
   $handler->display->display_options['filters']['type']['expose']['reduce'] = 0;
-  
+
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
   $handler->display->display_options['path'] = 'admin/rooms/units/list';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Bookable Units List';
-  $handler->display->display_options['menu']['description'] = 'A list of the units (rooms, etc) that can be booked for your accommodation';
+  $handler->display->display_options['menu']['description'] = 'A list of the units (rooms, etc) that can be booked for your accommodation.';
   $handler->display->display_options['menu']['weight'] = '-10';
   $handler->display->display_options['tab_options']['type'] = 'normal';
   $handler->display->display_options['tab_options']['title'] = 'Bookable Units';
-  $handler->display->display_options['tab_options']['description'] = 'Create units that can be booked such as rooms for a hotel';
+  $handler->display->display_options['tab_options']['description'] = 'Create units that can be booked, such as rooms for a hotel.';
   $handler->display->display_options['tab_options']['weight'] = '-10';
   $handler->display->display_options['tab_options']['name'] = 'management';
 
 
-  $views['bookable_units'] = $view; 
+  $views['bookable_units'] = $view;
   return $views;
 }

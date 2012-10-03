@@ -315,24 +315,24 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
     unset($form['actions']);
   }
 
-  if ($form_id == 'rooms_booking_settings') {    
+  if ($form_id == 'rooms_booking_settings') {
     $form['rooms_presentation_style'] = array(
       '#type' => 'radios',
       '#title' => t('Results presentation style'),
       '#options' => array(
-        ROOMS_PER_TYPE => t('Show availability on a per-type basis'),
-        ROOMS_INDIVIDUAL => t('Show availability of individual units'),
+        ROOMS_PER_TYPE => t('Show availability on a per-type basis.'),
+        ROOMS_INDIVIDUAL => t('Show availability of individual units.'),
       ),
       '#default_value' => variable_get('rooms_presentation_style', ROOMS_PER_TYPE),
     );
-    
+
     $form['rooms_valid_availability_states'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Valid availability states'),
-      '#description' => t('Select the states for which rooms should show as available in a search'),
+      '#description' => t('Select the states for which rooms should show as available in a search.'),
       '#options' => array(
-        ROOMS_AVAILABLE => t('Rooms marked as available'),
-        ROOMS_ON_REQUEST => t('Rooms marked as available on request'),
+        ROOMS_AVAILABLE => t('Rooms marked as available.'),
+        ROOMS_ON_REQUEST => t('Rooms marked as available on request.'),
         //ROOMS_UNCONFIRMED_BOOKINGS => t('Unconfirmed Bookings'),
       ),
       '#default_value' => variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)),
@@ -341,7 +341,7 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
     $form['rooms_payment_options'] = array(
       '#type' => 'item',
       '#title' => t('Payment options'),
-      '#description' => t('Select payment option for booking confirmation'),
+      '#description' => t('Select payment option for booking confirmation.'),
     );
 
     $form['rooms_payment_options'][FULL_PAYMENT] = array(
@@ -358,7 +358,7 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
 
     $form['rooms_payment_options'][PERCENT_PAYMENT]['perc_option'] = array(
       '#type' => 'radio',
-      '#title' => t('Price Percentage:&nbsp;'),
+      '#title' => t('Percentage of full price:&nbsp;'),
       '#return_value' => PERCENT_PAYMENT,
       '#parents' => array('rooms_payment_options'),
       '#default_value' => variable_get('rooms_payment_options', FULL_PAYMENT),

@@ -288,7 +288,7 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['fields']['operations']['hide_empty'] = 0;
   $handler->display->display_options['fields']['operations']['empty_zero'] = 0;
   $handler->display->display_options['fields']['operations']['hide_alter_empty'] = 0;
-  
+
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
   $handler->display->display_options['path'] = 'admin/rooms/bookings/list';
@@ -298,7 +298,7 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['menu']['weight'] = '-10';
   $handler->display->display_options['tab_options']['type'] = 'normal';
   $handler->display->display_options['tab_options']['title'] = 'Bookings';
-  $handler->display->display_options['tab_options']['description'] = 'A list of bookings';
+  $handler->display->display_options['tab_options']['description'] = 'A list of bookings.';
   $handler->display->display_options['tab_options']['weight'] = '0';
   $handler->display->display_options['tab_options']['name'] = 'management';
 

@@ -187,19 +187,19 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   $client = '';
 
   // Check to see if we are loading an existing booking (existing bookings
-  // have customer ids set) 
+  // have customer ids set)
   if (isset($booking->customer_id)) {
     // Get the client name - we need this to set the Client field
     $client_name = $booking->name;
- 
+
     // The Client value needs the id as well (to take us back to the Customer Profile in Commerce)
     $client = $booking->name . ':' . $booking->customer_id;
-   }  
-  
+   }
+
   $form['client'] = array(
-    '#type' => 'textfield', 
-    '#title' => t('Customer'), 
-    '#maxlength' => 60, 
+    '#type' => 'textfield',
+    '#title' => t('Customer'),
+    '#maxlength' => 60,
     '#autocomplete_path' => 'admin/rooms/bookings/customers',
     '#description' => t('A customer profile must already exist under Customer Profiles in the <a href="@store-profile">store</a>.', array('@store-profile' => url('admin/commerce/customer-profiles'))),
     '#default_value' => $client,
@@ -219,25 +219,25 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       '6' => '6',
     ),
     '#default_value' =>  isset($booking->data['group_size']) ? $booking->data['group_size'] : '2',
-    '#description' => t('The number of people staying in this room'),
-  );  
+    '#description' => t('The number of people staying in this room.'),
+  );
 
   // A fieldset to hold the date range fields
   $form['rooms_date_range'] = array(
     '#type' => 'fieldset',
     '#title' => t('Assign Dates'),
   );
-  
+
   $form['rooms_date_range'] = rooms_date_range_fields($form['rooms_date_range']);
-  
+
   // Unset the default for max days away for bookings since we are on the admin side here
   drupal_add_js(array('rooms' => array('roomsBookingStartDay' => 0)), 'setting');
-  
-  // Set the default values for the dates  
+
+  // Set the default values for the dates
   $form['rooms_date_range']['rooms_start_date']['#default_value'] = isset($booking->start_date) ? $booking->start_date : '';
   $form['rooms_date_range']['rooms_end_date']['#default_value'] = isset($booking->end_date) ? $booking->end_date : '';
-    
-  // Access to availability information 
+
+  // Access to availability information
   $form['get_availability'] = array(
     '#type' => 'submit',
     '#value' => isset($booking->unit_id) ? t('Re-assign Unit') : t('Assign Room'),
@@ -248,13 +248,13 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       'wrapper' => 'availability-wrapper',
     ),
   );
-    
+
   // If a unit is assigned get the unit type label
   if (isset($booking->unit_id)) {
     $type_obj = rooms_unit_type_load($booking->unit_type);
     $unit = rooms_unit_load($booking->unit_id);
   }
-  $unit_selected = isset($booking->unit_id) ? t('Currently assigned unit: @unit_name / @type', array('@type' => $type_obj->label, '@unit_name' => $unit->name)) : t('No Unit assigned');
+  $unit_selected = isset($booking->unit_id) ? t('Currently assigned unit: @unit_name / @type', array('@type' => $type_obj->label, '@unit_name' => $unit->name)) : t('No Unit assigned.');
 
   $form['availability_fieldset'] = array(
     '#type' => 'fieldset',
