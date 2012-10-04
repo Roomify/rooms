@@ -54,7 +54,7 @@ class RoomsTestConfig extends DrupalWebTestCase {
     $this->drupalGet('admin/rooms/config');
 
     $this->assertText('Booking Settings');
-    $this->assertText('Configure settings and business rules for Bookings');
+    $this->assertText('Configure settings and business rules for Bookings.');
   }
 }
 

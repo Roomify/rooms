@@ -1250,24 +1250,24 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
     );
-    
+
     $form['color_statuses']['rooms_not_available_color'] = array(
       '#type' => 'textfield',
-      '#title' => t('Room no available'),
+      '#title' => t('Room not available'),
       '#size' => 10,
       '#maxlength' => 7,
       '#default_value' => variable_get('rooms_not_available_color', '#FF0000'),
-      '#element_validate' => array('rooms_availability_validate_hex_color'), 
-      '#dependency' => array('edit-row-options-colors-legend' => array('type')), 
-      '#prefix' => '<div class="rooms-colorpicker-wrapper">', 
-      '#suffix' => '<div class="rooms-colorpicker"></div></div>', 
-      '#attributes' => array('class' => array('rooms-edit-colorpicker')), 
+      '#element_validate' => array('rooms_availability_validate_hex_color'),
+      '#dependency' => array('edit-row-options-colors-legend' => array('type')),
+      '#prefix' => '<div class="rooms-colorpicker-wrapper">',
+      '#suffix' => '<div class="rooms-colorpicker"></div></div>',
+      '#attributes' => array('class' => array('rooms-edit-colorpicker')),
       '#attached' => array(
         // Add Farbtastic color picker.
         'library' => array(
           array('system', 'farbtastic'),
         ),
-        // Add javascript to trigger the colorpicker. 
+        // Add javascript to trigger the colorpicker.
         'js' => array(drupal_get_path('module', 'rooms_availability') . '/js/rooms_color.js'),
       ),
     );

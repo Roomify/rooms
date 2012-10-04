@@ -34,7 +34,7 @@ function rooms_ui_menu() {
   );
   $items['admin/rooms/config/bookings'] = array(
     'title' => 'Booking Settings',
-    'description' => 'Configure settings and business rules for Bookings',
+    'description' => 'Configure settings and business rules for Bookings.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('rooms_booking_settings'),
     'access arguments' => array('configure room settings'),

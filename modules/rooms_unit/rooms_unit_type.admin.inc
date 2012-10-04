@@ -67,39 +67,39 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#title' => t('Unit Base Price'),
     '#default_value' => isset($unit_type->data['base_price']) ? $unit_type->data['base_price'] : '',
     '#size' => '5',
-    '#description' => t('Base price is per unit per night - the price you set here will be the default price for all units of this type. You can then change the default base price on a per unit basis'),
+    '#description' => t('Base price is per unit per night - the price you set here will be the default price for all units of this type. You may then change the default base price on a per unit basis.'),
     '#maxlength' => 10,
   );
-  
+
   $form['data']['sleeps'] = array(
     '#type' => 'textfield',
     '#title' => t('Sleeps'),
     '#default_value' => isset($unit_type->data['sleeps']) ? $unit_type->data['sleeps'] : '',
     '#size' => '5',
-    '#description' => t('The default number of people that can sleeps in units of this type'),
+    '#description' => t('The default number of people that can sleep in units of this type.'),
     '#maxlength' => 2,
   );
-  
+
   $form['data']['rooms_description_source'] = array(
     '#type' => 'textfield',
     '#title' => t('Select Unit Description source'),
-    '#description' => t('The node you choose here will be rendered in the booking results'),
+    '#description' => t('The node you choose here will be rendered in the booking results.'),
     '#size' => 30,
     '#maxlength' => 60,
     '#autocomplete_path' => 'admin/rooms/unit-type/description-source',
     '#default_value' => isset($unit_type->data['rooms_description_source']) ? $unit_type->data['rooms_description_source'] : '',
     '#weight' => 3,
   );
-  
+
   $form['data']['singlediscount'] = array(
     '#type' => 'textfield',
     '#size' => 5,
     '#default_value' => isset($unit_type->data['singlediscount']) ? $unit_type->data['singlediscount'] : '',
     '#title' => t('Discount for single occupancy'),
     '#postfix' => '%',
-    '#description' => t('The percentage stated will be removed from the final price'),
+    '#description' => t('The percentage (stated as a numeral between 1 and 100) by which to discount the full price for single occupancy. Leave blank if you do not wish to offer a discount.'),
   );
-  
+
   $form['actions'] = array('#type' => 'actions');
   $form['actions']['submit'] = array(
     '#type' => 'submit',
@@ -121,19 +121,19 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
 }
 
 function rooms_unit_type_form_validate(&$form, &$form_state) {
-  
+
   // Validate price field
   if (!empty($form_state['values']['base_price']) && !is_numeric($form_state['values']['base_price'])) {
     form_set_error('Base price error', t('%name: you must enter a numeric value for the price.', array('%name' => 'Base Price')));
   }
-  
+
   // Validate discount field
   if (!empty($form_state['values']['data']['singlediscount']) && !is_numeric($form_state['values']['data']['singlediscount'])) {
-    form_set_error('Discount value error', t('%name: you must enter a numeric value for the discount from 1 to 100%.', array('%name' => 'Single Discount')));
+    form_set_error('Discount value error', t('%name: you must enter a numeric value between 1 and 100 for the discount.', array('%name' => 'Single Discount')));
   }
-  
+
   if ((($form_state['values']['data']['singlediscount'] > 100) || ($form_state['values']['data']['singlediscount'] < 1)) && ($form_state['values']['data']['singlediscount'] != '')) {
-    form_set_error('Discount value error', t('%name: you must enter a numeric value for the discount from 1 to 100%.', array('%name' => 'Single Discount')));
+    form_set_error('Discount value error', t('%name: you must enter a numeric value between 1 and 100 for the discount.', array('%name' => 'Single Discount')));
   }
 
 }
