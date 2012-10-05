@@ -34,19 +34,15 @@ modules.)
 
 6. Set availability and pricing - clicking on events will bring up a colorbox and allow you to interact with them.
 
-7. Create a Booking Type at admin/rooms/bookings/booking-types FIXME
-7a. *** Note create at least one Booking Type called Basic (machine-name:basic) - this will be used by the Booking Manager later on
-(this should eventually be automated)
+7. Visit admin/commerce/customer-profiles and create a Customer Profile in Drupal Commerce.
 
-8. Visit admin/commerce/customer-profiles and create a Customer Profile in Drupal Commerce.
+8. Create a Booking at admin/rooms/bookings/add
 
-9. Create a Booking at admin/rooms/bookings/add
+9. Go to /booking and do an availability search.
 
-10. Go to /booking and do an availability search.
-
-11. If you wish to display availability information on an embedded calendar in a node (as vacation rentals properties often do) activate the Rooms Availability Reference Module.
-11a. This will give you a new field type called "Availability Reference".
-11b. Add the field to any entity and you may reference specific Booking Units to have the availability information rendered on the node display (or any other entity).
+10. If you wish to display availability information on an embedded calendar in a node (as vacation rentals properties often do) activate the Rooms Availability Reference Module.
+10a. This will give you a new field type called "Availability Reference".
+10b. Add the field to any entity and you may reference specific Booking Units to have the availability information rendered on the node display (or any other entity).
 
 
 The results of the availability search are the rooms available over the period - adding one to a cart
