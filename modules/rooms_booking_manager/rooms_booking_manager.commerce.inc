@@ -6,7 +6,7 @@
  * here.
  */
 
- 
+
 function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
     $date_format = variable_get('rooms_date_format', 'd-m-Y');
 
@@ -92,7 +92,7 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
       $line_item->rooms_booked_status = $commerce_status;
       $line_item->rooms_booked_price = $commerce_price;
       $line_item->rooms_booked_bookingprice = $booking_price;
-      
+
       // After we added the price to the line item we rebase (!) it to make
       // sure it gets picked up in the order data and the totals are correct.
       commerce_line_item_rebase_unit_price($line_item);

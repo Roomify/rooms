@@ -23,5 +23,3 @@
         <?php print render($units_per_type_form); ?>
   <?php endif; ?>
 <?php endif; ?>
-  
-  
