@@ -1448,6 +1448,21 @@ function rooms_booking_manager_line_item_configuration($line_item_type) {
 }
 
 /**
+ * Implements hook_line_item_title()
+ * Returns the title of a line item based on its type.
+ *
+ * @param $line_item
+ *   The line item object whose title should be returned.
+ *
+ * @return
+ *   The type-dependent title of the line item.
+ */
+function rooms_booking_manager_line_item_title($line_item) {
+  // Use the line item's label for the title.
+  return ($line_item->line_item_label);
+}
+
+/**
  * Implements hook_commerce_product_type_info().
  */
 function rooms_booking_manager_commerce_product_type_info() {
