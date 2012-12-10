@@ -3,7 +3,7 @@
 Drupal.behaviors.rooms_availability_reference = {
   attach: function(context) {    
     var minDate =new Date();
-    $('#calendar').fullCalendar({
+    $('.cal').fullCalendar({
       ignoreTimezone:false,
       editable:false,
       month:minDate.getMonth(),

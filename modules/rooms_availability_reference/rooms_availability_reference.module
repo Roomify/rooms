@@ -160,9 +160,8 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
   
   $element = array(
     '#theme' => 'rooms_availability_field_calendar',
-    //'#calendars' => $result,
-    '#attributes' => array('class' => 'calendar'),
-    '#calendar' => $result,
+    '#attributes' => array('class' => 'cal'),
+    '.cal' => $result,
   );
   
   return $element;
