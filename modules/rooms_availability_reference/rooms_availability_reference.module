@@ -180,7 +180,7 @@ function rooms_availability_reference_field_settings_form($field, $instance, $ha
     '#type' => 'checkboxes',
     '#title' => t('Unit types that can be referenced'),
     '#multiple' => TRUE,
-    '#default_value' => $settings['referenceable_unit_types'],
+    '#default_value' => isset($settings['referenceable_unit_types']) ? $settings['referenceable_unit_types'] : array(),
     '#options' => array_map('check_plain', rooms_unit_types_ids()),
   );
   
