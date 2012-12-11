@@ -1493,21 +1493,73 @@ function rooms_booking_manager_commerce_cart_line_item_refresh($line_item, $orde
     $unit_id = $line_item->rooms_booked_unit_id[LANGUAGE_NONE][0]['value'];
     $unit = rooms_unit_load($unit_id);
 
-    $commerce_unit_price = array(
-      LANGUAGE_NONE => array(
-        array(
-          'amount' => $line_item->rooms_booked_price[LANGUAGE_NONE][0]['value'],
-          'currency_code' => commerce_default_currency(),
-          'data' => array(''),
+    // Store the current price components. We will use this later to identify the correct taxes to apply.
+    $old_components = $line_item->commerce_unit_price[LANGUAGE_NONE][0]['data']['components'];
+
+    // Create a price array, using the $line_item->rooms_booked_price to set the amount
+    // This array will be added to the $line_item->commerce_unit_price which is otherwise overwritten with the
+    // rooms product (ROOMS-BASIC-PRODUCT) original price components (we do not want this to happen!)
+    $price = array(
+      'amount' => $line_item->rooms_booked_price[LANGUAGE_NONE][0]['value'],
+      'currency_code' => commerce_default_currency(),
+      'data' => array(
+        'components' => array(
+          array(
+            'name' => 'base_price',
+            'price' => array(
+              'amount' => $line_item->rooms_booked_price[LANGUAGE_NONE][0]['value'],
+              'currency_code' => commerce_default_currency(),
+              'data' => array(),
+            ),
+          'included' => TRUE,
+          ),
         ),
       ),
     );
-    $line_item->commerce_unit_price = $commerce_unit_price;
 
-    // After we added the price to the line item we rebase (!) it to make
-    // sure it gets picked up in the order data and the totals are correct.
-    commerce_line_item_rebase_unit_price($line_item);
+    $line_item->commerce_unit_price[LANGUAGE_NONE][0] = $price;
+    $line_item->commerce_total[LANGUAGE_NONE][0] = $price;
 
+    $rules_components = rules_get_components();
+    // Cycle through all Rules components looking for any with 'rooms_booking' as part of name, calling any that are found
+    foreach ($rules_components as $key => $component) {
+      $name = $component->name;
+      if (!(strpos($name, 'rooms_booking') === false)) {
+        rules_invoke_component($name, $line_item);
+      }
+    }
+
+    // Previous section may create 2x base_price components, if so combine them
+    $amount = 0;
+    $count = 0;
+    // Cycle through the commerce_unit_price components looking for any named 'base_price'
+    foreach ($line_item->commerce_unit_price[LANGUAGE_NONE][0]['data']['components'] as $key1 => $price_component) {
+      if ($price_component['name'] = 'base_price') {
+        $count = $count + 1;
+        // Store the location of the 1st 'base_price' component
+        if ($count == 1) {
+          $key_bp = $key1;
+        }
+        // Sum the amounts of base_price components
+        $amount = $amount + $price_component['price']['amount'];
+        // Once we have saved the amount from any extra base_price component, we then remove the extra component
+        if ($count > 1) {
+          unset($line_item->commerce_unit_price[LANGUAGE_NONE][0]['data']['components'][$key1]);
+        }
+      }
+    }
+    // Set the amount field of the 1st (and now only) 'base_price' component to the sum of all
+    // 'base_price' component that previously existed
+    $line_item->commerce_unit_price[LANGUAGE_NONE][0]['data']['components'][$key_bp]['price']['amount'] = $amount;
+
+    // This function is the only standard commerce function that allows use to set the commerce_unit_price
+    // of the line item to a particular value. The previously used function
+    // (commerce_line_item_rebase_unit_price) resets the commerce_unit_price and its components
+    // to the original values from the product entity.
+    // It also correctly re-calculates applicable tax components that were present in $old_components.
+    commerce_tax_commerce_line_item_rebase_unit_price($line_item->commerce_unit_price[LANGUAGE_NONE][0], $old_components, $line_item);
+    // The function above is supposed to have the $price argument passed by reference (&$price),
+    // but I could not get this to work correctly.
   }
 }
 
@@ -1527,7 +1579,9 @@ function rooms_booking_manager_enable() {
       $product = commerce_product_new('rooms_product');
       $product->sku = 'ROOMS-BASIC-BOOKING';
       $product->title = t('Rooms Basic Booking');
-      $product->commerce_price[LANGUAGE_NONE][0]['amount'] = 0;
+      // We will change the price later, but for now set the price to 100 (=$1)
+      // to give tax module something to work with
+      $product->commerce_price[LANGUAGE_NONE][0]['amount'] = 100;
       $product->commerce_price[LANGUAGE_NONE][0]['currency_code'] = commerce_default_currency();
 
       commerce_product_save($product);
