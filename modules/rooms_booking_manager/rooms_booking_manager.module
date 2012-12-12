@@ -768,8 +768,6 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
 }
 
 
-
-
 /**
  * Implements hook_load()
  *
@@ -881,14 +879,11 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
 }
 
 
-
-
 /**
  * Implements hook_commerce_order_update
  */
 function rooms_booking_manager_commerce_order_update($order) {
-  }
-
+}
 
 
 /**
@@ -1057,8 +1052,6 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
 
   drupal_goto('booking/' . $start_date->format('Y-m-d') . '/' . $end_date->format('Y-m-d') . '/' . $group_size . '/' . $units);
 }
-
-
 
 
 /**
@@ -1335,7 +1328,6 @@ function _rooms_booking_manager_line_item_type_fields() {
 }
 
 
-
 /**
  * Implements hook_theme()
  */
@@ -1368,6 +1360,19 @@ function rooms_booking_manager_rules_action_info() {
     ),
   );
 
+  $actions['rooms_booking_manager_price_apply'] = array(
+    'label' => t('Apply price to a Rooms line item'),
+    'parameter' => array(
+      'commerce_line_item' => array(
+        'type' => 'commerce_line_item',
+        'label' => t('Line item'),
+      ),
+    ),
+    'group' => t('Rooms'),
+    'callbacks' => array(
+      'execute' => 'rooms_booking_manager_price_apply',
+    ),
+  );
 
   return $actions;
 }
@@ -1376,6 +1381,57 @@ function rooms_booking_cancel_order_booking() {
 
 }
 
+function rooms_booking_manager_price_apply($line_item, $name) {
+  if ($line_item->type == 'rooms_booking') {
+    $amount = $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'];
+
+    $start_date = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value']);
+    $end_date = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
+
+    $unit_id = $line_item->rooms_booked_unit_id[LANGUAGE_NONE][0]['value'];
+    $unit = rooms_unit_load($unit_id);
+
+    // First set up price modifiers
+    $price_modifiers = array();
+    
+    // Give other modules a chance to change the price modifiers
+    drupal_alter('rooms_price_modifier', $price_modifiers);
+
+    $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
+    $price = $price_calendar->calculatePrice($start_date, $end_date);
+
+    $full_price = $price['full_price'] * 100;
+
+    $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'] = $full_price;
+    $line_item->commerce_unit_price[LANGUAGE_NONE][0]['currency_code'] = commerce_default_currency();
+
+    foreach ($line_item->commerce_unit_price[LANGUAGE_NONE][0]['data']['components'] as $key => $component) {
+      $line_item->commerce_unit_price[LANGUAGE_NONE][0]['data']['components'][$key]['price']['amount'] = $full_price / $amount * $component['price']['amount'];
+    }
+  }
+}
+
+/**
+ * Implements hook_default_rules_configuration().
+ */
+function rooms_booking_manager_default_rules_configuration() {
+  $rules = array();
+
+  $rule = rules_reaction_rule();
+  $rule->label = 'Rooms';
+  $rule->active = TRUE;
+  $rule->weight = -100;
+
+  $rule
+    ->event('commerce_product_calculate_sell_price')
+    ->action('rooms_booking_manager_price_apply', array(
+        'commerce_line_item:select' => 'commerce-line-item',
+      ));
+
+  $rules['rooms'] = $rule;
+
+  return $rules;
+}
 
 /**
  * Implements hook_block_info()
@@ -1390,7 +1446,6 @@ function rooms_booking_manager_block_info() {
 
   return $blocks;
 }
-
 
 /**
  * Implements hook_block_view()
@@ -1474,93 +1529,6 @@ function rooms_booking_manager_commerce_product_type_info() {
       'revision' => '1',
     ),
   );
-}
-
-/**
- * Implements hook_commerce_cart_line_item_refresh().
- *
- * When commerce recalculates the prices of the items in the cart, it doesn't take
- * into account the price when the line item was saved, and it uses the price from
- * the product entity.
- *
- * Here we recalculate the item price based in the rooms price calculation.
- */
-function rooms_booking_manager_commerce_cart_line_item_refresh($line_item, $order_wrapper) {
-  if ($line_item->type == 'rooms_booking') {
-    $start_date = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value']);
-    $end_date = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
-
-    $unit_id = $line_item->rooms_booked_unit_id[LANGUAGE_NONE][0]['value'];
-    $unit = rooms_unit_load($unit_id);
-
-    // Store the current price components. We will use this later to identify the correct taxes to apply.
-    $old_components = $line_item->commerce_unit_price[LANGUAGE_NONE][0]['data']['components'];
-
-    // Create a price array, using the $line_item->rooms_booked_price to set the amount
-    // This array will be added to the $line_item->commerce_unit_price which is otherwise overwritten with the
-    // rooms product (ROOMS-BASIC-PRODUCT) original price components (we do not want this to happen!)
-    $price = array(
-      'amount' => $line_item->rooms_booked_price[LANGUAGE_NONE][0]['value'],
-      'currency_code' => commerce_default_currency(),
-      'data' => array(
-        'components' => array(
-          array(
-            'name' => 'base_price',
-            'price' => array(
-              'amount' => $line_item->rooms_booked_price[LANGUAGE_NONE][0]['value'],
-              'currency_code' => commerce_default_currency(),
-              'data' => array(),
-            ),
-          'included' => TRUE,
-          ),
-        ),
-      ),
-    );
-
-    $line_item->commerce_unit_price[LANGUAGE_NONE][0] = $price;
-    $line_item->commerce_total[LANGUAGE_NONE][0] = $price;
-
-    $rules_components = rules_get_components();
-    // Cycle through all Rules components looking for any with 'rooms_booking' as part of name, calling any that are found
-    foreach ($rules_components as $key => $component) {
-      $name = $component->name;
-      if (!(strpos($name, 'rooms_booking') === false)) {
-        rules_invoke_component($name, $line_item);
-      }
-    }
-
-    // Previous section may create 2x base_price components, if so combine them
-    $amount = 0;
-    $count = 0;
-    // Cycle through the commerce_unit_price components looking for any named 'base_price'
-    foreach ($line_item->commerce_unit_price[LANGUAGE_NONE][0]['data']['components'] as $key1 => $price_component) {
-      if ($price_component['name'] = 'base_price') {
-        $count = $count + 1;
-        // Store the location of the 1st 'base_price' component
-        if ($count == 1) {
-          $key_bp = $key1;
-        }
-        // Sum the amounts of base_price components
-        $amount = $amount + $price_component['price']['amount'];
-        // Once we have saved the amount from any extra base_price component, we then remove the extra component
-        if ($count > 1) {
-          unset($line_item->commerce_unit_price[LANGUAGE_NONE][0]['data']['components'][$key1]);
-        }
-      }
-    }
-    // Set the amount field of the 1st (and now only) 'base_price' component to the sum of all
-    // 'base_price' component that previously existed
-    $line_item->commerce_unit_price[LANGUAGE_NONE][0]['data']['components'][$key_bp]['price']['amount'] = $amount;
-
-    // This function is the only standard commerce function that allows use to set the commerce_unit_price
-    // of the line item to a particular value. The previously used function
-    // (commerce_line_item_rebase_unit_price) resets the commerce_unit_price and its components
-    // to the original values from the product entity.
-    // It also correctly re-calculates applicable tax components that were present in $old_components.
-    commerce_tax_commerce_line_item_rebase_unit_price($line_item->commerce_unit_price[LANGUAGE_NONE][0], $old_components, $line_item);
-    // The function above is supposed to have the $price argument passed by reference (&$price),
-    // but I could not get this to work correctly.
-  }
 }
 
 /**
