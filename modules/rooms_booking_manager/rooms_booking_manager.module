@@ -1055,7 +1055,7 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
 
 
 /**
- * Implementation of hook_commerce_product_type_info()
+ * 
  */
 function _rooms_booking_manager_line_item_type_fields() {
   $field_data = array(
