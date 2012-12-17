@@ -44,15 +44,10 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
       // Convert to integer value as this is what Commerce expects
       $price = commerce_currency_decimal_to_amount($price, commerce_default_currency());
 
-      $commerce_unit_price = array(
-        LANGUAGE_NONE => array(
-          array(
-            'amount' => $price,
-            'currency_code' => commerce_default_currency(),
-            'data' => array(''),
-          ),
-        ),
-      );
+      // We do not need to setup the line item's commerce_unit_price here, as it will be overwritten
+      // with the values from the product entity anyway. Setting commerce unit price
+      // to the correct value is now done completely by the function
+      // rooms_booking_manager_commerce_cart_line_item_refresh() in rooms_booking_manager.module
 
       $commerce_dates = array(
         LANGUAGE_NONE => array( array(
@@ -85,17 +80,19 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
         )),
       );
 
+      $group_size = array(
+        LANGUAGE_NONE => array(array(
+          'value' => $agent->group_size,
+        )),
+      );
 
-      $line_item->commerce_unit_price = $commerce_unit_price;
+
+      $line_item->rooms_booking_number_people = $group_size;
       $line_item->rooms_booking_dates = $commerce_dates;
       $line_item->rooms_booked_unit_id = $commerce_unit;
       $line_item->rooms_booked_status = $commerce_status;
       $line_item->rooms_booked_price = $commerce_price;
       $line_item->rooms_booked_bookingprice = $booking_price;
-
-      // After we added the price to the line item we rebase (!) it to make
-      // sure it gets picked up in the order data and the totals are correct.
-      commerce_line_item_rebase_unit_price($line_item);
 
       return $line_item;
     }

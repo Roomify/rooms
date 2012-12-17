@@ -132,29 +132,37 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
       drupal_add_library('rooms_availability', 'rooms_fullcalendar');
       drupal_add_js(drupal_get_path('module', 'rooms_availability_reference') . '/js/rooms_availability_reference.js');
 
+      $unit_names = array();
+      $unit_ids = array();
+
       foreach ($items as $delta => $item) {
         $unit = rooms_unit_load($item['unit_id']);
-        // Inject settings in javascript that we will use
-        $js_settings = array(
-          'roomsAvailabilityRef' => array(
-            'unitID' => $unit->unit_id,
-            'startyear' => $startyear,
-            'startmonth' => $startmonth,
-            'endyear' => $endyear,
-            'endmonth' => $endmonth,
-            'endday' => $endday,
-            'style' => ROOMS_AVAILABILITY_GENERIC_STYLE,
-          ),
-        );
-        
-        drupal_add_js($js_settings, 'setting');
 
-        $result[$delta] = array(
-          '#prefix' => '<div class="availability-title">',
-          '#markup' => '<h2>' . $unit->name . '</h2>',
-          '#suffix' => '</div>',
-        );
+        $unit_names[] = $unit->name;
+        $unit_ids[] = $unit->unit_id;
       }
+
+      // Inject settings in javascript that we will use
+      $js_settings[] = array(
+        'roomsAvailabilityRef' => array(
+          'unitID' => implode(',', $unit_ids),
+          'startyear' => $startyear,
+          'startmonth' => $startmonth,
+          'endyear' => $endyear,
+          'endmonth' => $endmonth,
+          'endday' => $endday,
+          'style' => ROOMS_AVAILABILITY_GENERIC_STYLE,
+        ),
+      );
+
+      drupal_add_js($js_settings, 'setting');
+
+      $result[] = array(
+        '#prefix' => '<div class="availability-title">',
+        '#markup' => '<h2>' . implode(', ', $unit_names) . '</h2>',
+        '#suffix' => '</div>',
+      );
+
       break;
   }
   
@@ -163,7 +171,7 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
     '#attributes' => array('class' => 'cal'),
     '.cal' => $result,
   );
-  
+
   return $element;
 }
 
@@ -173,7 +181,7 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
  */
 function rooms_availability_reference_field_settings_form($field, $instance, $has_data) {
   $settings = $field['settings'];
-  
+
   $form = array();
   $form['referenceable_unit_types'] = array(
     '#type' => 'checkboxes',
@@ -182,7 +190,7 @@ function rooms_availability_reference_field_settings_form($field, $instance, $ha
     '#default_value' => isset($settings['referenceable_unit_types']) ? $settings['referenceable_unit_types'] : array(),
     '#options' => array_map('check_plain', rooms_unit_types_ids()),
   );
-  
+
   return $form;
 
 }
@@ -212,7 +220,6 @@ function rooms_availability_reference_field_validate($entity_type, $entity, $fie
     }
   } 
 }
-
 
 
 /**
@@ -481,6 +488,7 @@ function rooms_availability_reference_autocomplete_validate($element, &$form_sta
   // input.
   form_set_value($element, $unit_id, $form_state);
 }
+
 
 /**
  * Implements hook_field_widget_error().

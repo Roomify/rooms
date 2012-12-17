@@ -196,7 +196,7 @@ class BookingEvent {
    * Return event in a format amenable to FullCalendar display or generally
    * sensible json
    */
-  public function formatJson($style = ROOMS_AVAILABILITY_ADMIN_STYLE) {
+  public function formatJson($style = ROOMS_AVAILABILITY_ADMIN_STYLE, $unit_name = '') {
     $event = array(
       'id' => $this->id,
       'start' => $this->startYear() . '-' . $this->startMonth('m') . '-' . $this->startDay('d') . 'T13:00:00Z',
@@ -223,39 +223,44 @@ class BookingEvent {
         $this->id = ROOMS_NOT_AVAILABLE;  
       }
     }
+
+    $view_unit_name = array_filter(variable_get('rooms_view_unit_name', array('')));
     
     //set the color
     switch ($this->id) {
       case ROOMS_NOT_AVAILABLE:
-        $event['color']  = variable_get('rooms_not_available_color', 'red');//'red';
-        $event['title'] = 'N/A';
+        $event['color']  = variable_get('rooms_not_available_color', 'red');
+        $event['title'] = variable_get('rooms_not_available_text', 'N/A');
         break;
       case ROOMS_AVAILABLE:
-        $event['color'] = variable_get('rooms_available_color', '#8CBF62');//'#8CBF62';
+        $event['color'] = variable_get('rooms_available_color', '#8CBF62');
         $event['borderColor'] = '#04711B';
-        //$event['backgroundColor'] = 'green';
-        $event['title'] = 'AV';
+        $event['title'] = variable_get('rooms_available_text', 'AV');
         break;
       case ROOMS_ON_REQUEST:
-        $event['color'] = variable_get('rooms_on_request_color', '#C5C5C5');//'#C5C5C5';
-        $event['title'] = 'ON-REQ';
+        $event['color'] = variable_get('rooms_on_request_color', '#C5C5C5');
+        $event['title'] = variable_get('rooms_on_request_text', 'ON-REQ');
         break;
       case ($this->id < 0):
-        $event['color'] = variable_get('rooms_unconfirmed_booking_color', '#8CBF62');//'#8CBF62';
+        $event['color'] = variable_get('rooms_unconfirmed_booking_color', '#8CBF62');
         break;
       case ROOMS_ANON_BOOKED:
         if ($style == 'admin') {
-          $event['color'] = variable_get('rooms_anon_booked_color', '#481600');//'#481600';
-          $event['title'] = 'A-B';
+          $event['color'] = variable_get('rooms_anon_booked_color', '#481600');
+          $event['title'] = variable_get('rooms_anon_booking_text', 'A-B');
         }
         elseif ($style == ROOMS_AVAILABILITY_GENERIC_STYLE) {
-          $event['color']  = variable_get('rooms_not_available_color', 'red');//'red';
-          $event['title'] = 'N/A';
+          $event['color']  = variable_get('rooms_not_available_color', 'red');
+          $event['title'] = variable_get('rooms_not_available_text', 'N/A');
         }
         break;
       default:
         $event['color'] = 'blue';
         break;
+    }
+
+    if (!empty($view_unit_name) && $style == ROOMS_AVAILABILITY_GENERIC_STYLE) {
+      $event['title'] = $unit_name;
     }
     
     return $event;

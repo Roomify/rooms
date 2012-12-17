@@ -743,7 +743,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
     foreach ($price_serving as $price_level => $unit_order) {
       if ($unit_order['quantity'] > 0) {
         for ($i = 1; $i <= $unit_order['quantity']; $i++) {
-          $agent = new AvailabilityAgent($sd->format($date_format), $ed->format($date_format), 1, 1, array(), array($type));
+          $agent = new AvailabilityAgent($sd->format($date_format), $ed->format($date_format), $group_size, 1, array(), array($type));
           $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
 
           $units_per_type = $agent->checkAvailability();
@@ -766,8 +766,6 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
   // Send user to cart
   drupal_goto('bookings');
 }
-
-
 
 
 /**
@@ -881,14 +879,11 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
 }
 
 
-
-
 /**
  * Implements hook_commerce_order_update
  */
 function rooms_booking_manager_commerce_order_update($order) {
-  }
-
+}
 
 
 /**
@@ -1059,10 +1054,8 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
 }
 
 
-
-
 /**
- * Implementation of hook_commerce_product_type_info()
+ * 
  */
 function _rooms_booking_manager_line_item_type_fields() {
   $field_data = array(
@@ -1132,6 +1125,20 @@ function _rooms_booking_manager_line_item_type_fields() {
       'rooms_booked_bookingprice' => array(
         'field_name' => 'rooms_booked_bookingprice',
         'label' => t('Booking Price'),
+        'cardinality' => 1,
+        'type' => 'number_integer',
+        'module' => 'number',
+        'active' => 1,
+        'locked' => 1,
+        'settings' => array(
+          'size' => 8,
+          'max_length' => 10,
+          'text_processing' => 0,
+        ),
+      ),
+      'rooms_booking_number_people' => array(
+        'field_name' => 'rooms_booking_number_people',
+        'label' => t('Booking Number People'),
         'cardinality' => 1,
         'type' => 'number_integer',
         'module' => 'number',
@@ -1308,6 +1315,41 @@ function _rooms_booking_manager_line_item_type_fields() {
           ),
         ),
       ),
+      'rooms_booking_number_people' => array(
+        'field_name' => 'rooms_booking_number_people',
+        'label' => t('Booking Number People'),
+        'entity_type' => 'commerce_line_item',
+        'bundle' => 'rooms_booking',
+        'required' => TRUE,
+        'settings' => array(
+          'size' => 8,
+          'max_length' => 10,
+          'text_processing' => 0,
+        ),
+        'widget' => array(
+          'type' => 'text_textfield',
+        ),
+        'display' => array(
+          'default' => array(
+            'label' => 'above',
+            'module' => 'number',
+            'settings' => array(
+              'decimal_separator' => '.',
+              'prefix_suffix' => TRUE,
+              'scale' => 0,
+              'thousand_separator' => ' ',
+            ),
+            'type' => 'number_integer',
+            'weight' => 11,
+          ),
+          'teaser' => array(
+            'label' => 'above',
+            'settings' => array(),
+            'type' => 'hidden',
+            'weight' => 0,
+          ),
+        ),
+      ),
       'commerce_display_path' => array(
         'field_name' => 'commerce_display_path',
         'entity_type' => 'commerce_line_item',
@@ -1333,7 +1375,6 @@ function _rooms_booking_manager_line_item_type_fields() {
 
   return $field_data;
 }
-
 
 
 /**
@@ -1368,6 +1409,19 @@ function rooms_booking_manager_rules_action_info() {
     ),
   );
 
+  $actions['rooms_booking_manager_price_apply'] = array(
+    'label' => t('Apply price to a Rooms line item'),
+    'parameter' => array(
+      'commerce_line_item' => array(
+        'type' => 'commerce_line_item',
+        'label' => t('Line item'),
+      ),
+    ),
+    'group' => t('Rooms'),
+    'callbacks' => array(
+      'execute' => 'rooms_booking_manager_price_apply',
+    ),
+  );
 
   return $actions;
 }
@@ -1376,6 +1430,61 @@ function rooms_booking_cancel_order_booking() {
 
 }
 
+function rooms_booking_manager_price_apply($line_item, $name) {
+  if ($line_item->type == 'rooms_booking') {
+    $amount = $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'];
+
+    $start_date = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value']);
+    $end_date = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
+
+    $unit_id = $line_item->rooms_booked_unit_id[LANGUAGE_NONE][0]['value'];
+    $unit = rooms_unit_load($unit_id);
+
+    // First set up price modifiers
+    $price_modifiers = array();
+
+    if ($line_item->rooms_booking_number_people[LANGUAGE_NONE][0]['value'] == 1) {
+      $price_modifiers['single'] = array('#type' => ROOMS_PRICE_SINGLE_OCCUPANCY);
+    }
+    
+    // Give other modules a chance to change the price modifiers
+    drupal_alter('rooms_price_modifier', $price_modifiers);
+
+    $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
+    $price = $price_calendar->calculatePrice($start_date, $end_date);
+
+    $full_price = $price['full_price'] * 100;
+
+    $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'] = $full_price;
+    $line_item->commerce_unit_price[LANGUAGE_NONE][0]['currency_code'] = commerce_default_currency();
+
+    foreach ($line_item->commerce_unit_price[LANGUAGE_NONE][0]['data']['components'] as $key => $component) {
+      $line_item->commerce_unit_price[LANGUAGE_NONE][0]['data']['components'][$key]['price']['amount'] = $full_price / $amount * $component['price']['amount'];
+    }
+  }
+}
+
+/**
+ * Implements hook_default_rules_configuration().
+ */
+function rooms_booking_manager_default_rules_configuration() {
+  $rules = array();
+
+  $rule = rules_reaction_rule();
+  $rule->label = 'Rooms';
+  $rule->active = TRUE;
+  $rule->weight = -100;
+
+  $rule
+    ->event('commerce_product_calculate_sell_price')
+    ->action('rooms_booking_manager_price_apply', array(
+        'commerce_line_item:select' => 'commerce-line-item',
+      ));
+
+  $rules['rooms'] = $rule;
+
+  return $rules;
+}
 
 /**
  * Implements hook_block_info()
@@ -1390,7 +1499,6 @@ function rooms_booking_manager_block_info() {
 
   return $blocks;
 }
-
 
 /**
  * Implements hook_block_view()
@@ -1477,41 +1585,6 @@ function rooms_booking_manager_commerce_product_type_info() {
 }
 
 /**
- * Implements hook_commerce_cart_line_item_refresh().
- *
- * When commerce recalculates the prices of the items in the cart, it doesn't take
- * into account the price when the line item was saved, and it uses the price from
- * the product entity.
- *
- * Here we recalculate the item price based in the rooms price calculation.
- */
-function rooms_booking_manager_commerce_cart_line_item_refresh($line_item, $order_wrapper) {
-  if ($line_item->type == 'rooms_booking') {
-    $start_date = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value']);
-    $end_date = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
-
-    $unit_id = $line_item->rooms_booked_unit_id[LANGUAGE_NONE][0]['value'];
-    $unit = rooms_unit_load($unit_id);
-
-    $commerce_unit_price = array(
-      LANGUAGE_NONE => array(
-        array(
-          'amount' => $line_item->rooms_booked_price[LANGUAGE_NONE][0]['value'],
-          'currency_code' => commerce_default_currency(),
-          'data' => array(''),
-        ),
-      ),
-    );
-    $line_item->commerce_unit_price = $commerce_unit_price;
-
-    // After we added the price to the line item we rebase (!) it to make
-    // sure it gets picked up in the order data and the totals are correct.
-    commerce_line_item_rebase_unit_price($line_item);
-
-  }
-}
-
-/**
  * Implements hook_enable().
  *
  * Creates a product that can be referenced from line items.
@@ -1527,7 +1600,9 @@ function rooms_booking_manager_enable() {
       $product = commerce_product_new('rooms_product');
       $product->sku = 'ROOMS-BASIC-BOOKING';
       $product->title = t('Rooms Basic Booking');
-      $product->commerce_price[LANGUAGE_NONE][0]['amount'] = 0;
+      // We will change the price later, but for now set the price to 100 (=$1)
+      // to give tax module something to work with
+      $product->commerce_price[LANGUAGE_NONE][0]['amount'] = 100;
       $product->commerce_price[LANGUAGE_NONE][0]['currency_code'] = commerce_default_currency();
 
       commerce_product_save($product);
