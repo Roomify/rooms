@@ -180,8 +180,8 @@ function rooms_availability_bulk_unit_management($year='', $month='', $type='all
   $query = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
   $query2 = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
   if ($type != 'all') {
-    $query->condition('type', $type , '=');
-    $query2->condition('type', $type , '=');
+    $query->condition('type', $type, '=');
+    $query2->condition('type', $type, '=');
   }
   $query->range($page * 20, 20);
   $rooms_units = $query->execute()->fetchAll();
@@ -246,8 +246,8 @@ function rooms_availability_bulk_pricing_management($year='', $month='', $type='
   $query = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
   $query2 = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
   if ($type != 'all') {
-    $query->condition('type', $type , '=');
-    $query2->condition('type', $type , '=');
+    $query->condition('type', $type, '=');
+    $query2->condition('type', $type, '=');
   }
   $query->range($page * 20, 20);
   $rooms_units = $query->execute()->fetchAll();
@@ -738,8 +738,14 @@ function rooms_availability_update_status_form_submit(&$form, &$form_state) {
  * Menu load for units - calls the actuall rooms_unit_load implemented in rooms_unit.module
  */
 function availability_unit_load($unit_id) {
-  $unit = rooms_unit_load($unit_id);
-  return $unit;
+  $unit_ids = explode(',', $unit_id);
+  $units = array();
+
+  foreach ($unit_ids as $unit) {
+    $units[] = rooms_unit_load($unit);
+  }
+
+  return $units;
 }
 
 
@@ -963,11 +969,11 @@ function update_availability_calendar_form_submit(&$form, &$form_state) {
  * Creates the necessary json for the date range provided - needs at least start year and month at which point it will
  * return the entire month.
  */
-function rooms_availability_event($unit, $start_year = '', $start_month = '', $start_day = '', $end_year = '', $end_month = '', $end_day = '', $event_style = ROOMS_AVAILABILITY_ADMIN_STYLE) {
+function rooms_availability_event($units, $start_year = '', $start_month = '', $start_day = '', $end_year = '', $end_month = '', $end_day = '', $event_style = ROOMS_AVAILABILITY_ADMIN_STYLE) {
   $start_year = (int)$start_year;
   $start_month = (int)$start_month;
   $start_day = (int)$start_day;
-  
+
   $end_year = (int)$end_year;
   $end_month = (int)$end_month;
   $end_day = (int)$end_day;
@@ -999,17 +1005,18 @@ function rooms_availability_event($unit, $start_year = '', $start_month = '', $s
     $end_date = new DateTime("$end_year-$end_month-$end_day");
   }
 
-  $rc = new UnitCalendar($unit->unit_id, $unit->default_state);
-
-  $events = $rc->getEvents($start_date, $end_date);
   $json_events  = array();
-  
-  foreach ($events as $event) {
-    $json_events[] = $event->formatJson($event_style);
+  foreach ($units as $unit) {
+    $rc = new UnitCalendar($unit->unit_id, $unit->default_state);
+
+    $events = $rc->getEvents($start_date, $end_date);
+
+    foreach ($events as $event) {
+      $json_events[] = $event->formatJson($event_style, $unit->name);
+    }
   }
- 
+
   echo drupal_json_encode($json_events);
-  
 }
 
 
@@ -1244,16 +1251,16 @@ function rooms_availability_fullcalendar_get_js_path() {
  */
 function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'rooms_booking_settings') {
-    $form['color_statuses'] = array(
+    $form['label_settings'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Calendar Color Codes'),
+      '#title' => t('Calendar Color Codes & Labels'),
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
     );
 
-    $form['color_statuses']['rooms_not_available_color'] = array(
+    $form['label_settings']['rooms_not_available_color'] = array(
       '#type' => 'textfield',
-      '#title' => t('Room not available'),
+      '#title' => t('Room not available color'),
       '#size' => 10,
       '#maxlength' => 7,
       '#default_value' => variable_get('rooms_not_available_color', '#FF0000'),
@@ -1272,9 +1279,17 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
       ),
     );
 
-    $form['color_statuses']['rooms_available_color'] = array(
+    $form['label_settings']['rooms_not_available_text'] = array(
       '#type' => 'textfield',
-      '#title' => t('Room Available'),
+      '#title' => t('Room not available label'),
+      '#size' => 10,
+      '#maxlength' => 50,
+      '#default_value' => variable_get('rooms_not_available_text', 'N/A'),
+    );
+
+    $form['label_settings']['rooms_available_color'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Room Available color'),
       '#size' => 10,
       '#maxlength' => 7,
       '#default_value' => variable_get('rooms_available_color', '#8CBF62'),
@@ -1293,9 +1308,17 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
       ),
     );
 
-    $form['color_statuses']['rooms_on_request_color'] = array(
+    $form['label_settings']['rooms_available_text'] = array(
       '#type' => 'textfield',
-      '#title' => t('Room available on request'),
+      '#title' => t('Room Available label'),
+      '#size' => 10,
+      '#maxlength' => 50,
+      '#default_value' => variable_get('rooms_available_text', 'AV'),
+    );
+
+    $form['label_settings']['rooms_on_request_color'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Room available on request color'),
       '#size' => 10,
       '#maxlength' => 7,
       '#default_value' => variable_get('rooms_on_request_color', '#C5C5C5'),
@@ -1314,9 +1337,17 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
       ),
     );
 
-    $form['color_statuses']['rooms_anon_booking_color'] = array(
+    $form['label_settings']['rooms_on_request_text'] = array(
       '#type' => 'textfield',
-      '#title' => t('Anonymous booking'),
+      '#title' => t('Room available on request label'),
+      '#size' => 10,
+      '#maxlength' => 50,
+      '#default_value' => variable_get('rooms_on_request_text', 'ON-REQ'),
+    );
+
+    $form['label_settings']['rooms_anon_booking_color'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Anonymous booking color'),
       '#size' => 10,
       '#maxlength' => 7,
       '#default_value' => variable_get('rooms_anon_booking_color', '#481600'),
@@ -1335,7 +1366,15 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
       ),
     );
 
-    $form['color_statuses']['rooms_unconfirmed_booking_color'] = array(
+    $form['label_settings']['rooms_anon_booking_text'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Anonymous booking label'),
+      '#size' => 10,
+      '#maxlength' => 50,
+      '#default_value' => variable_get('rooms_anon_booking_text', 'A-B'),
+    );
+
+    $form['label_settings']['rooms_unconfirmed_booking_color'] = array(
       '#type' => 'textfield',
       '#title' => t('Unconfirmed booking'),
       '#size' => 10,
@@ -1344,7 +1383,7 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
       '#element_validate' => array('rooms_availability_validate_hex_color'), 
       '#dependency' => array('edit-row-options-colors-legend' => array('type')), 
       '#prefix' => '<div class="rooms-colorpicker-wrapper">', 
-      '#suffix' => '<div class="rooms-colorpicker"></div></div>', 
+      '#suffix' => '<div class="rooms-colorpicker"></div></div>',
       '#attributes' => array('class' => array('rooms-edit-colorpicker')), 
       '#attached' => array(
         // Add Farbtastic color picker.
@@ -1354,6 +1393,14 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
         // Add javascript to trigger the colorpicker. 
         'js' => array(drupal_get_path('module', 'rooms_availability') . '/js/rooms_color.js'),
       ),
+    );
+
+    $form['label_settings']['rooms_view_unit_name'] = array(
+      '#type' => 'checkboxes',
+      '#options' => array(
+        '1' => t('Display unit name in place of availability state label.'),
+      ),
+      '#default_value' => variable_get('rooms_view_unit_name', array('')),
     );
 
 

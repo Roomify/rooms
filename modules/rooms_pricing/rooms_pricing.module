@@ -323,7 +323,6 @@ function rooms_pricing_json($unit, $start_year = '', $start_month = '', $start_d
   foreach ($events as $event) {
     $json_events[] = $event->formatJson();
   }
-    
  
   echo drupal_json_encode($json_events);
   
