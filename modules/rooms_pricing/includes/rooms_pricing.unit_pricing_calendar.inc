@@ -65,7 +65,7 @@ class UnitPricingCalendar {
       $days = $event->diff()->d + 1;
       $price = $price + ($days * $event->amount);
     }
-    
+
     $price = $this->applyPriceModifiers($price);
 
     $payment_option = variable_get('rooms_payment_options', FULL_PAYMENT);
