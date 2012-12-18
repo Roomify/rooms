@@ -739,13 +739,21 @@ function rooms_availability_update_status_form_submit(&$form, &$form_state) {
  */
 function availability_unit_load($unit_id) {
   $unit_ids = explode(',', $unit_id);
-  $units = array();
+  
+  // If there is just a single id lets return that directly (this is for backwards compatibility
+  // to avoid having to change all fucntions directly)
+  if (count($unit_ids) == 1) {
+    $units = rooms_unit_load($unit_ids[0]);
+    return $units;
+  } else {
+  
+    $units = array();
 
-  foreach ($unit_ids as $unit) {
-    $units[] = rooms_unit_load($unit);
+    foreach ($unit_ids as $unit) {
+      $units[] = rooms_unit_load($unit);
+    }
+    return $units;
   }
-
-  return $units;
 }
 
 
@@ -970,6 +978,11 @@ function update_availability_calendar_form_submit(&$form, &$form_state) {
  * return the entire month.
  */
 function rooms_availability_event($units, $start_year = '', $start_month = '', $start_day = '', $end_year = '', $end_month = '', $end_day = '', $event_style = ROOMS_AVAILABILITY_ADMIN_STYLE) {
+  
+  // Check if units is array and if not place in array
+  if (!is_array($units)) {
+    $units = array($units);
+  }
   $start_year = (int)$start_year;
   $start_month = (int)$start_month;
   $start_day = (int)$start_day;
