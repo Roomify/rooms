@@ -411,6 +411,38 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
   );
 
   $form['rooms_pricing_update']['rooms_date_range'] = rooms_availability_date_range_fields($year, $month);
+
+  $form['rooms_pricing_update']['day_options_start'] = array(
+    '#type' => 'select',
+    '#title' => 'Start day',
+    '#options' => array(
+      '' => '- None -',
+      '0' => 'Sunday',
+      '1' => 'Monday',
+      '2' => 'Tuesday',
+      '3' => 'Wednesday ',
+      '4' => 'Thursday',
+      '5' => 'Friday',
+      '6' => 'Saturday',
+    ),
+    '#default_value' =>  '',
+  );
+
+  $form['rooms_pricing_update']['day_options_end'] = array(
+    '#type' => 'select',
+    '#title' => 'End day',
+    '#options' => array(
+      '' => '- None -',
+      '0' => 'Sunday',
+      '1' => 'Monday',
+      '2' => 'Tuesday',
+      '3' => 'Wednesday ',
+      '4' => 'Thursday',
+      '5' => 'Friday',
+      '6' => 'Saturday',
+    ),
+    '#default_value' =>  '',
+  );
   
   $form['rooms_pricing_update']['op'] = array(
     '#title' => t('Operation'),
@@ -500,6 +532,19 @@ function rooms_availability_pricing_update_form_validate(&$form, &$form_state) {
     return;
   }
 
+  if ($form_state['values']['day_options_end'] != '' && $form_state['values']['day_options_start'] == '') {
+    form_set_error('day_options_end', t('You must select a start day'));
+  }
+  if ($form_state['values']['day_options_end'] == '' && $form_state['values']['day_options_start'] != '') {
+    form_set_error('day_options_end', t('You must select a end day'));
+  }
+
+  if ($form_state['values']['day_options_end'] != '' && $form_state['values']['day_options_start'] != '') {
+    if ($form_state['values']['day_options_end'] < $form_state['values']['day_options_start']) {
+      form_set_error('day_options_end', t('End day must be after start day'));
+    }
+  }
+
   // Make sure amount entered is numeric
   if (!empty($form_state['values']['amount']) && !is_numeric($form_state['values']['amount'])) {
     form_set_error('amount', t('%name: you must enter a numeric value for the price.', array('%name' => 'Amount')));
@@ -518,6 +563,17 @@ function rooms_availability_pricing_update_form_validate(&$form, &$form_state) {
       || $date1->format('Y') != $curr_year || $date2->format('Y') != $curr_year) {
     form_set_error('date_range', t('End date and start date are out of current month'));
   }
+
+  $select_rooms = FALSE;
+  if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'false') {
+    foreach ($form_state['values'] as $key => $value) {
+      if (strpos($key, 'rooms-') === 0 && $value == '1') {
+        $select_rooms = TRUE;
+      }
+    }
+  }
+
+  if (!$select_rooms) form_set_error('select-all', t('Select at least one room'));
 }
 
 
@@ -527,6 +583,9 @@ function rooms_availability_pricing_update_form_submit(&$form, &$form_state) {
   $type = $form_state['values']['curr_type'];
   $operation = $form_state['values']['operation'];
   $amount = $form_state['values']['amount'];
+
+  $start_day = $form_state['values']['day_options_start'];
+  $end_day = $form_state['values']['day_options_end'];
 
   if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'true') {
     $query = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
@@ -538,18 +597,53 @@ function rooms_availability_pricing_update_form_submit(&$form, &$form_state) {
     foreach ($rooms_units as $room) {
       $unit_id = $room->unit_id ;
 
-      // Get all the pricing events for the date range
-      $rc = new UnitPricingCalendar($unit_id);
-      $pe = new PricingEvent($unit_id, $amount, $start_date, $end_date, $operation);
-      $events = array($pe);
+      if ($start_day != '' && $end_day != '') {
+        $s_timestamp = $start_date->getTimestamp();
+        $e_timestamp = $end_date->getTimestamp();
 
-      $rc->updateCalendar($events);
-    }
-  }
-  else {
-    foreach ($form_state['values'] as $key => $value) {
-      if (strpos($key, 'rooms-') === 0 && $value == '1') {
-        $unit_id = str_replace('rooms-', '', $key);
+        $s_date = getdate($s_timestamp);
+        $e_date = getdate($e_timestamp);
+
+        $wday_start = $s_date['wday'];
+
+        $first = TRUE;
+
+        if ($wday_start < $start_day) {
+          $s_timestamp = strtotime('+' . ($start_day - $wday_start) . ' days', $s_timestamp);
+          $first = FALSE;
+        }
+        elseif ($wday_start > $end_day) {
+          $s_timestamp = strtotime('+' . (7 - $wday_start + $start_day) . ' days', $s_timestamp);
+          $first = FALSE;
+        }
+
+        do {
+
+          if ($first) {
+            $end_temp = strtotime('+' . ($end_day - $wday_start) . ' days', $s_timestamp);
+            if ($end_temp > $e_timestamp) $end_temp = $e_timestamp;
+          }
+          else {
+            $end_temp = strtotime('+' . ($end_day - $start_day) . ' days', $s_timestamp);
+            if ($end_temp > $e_timestamp) $end_temp = $e_timestamp;
+          }
+
+          // Get all the pricing events for the date range
+          $rc = new UnitPricingCalendar($unit_id);
+          $pe = new PricingEvent($unit_id, $amount, new DateTime(date('Y-m-d', $s_timestamp)), new DateTime(date('Y-m-d', $end_temp)), $operation);
+          $events = array($pe);
+
+          $rc->updateCalendar($events);
+
+          if ($first) $s_timestamp = strtotime('+' . (7 - $wday_start + 1) .' days', $s_timestamp);
+          else $s_timestamp = strtotime('+7 days', $s_timestamp);
+
+          $first = FALSE;
+
+        } while ($s_timestamp < $e_timestamp);
+
+      }
+      else {
 
         // Get all the pricing events for the date range
         $rc = new UnitPricingCalendar($unit_id);
@@ -557,6 +651,69 @@ function rooms_availability_pricing_update_form_submit(&$form, &$form_state) {
         $events = array($pe);
 
         $rc->updateCalendar($events);
+      }
+    }
+  }
+  else {
+    foreach ($form_state['values'] as $key => $value) {
+      if (strpos($key, 'rooms-') === 0 && $value == '1') {
+        $unit_id = str_replace('rooms-', '', $key);
+
+        if ($start_day != '' && $end_day != '') {
+          $s_timestamp = $start_date->getTimestamp();
+          $e_timestamp = $end_date->getTimestamp();
+
+          $s_date = getdate($s_timestamp);
+          $e_date = getdate($e_timestamp);
+
+          $wday_start = $s_date['wday'];
+
+          $first = TRUE;
+
+          if ($wday_start < $start_day) {
+            $s_timestamp = strtotime('+' . ($start_day - $wday_start) . ' days', $s_timestamp);
+            $first = FALSE;
+          }
+          elseif ($wday_start > $end_day) {
+            $s_timestamp = strtotime('+' . (7 - $wday_start + $start_day) . ' days', $s_timestamp);
+            $first = FALSE;
+          }
+
+          do {
+
+            if ($first) {
+              $end_temp = strtotime('+' . ($end_day - $wday_start) . ' days', $s_timestamp);
+              if ($end_temp > $e_timestamp) $end_temp = $e_timestamp;
+            }
+            else {
+              $end_temp = strtotime('+' . ($end_day - $start_day) . ' days', $s_timestamp);
+              if ($end_temp > $e_timestamp) $end_temp = $e_timestamp;
+            }
+
+            // Get all the pricing events for the date range
+            $rc = new UnitPricingCalendar($unit_id);
+            $pe = new PricingEvent($unit_id, $amount, new DateTime(date('Y-m-d', $s_timestamp)), new DateTime(date('Y-m-d', $end_temp)), $operation);
+            $events = array($pe);
+
+            $rc->updateCalendar($events);
+
+            if ($first) $s_timestamp = strtotime('+' . (7 - $wday_start + 1) .' days', $s_timestamp);
+            else $s_timestamp = strtotime('+7 days', $s_timestamp);
+
+            $first = FALSE;
+
+          } while ($s_timestamp < $e_timestamp);
+
+        }
+        else {
+
+          // Get all the pricing events for the date range
+          $rc = new UnitPricingCalendar($unit_id);
+          $pe = new PricingEvent($unit_id, $amount, $start_date, $end_date, $operation);
+          $events = array($pe);
+
+          $rc->updateCalendar($events);
+        }
       }
     }
   }

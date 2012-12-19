@@ -111,11 +111,11 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
   
   $result = array();
   $element = array();
-  
-  
+
+
   switch ($display['type']) {
     case 'rooms_availability_reference_default':
-      
+
       // Get the current time
       $time = new DateTime();
       $startyear = $time->format('y');
@@ -165,11 +165,11 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
 
       break;
   }
-  
-  $element = array(
+
+  $element[] = array(
     '#theme' => 'rooms_availability_field_calendar',
     '#attributes' => array('class' => 'cal'),
-    '.cal' => $result,
+    'calendar' => $result,
   );
 
   return $element;
