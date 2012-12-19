@@ -108,7 +108,7 @@ function rooms_availability_reference_field_formatter_info() {
  * @todo parametrize date range
  */
 function rooms_availability_reference_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
-  
+
   $result = array();
   $element = array();
 
@@ -143,16 +143,14 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
       }
 
       // Inject settings in javascript that we will use
-      $js_settings[] = array(
-        'roomsAvailabilityRef' => array(
-          'unitID' => implode(',', $unit_ids),
-          'startyear' => $startyear,
-          'startmonth' => $startmonth,
-          'endyear' => $endyear,
-          'endmonth' => $endmonth,
-          'endday' => $endday,
-          'style' => ROOMS_AVAILABILITY_GENERIC_STYLE,
-        ),
+      $js_settings['roomsAvailabilityRef'][] = array(
+        'unitID' => implode(',', $unit_ids),
+        'startyear' => $startyear,
+        'startmonth' => $startmonth,
+        'endyear' => $endyear,
+        'endmonth' => $endmonth,
+        'endday' => $endday,
+        'style' => ROOMS_AVAILABILITY_GENERIC_STYLE,
       );
 
       drupal_add_js($js_settings, 'setting');

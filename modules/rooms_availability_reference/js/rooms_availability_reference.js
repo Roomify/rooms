@@ -18,19 +18,19 @@ Drupal.behaviors.rooms_availability_reference = {
   				right: 'prev, next'
         },
         events: Drupal.settings.basePath + '?q=rooms/units/unit/'
-                                          + Drupal.settings[i].roomsAvailabilityRef.unitID
+                                          + Drupal.settings.roomsAvailabilityRef[i].unitID
                                           + '/availability/json/'
-                                          + Drupal.settings[i].roomsAvailabilityRef.startyear
+                                          + Drupal.settings.roomsAvailabilityRef[i].startyear
                                           + '/'
-                                          + Drupal.settings[i].roomsAvailabilityRef.startmonth
+                                          + Drupal.settings.roomsAvailabilityRef[i].startmonth
                                           +'/1/' //start day
-                                          + Drupal.settings[i].roomsAvailabilityRef.endyear
+                                          + Drupal.settings.roomsAvailabilityRef[i].endyear
                                           +'/'
-                                          + Drupal.settings[i].roomsAvailabilityRef.endmonth
+                                          + Drupal.settings.roomsAvailabilityRef[i].endmonth
                                           +'/'
-                                          + Drupal.settings[i].roomsAvailabilityRef.endday
+                                          + Drupal.settings.roomsAvailabilityRef[i].endday
                                           + '/'
-                                          + Drupal.settings[i].roomsAvailabilityRef.style
+                                          + Drupal.settings.roomsAvailabilityRef[i].style
       });
 
       i++;
