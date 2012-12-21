@@ -540,6 +540,8 @@ class RoomsUnitController extends EntityAPIController {
   public function create(array $values = array()) {
     $unit_type = rooms_unit_type_load($values['type'], TRUE);
     $values['base_price'] = $unit_type->data['base_price'];
+    $values['children_sleeps'] = $unit_type->data['children_sleeps'];
+    $values['cot_surcharge'] = $unit_type->data['cot_surcharge'];
     $values['sleeps'] = $unit_type->data['sleeps'];
     $values['data']['singlediscount'] = $unit_type->data['singlediscount'];
 

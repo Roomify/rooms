@@ -180,7 +180,7 @@ function rooms_unit_delete_form_wrapper($unit) {
  *     with only a unit type defined.
  */
 function rooms_unit_edit_form($form, &$form_state, $unit) {
-  
+
   // Add the default field elements.
   $form['name'] = array(
     '#type' => 'textfield',
@@ -211,8 +211,24 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#type' => 'textfield',
     '#size' => 5,
     '#default_value' => isset($unit->sleeps) ? $unit->sleeps : 1,
-    '#title' => t('Sleeps'),
+    '#title' => t('Adults sleeps'),
   );
+
+  if (in_array(ROOMS_CHILDREN_FEATURES, array_filter(variable_get('rooms_experimental_features', array(''))))) {
+    $form['children'] = array(
+      '#type' => 'textfield',
+      '#size' => 5,
+      '#default_value' => isset($unit->children) ? $unit->children : 0,
+      '#title' => t('Children sleeps'),
+    );
+
+    $form['cot_surcharge'] = array(
+      '#type' => 'textfield',
+      '#size' => 5,
+      '#default_value' => isset($unit->cot_surcharge) ? $unit->cot_surcharge : '',
+      '#title' => t('Cot surcharge'),
+    );
+  }
   
   $form['default_state'] = array(
     '#type' => 'select',
@@ -259,11 +275,11 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#title' => t('Double Beds'),
   );
   
-  $form['data']['bed_arrangement']['cot_available'] = array(
+  /*$form['data']['bed_arrangement']['cot_available'] = array(
     '#type' => 'checkbox',
     '#title' => t('Cot available'),
     '#default_value' => isset($unit->data['bed_arrangement']['cot_available']) ? $unit->data['bed_arrangement']['cot_available'] : 0,
-  );
+  );*/
   
   // If we are creating a new booking unit
   

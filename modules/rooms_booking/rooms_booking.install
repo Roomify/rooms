@@ -179,6 +179,32 @@ function rooms_booking_schema() {
     ),
   );
 
+  $schema['rooms_customers'] = array(
+    'description' => 'Stores information about customers.',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique booking type identifier.',
+      ),
+      'name' => array(
+        'description' => 'Customer\'s name.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'commerce_customer_id' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+        'description' => 'Commerce customer id.',
+      ),
+    ),
+    'primary key' => array('id'),
+    'unique keys' => array(
+      'type' => array('name'),
+    ),
+  );
+
   return $schema;
 }
 
@@ -205,4 +231,38 @@ function rooms_booking_update_7001() {
   
   return t('Add field booking_status in Rooms Booking table.');
 
+}
+
+
+/**
+ * Create customers table
+ */
+function rooms_booking_update_7002() {
+  $schema['rooms_customers'] = array(
+    'description' => 'Stores information about customers.',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique customer identifier.',
+      ),
+      'name' => array(
+        'description' => 'Customer\'s name.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'commerce_customer_id' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+        'description' => 'Commerce customer id.',
+      ),
+    ),
+    'primary key' => array('id'),
+    'unique keys' => array(
+      'type' => array('name'),
+    ),
+  );
+
+  db_create_table('rooms_customers', $schema['rooms_customers']);
 }

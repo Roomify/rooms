@@ -24,6 +24,8 @@ class AvailabilityAgent {
   // How many people we are looking to accommodate
   public $group_size;
 
+  public $group_size_children;
+
   // How many booking units are we looking for
   public $booking_units;
 
@@ -32,7 +34,7 @@ class AvailabilityAgent {
 
   public $units = array();
 
-  public function __construct($start_date, $end_date, $group_size = 1, $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS), $unit_types = array()) {
+  public function __construct($start_date, $end_date, $group_size_adults = 1, $group_size_children = 0, $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS), $unit_types = array()) {
     $this->valid_states = $valid_states;
 
     $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
@@ -42,7 +44,8 @@ class AvailabilityAgent {
     // For availability purposes the end date is a day earlier than the checkout date
     $this->end_date = $checkout_date->sub(new DateInterval('P1D'));
 
-    $this->group_size = $group_size;
+    $this->group_size = $group_size_adults;
+    $this->group_size_children = $group_size_children;
     $this->booking_units = $booking_units;
     $this->unit_types = $unit_types;
   }
@@ -103,6 +106,10 @@ class AvailabilityAgent {
             ->propertyOrderBy('sleeps', 'ASC')
             ->propertyCondition('sleeps', $this->group_size, '>=')
             ->propertyCondition('bookable', 1);
+
+      if ($this->group_size_children > 0) {
+        $query->propertyCondition('children', $this->group_size_children, '>=');
+      }
 
       // Add a unit type condition if this has been defined
       if (count($this->unit_types) > 0) {
@@ -170,6 +177,14 @@ class AvailabilityAgent {
             $price_modifiers['single'] = array('#type' => ROOMS_PRICE_SINGLE_OCCUPANCY);
           }
 
+          if ($this->group_size_children > 0) {
+            $price_modifiers['children'] = array(
+              '#type' => ROOMS_DYNAMIC_MODIFIER,
+              '#op_type' => ROOMS_ADD,
+              '#amount' => $unit->cot_surcharge * ($this->start_date->diff($this->end_date)->days + 1),
+            );
+          }
+
           // Give other modules a chance to change the price modifiers
           drupal_alter('rooms_price_modifier', $price_modifiers);
 
@@ -228,6 +243,14 @@ class AvailabilityAgent {
 
       if ($this->group_size == 1) {
         $price_modifiers['single'] = array('#type' => ROOMS_PRICE_SINGLE_OCCUPANCY);
+      }
+
+      if ($this->group_size_children > 0) {
+        $price_modifiers['children'] = array(
+          '#type' => ROOMS_DYNAMIC_MODIFIER,
+          '#op_type' => ROOMS_ADD,
+          '#amount' => $unit->cot_surcharge * ($this->start_date->diff($this->end_date)->days + 1),
+        );
       }
 
       // Give other modules a chance to change the price modifiers

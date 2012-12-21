@@ -81,11 +81,15 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
       );
 
       $group_size = array(
-        LANGUAGE_NONE => array(array(
-          'value' => $agent->group_size,
-        )),
+        LANGUAGE_NONE => array(
+          array(
+            'value' => $agent->group_size,
+          ),
+          array(
+            'value' => $agent->group_size_children,
+          ),
+        ),
       );
-
 
       $line_item->rooms_booking_number_people = $group_size;
       $line_item->rooms_booking_dates = $commerce_dates;

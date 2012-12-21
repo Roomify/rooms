@@ -73,12 +73,29 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
 
   $form['data']['sleeps'] = array(
     '#type' => 'textfield',
-    '#title' => t('Sleeps'),
+    '#title' => t('Adult sleeps'),
     '#default_value' => isset($unit_type->data['sleeps']) ? $unit_type->data['sleeps'] : '',
     '#size' => '5',
     '#description' => t('The default number of people that can sleep in units of this type.'),
     '#maxlength' => 2,
   );
+
+  if (in_array(ROOMS_CHILDREN_FEATURES, array_filter(variable_get('rooms_experimental_features', array(''))))) {
+    $form['data']['children_sleeps'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Children sleeps'),
+      '#default_value' => isset($unit->data['children_sleeps']) ? $unit->data['children_sleeps'] : '',
+      '#size' => '5',
+      '#maxlength' => 2,
+    );
+
+    $form['data']['cot_surcharge'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Cot surcharge'),
+      '#default_value' => isset($unit->data['cot_surcharge']) ? $unit->data['cot_surcharge'] : '',
+      '#size' => '5',
+    );
+  }
 
   $form['data']['rooms_description_source'] = array(
     '#type' => 'textfield',

@@ -78,6 +78,14 @@ function rooms_unit_schema() {
         'scale' => 2,
         'default' => 0,
       ),
+      'cot_surcharge' => array(
+        'description' => 'The default cot_surcharge',
+        'type' => 'numeric',
+        'not null' => TRUE,
+        'precision' => 10,
+        'scale' => 2,
+        'default' => 0,
+      ),
       'default_state' => array(
         'description' => 'The default booking state for the room',
         'type' => 'int',
@@ -97,6 +105,13 @@ function rooms_unit_schema() {
         'default' => 1,
         'size' => 'tiny',
         'description' => 'How many people can sleep in a unit',
+      ),
+      'children' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => 'How many children can sleep in a unit',
       ),
       'data' => array(
         'type' => 'blob',
@@ -321,3 +336,29 @@ function rooms_unit_update_7002() {
 }
 
 
+/**
+ * Add fields for children
+ */
+function rooms_unit_update_7003() {
+  $cot_surcharge = array(
+    'description' => 'The default cot_surcharge',
+    'type' => 'numeric',
+    'not null' => TRUE,
+    'precision' => 10,
+    'scale' => 2,
+    'default' => 0,
+  );
+
+  db_add_field('rooms_units', 'cot_surcharge', $cot_surcharge);
+
+
+  $children = array(
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+    'size' => 'tiny',
+    'description' => 'How many children can sleep in a unit',
+  );
+
+  db_add_field('rooms_units', 'children', $children);
+}

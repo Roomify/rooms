@@ -40,12 +40,35 @@ function rooms_ui_menu() {
     'access arguments' => array('configure room settings'),
     'type' => MENU_NORMAL_ITEM,
   );
+  $items['admin/rooms/config/experimental'] = array(
+    'title' => 'Experimental features',
+    'description' => 'Configure experimental features.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('rooms_experimental_features_settings'),
+    'access arguments' => array('configure room settings'),
+    'type' => MENU_NORMAL_ITEM,
+  );
 
   return $items;
 }
 
 
-function rooms_booking_settings(){
+function rooms_experimental_features_settings() {
+  $form = array();
+  $form['rooms_experimental_features'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Experimental features'),
+    '#options' => array(
+      ROOMS_CHILDREN_FEATURES => t('Children surcharge'),
+    ),
+    '#default_value' => variable_get('rooms_experimental_features', array('')),
+  );
+
+  return system_settings_form($form);
+}
+
+
+function rooms_booking_settings() {
   $form = array();
   $form['rooms_booking_settings']['rooms_booking_start_date'] = array(
     '#type' => 'select',

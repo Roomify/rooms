@@ -95,7 +95,6 @@ class RoomsBookingUIController extends EntityDefaultUIController {
     
     // Menu item for viewing rooms
     $items['booking/' . $wildcard] = array(
-      //'title' => 'Title',
       'title callback' => 'rooms_booking_page_title',
       'title arguments' => array(1),
       'page callback' => 'rooms_booking_page_view',
@@ -201,15 +200,19 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#title' => t('Customer'),
     '#maxlength' => 60,
     '#autocomplete_path' => 'admin/rooms/bookings/customers',
-    '#description' => t('A customer profile must already exist under Customer Profiles in the <a href="@store-profile">store</a>.', array('@store-profile' => url('admin/commerce/customer-profiles'))),
     '#default_value' => $client,
     '#weight' => -1,
     '#required' => TRUE,
   );
+
+  if (module_exists('commerce_customer')) {
+    $form['client']['#description'] = t('A customer profile must already exist under Customer Profiles in the <a href="@store-profile">store</a>.', array('@store-profile' => url('admin/commerce/customer-profiles')));
+  }
+
   $form['data']['#tree'] = TRUE;
   $form['data']['group_size'] = array(
     '#type' => 'select',
-    '#title' => 'Group Size',
+    '#title' => 'Adults',
     '#options' => array(
       '1' => '1',
       '2' => '2',
@@ -217,10 +220,35 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       '4' => '4',
       '5' => '5',
       '6' => '6',
+      '7' => '7',
+      '8' => '8',
+      '9' => '9',
+      '10' => '10',
     ),
     '#default_value' =>  isset($booking->data['group_size']) ? $booking->data['group_size'] : '2',
-    '#description' => t('The number of people staying in this room.'),
+    '#description' => t('The number of adults staying in this room.'),
   );
+  if (in_array(ROOMS_CHILDREN_FEATURES, array_filter(variable_get('rooms_experimental_features', array(''))))) {
+    $form['data']['group_size_children'] = array(
+      '#type' => 'select',
+      '#title' => 'Children',
+      '#options' => array(
+        '0' => '0',
+        '1' => '1',
+        '2' => '2',
+        '3' => '3',
+        '4' => '4',
+        '5' => '5',
+        '6' => '6',
+        '7' => '7',
+        '8' => '8',
+        '9' => '9',
+        '10' => '10',
+      ),
+      '#default_value' =>  isset($booking->data['group_size_children']) ? $booking->data['group_size_children'] : '0',
+      '#description' => t('The number of children staying in this room.'),
+    );
+  }
 
   // A fieldset to hold the date range fields
   $form['rooms_date_range'] = array(
@@ -318,8 +346,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
     
     $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
-      '#markup' => t('Choose a unit from the list of available rooms below - we only show
-                     units with availability for the dates selected.'),
+      '#markup' => t('Choose a unit from the list of available rooms below - we only show units with availability for the dates selected.'),
     );
     
     // If the user has selected a unit type or we already have a unit assigned
@@ -334,7 +361,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
         $search_unit_type = $booking->unit_type;
       }
 
-      $available_units = rooms_booking_edit_form_get_rooms($search_unit_type, $form_state['input']['rooms_start_date']['date'], $form_state['input']['rooms_end_date']['date'], $form_state['input']['data']['group_size'], $booking);
+      $available_units = rooms_booking_edit_form_get_rooms($search_unit_type, $form_state['input']['rooms_start_date']['date'], $form_state['input']['rooms_end_date']['date'], $form_state['input']['data']['group_size'], $form_state['input']['data']['group_size_children'], $booking);
       if ($available_units == 2) {
         $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
           '#markup' => t('No @search_unit_type are available', array('@search_unit_type' => $search_unit_type)),
@@ -460,7 +487,7 @@ function rooms_booking_edit_form_unit_type_callback(&$form, $form_state) {
  * It makes special provisions for the currently selected unit - to consider that
  * as "available" as well.
  */
-function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date = 0, $group_size, $current_booking) {
+function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date = 0, $group_size, $group_size_children, $current_booking) {
   // Set the unit types,
   $unit_types = array($select);
 
@@ -472,10 +499,10 @@ function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date =
   $valid_states = variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST));
 
   if (isset($current_booking->booking_id)) {
-    $ac = new AvailabilityAgent($start_date, $end_date, $group_size, 1, array($valid_states[ROOMS_AVAILABLE], $valid_states[ROOMS_ON_REQUEST], $valid_states[ROOMS_UNCONFIRMED_BOOKINGS]), $unit_types);
+    $ac = new AvailabilityAgent($start_date, $end_date, $group_size, $group_size_children, 1, array($valid_states[ROOMS_AVAILABLE], $valid_states[ROOMS_ON_REQUEST], $valid_states[ROOMS_UNCONFIRMED_BOOKINGS]), $unit_types);
   }
   else {
-    $ac = new AvailabilityAgent($start_date, $end_date, $group_size, 1, array($valid_states[ROOMS_AVAILABLE], $valid_states[ROOMS_ON_REQUEST], $valid_states[ROOMS_UNCONFIRMED_BOOKINGS], $current_booking_state), $unit_types);
+    $ac = new AvailabilityAgent($start_date, $end_date, $group_size, $group_size_children, 1, array($valid_states[ROOMS_AVAILABLE], $valid_states[ROOMS_ON_REQUEST], $valid_states[ROOMS_UNCONFIRMED_BOOKINGS], $current_booking_state), $unit_types);
   }
   $available_units = $ac->checkAvailability();
 
@@ -521,7 +548,38 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
   // Get the client name and client id
   $client = explode(':', $form_state['values']['client']);
   $client_name = $client[0];
-  $client_id = $client[1];
+
+  $commerce_customer_id = FALSE;
+  if (module_exists('commerce_customer')) {
+    $commerce_customer_id = db_select('field_data_commerce_customer_address')
+          ->fields('field_data_commerce_customer_address', array('entity_id'))
+          ->condition('commerce_customer_address_name_line', $client_name, '=')
+          ->condition('entity_type', 'commerce_customer_profile')
+          ->condition('bundle', 'billing')
+          ->execute()->fetchField();
+  }
+
+  if ($commerce_customer_id === FALSE) {
+    db_merge('rooms_customers')
+      ->key(array('name' => $client_name))
+      ->fields(array('name' => $client_name))
+      ->execute();
+  }
+  else {
+    db_merge('rooms_customers')
+      ->key(array('name' => $client_name))
+      ->fields(array(
+        'name' => $client_name,
+        'commerce_customer_id' => $commerce_customer_id,
+      ))
+      ->execute();
+  }
+
+  $client_id = db_select('rooms_customers')
+    ->fields('rooms_customers', array('id'))
+    ->condition('name', $client_name, '=')
+    ->execute()->fetchField();
+
   // Put them back in $form_state so the entity controller builds the entity
   $form_state['values']['name'] = $client_name;
   $form_state['values']['customer_id'] = $client_id;
@@ -537,8 +595,8 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
   $unit = 0;
   if (isset($form_state['values']['unit_id'])) {
     $unit = $form_state['values']['unit_id'];
-  } 
-  
+  }
+
   // If we are dealing with a new booking
   if ($form_state['rooms_booking']->booking_id == '') {
   

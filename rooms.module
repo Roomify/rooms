@@ -7,6 +7,9 @@
  */
 
 
+define ('ROOMS_CHILDREN_FEATURES', 'children_features');
+
+
 /**
  * Implements hook_permission().
  */

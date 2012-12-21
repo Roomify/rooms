@@ -15,6 +15,7 @@ define('ROOMS_DECREASE', 'decrease');
 define('ROOMS_PRICE_SINGLE_OCCUPANCY', 'single_occupancy');
 define('ROOMS_DYNAMIC_MODIFIER', 'dynamic_modifier');
 
+
 /**
  * Implements hook_permission().
  */
