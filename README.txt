@@ -7,15 +7,15 @@ It builds on the Drupal CMS (drupal.org) and its modules.
 
 To try out Rooms in this early stage do the following:
 
-1.  Download the FullCalendar library from http://www.drupalrooms.com/sites/default/files/fullcalendar-1.5.3.zip and place in sites/all/libraries so that you end up with sites/all/libraries/fullcalendar/fullcalendar
+1.  Download the FullCalendar library from http://www.drupalrooms.com/sites/default/files/fullcalendar-1.5.4.zip
+and unpack in sites/all/libraries so that you end up with sites/all/libraries/fullcalendar/fullcalendar
 
 We use FullCalendar to display room availability and prices by date in an easily comprehensible manner.
 
-Please do not use the download from the FullCalendar website, as we have
-added an extra view to the code. Once it has been tested more
-extensively, this modification will be submitted as a merge request back
-into the original FullCalendar Library. It's not necessary to
-install the contributed Drupal fullcalendar module.
+Please do not use the download from the FullCalendar website, as we had to form the actual FullCalendar library
+to add an extra view and provide some simple enhancements that made sense for this application. 
+
+*It's not necessary to install the contributed Drupal fullcalendar module.*
 
 2. Install the colorbox module - http://drupal.org/project/colorbox
 
@@ -24,9 +24,9 @@ install the contributed Drupal fullcalendar module.
 2c. In Advanced settings remove "admin/*" from the list of pages that should not load the colorbox script.
 2d. Save the colorbox settings.
 
-3. Activate all the Rooms modules and their dependencies. (dependencies
-will be automatically downloaded if using drush to enable the Rooms
-modules.)
+3. Activate all the Rooms modules and their dependencies. Dependencies will be automatically downloaded if
+using drush to enable the Rooms modules. Alternatively please make sure you download all dependencies (which can be seen
+in the modules page).
 
 4. Visit admin/rooms/units/unit-types and create a unit type (e.g. standard double room).
 
