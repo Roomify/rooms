@@ -12,7 +12,7 @@
 function rooms_ui_menu() {
   $items = array();
 
-  // Top level "Store" container.
+  // Top level "Rooms" container.
   $items['admin/rooms'] = array(
     'title' => 'Rooms',
     'description' => 'Administer Rooms.',
