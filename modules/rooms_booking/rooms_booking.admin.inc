@@ -361,7 +361,9 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
         $search_unit_type = $booking->unit_type;
       }
 
-      $available_units = rooms_booking_edit_form_get_rooms($search_unit_type, $form_state['input']['rooms_start_date']['date'], $form_state['input']['rooms_end_date']['date'], $form_state['input']['data']['group_size'], $form_state['input']['data']['group_size_children'], $booking);
+      $group_size_children = (isset($form_state['input']['data']['group_size_children'])) ? $form_state['input']['data']['group_size_children'] : 0;
+
+      $available_units = rooms_booking_edit_form_get_rooms($search_unit_type, $form_state['input']['rooms_start_date']['date'], $form_state['input']['rooms_end_date']['date'], $form_state['input']['data']['group_size'], $group_size_children, $booking);
       if ($available_units == 2) {
         $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
           '#markup' => t('No @search_unit_type are available', array('@search_unit_type' => $search_unit_type)),
