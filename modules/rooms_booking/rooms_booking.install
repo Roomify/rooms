@@ -179,6 +179,9 @@ function rooms_booking_schema() {
     ),
   );
 
+  
+  // Stores the customer name and potentially relates it to a Commerce
+  // customer profile.
   $schema['rooms_customers'] = array(
     'description' => 'Stores information about customers.',
     'fields' => array(
