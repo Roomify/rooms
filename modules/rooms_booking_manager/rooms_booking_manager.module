@@ -123,7 +123,7 @@ function rooms_booking_manager_cart_view() {
  * @param $b_units
  * In how many rooms are we to accommodate them
  */
-function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $b_units = 1) {
+function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $group_size_adults = 2, $group_size_children = 0, $b_units = 1) {
   // The array of content to render
   $content = array();
 
@@ -740,6 +740,9 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
       $order[$type][$price_level][$value_type] = $value;
     }
   }
+
+  $currency_setting = commerce_currency_load(commerce_default_currency());
+  $currency_symbol = $currency_setting['symbol'];
 
   // This is very inefficient right now but we need to create date objects
   // reconvert them back to strings to only recreate them in the Availability Agent
