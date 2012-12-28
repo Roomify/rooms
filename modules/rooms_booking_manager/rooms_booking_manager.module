@@ -3,9 +3,8 @@
 
 /**
  * @file
- * Rooms Booking brings together all the pieces required to
- * find a room and book it - including the DrupalCommerce
- * integration
+ * Rooms Booking Manager brings together all the pieces required to find a room and book it
+ * - including the DrupalCommerce integration
  */
 
 
@@ -110,7 +109,7 @@ function rooms_booking_manager_cart_view() {
 
 
 /**
- * Searches for availability and constructs the booking page
+ * Constructs the booking results page following an availability search
  *
  * @param $start_date
  * The start date for the search
@@ -147,13 +146,15 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $gro
     $units_per_type = $agent->checkAvailability();
     if (($units_per_type == ROOMS_NO_ROOMS) || ($units_per_type == ROOMS_SIZE_FAILURE)) {
       $content['booking_results'] = 0;
-      $no_rooms = array(
+      module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.availability_search');
+      $booking_search_form = drupal_get_form('rooms_booking_availability_search_form');
+      $no_results = array(
         '#prefix' => '<div class="no-booking-data">',
-        '#markup' => '<p>' . t('Unfortunately no rooms are available') . '</p>',
+        '#markup' => '<p>' . t('Unfortunately no rooms are available - try different dates if possible.') . '</p>',
         '#suffix' => '</div>',
       );
-      $content['no_results'] = $no_rooms;
-      return theme('rooms_booking_results', $content);
+      $content['no_results'] = $no_results;
+      $content['booking_search_form'] = $booking_search_form;
     }
     elseif (variable_get('rooms_presentation_style', ROOMS_PER_TYPE) == ROOMS_PER_TYPE) {
       $content = rooms_booking_manager_present_types($units_per_type, $content, $start_date, $end_date, $group_size_adults, $group_size_children, $b_units);
@@ -162,31 +163,11 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $gro
       $content = rooms_booking_manager_present_individual_rooms($units_per_type, $content, $start_date, $end_date);
     }
   }
-  
-  // If no start and end date present from the booking form or dates not ok
-  elseif ((gettype($start_date) == 'integer') || (gettype($end_date) == 'integer')) {
-    $content['booking_results'] = 0;
-    $booking_search_form = drupal_get_form('rooms_booking_availability_search_form');
-    $no_results = array(
-      '#prefix' => '<div class="no-booking-data">',
-      '#markup' => '<p>' . t('Perform a search to get availability information') . '</p>',
-      '#suffix' => '</div>',
-    );
-    $content['no_results'] = $no_results;
-    $content['booking_search_form'] = $booking_search_form;
-  }
   else {
-    $content['booking_results'] = 0;
-    $booking_search_form = drupal_get_form('rooms_booking_availability_search_form');
-    $no_results = array(
-      '#prefix' => '<div class="no-booking-data">',
-      '#markup' => '<p>' . t('Dates sent could not be used - please use booking form') . '</p>',
-      '#suffix' => '</div>',
-    );
-    $content['no_results'] = $no_results;
-    $content['booking_search_form'] = $booking_search_form;
+    drupal_set_message(t('Perform a search to get availability information'));
+    drupal_goto('booking');
+    exit;
   }
-
 
   $output = theme('rooms_booking_results', $content);
   return $output;
@@ -196,6 +177,11 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $gro
 
 /**
  * Checks the logical validity of date values coming through URL
+ * @param $start_date
+ * The start date for the search
+ *
+ * @param $end_date
+ * The end date for the search
  */
 function rooms_booking_manager_check_dates($start_date, $end_date) {
   $datesok = TRUE;
@@ -222,6 +208,7 @@ function rooms_booking_manager_check_dates($start_date, $end_date) {
 
   return $datesok;
 }
+
 
 /**
  * Prepares rooms on a per room basis for presentation
@@ -275,165 +262,6 @@ function rooms_booking_manager_present_types($units_per_type, $content, $start_d
   return $content;
 }
 
-
-/**
- * Implementation of hook_form_alter()
- */
-function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == 'commerce_checkout_form_checkout') {
-    // Extract the View and display keys from the cart contents pane setting.
-    list($view_id, $display_id) = explode('|', variable_get('commerce_cart_contents_pane_view', 'commerce_cart_summary|default'));
-
-    global $user;
-    $order = commerce_cart_order_load($user->uid);
-
-    $form['cart_contents']['cart_contents_view'] = array(
-      '#markup' => commerce_embed_view('booking_checkout_form', 'booking_checkout_form', array($order->order_id)),
-    );
-  }
-
-  if (strpos($form_id, 'views_form_booking_cart_form_') === 0) {
-    unset($form['actions']['submit']);
-    $form['#action'] = str_replace('cart', 'bookings', $form['#action']);
-
-    // Change any Delete buttons to say Remove.
-    if (!empty($form['edit_delete'])) {
-      foreach(element_children($form['edit_delete']) as $key) {
-        // Load and wrap the line item to have the title in the submit phase.
-        if (!empty($form['edit_delete'][$key]['#line_item_id'])) {
-          $line_item_id = $form['edit_delete'][$key]['#line_item_id'];
-          $form_state['line_items'][$line_item_id] = commerce_line_item_load($line_item_id);
-
-          $form['edit_delete'][$key]['#value'] = t('Remove');
-          $form['edit_delete'][$key]['#submit'] = array_merge($form['#submit'], array('commerce_cart_line_item_delete_form_submit'));
-        }
-      }
-    }
-
-    $form['actions']['checkout'] = array(
-      '#type' => 'submit',
-      '#value' => t('Checkout'),
-      '#weight' => 5,
-      '#access' => user_access('access checkout'),
-      '#submit' => array_merge($form['#submit'], array('commerce_checkout_line_item_views_form_submit')),
-    );
-  }
-  elseif (strpos($form_id, 'commerce_checkout_form_') === 0 && !empty($form['buttons']['cancel'])) {
-    // Override the submit handler for changing the order status on checkout cancel.
-    foreach ($form['buttons']['cancel']['#submit'] as $key => &$value) {
-      if ($value == 'commerce_checkout_form_cancel_submit') {
-        $value = 'commerce_cart_checkout_form_cancel_submit';
-      }
-    }
-  }
-  elseif (strpos($form_id, 'views_form_commerce_cart_block') === 0) {
-    // No point in having a "Save" button on the shopping cart block.
-    unset($form['actions']);
-  }
-
-  if ($form_id == 'rooms_booking_settings') {
-    $form['rooms_presentation_style'] = array(
-      '#type' => 'radios',
-      '#title' => t('Results presentation style'),
-      '#options' => array(
-        ROOMS_PER_TYPE => t('Show availability on a per-type basis.'),
-        ROOMS_INDIVIDUAL => t('Show availability of individual units.'),
-      ),
-      '#default_value' => variable_get('rooms_presentation_style', ROOMS_PER_TYPE),
-    );
-    $form['rooms_checkout_style'] = array(
-      '#type' => 'radios',
-      '#title' => t('Checkout presentation style'),
-      '#options' => array(
-        ROOMS_ENQ_CHECKOUT => t('Enquiry checkout'),
-        ROOMS_COMMERCE_CHECKOUT => t('Commerce checkout'),
-      ),
-      '#default_value' => variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT),
-    );
-
-    $form['rooms_valid_availability_states'] = array(
-      '#type' => 'checkboxes',
-      '#title' => t('Valid availability states'),
-      '#description' => t('Select the states for which rooms should show as available in a search.'),
-      '#options' => array(
-        ROOMS_AVAILABLE => t('Rooms marked as available.'),
-        ROOMS_ON_REQUEST => t('Rooms marked as available on request.'),
-      ),
-      '#default_value' => variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)),
-    );
-
-    $form['rooms_payment_options'] = array(
-      '#type' => 'item',
-      '#title' => t('Payment options'),
-      '#description' => t('Select payment option for booking confirmation.'),
-    );
-
-    $form['rooms_payment_options'][FULL_PAYMENT] = array(
-      '#type' => 'radio',
-      '#title' => t('Full price'),
-      '#return_value' => FULL_PAYMENT,
-      '#parents' => array('rooms_payment_options'),
-      '#default_value' => variable_get('rooms_payment_options', FULL_PAYMENT),
-    );
-
-    $form['rooms_payment_options'][PERCENT_PAYMENT] = array(
-      '#prefix' => '<div class="container-inline form-item">',
-    );
-
-    $form['rooms_payment_options'][PERCENT_PAYMENT]['perc_option'] = array(
-      '#type' => 'radio',
-      '#title' => t('Percentage of full price:&nbsp;'),
-      '#return_value' => PERCENT_PAYMENT,
-      '#parents' => array('rooms_payment_options'),
-      '#default_value' => variable_get('rooms_payment_options', FULL_PAYMENT),
-    );
-
-    $form['rooms_payment_options'][PERCENT_PAYMENT]['perc_textfield'] = array(
-      '#type' => 'textfield',
-      '#size' => 10,
-      '#suffix' => '</div>',
-      '#default_value' => variable_get('rooms_payment_options_percentual'),
-    );
-
-    $form['rooms_payment_options'][FIRST_NIGHT_PAYMENT] = array(
-      '#type' => 'radio',
-      '#title' => t('First night'),
-      '#return_value' => FIRST_NIGHT_PAYMENT,
-      '#parents' => array('rooms_payment_options'),
-      '#default_value' => variable_get('rooms_payment_options', FULL_PAYMENT),
-    );
-
-    drupal_add_js(drupal_get_path('module', 'rooms_booking_manager') . '/js/rooms_booking_manager_checked.js');
-
-    $form['rooms_date_format'] = array(
-      '#type' => 'item',
-      '#title' => t('Rooms PHP Date Format'),
-    );
-
-    $form['rooms_date_format']['date_format'] = array(
-      '#type' => 'textfield',
-      '#size' => 12,
-      '#prefix' => '<div class="container-inline form-item">Date format: &nbsp;',
-      '#suffix' => '</div>',
-      '#default_value' => variable_get('rooms_date_format', 'd-m-Y'),
-    );
-
-    $form['#submit'][] = 'rooms_booking_manager_settings_form_submit';
-  }
-}
-
-
-
-function rooms_booking_manager_settings_form_submit($form, &$form_state) {
-  if($form_state['values']['rooms_payment_options'] == PERCENT_PAYMENT) {
-    variable_set('rooms_payment_options_percentual', $form_state['values']['perc_textfield']);
-  }
-  else {
-    variable_set('rooms_payment_options_percentual', '');
-  }
-
-  variable_set('rooms_date_format', $form_state['values']['date_format']);
-}
 
 /**
  * Implementation of hook_forms()
@@ -567,7 +395,6 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
   // Check to see if we are rebuilding the form to create an enquiry 
   if (($form_state['rebuild']) && (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT)) {
-    dpm($form);
     $form = rooms_booking_manager_per_type_enquiry_form($form, $form_state, $units_per_type, $start_date, $end_date, $group_size, $group_size_children, $b_units);
     // If not display the per type choices  
   } else {
@@ -745,9 +572,11 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
 function rooms_booking_manager_per_type_enquiry_form($form, $form_state, $units_per_type, $start_date, $end_date, $group_size, $group_size_children, $b_units) {
 
+  $form = $form_state['values']['form_data'];
+
   $date_format = variable_get('rooms_date_format', 'd-m-Y');
   $nights = $end_date->diff($start_date);
-  dpm($form);
+
   $form['legend1'] = array(
     '#markup' => 'Arrival Date: ' . $start_date->format($date_format).' &nbsp;Departure Date: ' . $end_date->format($date_format) . ' &nbsp;Nights: ' . $nights->d,
   );
@@ -804,7 +633,7 @@ function rooms_booking_manager_per_type_enquiry_form($form, $form_state, $units_
     '#type' => 'submit',
     '#value' => t('Submit'),
   );
-dpm($form);
+
   return $form;
 }
 
@@ -890,7 +719,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
           } elseif (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT) {
             $type_obj = rooms_unit_type_load($type);
 
-            $form[$type]['title'][$type . ':title'] = array(
+            $form_data[$type]['title'][$type . ':title'] = array(
               '#prefix' => '<h2>',
               '#markup' => t($type_obj->label),
               '#suffix' => '</h2>',
@@ -901,24 +730,28 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
             $unit_first = array_pop($unit_info);
             $price = $unit_first['price'];
 
-            $form[$unit['unit']->type . ':' . $price][$i] = array(
+            $form_data[$unit['unit']->type . ':' . $price][$i] = array(
               '#prefix' => '<tr><td><div class="container-inline"><div class="unit_price" style="font-weight:bold">',
               '#markup' =>  t('1 - Cost:') . ' ' . $price . ' ' . $currency_symbol,
               '#suffix' => '</div>'
             );
 
-            $form[$unit['unit']->type . ':adults:' . $i] = array(
+            $form_data[$unit['unit']->type . ':adults:' . $i] = array(
               '#title' => 'Adults:',
               '#type' => 'textfield',
               '#size' => 3,
             );
 
-            $form[$unit['unit']->type . ':children:' . $i] = array(
+            $form_data[$unit['unit']->type . ':children:' . $i] = array(
               '#title' => 'Children:',
               '#type' => 'textfield',
               '#size' => 3,
               '#suffix' => '</div>'
             );
+            
+            // We are storing the partially built form in form_data to use it
+            // when rebuilding the results page with the enquiry form
+            $form_state['values']['form_data'] = $form_data;
           }
         }
       }
@@ -990,6 +823,22 @@ function end_date_load($end_date) {
 
   return $ed;
 }
+
+
+/**
+ * Implements hook_theme()
+ */
+function rooms_booking_manager_theme() {
+  return array(
+    'rooms_booking_results' => array(
+      'template' => 'rooms_booking_results'
+    ),
+    'rooms_booking_email' => array(
+      'template' => 'rooms_booking_email'
+    )
+  );
+}
+
 
 /**
  * Implements hook_commerce_checkout_complete
@@ -1424,17 +1273,166 @@ function _rooms_booking_manager_line_item_type_fields() {
 
 
 /**
- * Implements hook_theme()
+ * Implementation of hook_form_alter()
  */
-function rooms_booking_manager_theme() {
-  return array(
-    'rooms_booking_results' => array(
-      'template' => 'rooms_booking_results'
-    ),
-    'rooms_booking_email' => array(
-      'template' => 'rooms_booking_email'
-    )
-  );
+function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
+  
+  // Commerce checkout form alters
+  if ($form_id == 'commerce_checkout_form_checkout') {
+    // Extract the View and display keys from the cart contents pane setting.
+    list($view_id, $display_id) = explode('|', variable_get('commerce_cart_contents_pane_view', 'commerce_cart_summary|default'));
+
+    global $user;
+    $order = commerce_cart_order_load($user->uid);
+
+    $form['cart_contents']['cart_contents_view'] = array(
+      '#markup' => commerce_embed_view('booking_checkout_form', 'booking_checkout_form', array($order->order_id)),
+    );
+  }
+  
+  // Commerce cart view for booking form alters
+  if (strpos($form_id, 'views_form_booking_cart_form_') === 0) {
+    unset($form['actions']['submit']);
+    $form['#action'] = str_replace('cart', 'bookings', $form['#action']);
+
+    // Change any Delete buttons to say Remove.
+    if (!empty($form['edit_delete'])) {
+      foreach(element_children($form['edit_delete']) as $key) {
+        // Load and wrap the line item to have the title in the submit phase.
+        if (!empty($form['edit_delete'][$key]['#line_item_id'])) {
+          $line_item_id = $form['edit_delete'][$key]['#line_item_id'];
+          $form_state['line_items'][$line_item_id] = commerce_line_item_load($line_item_id);
+
+          $form['edit_delete'][$key]['#value'] = t('Remove');
+          $form['edit_delete'][$key]['#submit'] = array_merge($form['#submit'], array('commerce_cart_line_item_delete_form_submit'));
+        }
+      }
+    }
+
+    $form['actions']['checkout'] = array(
+      '#type' => 'submit',
+      '#value' => t('Checkout'),
+      '#weight' => 5,
+      '#access' => user_access('access checkout'),
+      '#submit' => array_merge($form['#submit'], array('commerce_checkout_line_item_views_form_submit')),
+    );
+  }
+  elseif (strpos($form_id, 'commerce_checkout_form_') === 0 && !empty($form['buttons']['cancel'])) {
+    // Override the submit handler for changing the order status on checkout cancel.
+    foreach ($form['buttons']['cancel']['#submit'] as $key => &$value) {
+      if ($value == 'commerce_checkout_form_cancel_submit') {
+        $value = 'commerce_cart_checkout_form_cancel_submit';
+      }
+    }
+  }
+  elseif (strpos($form_id, 'views_form_commerce_cart_block') === 0) {
+    // No point in having a "Save" button on the shopping cart block.
+    unset($form['actions']);
+  }
+
+  // Adding extra settings to rooms booking settings
+  if ($form_id == 'rooms_booking_settings') {
+    $form['rooms_presentation_style'] = array(
+      '#type' => 'radios',
+      '#title' => t('Results presentation style'),
+      '#options' => array(
+        ROOMS_PER_TYPE => t('Show availability on a per-type basis.'),
+        ROOMS_INDIVIDUAL => t('Show availability of individual units.'),
+      ),
+      '#default_value' => variable_get('rooms_presentation_style', ROOMS_PER_TYPE),
+    );
+    $form['rooms_checkout_style'] = array(
+      '#type' => 'radios',
+      '#title' => t('Checkout presentation style'),
+      '#options' => array(
+        ROOMS_ENQ_CHECKOUT => t('Enquiry checkout'),
+        ROOMS_COMMERCE_CHECKOUT => t('Commerce checkout'),
+      ),
+      '#default_value' => variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT),
+    );
+
+    $form['rooms_valid_availability_states'] = array(
+      '#type' => 'checkboxes',
+      '#title' => t('Valid availability states'),
+      '#description' => t('Select the states for which rooms should show as available in a search.'),
+      '#options' => array(
+        ROOMS_AVAILABLE => t('Rooms marked as available.'),
+        ROOMS_ON_REQUEST => t('Rooms marked as available on request.'),
+      ),
+      '#default_value' => variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)),
+    );
+
+    $form['rooms_payment_options'] = array(
+      '#type' => 'item',
+      '#title' => t('Payment options'),
+      '#description' => t('Select payment option for booking confirmation.'),
+    );
+
+    $form['rooms_payment_options'][FULL_PAYMENT] = array(
+      '#type' => 'radio',
+      '#title' => t('Full price'),
+      '#return_value' => FULL_PAYMENT,
+      '#parents' => array('rooms_payment_options'),
+      '#default_value' => variable_get('rooms_payment_options', FULL_PAYMENT),
+    );
+
+    $form['rooms_payment_options'][PERCENT_PAYMENT] = array(
+      '#prefix' => '<div class="container-inline form-item">',
+    );
+
+    $form['rooms_payment_options'][PERCENT_PAYMENT]['perc_option'] = array(
+      '#type' => 'radio',
+      '#title' => t('Percentage of full price:&nbsp;'),
+      '#return_value' => PERCENT_PAYMENT,
+      '#parents' => array('rooms_payment_options'),
+      '#default_value' => variable_get('rooms_payment_options', FULL_PAYMENT),
+    );
+
+    $form['rooms_payment_options'][PERCENT_PAYMENT]['perc_textfield'] = array(
+      '#type' => 'textfield',
+      '#size' => 10,
+      '#suffix' => '</div>',
+      '#default_value' => variable_get('rooms_payment_options_percentual'),
+    );
+
+    $form['rooms_payment_options'][FIRST_NIGHT_PAYMENT] = array(
+      '#type' => 'radio',
+      '#title' => t('First night'),
+      '#return_value' => FIRST_NIGHT_PAYMENT,
+      '#parents' => array('rooms_payment_options'),
+      '#default_value' => variable_get('rooms_payment_options', FULL_PAYMENT),
+    );
+
+    drupal_add_js(drupal_get_path('module', 'rooms_booking_manager') . '/js/rooms_booking_manager_checked.js');
+
+    $form['rooms_date_format'] = array(
+      '#type' => 'item',
+      '#title' => t('Rooms PHP Date Format'),
+    );
+
+    $form['rooms_date_format']['date_format'] = array(
+      '#type' => 'textfield',
+      '#size' => 12,
+      '#prefix' => '<div class="container-inline form-item">Date format: &nbsp;',
+      '#suffix' => '</div>',
+      '#default_value' => variable_get('rooms_date_format', 'd-m-Y'),
+    );
+
+    $form['#submit'][] = 'rooms_booking_manager_settings_form_submit';
+  }
+}
+
+
+
+function rooms_booking_manager_settings_form_submit($form, &$form_state) {
+  if($form_state['values']['rooms_payment_options'] == PERCENT_PAYMENT) {
+    variable_set('rooms_payment_options_percentual', $form_state['values']['perc_textfield']);
+  }
+  else {
+    variable_set('rooms_payment_options_percentual', '');
+  }
+
+  variable_set('rooms_date_format', $form_state['values']['date_format']);
 }
 
 
