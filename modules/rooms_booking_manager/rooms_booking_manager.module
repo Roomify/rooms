@@ -128,8 +128,24 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $b_u
   $content = array();
 
   // Make sure variables are clear
-  $group_size_adults = check_plain($group_size_adults);
-  $group_size_children = check_plain($group_size_children);
+  $booking_parameters = array();
+  foreach ($_GET as $key => $value) {
+    $tmp_key = check_plain($key);
+    if (strpos($tmp_key, 'adults') === 0) {
+      $room_number = (int)substr($tmp_key, 6);
+      $number_people = (int)check_plain($value);
+      if (is_integer($room_number) && is_integer($number_people)) {
+        $booking_parameters[$room_number]['adults'] = $number_people;
+      }
+    }
+    if (strpos($tmp_key, 'children') === 0) {
+      $room_number = (int)substr($tmp_key, 8);
+      $number_people = (int)check_plain($value);
+      if (is_integer($room_number) && is_integer($number_people)) {
+        $booking_parameters[$room_number]['children'] = $number_people;
+      }
+    }
+  }
   $b_units = check_plain($b_units);
 
   // Check validity of date range - this is repeating what we do in rooms_booking_manager_availability_search_form_validate
@@ -140,7 +156,7 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $b_u
     $content['booking_results'] = 1;
     // Get all the units - note: we instantiate the Availability Agent using the date form set by the user
     $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
-    $agent = new AvailabilityAgent($start_date->format($date_format), $end_date->format($date_format), $group_size_adults, $group_size_children, $b_units);
+    $agent = new AvailabilityAgent($start_date->format($date_format), $end_date->format($date_format), $booking_parameters, $b_units);
     $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS)));
 
     $units_per_type = $agent->checkAvailability();
@@ -157,7 +173,7 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $b_u
       $content['booking_search_form'] = $booking_search_form;
     }
     elseif (variable_get('rooms_presentation_style', ROOMS_PER_TYPE) == ROOMS_PER_TYPE) {
-      $content = rooms_booking_manager_present_types($units_per_type, $content, $start_date, $end_date, $group_size_adults, $group_size_children, $b_units);
+      $content = rooms_booking_manager_present_types($units_per_type, $content, $start_date, $end_date, $booking_parameters, $b_units);
     }
     elseif (variable_get('rooms_presentation_style', ROOMS_PER_TYPE) == ROOMS_INDIVIDUAL) {
       $content = rooms_booking_manager_present_individual_rooms($units_per_type, $content, $start_date, $end_date);
@@ -252,12 +268,12 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
 /**
  * Prepares rooms on a per type basis
  */
-function rooms_booking_manager_present_types($units_per_type, $content, $start_date, $end_date, $group_size, $group_size_children, $b_units) {
+function rooms_booking_manager_present_types($units_per_type, $content, $start_date, $end_date, $booking_parameters, $b_units) {
   // Flag used in tpl
   $content['style'] = ROOMS_PER_TYPE;
 
   // We build all the content as a form for now
-  $content['units_per_type_form'] = drupal_get_form('book_units_per_type_form', $units_per_type, $start_date, $end_date, $group_size, $group_size_children, $b_units);
+  $content['units_per_type_form'] = drupal_get_form('book_units_per_type_form', $units_per_type, $start_date, $end_date, $booking_parameters, $b_units);
 
   return $content;
 }
@@ -388,7 +404,7 @@ function book_unit_form_submit(&$form, &$form_state) {
 }
 
 
-function book_units_per_type_form($form, $form_state, $units_per_type, $start_date, $end_date, $group_size, $group_size_children, $b_units) {
+function book_units_per_type_form($form, $form_state, $units_per_type, $start_date, $end_date, $booking_parameters, $b_units) {
 
   $date_format = variable_get('rooms_date_format', 'd-m-Y');
   $nights = $end_date->diff($start_date);
@@ -417,14 +433,9 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
       '#value' => $end_date->format('Y-m-d'),
     );
 
-    $form['group_size'] = array(
+    $form['booking_parameters'] = array(
       '#type' => 'hidden',
-      '#value' => $group_size,
-    );
-
-    $form['group_size_children'] = array(
-      '#type' => 'hidden',
-      '#value' => $group_size_children,
+      '#value' => serialize($booking_parameters),
     );
 
     $form['b_units'] = array(
@@ -740,6 +751,9 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
       $order[$type][$price_level][$value_type] = $value;
     }
   }
+
+  $currency_setting = commerce_currency_load(commerce_default_currency());
+  $currency_symbol = $currency_setting['symbol'];
 
   // This is very inefficient right now but we need to create date objects
   // reconvert them back to strings to only recreate them in the Availability Agent

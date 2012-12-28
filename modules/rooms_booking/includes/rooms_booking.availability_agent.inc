@@ -22,9 +22,7 @@ class AvailabilityAgent {
   public $end_date;
 
   // How many people we are looking to accommodate
-  public $group_size;
-
-  public $group_size_children;
+  public $booking_parameters;
 
   // How many booking units are we looking for
   public $booking_units;
@@ -34,7 +32,7 @@ class AvailabilityAgent {
 
   public $units = array();
 
-  public function __construct($start_date, $end_date, $group_size_adults = 1, $group_size_children = 0, $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS), $unit_types = array()) {
+  public function __construct($start_date, $end_date, $booking_parameters = array(), $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS), $unit_types = array()) {
     $this->valid_states = $valid_states;
 
     $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
@@ -44,8 +42,7 @@ class AvailabilityAgent {
     // For availability purposes the end date is a day earlier than the checkout date
     $this->end_date = $checkout_date->sub(new DateInterval('P1D'));
 
-    $this->group_size = $group_size_adults;
-    $this->group_size_children = $group_size_children;
+    $this->booking_parameters = $booking_parameters;
     $this->booking_units = $booking_units;
     $this->unit_types = $unit_types;
   }
@@ -57,6 +54,62 @@ class AvailabilityAgent {
    */
   public function setValidStates($states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS)) {
     $this->valid_states = $states;
+  }
+
+  private function getAvailabilityRooms($group_size, $group_size_children) {
+    $query = new EntityFieldQuery();
+    $query->entityCondition('entity_type', 'rooms_unit')
+          ->propertyOrderBy('sleeps', 'ASC')
+          ->propertyCondition('sleeps', $group_size, '>=')
+           ->propertyCondition('bookable', 1);
+
+    if ($group_size_children != PHP_INT_MAX) {
+      $query->propertyCondition('children', $group_size_children, '>=');
+    }
+
+    // Add a unit type condition if this has been defined
+    if (count($this->unit_types) > 0) {
+      $query->propertyCondition('type', $this->unit_types);
+    }
+
+    // Execute the query and collect the results
+    $results = $query->execute();
+
+    if (count($results) == 0) {
+      return ROOMS_SIZE_FAILURE;
+    }
+
+    return $results;
+  }
+
+  private function searchForAvailability($rooms_results) {
+    $tmp = array_shift(array_values($rooms_results));
+    $el_key = array_shift(array_keys($rooms_results));
+
+    if (!isset($rooms_results[$el_key]['rooms_unit'])) return 0;
+
+    $candidate_keys = array_keys($rooms_results[$el_key]['rooms_unit']);
+    if (empty($candidate_keys)) return 0;
+
+    foreach ($candidate_keys as $c_key) {
+      $tmp_rooms_results = $rooms_results;
+
+      foreach ($tmp_rooms_results as $key => $value) {
+        if (isset($tmp_rooms_results[$key]['rooms_unit'][$c_key]) && $key != $el_key) {
+          unset($tmp_rooms_results[$key]['rooms_unit'][$c_key]);
+        }
+      }
+
+      if (empty($tmp_rooms_results[$el_key]['rooms_unit'])) return 0;
+
+      unset($tmp_rooms_results[$el_key]);
+
+      if (empty($tmp_rooms_results)) return 1;
+
+      $return = $this->searchForAvailability($tmp_rooms_results);
+
+      if ($return == 1) return $return;
+    }
   }
 
   /**
@@ -74,16 +127,8 @@ class AvailabilityAgent {
     // Determine the types of rooms that qualify - the sleeping potential of the sum
     // of the rooms should satisfy the group size
 
-    // IF BUs > 1 then the sum of available rooms should accommodate the group - for now
-    // just show all rooms - so we set to zero and go through default below
-    if ($this->booking_units > 1) {
-      $this->booking_units = 0;
-      $this->group_size = 0;
-    }
-
-
-    // If BUs == 0 and no group size get all available units
-    if ($this->group_size == 0 && $this->booking_units == 0) {
+    // If no booking_parameters or no group size get all available units
+    if ($this->booking_parameters == array() || $this->booking_units == 0) {
       $query = new EntityFieldQuery();
       $query->entityCondition('entity_type', 'rooms_unit')
             ->propertyCondition('bookable', 1);
@@ -99,28 +144,40 @@ class AvailabilityAgent {
       }
     }
 
-    // If BUs = 1 then we want rooms that can sleep as big as the group size
-    elseif ($this->booking_units == 1) {
-      $query = new EntityFieldQuery();
-      $query->entityCondition('entity_type', 'rooms_unit')
-            ->propertyOrderBy('sleeps', 'ASC')
-            ->propertyCondition('sleeps', $this->group_size, '>=')
-            ->propertyCondition('bookable', 1);
+    else {
+      $rooms_results = array();
 
-      if ($this->group_size_children > 0) {
-        $query->propertyCondition('children', $this->group_size_children, '>=');
+      $min_group_size = PHP_INT_MAX;
+      $min_group_size_children = PHP_INT_MAX;
+      foreach ($this->booking_parameters as $key => $parameter) {
+        $adults = 0;
+        $children = 0;
+
+        if (isset($parameter['adults'])) {
+          if ($min_group_size > $parameter['adults']) $min_group_size = $parameter['adults'];
+          $adults = $parameter['adults'];
+        }
+        if (isset($parameter['children'])) {
+          if ($min_group_size_children > $parameter['children']) $min_group_size_children = $parameter['children'];
+          $children = $parameter['children'];
+        }
+        else {
+          $min_group_size_children = 0;
+        }
+
+        $rooms_results[$key] = $this->getAvailabilityRooms($adults, $children);
       }
 
-      // Add a unit type condition if this has been defined
-      if (count($this->unit_types) > 0) {
-        $query->propertyCondition('type', $this->unit_types);
+      if (!empty($rooms_results)) {
+        if ($this->searchForAvailability($rooms_results) == 1) {
+          $results = $this->getAvailabilityRooms($min_group_size, $min_group_size_children);
+        }
+        else {
+          return ROOMS_NO_ROOMS;
+        }
       }
-
-      // Execute the query and collect the results
-      $results = $query->execute();
-
-      if (count($results) == 0) {
-        return ROOMS_SIZE_FAILURE;
+      else {
+        return ROOMS_NO_ROOMS;
       }
     }
 
@@ -173,7 +230,7 @@ class AvailabilityAgent {
           // First set up price modifiers
           $price_modifiers = array();
 
-          if ($this->group_size == 1) {
+          /*if ($this->group_size == 1) {
             $price_modifiers['single'] = array('#type' => ROOMS_PRICE_SINGLE_OCCUPANCY);
           }
 
@@ -183,7 +240,7 @@ class AvailabilityAgent {
               '#op_type' => ROOMS_ADD,
               '#amount' => $unit->cot_surcharge * ($this->start_date->diff($this->end_date)->days + 1),
             );
-          }
+          }*/
 
           // Give other modules a chance to change the price modifiers
           drupal_alter('rooms_price_modifier', $price_modifiers);
