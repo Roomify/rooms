@@ -3,9 +3,8 @@
 
 /**
  * @file
- * Rooms Booking brings together all the pieces required to
- * find a room and book it - including the DrupalCommerce
- * integration
+ * Rooms Booking Manager brings together all the pieces required to find a room and book it
+ * - including the DrupalCommerce integration
  */
 
 
@@ -110,7 +109,7 @@ function rooms_booking_manager_cart_view() {
 
 
 /**
- * Searches for availability and constructs the booking page
+ * Constructs the booking results page following an availability search
  *
  * @param $start_date
  * The start date for the search
@@ -162,31 +161,11 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $gro
       $content = rooms_booking_manager_present_individual_rooms($units_per_type, $content, $start_date, $end_date);
     }
   }
-  
-  // If no start and end date present from the booking form or dates not ok
-  elseif ((gettype($start_date) == 'integer') || (gettype($end_date) == 'integer')) {
-    $content['booking_results'] = 0;
-    $booking_search_form = drupal_get_form('rooms_booking_availability_search_form');
-    $no_results = array(
-      '#prefix' => '<div class="no-booking-data">',
-      '#markup' => '<p>' . t('Perform a search to get availability information') . '</p>',
-      '#suffix' => '</div>',
-    );
-    $content['no_results'] = $no_results;
-    $content['booking_search_form'] = $booking_search_form;
-  }
   else {
-    $content['booking_results'] = 0;
-    $booking_search_form = drupal_get_form('rooms_booking_availability_search_form');
-    $no_results = array(
-      '#prefix' => '<div class="no-booking-data">',
-      '#markup' => '<p>' . t('Dates sent could not be used - please use booking form') . '</p>',
-      '#suffix' => '</div>',
-    );
-    $content['no_results'] = $no_results;
-    $content['booking_search_form'] = $booking_search_form;
+    drupal_set_message(t('Perform a search to get availability information'));
+    drupal_goto(booking);
+    exit;
   }
-
 
   $output = theme('rooms_booking_results', $content);
   return $output;
