@@ -1557,12 +1557,12 @@ function rooms_booking_manager_price_apply($line_item, $name) {
     if ($line_item->rooms_booking_number_people[LANGUAGE_NONE][0]['value'] == 1) {
       $price_modifiers['single'] = array('#type' => ROOMS_PRICE_SINGLE_OCCUPANCY);
     }
-
-    if ($line_item->rooms_booking_number_people[LANGUAGE_NONE][1]['value'] > 0) {
+    
+    if ($line_item->rooms_booking_number_people[LANGUAGE_NONE][0]['value'] > 0) {
       $price_modifiers['children'] = array(
         '#type' => ROOMS_DYNAMIC_MODIFIER,
         '#op_type' => ROOMS_ADD,
-        '#amount' => $unit->cot_surcharge * ($this->start_date->diff($this->end_date)->days + 1),
+        '#amount' => $unit->cot_surcharge * ($start_date->diff($end_date)->days + 1),
       );
     }
 
