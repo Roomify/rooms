@@ -445,7 +445,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
     $form['legend1'] = array(
       '#prefix' => '<table class="booking_legend"><tr><td colspan="3" class="room_type_legend">',
-      '#markup' => 'Arrival Date: ' . $start_date->format($date_format) . ' &nbsp;Departure Date: ' . $end_date->format($date_format) . ' &nbsp;Nights: ' . $nights->d,
+      '#markup' => t('Arrival Date') . ': ' . $start_date->format($date_format) . ' &nbsp;' . t('Departure Date') . ': ' . $end_date->format($date_format) . ' &nbsp;' . t('Nights') . ': ' . $nights->d,
       '#suffix' => '</td></tr>',
     );
 
@@ -589,7 +589,7 @@ function rooms_booking_manager_per_type_enquiry_form($form, $form_state, $units_
   $nights = $end_date->diff($start_date);
 
   $form['legend1'] = array(
-    '#markup' => 'Arrival Date: ' . $start_date->format($date_format).' &nbsp;Departure Date: ' . $end_date->format($date_format) . ' &nbsp;Nights: ' . $nights->d,
+    '#markup' => t('Arrival Date') . ': ' . $start_date->format($date_format) . ' &nbsp;' . t('Departure Date') . ': ' . $end_date->format($date_format) . ' &nbsp;' . t('Nights') . ': ' . $nights->d,
   );
 
   $currency_setting = commerce_currency_load(commerce_default_currency());
