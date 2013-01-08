@@ -57,6 +57,14 @@ function rooms_booking_manager_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  $items['enquiry/%start_date/%end_date'] = array(
+    'title' => t('Enquiry'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('rooms_booking_manager_enquiry_page_form', 1, 2),
+    'access arguments' => array('book units'),
+    'type' => MENU_CALLBACK,
+  );
+
   $items['bookings'] = array(
     'title' => 'Booking cart',
     'page callback' => 'rooms_booking_manager_cart_view',
@@ -105,6 +113,28 @@ function rooms_booking_manager_cart_view() {
   }
 
   return $content;
+}
+
+
+function rooms_booking_manager_enquiry_page_form($form, $form_state, $start_date = 0, $end_date = 0, $unit) {
+  $unit_obj = rooms_unit_load($unit);
+
+  $form = rooms_booking_manager_enquiry_form($form, $start_date, $end_date, 2, 0, 1);
+
+  $form = array_merge(array('unit' => array('#markup' => '<p>Room: ' . $unit_obj->name . '</p>')), $form);
+
+  return $form;
+}
+
+
+/**
+ *@todo - check that original availability still holds
+ *@todo - fix the user ownership of products
+ */
+function rooms_booking_manager_enquiry_page_form_submit(&$form, &$form_state) {
+  if (isset($form_state['values']['enquiry_form'])) {
+    room_booking_manager_send_email($form_state);
+  }
 }
 
 
@@ -377,8 +407,12 @@ function book_unit_form_submit(&$form, &$form_state) {
     // Add line item to cart
     $line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
 
-    // Send user to cart
-    drupal_goto('bookings');
+    if (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_COMMERCE_CHECKOUT) {
+      // Send user to cart
+      drupal_goto('bookings');
+    } elseif (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT) {  
+      drupal_goto('enquiry/' . $start_date . '/' . $end_date . '/' . $unit_id);
+    }
 
   } else {
     drupal_set_message(t('We apologize it seems the room is no longer available'));
@@ -395,7 +429,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
   // Check to see if we are rebuilding the form to create an enquiry 
   if (($form_state['rebuild']) && (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT)) {
-    $form = rooms_booking_manager_per_type_enquiry_form($form, $form_state, $units_per_type, $start_date, $end_date, $group_size, $group_size_children, $b_units);
+    $form = rooms_booking_manager_enquiry_form($form_state['values']['form_data'], $start_date, $end_date, $group_size, $group_size_children, $b_units);
     // If not display the per type choices  
   } else {
 
@@ -570,9 +604,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 }
 
 
-function rooms_booking_manager_per_type_enquiry_form($form, $form_state, $units_per_type, $start_date, $end_date, $group_size, $group_size_children, $b_units) {
-
-  $form = $form_state['values']['form_data'];
+function rooms_booking_manager_enquiry_form($form, $start_date, $end_date, $group_size, $group_size_children, $b_units) {
 
   $date_format = variable_get('rooms_date_format', 'd-m-Y');
   $nights = $end_date->diff($start_date);
@@ -684,6 +716,9 @@ function room_booking_manager_send_email($form_state) {
       $booking_request[] = '<p>' . $label . ' (' . $values[1] . ' - ' . $value[2] . ')</p>';
     }
   }
+  if (isset($form_state['complete form']['unit'])) {
+    $booking_request[] = $form_state['complete form']['unit']['#markup'];
+  }
 
   $variables['customer_name'] = t('Name:') . ' ' . $form_state['values']['customer_name'];
   $variables['customer_email'] = t('Email:') . ' ' . $form_state['values']['customer_email'];
@@ -692,7 +727,7 @@ function room_booking_manager_send_email($form_state) {
   $variables['customer_city'] = t('City:') . ' ' . $form_state['values']['customer_city'];
   $variables['customer_state'] = t('State/County:') . ' ' . $form_state['values']['customer_state'];
   $variables['customer_country'] = t('Country:') . ' ' . $form_state['values']['customer_country'];
-  $variables['comment'] = t('Comments:') . ' ' . $form_state['values']['comment'];
+  $variables['comments'] = t('Comments:') . ' ' . $form_state['values']['comments'];
 
   $variables['booking_request'] = $booking_request;
 
@@ -809,7 +844,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
               '#size' => 3,
               '#suffix' => '</div>'
             );
-            
+
             // We are storing the partially built form in form_data to use it
             // when rebuilding the results page with the enquiry form
             $form_state['values']['form_data'] = $form_data;
