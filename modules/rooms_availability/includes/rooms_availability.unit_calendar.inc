@@ -173,15 +173,15 @@ class UnitCalendar {
    * as wekk as data[unitid][year][month][unique_states]
    */
   public function getRawDayData(DateTime $start_date, DateTime $end_date) {
-    
+
     // Create a dummy BookingEvent to represent the range we are searching over
     // This gives us access to handy functions that BookingEvents have
     $s = new BookingEvent($this->unit_id, 0, $start_date, $end_date);
-    
+
     $results = array();
-    
+
     // Start by doing a query to the db to get any info stored there
-    
+
     // If search across the same year do a single query
     if ($s->sameYear()) {
       $query = db_select('rooms_availability', 'a');
@@ -231,8 +231,8 @@ class UnitCalendar {
         }
       }
     }
-    
-    
+
+
     // With the results from the db in place fill in any missing months
     // with the default state for the unit
     for ($j = $s->startYear(); $j <= $s->endYear(); $j++) {
@@ -320,7 +320,7 @@ class UnitCalendar {
 
       }
     }
-        
+
     // With the results in place we do a states array with the start and
     // end dates of each event
     foreach ($results[$this->unit_id] as $year => $months) {
