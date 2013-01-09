@@ -1523,7 +1523,7 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
       '#default_value' => variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)),
     );
 
-    $form['rooms_payment_options'] = array(
+    /*$form['rooms_payment_options'] = array(
       '#type' => 'item',
       '#title' => t('Payment options'),
       '#description' => t('Select payment option for booking confirmation.'),
@@ -1564,7 +1564,7 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
       '#default_value' => variable_get('rooms_payment_options', FULL_PAYMENT),
     );
 
-    drupal_add_js(drupal_get_path('module', 'rooms_booking_manager') . '/js/rooms_booking_manager_checked.js');
+    drupal_add_js(drupal_get_path('module', 'rooms_booking_manager') . '/js/rooms_booking_manager_checked.js');*/
 
     $form['rooms_date_format'] = array(
       '#type' => 'item',
