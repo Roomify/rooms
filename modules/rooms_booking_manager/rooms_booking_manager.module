@@ -199,10 +199,55 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $gro
     exit;
   }
 
+  $change_search_form = drupal_get_form('rooms_booking_manager_change_search_form', $start_date, $end_date, $group_size_adults, $group_size_children, $b_units);
+
+  $content['change_search'] = $change_search_form;
+
+  $content['legend'] = array(
+    '#prefix' => '<p>',
+    '#markup' => 'Arrival Date: ' . $start_date->format($date_format) . ' &nbsp;Departure Date: ' . $end_date->format($date_format) . ' &nbsp;Nights: ' . $end_date->diff($start_date)->d,
+    '#suffix' => '</p>',
+  );
+
   $output = theme('rooms_booking_results', $content);
   return $output;
 }
 
+
+function rooms_booking_manager_change_search_form($form, &$form_state, $start_date, $end_date, $group_size_adults, $group_size_children, $b_units) {
+
+  $form['start_date'] = array(
+    '#type' => 'hidden',
+    '#value' => $start_date->format('Y-m-d'),
+  );
+
+  $form['end_date'] = array(
+    '#type' => 'hidden',
+    '#value' => $end_date->format('Y-m-d'),
+  );
+
+  $form['group_size'] = array(
+    '#type' => 'hidden',
+    '#value' => $group_size_adults,
+  );
+
+  $form['group_size_children'] = array(
+    '#type' => 'hidden',
+    '#value' => $group_size_children,
+  );
+
+  $form['b_units'] = array(
+    '#type' => 'hidden',
+    '#value' => $b_units,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Change search'),
+  );
+
+  return $form;
+}
 
 
 /**
@@ -296,7 +341,7 @@ function rooms_booking_manager_present_types($units_per_type, $content, $start_d
 /**
  * Implementation of hook_forms()
  *
- * We use this to be able to present a different purhase button for each choice
+ * We use this to be able to present a different purchase button for each choice
  */
 function rooms_booking_manager_forms($form_id, $args) {
 
@@ -466,6 +511,12 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
       '#value' => $b_units,
     );
 
+    $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Change search'),
+      '#submit' => $submit + array('rooms_booking_manager_change_search_form_submit'),
+    );
+
     $form['legend1'] = array(
       '#prefix' => '<table class="booking_legend"><tr><td colspan="3" class="room_type_legend">',
       '#markup' => 'Arrival Date: ' . $start_date->format($date_format) . ' &nbsp;Departure Date: ' . $end_date->format($date_format) . ' &nbsp;Nights: ' . $nights->d,
@@ -583,10 +634,10 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
     }
 
-    $form['submit'] = array(
+    $form['place_booking'] = array(
       '#type' => 'submit',
-      '#value' => t('Change search'),
-      '#submit' => $submit + array('rooms_booking_manager_change_search'),
+      '#value' => t('Place Booking'),
+      '#submit' => $submit + array('book_units_per_type_form_submit'),
     );
 
     $form['actions'] = array(
@@ -866,7 +917,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
  * This function redirects the user back to the search box and sets up the values
  * of the search as a convenient way to modify the search.
  */
-function rooms_booking_manager_change_search(&$form, &$form_state) {
+function rooms_booking_manager_change_search_form_submit(&$form, &$form_state) {
   drupal_goto('booking', array('query' => array(
     'start_date' => $form_state['values']['start_date'],
     'end_date' => $form_state['values']['end_date'],

@@ -5,6 +5,8 @@
 
 <?php if (isset($style) && ($style == ROOMS_INDIVIDUAL)): ?>
   <?php if ($booking_results): ?>
+    <?php print render($change_search); ?>
+    <?php print render($legend); ?>
     <?php foreach ($units_per_type as $unit_type => $units_per_price_level) {
       print render($$unit_type);
       foreach ($units_per_price_level as $price => $units) {
