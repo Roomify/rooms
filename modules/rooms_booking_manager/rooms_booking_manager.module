@@ -1586,12 +1586,12 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
 
 
 function rooms_booking_manager_settings_form_submit($form, &$form_state) {
-  if($form_state['values']['rooms_payment_options'] == PERCENT_PAYMENT) {
+  /*if($form_state['values']['rooms_payment_options'] == PERCENT_PAYMENT) {
     variable_set('rooms_payment_options_percentual', $form_state['values']['perc_textfield']);
   }
   else {
     variable_set('rooms_payment_options_percentual', '');
-  }
+  }*/
 
   variable_set('rooms_date_format', $form_state['values']['date_format']);
 }
