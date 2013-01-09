@@ -119,9 +119,12 @@ function rooms_booking_manager_cart_view() {
 function rooms_booking_manager_enquiry_page_form($form, $form_state, $start_date = 0, $end_date = 0, $unit) {
   $unit_obj = rooms_unit_load($unit);
 
-  $form = rooms_booking_manager_enquiry_form($form, $start_date, $end_date, 2, 0, 1);
+  $form['room_description'] = array(
+    '#type' => 'item',
+    '#markup' => 'Room: ' . $unit_obj->name,
+  );
 
-  $form = array_merge(array('unit' => array('#markup' => '<p>Room: ' . $unit_obj->name . '</p>')), $form);
+  $form = rooms_booking_manager_enquiry_form($form, $start_date, $end_date, 2, 0, 1);
 
   return $form;
 }
@@ -660,9 +663,20 @@ function rooms_booking_manager_enquiry_form($form, $start_date, $end_date, $grou
   $date_format = variable_get('rooms_date_format', 'd-m-Y');
   $nights = $end_date->diff($start_date);
 
-  $form['legend1'] = array(
-    '#markup' => 'Arrival Date: ' . $start_date->format($date_format).' &nbsp;Departure Date: ' . $end_date->format($date_format) . ' &nbsp;Nights: ' . $nights->d,
+  $form_tmp['legend1'] = array(
+    '#type' => 'item',
+    '#markup' => t('Arrival Date') . ': ' . $start_date->format($date_format),
   );
+  $form_tmp['legend2'] = array(
+    '#type' => 'item',
+    '#markup' => t('Departure Date') . ': ' . $end_date->format($date_format),
+  );
+  $form_tmp['legend3'] = array(
+    '#type' => 'item',
+    '#markup' => t('Nights') . ': ' . $nights->d,
+  );
+
+  $form = array_merge($form_tmp, $form);
 
   $currency_setting = commerce_currency_load(commerce_default_currency());
   $currency_symbol = $currency_setting['symbol'];
@@ -866,34 +880,31 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
           } elseif (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT) {
             $type_obj = rooms_unit_type_load($type);
 
-            $form_data[$type]['title'][$type . ':title'] = array(
-              '#prefix' => '<h2>',
-              '#markup' => t($type_obj->label),
-              '#suffix' => '</h2>',
-            );
-
             $unit_info = $agent->checkAvailabilityForUnit($unit['unit']->unit_id);
 
             $unit_first = array_pop($unit_info);
             $price = $unit_first['price'];
 
-            $form_data[$unit['unit']->type . ':' . $price][$i] = array(
-              '#prefix' => '<tr><td><div class="container-inline"><div class="unit_price" style="font-weight:bold">',
-              '#markup' =>  t('1 - Cost:') . ' ' . $price . ' ' . $currency_symbol,
-              '#suffix' => '</div>'
+            $form_data[$unit['unit']->type . ':' . $i] = array(
+              '#type' => 'fieldset',
             );
 
-            $form_data[$unit['unit']->type . ':adults:' . $i] = array(
-              '#title' => 'Adults:',
+            $form_data[$unit['unit']->type . ':' . $i]['price'] = array(
+              '#markup' => t($type_obj->label) . ' - ' . t('Cost') . ': ' . $price . ' ' . $currency_symbol,
+            );
+
+            $form_data[$unit['unit']->type . ':' . $i]['adults'] = array(
+              '#prefix' => '<div class="container-inline">',
+              '#title' => t('Adults') . ':',
               '#type' => 'textfield',
               '#size' => 3,
             );
 
-            $form_data[$unit['unit']->type . ':children:' . $i] = array(
-              '#title' => 'Children:',
+            $form_data[$unit['unit']->type . ':' . $i]['children'] = array(
+              '#title' => t('Children') . ':',
               '#type' => 'textfield',
               '#size' => 3,
-              '#suffix' => '</div>'
+              '#suffix' => '</div></div>'
             );
 
             // We are storing the partially built form in form_data to use it
