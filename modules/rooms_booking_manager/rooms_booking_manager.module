@@ -1818,6 +1818,7 @@ function rooms_booking_manager_commerce_product_type_info() {
 function rooms_booking_manager_enable() {
   // Reset product types cache to have our rooms_product available
   commerce_product_types_reset();
+  commerce_product_configure_product_type('rooms_product');
 
   $types = commerce_product_types();
   if (isset($types['rooms_product']) && !empty($types['rooms_product'])) {
