@@ -240,3 +240,11 @@ function rooms_pricing_schema() {
   
   return $schema;
 }
+
+
+/**
+ * Implements hook_uninstall().
+ */
+function rooms_pricing_uninstall() {
+  variable_del('rooms_payment_options_percentual');
+}

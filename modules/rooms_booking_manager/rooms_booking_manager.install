@@ -5,7 +5,22 @@
  * Install for Rooms Booking Manager module
  */
 
+
+/**
+ * Implements hook_install().
+ */
 function rooms_booking_manager_install() {
+}
+
+
+/**
+ * Implements hook_uninstall().
+ */
+function rooms_booking_manager_uninstall() {
+  commerce_product_delete(variable_get('rooms_booking_manager_booking_product_id', 0));
+
+  variable_del('rooms_date_format');
+  variable_del('rooms_booking_manager_booking_product_id');
 }
 
 
