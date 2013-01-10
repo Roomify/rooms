@@ -8,3 +8,63 @@
 function rooms_booking_manager_install() {
 }
 
+
+/**
+ * Add "Booking Number People" field to the rooms_booking_manager_line_item
+ */
+function rooms_booking_manager_update_7001() {
+	$field = array(
+    'field_name' => 'rooms_booking_number_people',
+    'label' => t('Booking Number People'),
+    'cardinality' => 2,
+    'type' => 'number_integer',
+    'module' => 'number',
+    'active' => 1,
+    'locked' => 1,
+    'settings' => array(
+	    'size' => 8,
+	    'max_length' => 10,
+	    'text_processing' => 0,
+	  ),
+  );
+
+  field_create_field($field);
+
+  $instance = array(
+    'field_name' => 'rooms_booking_number_people',
+    'label' => t('Booking Number People'),
+    'entity_type' => 'commerce_line_item',
+    'bundle' => 'rooms_booking',
+    'required' => TRUE,
+    'settings' => array(
+      'size' => 8,
+      'max_length' => 10,
+      'text_processing' => 0,
+    ),
+    'widget' => array(
+      'type' => 'text_textfield',
+    ),
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => ' ',
+        ),
+        'type' => 'number_integer',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+	      'label' => 'above',
+	      'settings' => array(),
+	      'type' => 'hidden',
+	      'weight' => 0,
+	    ),
+    ),
+  );
+
+  field_create_instance($instance);
+}
