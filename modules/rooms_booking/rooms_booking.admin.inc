@@ -534,30 +534,32 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
     form_set_error('availability_fieldset', t('A unit has not been assigned for this booking'));
   }
 
-  $booking =  $form_state['rooms_booking'];
-  // We are going to be updating the event - so the first step is to remove the
-  // old event.
-  if (($booking->unit_id != 0) && ($form_state['values']['rooms_start_date'] != '') && ($form_state['values']['rooms_end_date'] != '')) {
-    // Create a calendar
-    $uc = new UnitCalendar($booking->unit_id);
+  $booking = $form_state['rooms_booking'];
+  if (isset($booking->unit_id)) {
+    // We are going to be updating the event - so the first step is to remove the
+    // old event.
+    if (($booking->unit_id != 0) && ($form_state['values']['rooms_start_date'] != '') && ($form_state['values']['rooms_end_date'] != '')) {
+      // Create a calendar
+      $uc = new UnitCalendar($booking->unit_id);
 
-    // Create an event representing the event to remove
-    $be = new BookingEvent($booking->unit_id,
-        rooms_availability_assign_id($booking->booking_id, $booking->booking_status),
-        new DateTime($form_state['values']['rooms_start_date']),
-        new DateTime($form_state['values']['rooms_end_date']));
+      // Create an event representing the event to remove
+      $be = new BookingEvent($booking->unit_id,
+          rooms_availability_assign_id($booking->booking_id, $booking->booking_status),
+          new DateTime($form_state['values']['rooms_start_date']),
+          new DateTime($form_state['values']['rooms_end_date']));
 
-    $states = $uc->getStates(new DateTime($form_state['values']['rooms_start_date']), new DateTime($form_state['values']['rooms_end_date']));
-    $state_diff = array_diff($states, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS, $be->id));
+      $states = $uc->getStates(new DateTime($form_state['values']['rooms_start_date']), new DateTime($form_state['values']['rooms_end_date']));
+      $state_diff = array_diff($states, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS, $be->id));
 
-    if (count($state_diff) > 0) {
-      $date1 = new DateTime($form['rooms_date_range']['rooms_start_date']['#default_value']);
-      $date2 = new DateTime($form['rooms_date_range']['rooms_end_date']['#default_value']);
+      if (count($state_diff) > 0) {
+        $date1 = new DateTime($form['rooms_date_range']['rooms_start_date']['#default_value']);
+        $date2 = new DateTime($form['rooms_date_range']['rooms_end_date']['#default_value']);
 
-      $form['rooms_date_range']['rooms_start_date']['date']['#value'] = $date1->format($form['rooms_date_range']['rooms_start_date']['#date_format']);
-      $form['rooms_date_range']['rooms_end_date']['date']['#value'] = $date2->format($form['rooms_date_range']['rooms_end_date']['#date_format']);
+        $form['rooms_date_range']['rooms_start_date']['date']['#value'] = $date1->format($form['rooms_date_range']['rooms_start_date']['#date_format']);
+        $form['rooms_date_range']['rooms_end_date']['date']['#value'] = $date2->format($form['rooms_date_range']['rooms_end_date']['#date_format']);
 
-      form_set_error('date_range', t('Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period'));
+        form_set_error('date_range', t('Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period'));
+      }
     }
   }
 
