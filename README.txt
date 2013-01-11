@@ -12,7 +12,7 @@ and unpack in sites/all/libraries so that you end up with sites/all/libraries/fu
 
 We use FullCalendar to display room availability and prices by date in an easily comprehensible manner.
 
-Please do not use the download from the FullCalendar website, as we had to form the actual FullCalendar library
+Please do not use the download from the FullCalendar website, as we had to fork the actual FullCalendar library
 to add an extra view and provide some simple enhancements that made sense for this application. 
 
 *It's not necessary to install the contributed Drupal fullcalendar module.*
@@ -58,3 +58,9 @@ The use of the DateInterval class means that we require PHP version 5.3 or great
 In general, this module makes use of latest Date functionality in PHP, so
 ensure that it is enabled in your PHP setup. We may scale back on this
 to make things more usable for a wider range of configurations.
+
+UPGRADING FROM PREVIOUS BETA VERSIONS
+--------------------------------------
+If you are upgrading from Beta 4 make sure that your Rooms Product in Commerce has a price set, the price is not
+actually used to calculate the cost of the room but we need a price in order for Commerce to properly add the product
+to the cart and do tax calculations.
