@@ -324,7 +324,7 @@ function rooms_availability_filter_month_form($form, &$form_state, $month, $year
     '#title' => t("Year"),
     '#type' => 'select',
     '#options' => $year_options,
-    '#default_value' => $year-2010,
+    '#default_value' => 2,
   );
 
   $query = db_select('rooms_unit_type', 'n')->fields('n', array('type', 'label'));
