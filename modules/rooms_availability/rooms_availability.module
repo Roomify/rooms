@@ -369,7 +369,7 @@ function rooms_availability_filter_month_form_submit(&$form, &$form_state) {
     variable_set('ROOMS_SELECT_ALL_PAGES_AV', 'false');
   }
 
-  $year = $form_state['values']['year'] + 2010;
+  $year = $form_state['values']['year'] + date('Y', time()) - 2;
   $month = $form_state['values']['month'];
   $type = $form_state['values']['type'];
 
