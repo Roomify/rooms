@@ -112,7 +112,7 @@ function rooms_availability_menu() {
   $items['admin/rooms/units/bulk_unit_management'] = array(
     'title' => 'Bulk availability management',
     'page callback' => 'rooms_availability_bulk_unit_management',
-    'page arguments' => array(4, 5, 6, 7),
+    'page arguments' => array(4, 5, 6),
     'access callback' => 'rooms_availability_access',
     'access arguments' => array(4),
     'type' => MENU_LOCAL_TASK,
@@ -122,7 +122,7 @@ function rooms_availability_menu() {
   $items['admin/rooms/units/bulk_pricing_management'] = array(
     'title' => 'Bulk pricing management',
     'page callback' => 'rooms_availability_bulk_pricing_management',
-    'page arguments' => array(4, 5, 6, 7),
+    'page arguments' => array(4, 5, 6),
     'access callback' => 'rooms_bulk_pricing_access',
     'type' => MENU_LOCAL_TASK,
     'weight' => 10,
@@ -165,13 +165,17 @@ function rooms_availability_pr_ajax_callback() {
 }
 
 
-function rooms_availability_bulk_unit_management($year='', $month='', $type='all', $page='0', $action='', $start='', $end='') {
+function rooms_availability_bulk_unit_management($year='', $month='', $type='all', $action='', $start='', $end='') {
   // If year is not set then give it the current date
   $year = ($year == '') ? date('Y', time()) : $year;
   $month = ($month == '') ? date('n', time()) : $month;
   $type = ($type == '') ? 'all' : $type;
 
-  if ($page < 0) $page = 0;
+  $page = 0;
+  if (isset($_GET['page'])) {
+    $page = check_plain($_GET['page']);
+    if ($page < 0) $page = 0;
+  }
 
   drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/rooms_availability.css');
   drupal_add_library('rooms_availability', 'rooms_fullcalendar');
@@ -202,28 +206,10 @@ function rooms_availability_bulk_unit_management($year='', $month='', $type='all
     $rooms_id[] = $value->unit_id;
   }
 
-  if ($n_total_row / 20 > 1) {
-    global $base_url;
-
-    $output .= '<div class="item-list"><ul class="pager">';
-    if ($page != 0) {
-      $output .= '<li class="pager-first first"><a href="' . $base_url . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/0">« first</a></li>';
-      $output .= '<li class="pager-previous"><a href="' . $base_url . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($page - 1) . '">‹ previous</a></li>';
-    }
-    for ($i = 0; $i < $n_total_row / 20; $i++) {
-      if ($i == $page) {
-        $output .= '<li class="pager-current">' . ($page + 1) . '</li>';
-      }
-      else {
-        $output .= '<li class="pager-item"><a href="' . $base_url . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . $i . '">' . ($i + 1) . '</a></li>';
-      }
-    }
-    if ($page + 1 < $n_total_row / 20) {
-      $output .= '<li class="pager-next"><a href="' . $base_url . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($page + 1) . '">next ›</a></li>';
-      $output .= '<li class="pager-last last"><a href="' . $base_url . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($n_total_row / 20 - 1) . '">last »</a></li>';
-    }
-    $output .= '</ul></div>';
-  }
+  // Add pager
+  pager_default_initialize($n_total_row, 20);
+  $args = array('quantity' => $n_total_row,'tags' => array(t('« first'),t('‹ previous'),'',t('next ›'),t('last »')));
+  $output .= theme('pager',$args);
 
   drupal_add_js(array('roomsUnitManagement' => array('roomsId' => $rooms_id)), 'setting');
 
@@ -231,13 +217,17 @@ function rooms_availability_bulk_unit_management($year='', $month='', $type='all
 }
 
 
-function rooms_availability_bulk_pricing_management($year='', $month='', $type='all', $page='0', $action='', $start='', $end='') {
+function rooms_availability_bulk_pricing_management($year='', $month='', $type='all', $action='', $start='', $end='') {
   // If year is not set then give it the current date
   $year = ($year == '') ? date('Y', time()) : $year;
   $month = ($month == '') ? date('n', time()) : $month;
   $type = ($type == '') ? 'all' : $type;
 
-  if ($page < 0) $page = 0;
+  $page = 0;
+  if (isset($_GET['page'])) {
+    $page = check_plain($_GET['page']);
+    if ($page < 0) $page = 0;
+  }
 
   drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/rooms_availability.css');
   drupal_add_library('rooms_availability', 'rooms_fullcalendar');
@@ -268,26 +258,10 @@ function rooms_availability_bulk_pricing_management($year='', $month='', $type='
     $rooms_id[] = $value->unit_id;
   }
 
-  if ($n_total_row / 20 > 1) {
-    $output .= '<div class="item-list"><ul class="pager">';
-    if ($page != 0) {
-      $output .= '<li class="pager-first first"><a href="' . $base_url . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/0">« first</a></li>';
-      $output .= '<li class="pager-previous"><a href="' . $base_url . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($page - 1) . '">‹ previous</a></li>';
-    }
-    for ($i = 0; $i < $n_total_row / 20; $i++) {
-      if ($i == $page) {
-        $output .= '<li class="pager-current">' . ($page + 1) . '</li>';
-      }
-      else {
-        $output .= '<li class="pager-item"><a href="' . $base_url . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . $i . '">' . ($i + 1) . '</a></li>';
-      }
-    }
-    if ($page + 1 < $n_total_row / 20) {
-      $output .= '<li class="pager-next"><a href="' . $base_url . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($page + 1) . '">next ›</a></li>';
-      $output .= '<li class="pager-last last"><a href="' . $base_url . '/admin/rooms/units/bulk_unit_management/' . $year . '/' . $month . '/' . $type. '/' . ($n_total_row / 20 - 1) . '">last »</a></li>';
-    }
-    $output .= '</ul></div>';
-  }
+  // Add pager
+  pager_default_initialize($n_total_row, 20);
+  $args = array('quantity' => $n_total_row,'tags' => array(t('« first'),t('‹ previous'),'',t('next ›'),t('last »')));
+  $output .= theme('pager',$args);
 
   drupal_add_js(array('roomsUnitManagement' => array('roomsId' => $rooms_id)), 'setting');
 
