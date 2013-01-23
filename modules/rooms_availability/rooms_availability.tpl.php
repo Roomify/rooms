@@ -4,9 +4,8 @@
 
 <div class="availability-updates">
 
-<?php //print render($update_form_into); ?>
-
 <?php print render($update_form); ?>
+
 </div>
 
 

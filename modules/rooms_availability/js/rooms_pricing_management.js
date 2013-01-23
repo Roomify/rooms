@@ -43,8 +43,7 @@ $(document).ready(function()
 Drupal.behaviors.rooms_availability = {
   attach: function(context) {
         
-    // Current month is whatever comes through -1 since js counts months starting
-    // from 0
+    // Current month is whatever comes through -1 since js counts months starting from 0
     currentmonth = parseInt(Drupal.settings.roomsUnitManagement.currentMonth)-1;
     currentyear = parseInt(Drupal.settings.roomsUnitManagement.currentYear);
 

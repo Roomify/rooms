@@ -1249,7 +1249,6 @@ function rooms_availability_event_manager_form($form, $form_state, $unit_id, $ev
     '#prefix' => '<div id="replace_textfield_div">',
   );
 
-  
   $form['unit_id'] = array(
     '#type' => 'hidden',
     '#value' => $unit_id,
@@ -1316,7 +1315,7 @@ function rooms_availability_ajax_event_status_change($form, $form_state) {
   
   // If we have a new event id go ahead and update event
   if (($event_id != $new_event_id) && $new_event_id != -1) {
-    
+
     $start_date = new DateTime();
     $start_date->setTimestamp($start_time);
     
@@ -1326,9 +1325,13 @@ function rooms_availability_ajax_event_status_change($form, $form_state) {
     $event = new BookingEvent($unit_id, $new_event_id, $start_date, $end_date);
     $uc = new UnitCalendar($unit_id);
     $responses = $uc->updateCalendar(array($event));
-    
-    $form['form_wrapper_bottom']['#markup'] = 'Original Event id is:' . $event_id . ' New Event id is:' . $new_event_id;
-    
+
+    if ($event_id >= -1) {
+      $form['form_wrapper_bottom']['#markup'] = 'Original Event id is: ' . $event_id . ' New Event id is: ' . $new_event_id;
+    }
+    else {
+      $form['form_wrapper_bottom']['#markup'] = 'New Event id is: ' . $new_event_id;
+    }
   }
   
   return $form;
