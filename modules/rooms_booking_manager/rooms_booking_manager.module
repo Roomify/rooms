@@ -183,7 +183,7 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $gro
       $booking_search_form = drupal_get_form('rooms_booking_availability_search_form');
       $no_results = array(
         '#prefix' => '<div class="no-booking-data">',
-        '#markup' => '<p>' . t('Unfortunately no rooms are available - try different dates if possible.') . '</p>',
+        '#markup' => t('Unfortunately no rooms are available - try different dates if possible.'),
         '#suffix' => '</div>',
       );
       $content['no_results'] = $no_results;
@@ -202,15 +202,11 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $gro
     exit;
   }
 
+
+  $content['legend'] = rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, array());
+
   $change_search_form = drupal_get_form('rooms_booking_manager_change_search_form', $start_date, $end_date, $group_size_adults, $group_size_children, $b_units);
-
   $content['change_search'] = $change_search_form;
-
-  $content['legend'] = array(
-    '#prefix' => '<p>',
-    '#markup' => 'Arrival Date: ' . $start_date->format($date_format) . ' &nbsp;Departure Date: ' . $end_date->format($date_format) . ' &nbsp;Nights: ' . $end_date->diff($start_date)->d,
-    '#suffix' => '</p>',
-  );
 
   $output = theme('rooms_booking_results', $content);
   return $output;
@@ -526,24 +522,9 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
       '#submit' => $submit + array('rooms_booking_manager_change_search_form_submit'),
     );
 
-    $form['legend1'] = array(
-      '#prefix' => '<table class="booking_legend"><tr><td colspan="3" class="room_type_legend">',
-      '#markup' => 'Arrival Date: ' . $start_date->format($date_format) . ' &nbsp;Departure Date: ' . $end_date->format($date_format) . ' &nbsp;Nights: ' . $nights->d,
-      '#suffix' => '</td></tr>',
-    );
-
-    $form['legend2'] = array(
-      '#prefix' => '<tr><td></td><td style="width:15%;" class="room_nrooms_legend">',
-      '#markup' => 'N° Rooms',
-      '#suffix' => '</td>',
-    );
-
-    $form['legend3'] = array(
-      '#prefix' => '<td style="width:15%;" class="room_booking_legend">',
-      '#markup' => 'Booking',
-      '#suffix' => '</td></tr></table>',
-    );
-
+    
+    $form = rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, $form);
+    
     drupal_add_js(drupal_get_path('module', 'rooms_booking_manager') . '/js/rooms_booking_manager_button_scroll.js');
 
     drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/button_float.css');
@@ -668,21 +649,8 @@ function rooms_booking_manager_enquiry_form($form, $start_date, $end_date, $grou
 
   $date_format = variable_get('rooms_date_format', 'd-m-Y');
   $nights = $end_date->diff($start_date);
-
-  $form_tmp['legend1'] = array(
-    '#type' => 'item',
-    '#markup' => t('Arrival Date') . ': ' . $start_date->format($date_format),
-  );
-  $form_tmp['legend2'] = array(
-    '#type' => 'item',
-    '#markup' => t('Departure Date') . ': ' . $end_date->format($date_format),
-  );
-  $form_tmp['legend3'] = array(
-    '#type' => 'item',
-    '#markup' => t('Nights') . ': ' . $nights->d,
-  );
-
-  $form = array_merge($form_tmp, $form);
+  
+  $form = rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, $form);
 
   $currency_setting = commerce_currency_load(commerce_default_currency());
   $currency_symbol = $currency_setting['symbol'];
@@ -1533,6 +1501,8 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
       '#default_value' => variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)),
     );
 
+    //Commenting out configurations that will we are still experimenting with
+    
     /*$form['rooms_payment_options'] = array(
       '#type' => 'item',
       '#title' => t('Payment options'),
@@ -1851,4 +1821,31 @@ function rooms_booking_manager_views_api() {
     'api' => 3,
     'path' => drupal_get_path('module', 'rooms_booking_manager') . '/views',
   );
+}
+
+
+
+/**
+ * Helper function to provide a portion of a form that we use in more places
+ */
+function rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, $form) {
+
+  $nights = $end_date->diff($start_date);
+
+  $form_tmp['info_arrival_date'] = array(
+    '#type' => 'item',
+    '#markup' => t('Arrival Date') . ': ' . $start_date->format($date_format),
+  );
+  $form_tmp['info_departure_Date'] = array(
+    '#type' => 'item',
+    '#markup' => t('Departure Date') . ': ' . $end_date->format($date_format),
+  );
+  $form_tmp['info_nights'] = array(
+    '#type' => 'item',
+    '#markup' => t('Nights') . ': ' . $nights->days,
+  );
+
+  $form = array_merge($form_tmp, $form);
+  
+  return $form;
 }
