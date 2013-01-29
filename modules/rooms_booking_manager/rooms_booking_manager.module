@@ -553,23 +553,28 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         // Check if a description source is loaded and if so render
         if ($type_obj->data['rooms_description_source'] != '') {
           $source_ref = explode(':', $type_obj->data['rooms_description_source']);
-          $node_id = $source_ref[1];
+          if (isset($source_ref[1])) {
+            $node_id = $source_ref[1];
 
-          if (module_exists('translation')) {
-            $node_translations = translation_node_get_translations($node_id);
-            if (!empty($node_translations)) {
-              $node_id = $node_translations[$GLOBALS['language']->language]->nid;
+            if (module_exists('translation')) {
+              $node_translations = translation_node_get_translations($node_id);
+              if (!empty($node_translations)) {
+                $node_id = $node_translations[$GLOBALS['language']->language]->nid;
+              }
+            }
+
+            $node = node_load($node_id);
+
+            if ($node !== FALSE) {
+              $node_html = render(node_view($node,'rooms_list'));
+
+              $form[$type . ':' . $price][$type . ':' . $price . ':description'] = array(
+                '#prefix' => '<tr><td class="room_description">',
+                '#markup' => $node_html,
+                '#suffix' => '</td><td></td><td></td></tr>',
+              );
             }
           }
-
-          $node = node_load($node_id);
-          $node_html = render(node_view($node,'rooms_list'));
-
-          $form[$type . ':' . $price][$type . ':' . $price . ':description'] = array(
-            '#prefix' => '<tr><td class="room_description">',
-            '#markup' => $node_html,
-            '#suffix' => '</td><td></td><td></td></tr>',
-          );
         }
 
         // Element to display price
