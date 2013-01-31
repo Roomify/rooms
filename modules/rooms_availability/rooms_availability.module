@@ -547,7 +547,7 @@ function rooms_availability_pricing_update_form_submit(&$form, &$form_state) {
 
         // Get all the pricing events for the date range
         $rc = new UnitPricingCalendar($unit_id);
-        $events = $rc->calculatePricingEvent($unit_id, $amount, $start_date, $end_date, $operation, $days);
+        $events = $rc->calculatePricingEvents($unit_id, $amount, $start_date, $end_date, $operation, $days);
 
         $rc->updateCalendar($events);
 
@@ -573,7 +573,7 @@ function rooms_availability_pricing_update_form_submit(&$form, &$form_state) {
 
           // Get all the pricing events for the date range
           $rc = new UnitPricingCalendar($unit_id);
-          $events = $rc->calculatePricingEvent($unit_id, $amount, $start_date, $end_date, $operation, $days);
+          $events = $rc->calculatePricingEvents($unit_id, $amount, $start_date, $end_date, $operation, $days);
 
           $rc->updateCalendar($events);
 

@@ -513,7 +513,7 @@ class UnitPricingCalendar {
    *
    * @return array of PricingEvent
    */
-  public function calculatePricingEvent($unit_id, $amount, $start_date, $end_date, $operation, $days) {
+  public function calculatePricingEvents($unit_id, $amount, $start_date, $end_date, $operation, $days) {
     $s_timestamp = $start_date->getTimestamp();
     $e_timestamp = $end_date->getTimestamp();
  
