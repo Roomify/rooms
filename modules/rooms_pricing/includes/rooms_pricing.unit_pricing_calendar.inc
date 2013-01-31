@@ -507,6 +507,33 @@ class UnitPricingCalendar {
     } 
     return FALSE;
   }
+
+  /**
+   * Get a sets of PricingEvent between start_date and end_date filter by days of the week
+   *
+   * @return array of PricingEvent
+   */
+  public function calculatePricingEvent($unit_id, $amount, $start_date, $end_date, $operation, $days) {
+    $s_timestamp = $start_date->getTimestamp();
+    $e_timestamp = $end_date->getTimestamp();
+ 
+    $events = array();
+
+    do {
+
+      $s_date = getdate($s_timestamp);
+      $wday_start = $s_date['wday'];
+
+      if (in_array($wday_start + 1, $days)) {
+        $events[] = new PricingEvent($unit_id, $amount, new DateTime(date('Y-m-d', $s_timestamp)), new DateTime(date('Y-m-d', $s_timestamp)), $operation, $days);
+      }
+
+      $s_timestamp = strtotime('+1 days', $s_timestamp);
+
+    } while ($s_timestamp < $e_timestamp);
+
+    return $events;
+  }
   
   
 }

@@ -103,3 +103,8 @@
 #rooms-availability-filter-month-form .form-actions {
   padding-top: 6px;
 }
+
+#edit-day-options .form-type-checkbox {
+  float: left;
+  margin-right: 20px;
+}
