@@ -546,6 +546,9 @@ function rooms_availability_pricing_update_form_validate(&$form, &$form_state) {
       }
     }
   }
+  else {
+    $select_rooms = TRUE;
+  }
 
   if (!$select_rooms) form_set_error('select-all', t('Select at least one room'));
 }
@@ -809,6 +812,20 @@ function rooms_availability_update_status_form_validate(&$form, &$form_state) {
       || $date1->format('Y') != $curr_year || $date2->format('Y') != $curr_year) {
     form_set_error('date_range', t('End date and start date are out of current month'));
   }
+
+    $select_rooms = FALSE;
+  if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'false') {
+    foreach ($form_state['values'] as $key => $value) {
+      if (strpos($key, 'rooms-') === 0 && $value == '1') {
+        $select_rooms = TRUE;
+      }
+    }
+  }
+  else {
+    $select_rooms = TRUE;
+  }
+
+  if (!$select_rooms) form_set_error('select-all', t('Select at least one room'));
 }
 
 
