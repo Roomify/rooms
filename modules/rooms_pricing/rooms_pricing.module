@@ -189,7 +189,7 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
   
   $form['rooms_update_pricing']['op']['operation'] = array(
     '#type' => 'select',
-    '#title' => 'Operation',
+    '#title' => t('Operation'),
     '#options' => array(
       ROOMS_ADD => 'Add to price',
       ROOMS_SUB => 'Subtract from price',

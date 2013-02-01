@@ -271,18 +271,18 @@ function rooms_availability_bulk_pricing_management($year='', $month='', $type='
 
 function rooms_availability_filter_month_form($form, &$form_state, $month, $year) {
   $month_options = array(
-    1 => 'January',
-    2 => 'February',
-    3 => 'March',
-    4 => 'April',
-    5 => 'May',
-    6 => 'June',
-    7 => 'July',
-    8 => 'August',
-    9 => 'September',
-    10 => 'October',
-    11 => 'November',
-    12 => 'December',
+    1 => t('January',
+    2 => t('February'),
+    3 => t('March'),
+    4 => t('April'),
+    5 => t('May'),
+    6 => t('June'),
+    7 => t('July'),
+    8 => t('August'),
+    9 => t('September'),
+    10 => t('October'),
+    11 => t('November'),
+    12 => t('December'),
   );
 
   $form['rooms_availability_filter_month']['month'] = array(
@@ -304,7 +304,7 @@ function rooms_availability_filter_month_form($form, &$form_state, $month, $year
   $query = db_select('rooms_unit_type', 'n')->fields('n', array('type', 'label'));
   $unit_type = $query->execute()->fetchAll();
 
-  $type_options['all'] = 'All types';
+  $type_options['all'] = t('All types');
   foreach ($unit_type as $unit) {
     $type_options[$unit->type] = $unit->label;
   }
@@ -364,7 +364,7 @@ function rooms_availability_filter_month_form_submit(&$form, &$form_state) {
 function rooms_availability_pricing_update_form($form, &$form_state, $month, $year, $type, $rooms_units) {
     $form['rooms_pricing_update'] = array(
     '#type' => 'fieldset',
-    '#title' => 'Update Pricing',
+    '#title' => t('Update Pricing'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
@@ -388,15 +388,15 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
 
   $form['rooms_pricing_update']['day_options'] = array(
     '#type' => 'checkboxes',
-    '#title' => 'Days of the Week applicable',
+    '#title' => t('Days of the Week applicable'),
     '#options' => array(
-      '1' => 'Sun',
-      '2' => 'Mon',
-      '3' => 'Tue',
-      '4' => 'Wed',
-      '5' => 'Thu',
-      '6' => 'Fri',
-      '7' => 'Sat',
+      '1' => t('Sun'),
+      '2' => t('Mon'),
+      '3' => t('Tue'),
+      '4' => t('Wed'),
+      '5' => t('Thu'),
+      '6' => t('Fri'),
+      '7' => t('Sat'),
     ),
   );
 
@@ -410,13 +410,13 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
 
   $form['rooms_pricing_update']['op']['operation'] = array(
     '#type' => 'select',
-    '#title' => 'Operation',
+    '#title' => t('Operation'),
     '#options' => array(
-      ROOMS_ADD => 'Add to price',
-      ROOMS_SUB => 'Subtract from price',
-      ROOMS_REPLACE => 'Replace price',
-      ROOMS_INCREASE => 'Increase price by % amount',
-      ROOMS_DECREASE => 'Decrease price by % amount',
+      ROOMS_ADD => t('Add to price'),
+      ROOMS_SUB => t('Subtract from price'),
+      ROOMS_REPLACE => t('Replace price'),
+      ROOMS_INCREASE => t('Increase price by % amount'),
+      ROOMS_DECREASE => t('Decrease price by % amount'),
     ),
     '#default_value' =>  'replace',
   );
@@ -426,7 +426,7 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
     '#title' => t('Amount'),
     '#default_value' => '',
     '#size' => '5',
-    '#description' => 'Amount to apply for rule',
+    '#description' => t('Amount to apply for rule'),
     '#maxlength' => 10,
     '#required' => TRUE,
   );
@@ -454,7 +454,7 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
     $form['rooms_data']['select-all'] = array(
       '#type' => 'select',
       '#prefix' => '<tr><td>',
-      '#options' => array ('Select...', 'All (this page)', 'All (all pages)', 'None'),
+      '#options' => array (t('Select...'), t('All (this page)'), t('All (all pages)'), t('None')),
       '#suffix' => '</td><td></td></tr>',
     );
 
@@ -1184,11 +1184,11 @@ function rooms_availability_event_manager_form($form, $form_state, $unit_id, $ev
   );
   
   $state_options = array(
-    '-1' => 'Choose a new status',
-    ROOMS_NOT_AVAILABLE => 'Unavailable',
-    ROOMS_AVAILABLE => 'Available',
-    ROOMS_ON_REQUEST => 'On Request',
-    ROOMS_ANON_BOOKED => 'Anonymous Booking',
+    '-1' => t('Choose a new status'),
+    ROOMS_NOT_AVAILABLE => t('Unavailable'),
+    ROOMS_AVAILABLE => t('Available'),
+    ROOMS_ON_REQUEST => t('On Request'),
+    ROOMS_ANON_BOOKED => t('Anonymous Booking'),
   );
   
   unset($state_options[$event_id]);
@@ -1474,7 +1474,7 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
  */
 function rooms_availability_validate_hex_color($element, &$form_state) {
   if(!preg_match('/^#[a-f0-9]{6}$/i', $element['#value'])) {
-    form_error($element, 'This is not a valid hexadecimal color!');
+    form_error($element, t('This is not a valid hexadecimal color!'));
   }
 }
 
