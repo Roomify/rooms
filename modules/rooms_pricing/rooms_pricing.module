@@ -59,7 +59,7 @@ function rooms_pricing_menu() {
   );
 
   $items['admin/rooms/config/currency'] = array(
-    'title' => 'Manage Currency Settings',
+    'title' => t('Manage Currency Settings'),
     'access arguments' => array('manage booking unit pricing'),
     'page callback' => 'system_admin_menu_block_page',
     'type' => MENU_NORMAL_ITEM,

@@ -66,13 +66,13 @@ function rooms_booking_manager_menu() {
   );
 
   $items['bookings'] = array(
-    'title' => 'Booking cart',
+    'title' => t('Booking cart'),
     'page callback' => 'rooms_booking_manager_cart_view',
     'access arguments' => array('access content'),
   );
 
   $items['enquiry-confirmation'] = array(
-    'title' => 'Enquiry page',
+    'title' => t('Enquiry page'),
     'page callback' => 'rooms_booking_manager_enquiry_confirmation',
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,

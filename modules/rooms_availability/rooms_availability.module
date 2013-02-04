@@ -79,7 +79,7 @@ function rooms_availability_menu() {
   $items = array();
   
   $items['admin/rooms/units/unit/%availability_unit/availability'] = array(
-    'title' => 'Manage Availability',
+    'title' => t('Manage Availability'),
     'page callback' => 'rooms_availability_page',
     'page arguments' => array(4, 6, 7),
     'access callback' => 'rooms_availability_admin_access',
@@ -90,7 +90,7 @@ function rooms_availability_menu() {
   );
   
   $items['rooms/units/unit/%availability_unit/availability/json/%/%'] = array(
-    'title' =>  'Availability Event',
+    'title' => t('Availability Event'),
     'page callback' => 'rooms_availability_event',
     'page arguments' => array(3, 6, 7, 8, 9, 10, 11, 12),
     'access callback' => 'rooms_availability_access',
@@ -100,7 +100,7 @@ function rooms_availability_menu() {
   );
 
   $items['admin/rooms/units/unit/%availability_unit/event'] = array(
-    'title' => 'Event Management',
+    'title' => t('Event Management'),
     'page callback' => 'rooms_availability_event_manager_page',
     'page arguments' => array(4),
     'access callback' => 'rooms_availability_access',
@@ -110,7 +110,7 @@ function rooms_availability_menu() {
   );
 
   $items['admin/rooms/units/bulk_unit_management'] = array(
-    'title' => 'Bulk availability management',
+    'title' => t('Bulk availability management'),
     'page callback' => 'rooms_availability_bulk_unit_management',
     'page arguments' => array(4, 5, 6),
     'access callback' => 'rooms_availability_access',
@@ -120,7 +120,7 @@ function rooms_availability_menu() {
   );
 
   $items['admin/rooms/units/bulk_pricing_management'] = array(
-    'title' => 'Bulk pricing management',
+    'title' => t('Bulk pricing management'),
     'page callback' => 'rooms_availability_bulk_pricing_management',
     'page arguments' => array(4, 5, 6),
     'access callback' => 'rooms_bulk_pricing_access',
@@ -271,7 +271,7 @@ function rooms_availability_bulk_pricing_management($year='', $month='', $type='
 
 function rooms_availability_filter_month_form($form, &$form_state, $month, $year) {
   $month_options = array(
-    1 => t('January',
+    1 => t('January'),
     2 => t('February'),
     3 => t('March'),
     4 => t('April'),
@@ -659,7 +659,7 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
     $form['rooms_data']['select-all'] = array(
       '#type' => 'select',
       '#prefix' => '<tr><td>',
-      '#options' => array ('Select...', 'All (this page)', 'All (all pages)', 'None'),
+      '#options' => array (t('Select...'), t('All (this page)'), t('All (all pages)'), t('None')),
       '#suffix' => '</td><td></td></tr>',
     );
 
@@ -1241,10 +1241,10 @@ function rooms_availability_ajax_event_status_change($form, $form_state) {
     $responses = $uc->updateCalendar(array($event));
 
     if ($event_id >= -1) {
-      $form['form_wrapper_bottom']['#markup'] = 'Original Event id is: ' . $event_id . ' New Event id is: ' . $new_event_id;
+      $form['form_wrapper_bottom']['#markup'] = t('Original Event id is: ') . $event_id . t(' New Event id is: ') . $new_event_id;
     }
     else {
-      $form['form_wrapper_bottom']['#markup'] = 'New Event id is: ' . $new_event_id;
+      $form['form_wrapper_bottom']['#markup'] = t('New Event id is: ') . $new_event_id;
     }
   }
   
