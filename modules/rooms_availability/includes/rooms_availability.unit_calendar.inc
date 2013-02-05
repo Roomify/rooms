@@ -136,15 +136,15 @@ class UnitCalendar {
    * @returns
    * An array of states within that range
    */
-  public function getStates(DateTime $start_date, DateTime $end_date) {    
-    
+  public function getStates(DateTime $start_date, DateTime $end_date, $confirmed = FALSE) {    
+
     $states = array();
     // Get the raw day results
     $results = $this->getRawDayData($start_date, $end_date);
     foreach ($results[$this->unit_id] as $year => $months) {
       foreach ($months as $mid => $month) {
         foreach ($month['states'] as $state) {
-          if ($state['state'] < 0) {
+          if ($state['state'] < 0 && !$confirmed) {
             $states[] = -1;
           }
           else {

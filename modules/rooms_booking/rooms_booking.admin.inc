@@ -548,10 +548,12 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
           new DateTime($form_state['values']['rooms_start_date']),
           new DateTime($form_state['values']['rooms_end_date']));
 
-      $states = $uc->getStates(new DateTime($form_state['values']['rooms_start_date']), new DateTime($form_state['values']['rooms_end_date']));
-      $state_diff = array_diff($states, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS, $be->id));
+      // Check if a locked event is blocking the update
+      $states_confirmed = $uc->getStates(new DateTime($form_state['values']['rooms_start_date']), new DateTime($form_state['values']['rooms_end_date']));
 
-      if (count($state_diff) > 0) {
+      $state_diff_confirmed = array_diff($states_confirmed, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS, $be->id));
+
+      if (count($state_diff_confirmed) > 0) {
         $date1 = new DateTime($form['rooms_date_range']['rooms_start_date']['#default_value']);
         $date2 = new DateTime($form['rooms_date_range']['rooms_end_date']['#default_value']);
 
@@ -560,13 +562,23 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
 
         form_set_error('date_range', t('Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period'));
       }
+
+      // Check if this booking overlap with an uncofirmed booking
+      $states_unconfirmed = $uc->getStates(new DateTime($form_state['values']['rooms_start_date']), new DateTime($form_state['values']['rooms_end_date']), TRUE);
+
+      $state_diff_unconfirmed = array_diff($states_unconfirmed, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, $be->id));
+
+      if (count($state_diff_unconfirmed) > 0) {
+        $booking_id = rooms_availability_return_id(array_pop($state_diff_unconfirmed));
+        form_set_error('date_range', t('Change of dates leads to an overlap with an uncofirmed booking, please resolve issue with booking !booking_link first.', array('!booking_link' => l($booking_id, 'admin/rooms/bookings/booking/' . $booking_id . '/edit'))));
+      }
     }
   }
 
 
   //Notify field widgets to validate their data.
   field_attach_form_validate('rooms_booking', $booking, $form, $form_state);
-  
+
 }
 
 
