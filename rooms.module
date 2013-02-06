@@ -116,7 +116,3 @@ function rooms_dateFormatTojQueryUIDatePickerFormat($dateFormat) {
 
   return strtr((string)$dateFormat, $chars); 
 } 
-
-
-
-

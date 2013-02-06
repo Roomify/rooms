@@ -288,6 +288,11 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['fields']['operations']['hide_empty'] = 0;
   $handler->display->display_options['fields']['operations']['empty_zero'] = 0;
   $handler->display->display_options['fields']['operations']['hide_alter_empty'] = 0;
+  /* Sort criterion: Bookings: Bookings ID */
+  $handler->display->display_options['sorts']['booking_id']['id'] = 'booking_id';
+  $handler->display->display_options['sorts']['booking_id']['table'] = 'rooms_bookings';
+  $handler->display->display_options['sorts']['booking_id']['field'] = 'booking_id';
+  $handler->display->display_options['sorts']['booking_id']['order'] = 'DESC';
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');

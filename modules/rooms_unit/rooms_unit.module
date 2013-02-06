@@ -543,7 +543,7 @@ class RoomsUnitController extends EntityAPIController {
     $values['cot_surcharge'] = (isset($unit_type->data['cot_surcharge'])) ? $unit_type->data['cot_surcharge'] : 0;
     $values['children_sleeps'] = (isset($unit_type->data['children_sleeps'])) ? $unit_type->data['children_sleeps'] : 0;
     $values['sleeps'] = $unit_type->data['sleeps'];
-    $values['data']['singlediscount'] = $unit_type->data['singlediscount'];
+    $values['data']['singlediscount'] = (isset($unit_type->data['singlediscount'])) ? $unit_type->data['singlediscount'] : '';
 
     // Add values that are specific to our Room
     $values += array( 
@@ -564,6 +564,7 @@ class RoomsUnitController extends EntityAPIController {
    */
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
     $content = parent::buildContent($entity, $view_mode, $langcode, $content);
+
     $content[t('state')] =  array(
       '#markup' => t('State:') . $entity->bookable . '<br/>',      
     );
@@ -572,18 +573,15 @@ class RoomsUnitController extends EntityAPIController {
       '#markup' => t('Type:') . ' ' . $entity->type . '<br/>',      
     );
 
-
     $content[t('sleeps')] =  array(
       '#markup' => t('Sleeps:') . $entity->sleeps . '<br/>',
     );
 
-    $content[t('Bed Configuration')] = array(
-      '#markup' => t('Double Beds:') . ' ' . $entity->data['bed_arrangement']['doubles'] . '<br/>' . t('Single Beds:') . ' ' . $entity->data['bed_arrangement']['singles'] . '<br/>',
-    );
-    
-//    $content['rooms_unit_extra_data'] =  array(
-//      '#markup' => theme('rooms_unit_extra_data', array('rooms_unit_extra_data' => check_plain($entity->data['extra_data']), 'rooms_unit' => $entity)),
-//    );
+    if (isset($entity->data['bed_arrangement'])) {
+      $content[t('Bed Configuration')] = array(
+        '#markup' => t('Double Beds:') . ' ' . $entity->data['bed_arrangement']['doubles'] . '<br/>' . t('Single Beds:') . ' ' . $entity->data['bed_arrangement']['singles'] . '<br/>',
+      );
+    }
 
     return $content;
   }

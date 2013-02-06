@@ -48,6 +48,7 @@ Drupal.behaviors.rooms_availability = {
       $(value[0]).once().fullCalendar({
         ignoreTimezone:false,
         editable:false,
+        selectable:true,
         month:value[1],
         year:value[2],
         header:{
@@ -74,22 +75,30 @@ Drupal.behaviors.rooms_availability = {
               width: 400,
               height: 400,
               onClosed:function(){
-                $(value[0]).fullCalendar('refetchEvents');  
-                //$('#calendar').fullCalendar('rerender');
+                $(value[0]).fullCalendar('refetchEvents');
               }
             });
           }
+        },
+        select: function(start, end, allDay) {
+          var sd = Math.round(Date.parse(start)/1000);
+          var ed = Math.round(Date.parse(end)/1000);
+          // This fires up Colobox to display info relevant to event from Drupal
+          if ($.colorbox) {  
+            var url = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/-2/' + sd + '/' + ed; 
+            $.colorbox({
+              href: url,
+              opacity:0.7,
+              width: 400,
+              height: 400,
+              onClosed:function(){
+                $(value[0]).fullCalendar('refetchEvents');
+              }
+            });
+          }
+
+          $(value[0]).fullCalendar('unselect');
         }
-//        eventMouseover : function(event, jsEvent, view) {
-//          $(value[0]).css('border', '10px solid red');
-//          //event.color = 'yellow';
-//          $(value[0]).fullCalendar('updateEvent', event);
-//        },
-//        eventMouseout : function(event, jsEvent, view) {
-//          //$(this).css('border', '10px solid red');
-//          event.title = 'red';
-//          $(value[0]).fullCalendar('updateEvent', event);
-//        }
       });
     });
     

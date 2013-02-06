@@ -140,17 +140,40 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
 function rooms_unit_type_form_validate(&$form, &$form_state) {
 
   // Validate price field
-  if (!empty($form_state['values']['base_price']) && !is_numeric($form_state['values']['base_price'])) {
-    form_set_error('Base price error', t('%name: you must enter a numeric value for the price.', array('%name' => 'Base Price')));
+  if (!empty($form_state['values']['data']['base_price']) && !is_numeric($form_state['values']['data']['base_price'])) {
+    form_set_error('data][base_price', t('%name: you must enter a numeric value for the price.', array('%name' => 'Base Price')));
   }
 
   // Validate discount field
   if (!empty($form_state['values']['data']['singlediscount']) && !is_numeric($form_state['values']['data']['singlediscount'])) {
-    form_set_error('Discount value error', t('%name: you must enter a numeric value between 1 and 100 for the discount.', array('%name' => 'Single Discount')));
+    form_set_error('data][singlediscount', t('%name: you must enter a numeric value between 1 and 100 for the discount.', array('%name' => 'Single Discount')));
+  }
+  if ((($form_state['values']['data']['singlediscount'] > 100) || ($form_state['values']['data']['singlediscount'] < 1)) && ($form_state['values']['data']['singlediscount'] != '')) {
+    form_set_error('data][singlediscount', t('%name: you must enter a numeric value between 1 and 100 for the discount.', array('%name' => 'Single Discount')));
   }
 
-  if ((($form_state['values']['data']['singlediscount'] > 100) || ($form_state['values']['data']['singlediscount'] < 1)) && ($form_state['values']['data']['singlediscount'] != '')) {
-    form_set_error('Discount value error', t('%name: you must enter a numeric value between 1 and 100 for the discount.', array('%name' => 'Single Discount')));
+  // Validate room unit description
+  if (!empty($form_state['values']['data']['rooms_description_source'])) {
+    $source_ref = explode(':', $form_state['values']['data']['rooms_description_source']);
+    if (isset($source_ref[1])) {
+      $node = node_load($source_ref[1]);
+      if ($node === FALSE) {
+        form_set_error('data][rooms_description_source', t('You must enter a valid node.'));
+      }
+    }
+    else {
+      $result = db_select('node', 'n')
+                  ->fields('n', array('title', 'nid'))
+                  ->condition('title', $source_ref[0])
+                  ->condition('n.type', 'unit_description')
+                  ->range(0, 1)
+                  ->execute()
+                  ->fetchField();
+
+      if (empty($result)) {
+        form_set_error('data][rooms_description_source', t('You must enter a valid node.'));
+      }
+    }
   }
 
 }

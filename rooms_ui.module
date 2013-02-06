@@ -15,7 +15,7 @@ function rooms_ui_menu() {
   // Top level "Rooms" container.
   $items['admin/rooms'] = array(
     'title' => 'Rooms',
-    'description' => 'Administer Rooms.',
+    'description' => t('Administer Rooms.'),
     'page callback' => 'system_admin_menu_block_page',
     'access arguments' => array('access administration pages'),
     'file path' => drupal_get_path('module', 'system'),
@@ -23,8 +23,8 @@ function rooms_ui_menu() {
     'weight' => -7,
   );
   $items['admin/rooms/config'] = array(
-    'title' => 'Configuration',
-    'description' => 'Configure settings and business rules for Rooms management.',
+    'title' => t('Configuration'),
+    'description' => t('Configure settings and business rules for Rooms management.'),
     'page callback' => 'system_admin_menu_block_page',
     'access arguments' => array('configure room settings'),
     'type' => MENU_NORMAL_ITEM,
@@ -33,16 +33,16 @@ function rooms_ui_menu() {
     'file' => 'system.admin.inc',
   );
   $items['admin/rooms/config/bookings'] = array(
-    'title' => 'Booking Settings',
-    'description' => 'Configure settings and business rules for Bookings.',
+    'title' => t('Booking Settings'),
+    'description' => t('Configure settings and business rules for Bookings.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('rooms_booking_settings'),
     'access arguments' => array('configure room settings'),
     'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/rooms/config/experimental'] = array(
-    'title' => 'Experimental features',
-    'description' => 'Configure experimental features.',
+    'title' => t('Experimental features'),
+    'description' => t('Configure experimental features.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('rooms_experimental_features_settings'),
     'access arguments' => array('configure room settings'),

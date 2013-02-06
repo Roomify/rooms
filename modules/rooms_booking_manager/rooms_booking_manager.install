@@ -5,6 +5,99 @@
  * Install for Rooms Booking Manager module
  */
 
+
+/**
+ * Implements hook_install().
+ */
 function rooms_booking_manager_install() {
 }
 
+
+/**
+ * Implements hook_uninstall().
+ */
+function rooms_booking_manager_uninstall() {
+  commerce_product_delete(variable_get('rooms_booking_manager_booking_product_id', 0));
+
+  variable_del('rooms_date_format');
+  variable_del('rooms_booking_manager_booking_product_id');
+}
+
+
+/**
+ * Add "Booking Number People" field to the rooms_booking_manager_line_item
+ */
+function rooms_booking_manager_update_7001() {
+	$field = array(
+    'field_name' => 'rooms_booking_number_people',
+    'label' => t('Booking Number People'),
+    'cardinality' => 2,
+    'type' => 'number_integer',
+    'module' => 'number',
+    'active' => 1,
+    'locked' => 1,
+    'settings' => array(
+	    'size' => 8,
+	    'max_length' => 10,
+	    'text_processing' => 0,
+	  ),
+  );
+
+  field_create_field($field);
+
+  $instance = array(
+    'field_name' => 'rooms_booking_number_people',
+    'label' => t('Booking Number People'),
+    'entity_type' => 'commerce_line_item',
+    'bundle' => 'rooms_booking',
+    'required' => TRUE,
+    'settings' => array(
+      'size' => 8,
+      'max_length' => 10,
+      'text_processing' => 0,
+    ),
+    'widget' => array(
+      'type' => 'text_textfield',
+    ),
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => ' ',
+        ),
+        'type' => 'number_integer',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+	      'label' => 'above',
+	      'settings' => array(),
+	      'type' => 'hidden',
+	      'weight' => 0,
+	    ),
+    ),
+  );
+
+  field_create_instance($instance);
+}
+
+
+/**
+ * Set price for ROOMS-BASIC-BOOKING to 100 (=$1)
+ */
+function rooms_booking_manager_update_7002() {
+  commerce_product_types_reset();
+  commerce_product_configure_product_type('rooms_product');
+
+  $rooms_product = commerce_product_load(variable_get('rooms_booking_manager_booking_product_id', 0));
+
+  if ($rooms_product != NULL) {
+    $rooms_product->commerce_price[LANGUAGE_NONE][0]['amount'] = 100;
+    $rooms_product->commerce_price[LANGUAGE_NONE][0]['currency_code'] = commerce_default_currency();
+
+    commerce_product_save($rooms_product);
+  }
+}

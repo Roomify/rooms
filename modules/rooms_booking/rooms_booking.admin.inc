@@ -531,13 +531,54 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
   }
   
   if (!isset($form_state['values']['unit_id']) && (!isset($booking->unit_id))) {
-      form_set_error('availability_fieldset', t('A unit has not been assigned for this booking'));
+    form_set_error('availability_fieldset', t('A unit has not been assigned for this booking'));
+  }
+
+  $booking = $form_state['rooms_booking'];
+  if (isset($booking->unit_id)) {
+    // We are going to be updating the event - so the first step is to remove the
+    // old event.
+    if (($booking->unit_id != 0) && ($form_state['values']['rooms_start_date'] != '') && ($form_state['values']['rooms_end_date'] != '')) {
+      // Create a calendar
+      $uc = new UnitCalendar($booking->unit_id);
+
+      // Create an event representing the event to remove
+      $be = new BookingEvent($booking->unit_id,
+          rooms_availability_assign_id($booking->booking_id, $booking->booking_status),
+          new DateTime($form_state['values']['rooms_start_date']),
+          new DateTime($form_state['values']['rooms_end_date']));
+
+      // Check if a locked event is blocking the update
+      $states_confirmed = $uc->getStates(new DateTime($form_state['values']['rooms_start_date']), new DateTime($form_state['values']['rooms_end_date']));
+
+      $state_diff_confirmed = array_diff($states_confirmed, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS, $be->id));
+
+      if (count($state_diff_confirmed) > 0) {
+        $date1 = new DateTime($form['rooms_date_range']['rooms_start_date']['#default_value']);
+        $date2 = new DateTime($form['rooms_date_range']['rooms_end_date']['#default_value']);
+
+        $form['rooms_date_range']['rooms_start_date']['date']['#value'] = $date1->format($form['rooms_date_range']['rooms_start_date']['#date_format']);
+        $form['rooms_date_range']['rooms_end_date']['date']['#value'] = $date2->format($form['rooms_date_range']['rooms_end_date']['#date_format']);
+
+        form_set_error('date_range', t('Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period'));
+      }
+
+      // Check if this booking overlap with an uncofirmed booking
+      $states_unconfirmed = $uc->getStates(new DateTime($form_state['values']['rooms_start_date']), new DateTime($form_state['values']['rooms_end_date']), TRUE);
+
+      $state_diff_unconfirmed = array_diff($states_unconfirmed, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, $be->id));
+
+      if (count($state_diff_unconfirmed) > 0) {
+        $booking_id = rooms_availability_return_id(array_pop($state_diff_unconfirmed));
+        form_set_error('date_range', t('Change of dates leads to an overlap with an uncofirmed booking, please resolve issue with booking !booking_link first.', array('!booking_link' => l($booking_id, 'admin/rooms/bookings/booking/' . $booking_id . '/edit'))));
+      }
+    }
   }
 
 
   //Notify field widgets to validate their data.
   field_attach_form_validate('rooms_booking', $booking, $form, $form_state);
-  
+
 }
 
 
@@ -615,20 +656,22 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
   }
   else {
     $booking =  $form_state['rooms_booking'];
-    
+
     // We are going to be updating the event - so the first step is to remove the
     // old event.
     if (($booking->unit_id != 0) && ($booking->start_date != '') && ($booking->end_date != '')) {
       // Create a calendar
       $uc = new UnitCalendar($booking->unit_id);
+
       // Create an event representing the event to remove
       $be = new BookingEvent($booking->unit_id,
                              rooms_availability_assign_id($booking->booking_id, $booking->booking_status),
                              new DateTime($booking->start_date),
                              new DateTime($booking->end_date));
+
       $uc->removeEvents(array($be));
     }
-    
+
     $booking = entity_ui_controller('rooms_booking')->entityFormSubmitBuildEntity($form, $form_state);
     $booking->changed = time();
     

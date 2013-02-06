@@ -1,12 +1,12 @@
-.month1{
+.month1 {
   margin:20px 10px;
 }
 
-.month2{
+.month2 {
   margin:20px 10px;  
 }
 
-.month3{
+.month3 {
   margin:20px 10px;
 }
 
@@ -20,24 +20,21 @@
   margin:10px 20px 10px 10px;
 }
 
-#update-availability-calendar-form {
-  /*height:150px;*/
-}
-
-.availability-updates{
+.availability-updates {
   border-top:1px solid silver;
   margin-top:10px;
 }
 
-#update-availability-calendar-form .form-item-unit-state{
+#update-availability-calendar-form .form-item-unit-state {
   float:left;
 }
 
-#update-availability-calendar-form .form-item{
+#update-availability-calendar-form .form-item {
   padding:0px;
 }
 
-#update-availability-calendar-form .start-date , #update-availability-calendar-form .end-date{
+#update-availability-calendar-form .start-date,
+#update-availability-calendar-form .end-date {
   float:left;
   margin-right:20px;
 }
@@ -107,3 +104,7 @@
   padding-top: 6px;
 }
 
+#edit-day-options .form-type-checkbox {
+  float: left;
+  margin-right: 20px;
+}
