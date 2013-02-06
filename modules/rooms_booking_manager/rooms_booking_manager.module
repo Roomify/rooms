@@ -831,9 +831,6 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
     }
   }
 
-  $currency_setting = commerce_currency_load(commerce_default_currency());
-  $currency_symbol = $currency_setting['symbol'];
-
   // This is very inefficient right now but we need to create date objects
   // reconvert them back to strings to only recreate them in the Availability Agent
   $sd = start_date_load($start_date);

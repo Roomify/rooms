@@ -11,6 +11,11 @@
   margin-right:20px;
 }
 
+#rooms-booking-availability-search-form #rooms-wrapper {
+	float: left;
+}
+ 
+#rooms-booking-availability-search-form #edit-actions,
 #rooms-booking-availability-search-form .form-item-rooms {
   clear:both;
 }
