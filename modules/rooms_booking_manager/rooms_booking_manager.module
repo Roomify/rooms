@@ -156,7 +156,7 @@ function rooms_booking_manager_enquiry_page_form_submit(&$form, &$form_state) {
  * @param $b_units
  * In how many rooms are we to accommodate them
  */
-function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $group_size_adults = 2, $group_size_children = 0, $b_units = 1) {
+function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $b_units = 1) {
   // The array of content to render
   $content = array();
 
@@ -221,7 +221,7 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $gro
 
   $content['legend'] = rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, array());
 
-  $change_search_form = drupal_get_form('rooms_booking_manager_change_search_form', $start_date, $end_date, $group_size_adults, $group_size_children, $b_units);
+  $change_search_form = drupal_get_form('rooms_booking_manager_change_search_form', $start_date, $end_date, $booking_parameters, $b_units);
   $content['change_search'] = $change_search_form;
 
   $output = theme('rooms_booking_results', $content);
@@ -229,7 +229,7 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $gro
 }
 
 
-function rooms_booking_manager_change_search_form($form, &$form_state, $start_date, $end_date, $group_size_adults, $group_size_children, $b_units) {
+function rooms_booking_manager_change_search_form($form, &$form_state, $start_date, $end_date, $booking_parameters, $b_units) {
 
   $form['start_date'] = array(
     '#type' => 'hidden',
@@ -241,7 +241,7 @@ function rooms_booking_manager_change_search_form($form, &$form_state, $start_da
     '#value' => $end_date->format('Y-m-d'),
   );
 
-  $form['group_size'] = array(
+  /*$form['group_size'] = array(
     '#type' => 'hidden',
     '#value' => $group_size_adults,
   );
@@ -249,7 +249,7 @@ function rooms_booking_manager_change_search_form($form, &$form_state, $start_da
   $form['group_size_children'] = array(
     '#type' => 'hidden',
     '#value' => $group_size_children,
-  );
+  );*/
 
   $form['b_units'] = array(
     '#type' => 'hidden',
@@ -533,7 +533,6 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
       '#submit' => $submit + array('rooms_booking_manager_change_search_form_submit'),
     );
 
-    
     $form = rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, $form);
     
     drupal_add_js(drupal_get_path('module', 'rooms_booking_manager') . '/js/rooms_booking_manager_button_scroll.js');
@@ -817,8 +816,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
 
   $start_date = $form_state['values']['start_date'];
   $end_date = $form_state['values']['end_date'];
-  $group_size = $form_state['values']['group_size'];
-  $group_size_children = $form_state['values']['group_size_children'];
+  $booking_parameters = unserialize($form_state['values']['booking_parameters']);
   $b_units = $form_state['values']['b_units'];
 
   // Create an "order" based on the form submitted
@@ -845,7 +843,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
   foreach ($order as $type => $price_serving) {
     foreach ($price_serving as $price_level => $unit_order) {
       if ($unit_order['quantity'] > 0) {
-        $agent = new AvailabilityAgent($sd->format($date_format), $ed->format($date_format), $group_size, $group_size_children, $b_units, array(), array($type));
+        $agent = new AvailabilityAgent($sd->format($date_format), $ed->format($date_format), $booking_parameters, $b_units, array(), array($type));
         $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
 
         $units_per_type = $agent->checkAvailability();

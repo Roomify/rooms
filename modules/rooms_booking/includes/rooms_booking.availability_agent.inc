@@ -300,7 +300,7 @@ class AvailabilityAgent {
       // First set up price modifiers
       $price_modifiers = array();
 
-      if ($this->group_size == 1) {
+      /*if ($this->group_size == 1) {
         $price_modifiers['single'] = array('#type' => ROOMS_PRICE_SINGLE_OCCUPANCY);
       }
 
@@ -310,7 +310,7 @@ class AvailabilityAgent {
           '#op_type' => ROOMS_ADD,
           '#amount' => $unit->cot_surcharge * ($this->start_date->diff($this->end_date)->days + 1),
         );
-      }
+      }*/
 
       // Give other modules a chance to change the price modifiers
       drupal_alter('rooms_price_modifier', $price_modifiers);

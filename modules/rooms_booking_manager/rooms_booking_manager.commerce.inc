@@ -83,10 +83,10 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
       $group_size = array(
         LANGUAGE_NONE => array(
           array(
-            'value' => $agent->group_size,
+            'value' => 2,
           ),
           array(
-            'value' => $agent->group_size_children,
+            'value' => 0,
           ),
         ),
       );
