@@ -12,6 +12,17 @@ function rooms_booking_manager_search_availability() {
 
 function rooms_booking_availability_search_form($form, $form_state) {
 
+  $rooms_number = 1;
+ 
+  if (isset($form_state['values']['rooms'])) {
+    $rooms_number = $form_state['values']['rooms'];
+  }
+
+  if (isset($_GET['b_units'])) {
+    $b_units = check_plain($_GET['b_units']);
+    if ($b_units != '') $rooms_number = $b_units;
+  }
+
   $form['rooms_date_range'] = rooms_date_range_fields();
 
   $form['conditions']['rooms'] = array(
@@ -25,7 +36,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
       '5' => '5',
       '6' => '6',
     ),
-    '#default_value' =>  '1',
+    '#default_value' =>  $rooms_number,
     '#ajax' => array(
       'callback' => 'rooms_booking_availability_search_form_callback',
       'wrapper' => 'rooms-wrapper',
@@ -37,15 +48,28 @@ function rooms_booking_availability_search_form($form, $form_state) {
     '#suffix' => '</div>',
   );
 
-  $rooms_number = 1;
- 
-  if (isset($form_state['values']['rooms'])) {
-    $rooms_number = $form_state['values']['rooms'];
+  $booking_parameters = array();
+  foreach ($_GET as $key => $value) {
+    $tmp_key = check_plain($key);
+    if (strpos($tmp_key, 'adults') === 0) {
+      $room_number = (int)substr($tmp_key, 6);
+      $number_people = (int)check_plain($value);
+      if (is_integer($room_number) && is_integer($number_people)) {
+        $booking_parameters[$room_number]['adults'] = $number_people;
+      }
+    }
+    if (strpos($tmp_key, 'children') === 0) {
+      $room_number = (int)substr($tmp_key, 8);
+      $number_people = (int)check_plain($value);
+      if (is_integer($room_number) && is_integer($number_people)) {
+        $booking_parameters[$room_number]['children'] = $number_people;
+      }
+    }
   }
- 
+
   $form['rooms_fieldset']['table_header'] = array(
     '#prefix' => '<table><thead>',
-    '#markup' => '<th></th><th>' . t('Adults') . '</th>',
+    '#markup' => '<th></th><th>' . t('Group size') . '</th>',
     '#suffix' => '</thead>',
   );
 
@@ -76,7 +100,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
         '7' => '7',
         '8' => '8',
       ),
-      '#default_value' =>  '2',
+      '#default_value' => isset($booking_parameters[$i]['adults']) ? $booking_parameters[$i]['adults'] : '2',
       '#prefix' => '<td>',
       '#suffix' => '</td>',
     );
@@ -90,7 +114,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
           '2' => '2',
           '3' => '3',
         ),
-        '#default_value' =>  '0',
+        '#default_value' =>  isset($booking_parameters[$i]['children']) ? $booking_parameters[$i]['children'] : '2',
         '#prefix' => '<td>',
         '#suffix' => '</td>',
       );
@@ -127,19 +151,6 @@ function rooms_booking_availability_search_form($form, $form_state) {
   // We append the validate handler to #validate in case a form callback_wrapper
   // is used to add validate handlers earlier.
   $form['#validate'][] = 'rooms_booking_availability_search_form_validate';
-
-  if (isset($_GET['group_size'])) {
-    $group_size = check_plain($_GET['group_size']);
-    if ($group_size != '') $form['conditions']['group_size_adults']['#default_value'] = $group_size;
-  }
-  if (isset($_GET['group_size_children'])) {
-    $group_size_children = check_plain($_GET['group_size_children']);
-    if ($group_size_children != '') $form['conditions']['group_size_children']['#default_value'] = $group_size_children;
-  }
-  if (isset($_GET['b_units'])) {
-    $b_units = check_plain($_GET['b_units']);
-    if ($b_units != '') $form['conditions']['rooms']['#default_value'] = $b_units;
-  }
 
   if (isset($_GET['start_date'])) {
     $start_date = check_plain($_GET['start_date']);

@@ -241,15 +241,10 @@ function rooms_booking_manager_change_search_form($form, &$form_state, $start_da
     '#value' => $end_date->format('Y-m-d'),
   );
 
-  /*$form['group_size'] = array(
+  $form['booking_parameters'] = array(
     '#type' => 'hidden',
-    '#value' => $group_size_adults,
+    '#value' => serialize($booking_parameters),
   );
-
-  $form['group_size_children'] = array(
-    '#type' => 'hidden',
-    '#value' => $group_size_children,
-  );*/
 
   $form['b_units'] = array(
     '#type' => 'hidden',
@@ -918,12 +913,20 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
  * of the search as a convenient way to modify the search.
  */
 function rooms_booking_manager_change_search_form_submit(&$form, &$form_state) {
+  $booking_parameters = unserialize($form_state['values']['booking_parameters']);
+
+  $b_parameters = array();
+  foreach ($booking_parameters as $b_key => $param) {
+    foreach ($param as $key => $value) {
+      $b_parameters[$key . $b_key] = $value;
+    }
+  }
+
   drupal_goto('booking', array('query' => array(
     'start_date' => $form_state['values']['start_date'],
     'end_date' => $form_state['values']['end_date'],
-    'group_size' => $form_state['values']['group_size'],
-    'group_size_children' => $form_state['values']['group_size_children'],
     'b_units' => $form_state['values']['b_units'],
+    $b_parameters,
   )));
 }
 

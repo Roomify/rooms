@@ -1,9 +1,14 @@
+#rooms-booking-availability-search-form--2 .start-date,
+#rooms-booking-availability-search-form--2 .end-date,
 #rooms-booking-availability-search-form .start-date,
 #rooms-booking-availability-search-form .end-date {
   float:left;
   margin-right:20px;
 }
 
+#rooms-booking-availability-search-form--2 .form-item-group-size-children,
+#rooms-booking-availability-search-form--2 .form-item-group-size-adults,
+#rooms-booking-availability-search-form--2 .form-item-rooms,
 #rooms-booking-availability-search-form .form-item-group-size-children,
 #rooms-booking-availability-search-form .form-item-group-size-adults,
 #rooms-booking-availability-search-form .form-item-rooms {
@@ -11,15 +16,20 @@
   margin-right:20px;
 }
 
+#rooms-booking-availability-search-form--2 #rooms-wrapper,
 #rooms-booking-availability-search-form #rooms-wrapper {
 	float: left;
 }
- 
+
+#rooms-booking-availability-search-form--2 #edit-actions,
+#rooms-booking-availability-search-form--2 .form-item-rooms,
 #rooms-booking-availability-search-form #edit-actions,
 #rooms-booking-availability-search-form .form-item-rooms {
   clear:both;
 }
 
+#rooms-booking-availability-search-form--2 .form-item-adults,
+#rooms-booking-availability-search-form--2 .form-item-children,
 #book-units-per-type-form .form-item-adults,
 #book-units-per-type-form .form-item-children {
 	padding-left: 25px;
