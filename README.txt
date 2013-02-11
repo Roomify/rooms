@@ -5,7 +5,9 @@ and vacation rentals.
 
 It builds on the Drupal CMS (drupal.org) and its modules.
 
-To try out Rooms in this early stage do the following:
+INSTALLATION
+------------
+Follow the steps below to install Rooms.
 
 1.  Download the FullCalendar library from http://www.drupalrooms.com/sites/default/files/fullcalendar-1.5.4.zip
 and unpack in sites/all/libraries so that you end up with sites/all/libraries/fullcalendar/fullcalendar
@@ -15,7 +17,7 @@ We use FullCalendar to display room availability and prices by date in an easily
 Please do not use the download from the FullCalendar website, as we had to fork the actual FullCalendar library
 to add an extra view and provide some simple enhancements that made sense for this application. 
 
-*It's not necessary to install the contributed Drupal fullcalendar module.*
+*It is not necessary to install a Drupal module called fullcalendar.*
 
 2. Install the colorbox module - http://drupal.org/project/colorbox
 
@@ -28,21 +30,26 @@ to add an extra view and provide some simple enhancements that made sense for th
 using drush to enable the Rooms modules. Alternatively please make sure you download all dependencies (which can be seen
 in the modules page).
 
-4. Visit admin/rooms/units/unit-types and create a unit type (e.g. standard double room).
+At this point the module is installed and what is required is configuration.
 
-5. Visit admin/rooms/units and create a couple of bookable units.
+CONFIGURATION
+------------_
 
-6. Set availability and pricing - clicking on events will bring up a colorbox and allow you to interact with them.
+1. Visit admin/rooms/units/unit-types and create a unit type (e.g. standard double room).
 
-7. Visit admin/commerce/customer-profiles and create a Customer Profile in Drupal Commerce.
+2. Visit admin/rooms/units and create a couple of bookable units.
 
-8. Create a Booking at admin/rooms/bookings/add
+3. Set availability and pricing - clicking on events will bring up a colorbox and allow you to interact with them.
 
-9. Go to /booking and do an availability search.
+4. Visit admin/commerce/customer-profiles and create a Customer Profile in Drupal Commerce.
 
-10. If you wish to display availability information on an embedded calendar in a node (as vacation rentals properties often do) activate the Rooms Availability Reference Module.
-10a. This will give you a new field type called "Availability Reference".
-10b. Add the field to any entity and you may reference specific Booking Units to have the availability information rendered on the node display (or any other entity).
+5. Create a Booking at admin/rooms/bookings/add
+
+6. Go to /booking and do an availability search.
+
+7. If you wish to display availability information on an embedded calendar in a node (as vacation rentals properties often do) activate the Rooms Availability Reference Module.
+7a. This will give you a new field type called "Availability Reference".
+7b. Add the field to any entity and you may reference specific Booking Units to have the availability information rendered on the node display (or any other entity).
 
 
 The results of the availability search are the rooms available over the period - adding one to a cart
