@@ -302,7 +302,7 @@ function rooms_unit_views_default_views() {
   $handler->display->display_options['menu']['weight'] = '-10';
   $handler->display->display_options['tab_options']['type'] = 'normal';
   $handler->display->display_options['tab_options']['title'] = 'Bookable Units';
-  $handler->display->display_options['tab_options']['description'] = 'Create units that can be booked, such as rooms for a hotel.';
+  $handler->display->display_options['tab_options']['description'] = 'Create and administer units that can be booked, such as rooms for a hotel. Bookable units have availability and pricing information attached to them by the Rooms module and can have extra fields added via the standard Drupal Field API functionality.';
   $handler->display->display_options['tab_options']['weight'] = '-10';
   $handler->display->display_options['tab_options']['name'] = 'management';
 
