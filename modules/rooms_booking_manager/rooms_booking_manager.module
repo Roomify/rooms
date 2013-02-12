@@ -20,6 +20,8 @@ define ('FULL_PAYMENT', 10);
 define ('PERCENT_PAYMENT', 11);
 define ('FIRST_NIGHT_PAYMENT', 12);
 
+define ('COMMERCE_UNCORFIMED', 13);
+
 
 /**
  * Implements hook_permission()
@@ -150,9 +152,6 @@ function rooms_booking_manager_enquiry_page_form_submit(&$form, &$form_state) {
  * @param $end_date
  * The end date for the search
  *
- * @param $group_size_adults
- * How many are to be accommodated
- *
  * @param $b_units
  * In how many rooms are we to accommodate them
  */
@@ -164,8 +163,8 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $b_u
   $booking_parameters = array();
   foreach ($_GET as $key => $value) {
     $tmp_key = check_plain($key);
-    if (strpos($tmp_key, 'adults') === 0) {
-      $room_number = (int)substr($tmp_key, 6);
+    if (strpos($tmp_key, 'group_size') === 0) {
+      $room_number = (int)substr($tmp_key, 10);
       $number_people = (int)check_plain($value);
       if (is_integer($room_number) && is_integer($number_people)) {
         $booking_parameters[$room_number]['adults'] = $number_people;
@@ -763,7 +762,7 @@ function room_booking_manager_send_email($form_state) {
   $booking_request = array();
   foreach ($form_state['values'] as $value_key => $value) {
     $values = explode(':', $value_key);
-    if (count($values) == 3 && $values[2] == 'adults') {
+    if (count($values) == 3 && $values[2] == 'group_size') {
       $label = db_select('rooms_unit_type', 'n')->fields('n', array('label'))->condition('type', $values[0], '=')->execute()->fetchField();
 
       $booking_request[] = '<p>' . $label . ' (Adults: ' . $value . ' - Children: ' . $form_state['values'][$values[0] . ':' . $values[1] . ':children']  . ')</p>';
@@ -924,7 +923,12 @@ function rooms_booking_manager_change_search_form_submit(&$form, &$form_state) {
   $b_parameters = array();
   foreach ($booking_parameters as $b_key => $param) {
     foreach ($param as $key => $value) {
-      $b_parameters[$key . $b_key] = $value;
+      if ($key == 'adults') {
+        $b_parameters['group_size' . $b_key] = $value;
+      }
+      else {
+        $b_parameters[$key . $b_key] = $value;
+      }
     }
   }
 
@@ -1565,6 +1569,15 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
     );
 
     drupal_add_js(drupal_get_path('module', 'rooms_booking_manager') . '/js/rooms_booking_manager_checked.js');*/
+
+    $form['rooms_commerce_uncorfirmed'] = array(
+      '#type' => 'checkboxes',
+      '#description' => t('Only when Commerce checkout is selected.'),
+      '#options' => array(
+        COMMERCE_UNCORFIMED => t('Commerce uncorfirmed.'),
+      ),
+      '#default_value' => variable_get('rooms_commerce_uncorfirmed', array(COMMERCE_UNCORFIMED)),
+    );
 
     $form['rooms_date_format'] = array(
       '#type' => 'item',

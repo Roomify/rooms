@@ -166,11 +166,19 @@ class AvailabilityAgent {
         }
 
         $rooms_results[$key] = $this->getAvailabilityRooms($adults, $children);
+
+        if (in_array(COMMERCE_UNCORFIMED, variable_get('rooms_commerce_uncorfirmed', array(COMMERCE_UNCORFIMED)))) {
+          $rooms_results = $this->filterByLineItems($rooms_results);
+        }
       }
 
       if (!empty($rooms_results)) {
         if ($this->searchForAvailability($rooms_results) == 1) {
           $results = $this->getAvailabilityRooms($min_group_size, $min_group_size_children);
+
+          if (in_array(COMMERCE_UNCORFIMED, variable_get('rooms_commerce_uncorfirmed', array(COMMERCE_UNCORFIMED)))) {
+            $results = $this->filterByLineItems($results);
+          }
         }
         else {
           return ROOMS_NO_ROOMS;
@@ -334,6 +342,38 @@ class AvailabilityAgent {
     else {
      return $units;
     }
+  }
+
+  /**
+   */
+  function filterByLineItems($rooms_results) {
+    global $user;
+
+    $order = commerce_cart_order_load($user->uid);
+
+    foreach ($order->commerce_line_items['und'] as $key => $value) {
+
+      $line_item = commerce_line_item_load($value['line_item_id']);
+
+      $s_date = new DateTime($line_item->rooms_booking_dates['und'][0]['value']);
+      $e_date = new DateTime($line_item->rooms_booking_dates['und'][0]['value2']);
+
+      if ( ($s_date < $this->start_date && $e_date > $this->end_date) ||
+           ($s_date > $this->start_date && $e_date < $this->end_date) ||
+           ($s_date < $this->start_date && $e_date > $this->start_date) ||
+           ($s_date < $this->end_date && $e_date > $this->end_date) ) {
+
+        foreach ($rooms_results as $key2 => $res) {
+          unset($rooms_results[$key2]['rooms_unit'][$line_item->rooms_booked_unit_id['und'][0]['value']]);
+        }
+
+        if (isset($rooms_results['rooms_unit'])) {
+          unset($rooms_results['rooms_unit'][$line_item->rooms_booked_unit_id['und'][0]['value']]);
+        }
+      }
+    }
+
+    return $rooms_results;
   }
 
 }
