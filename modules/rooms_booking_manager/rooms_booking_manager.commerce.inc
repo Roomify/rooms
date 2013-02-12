@@ -7,7 +7,7 @@
  */
 
 
-function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
+function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent, $booking_size) {
     $date_format = variable_get('rooms_date_format', 'd-m-Y');
 
     $unit_id = $unit_to_book['unit']->unit_id;
@@ -83,10 +83,10 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
       $group_size = array(
         LANGUAGE_NONE => array(
           array(
-            'value' => 2,
+            'value' => isset($booking_size['adults']) ? $booking_size['adults'] : 0,
           ),
           array(
-            'value' => 0,
+            'value' => isset($booking_size['children']) ? $booking_size['children'] : 0,
           ),
         ),
       );

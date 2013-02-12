@@ -209,7 +209,7 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $b_u
       $content = rooms_booking_manager_present_types($units_per_type, $content, $start_date, $end_date, $booking_parameters, $b_units);
     }
     elseif (variable_get('rooms_presentation_style', ROOMS_PER_TYPE) == ROOMS_INDIVIDUAL) {
-      $content = rooms_booking_manager_present_individual_rooms($units_per_type, $content, $start_date, $end_date, $group_size_adults);
+      $content = rooms_booking_manager_present_individual_rooms($units_per_type, $content, $start_date, $end_date, $booking_parameters);
     }
   }
   else {
@@ -298,7 +298,7 @@ function rooms_booking_manager_check_dates($start_date, $end_date) {
 /**
  * Prepares rooms on a per room basis for presentation
  */
-function rooms_booking_manager_present_individual_rooms($units_per_type, $content, $start_date, $end_date, $group_size_adults) {
+function rooms_booking_manager_present_individual_rooms($units_per_type, $content, $start_date, $end_date, $booking_parameters) {
   $content['style'] = ROOMS_INDIVIDUAL;
   foreach ($units_per_type as $type => $price_level) {
     $type_obj = rooms_unit_type_load($type);
@@ -325,7 +325,7 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
         );
         // Add purchase forms - passing through hook_forms to handle multiple forms on the page
         $form = 'book_unit_form_' . $unit_id;
-        $content['units_per_type'][$type][$price][$unit_id]['book_unit_form'] = drupal_get_form($form, $unit_obj, $start_date, $end_date, $group_size_adults, $unit['state']);
+        $content['units_per_type'][$type][$price][$unit_id]['book_unit_form'] = drupal_get_form($form, $unit_obj, $start_date, $end_date, $booking_parameters[1]['adults'], $unit['state']);
       }
     }
   }
@@ -832,25 +832,24 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
   // Let us get the available rooms again and match the order against actual rooms
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
 
+  $agent = new AvailabilityAgent($sd->format($date_format), $ed->format($date_format), $booking_parameters, $b_units, array());
+  $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
+
+  $units_per_type = $agent->checkAvailability();
+
   $j = 0;
 
   // We are going to check that this is still true - but let us try and service the order
   foreach ($order as $type => $price_serving) {
     foreach ($price_serving as $price_level => $unit_order) {
       if ($unit_order['quantity'] > 0) {
-        $agent = new AvailabilityAgent($sd->format($date_format), $ed->format($date_format), $booking_parameters, $b_units, array(), array($type));
-        $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
-
-        $units_per_type = $agent->checkAvailability();
-        $available_units = $units_per_type[$type][$price_level];
-
         for ($i = 1; $i <= $unit_order['quantity']; $i++) {
-          $unit = array_pop($available_units);
+          $unit = array_pop($units_per_type[$type][$price_level]);
           
           // If we are using Commerce create the line items and pop in cart
           if (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_COMMERCE_CHECKOUT) {
             // Create line item
-            $line_item = rooms_create_line_item($unit, $agent);
+            $line_item = rooms_create_line_item($unit, $agent, $booking_parameters[$j + 1]);
 
             // Add line item to cart
             if (!empty($line_item)) {
@@ -892,9 +891,9 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
             // We are storing the partially built form in form_data to use it
             // when rebuilding the results page with the enquiry form
             $form_state['values']['form_data'] = $form_data;
-
-            $j++;
           }
+
+          $j++;
         }
       }
     }
