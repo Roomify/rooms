@@ -460,24 +460,31 @@ function book_unit_form_submit(&$form, &$form_state) {
   $available_units = $agent->checkAvailabilityForUnit($unit_id);
 
   if (count($available_units) > 0) {
-
-    $unit = array_pop($available_units);
-    // Create line item
-    $line_item = rooms_create_line_item($unit, $agent);
-
-    // Add line item to cart
-    $line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
-
     if (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_COMMERCE_CHECKOUT) {
+
+      $unit = array_pop($available_units);
+
+      // Create line item
+      $line_item = rooms_create_line_item($unit, $agent, array('adults' => $group_size, 'children' => 0));
+
+      // Add line item to cart
+      $line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
+
       // Send user to cart
+
       drupal_goto('bookings');
+
     } elseif (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT) {  
+
       drupal_goto('enquiry/' . $start_date . '/' . $end_date . '/' . $unit_id);
+
     }
 
   } else {
+
     drupal_set_message(t('We apologize it seems the room is no longer available'));
     drupal_goto('<front>');
+
   }
 
 }
@@ -490,7 +497,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
   // Check to see if we are rebuilding the form to create an enquiry 
   if (($form_state['rebuild']) && (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT)) {
-    $form = rooms_booking_manager_enquiry_form($form_state['values']['form_data'], $start_date, $end_date, $group_size, $group_size_children, $b_units);
+    $form = rooms_booking_manager_enquiry_form($form_state['values']['form_data'], $start_date, $end_date, $booking_parameters, $b_units);
     // If not display the per type choices  
   } else {
 
@@ -655,15 +662,12 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 }
 
 
-function rooms_booking_manager_enquiry_form($form, $start_date, $end_date, $group_size, $group_size_children, $b_units) {
+function rooms_booking_manager_enquiry_form($form, $start_date, $end_date, $booking_parameters, $b_units) {
 
   $date_format = variable_get('rooms_date_format', 'd-m-Y');
   $nights = $end_date->diff($start_date);
   
   $form = rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, $form);
-
-  $currency_setting = commerce_currency_load(commerce_default_currency());
-  $currency_symbol = $currency_setting['symbol'];
 
   $form['enquiry_form'] = array(
     '#type' => 'hidden',
@@ -801,13 +805,16 @@ function room_booking_manager_send_email($form_state) {
  */
 function book_units_per_type_form_submit(&$form, &$form_state) {
 
-  if (isset($form_state['values']['enquiry_form'])) {
-    room_booking_manager_send_email($form_state);
-  }
-
   module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.commerce');
 
   global $user;
+
+  $currency_setting = commerce_currency_load(commerce_default_currency());
+  $currency_symbol = $currency_setting['symbol'];
+
+  if (isset($form_state['values']['enquiry_form'])) {
+    room_booking_manager_send_email($form_state);
+  }
 
   $start_date = $form_state['values']['start_date'];
   $end_date = $form_state['values']['end_date'];
