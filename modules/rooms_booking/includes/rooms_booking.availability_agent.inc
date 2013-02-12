@@ -351,24 +351,28 @@ class AvailabilityAgent {
 
     $order = commerce_cart_order_load($user->uid);
 
-    foreach ($order->commerce_line_items['und'] as $key => $value) {
+    if (isset($order->commerce_line_items['und'])) {
+      foreach ($order->commerce_line_items['und'] as $key => $value) {
 
-      $line_item = commerce_line_item_load($value['line_item_id']);
+        $line_item = commerce_line_item_load($value['line_item_id']);
 
-      $s_date = new DateTime($line_item->rooms_booking_dates['und'][0]['value']);
-      $e_date = new DateTime($line_item->rooms_booking_dates['und'][0]['value2']);
+        $s_date = new DateTime($line_item->rooms_booking_dates['und'][0]['value']);
+        $e_date = new DateTime($line_item->rooms_booking_dates['und'][0]['value2']);
 
-      if ( ($s_date < $this->start_date && $e_date > $this->end_date) ||
-           ($s_date > $this->start_date && $e_date < $this->end_date) ||
-           ($s_date < $this->start_date && $e_date > $this->start_date) ||
-           ($s_date < $this->end_date && $e_date > $this->end_date) ) {
+        if ( ($s_date < $this->start_date && $e_date > $this->end_date) ||
+             ($s_date > $this->start_date && $e_date < $this->end_date) ||
+             ($s_date < $this->start_date && $e_date > $this->start_date) ||
+             ($s_date < $this->end_date && $e_date > $this->end_date) ) {
 
-        foreach ($rooms_results as $key2 => $res) {
-          unset($rooms_results[$key2]['rooms_unit'][$line_item->rooms_booked_unit_id['und'][0]['value']]);
-        }
+          foreach ($rooms_results as $key2 => $res) {
+            if (isset($rooms_results[$key2]['rooms_unit'][$line_item->rooms_booked_unit_id['und'][0]['value']])) {
+              unset($rooms_results[$key2]['rooms_unit'][$line_item->rooms_booked_unit_id['und'][0]['value']]);
+            }
+          }
 
-        if (isset($rooms_results['rooms_unit'])) {
-          unset($rooms_results['rooms_unit'][$line_item->rooms_booked_unit_id['und'][0]['value']]);
+          if (isset($rooms_results['rooms_unit'])) {
+            unset($rooms_results['rooms_unit'][$line_item->rooms_booked_unit_id['und'][0]['value']]);
+          }
         }
       }
     }

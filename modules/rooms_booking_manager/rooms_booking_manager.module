@@ -194,8 +194,14 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $b_u
     $units_per_type = $agent->checkAvailability();
     if (($units_per_type == ROOMS_NO_ROOMS) || ($units_per_type == ROOMS_SIZE_FAILURE)) {
       $content['booking_results'] = 0;
+      
       module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.availability_search');
+
+      // Add css to align date boxes
+      drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
+
       $booking_search_form = drupal_get_form('rooms_booking_availability_search_form');
+
       $no_results = array(
         '#prefix' => '<div class="no-booking-data">',
         '#markup' => t('Unfortunately no rooms are available - try different dates if possible.'),

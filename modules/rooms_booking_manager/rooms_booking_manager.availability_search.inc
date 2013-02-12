@@ -42,7 +42,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
       'wrapper' => 'rooms-wrapper',
     ),
   );
- 
+
   $form['rooms_fieldset'] = array(
     '#prefix' => '<div id="rooms-wrapper">',
     '#suffix' => '</div>',
