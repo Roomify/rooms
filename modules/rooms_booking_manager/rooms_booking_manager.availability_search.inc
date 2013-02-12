@@ -51,8 +51,8 @@ function rooms_booking_availability_search_form($form, $form_state) {
   $booking_parameters = array();
   foreach ($_GET as $key => $value) {
     $tmp_key = check_plain($key);
-    if (strpos($tmp_key, 'adults') === 0) {
-      $room_number = (int)substr($tmp_key, 6);
+    if (strpos($tmp_key, 'group_size') === 0) {
+      $room_number = (int)substr($tmp_key, 10);
       $number_people = (int)check_plain($value);
       if (is_integer($room_number) && is_integer($number_people)) {
         $booking_parameters[$room_number]['adults'] = $number_people;
@@ -265,7 +265,7 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
     $keys = explode(':', $key);
 
     if (count($keys) == 2) {
-      if ($keys[0] == 'group_size_adults') $rooms_parameters['adults' . $keys[1]] = $value;
+      if ($keys[0] == 'group_size_adults') $rooms_parameters['group_size' . $keys[1]] = $value;
       if ($keys[0] == 'group_size_children') $rooms_parameters['children' . $keys[1]] = $value;
     }
   }
