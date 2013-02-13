@@ -195,6 +195,9 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $b_u
     if (($units_per_type == ROOMS_NO_ROOMS) || ($units_per_type == ROOMS_SIZE_FAILURE)) {
       $content['booking_results'] = 0;
 
+      // Use form_load_include() instead of module_load_include() as it ensures that the include file is loaded whenever the
+      // form is processed. In contrast to using module_load_include() directly, form_load_include() makes sure the
+      // include file is correctly loaded also if the form is cached.
       $form_state = array();
       $form_state['build_info']['args'] = array();
       form_load_include($form_state, 'inc', 'rooms_booking_manager', 'rooms_booking_manager.availability_search');

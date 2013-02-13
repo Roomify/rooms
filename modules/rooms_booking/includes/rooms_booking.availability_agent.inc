@@ -167,6 +167,7 @@ class AvailabilityAgent {
 
         $rooms_results[$key] = $this->getAvailabilityRooms($adults, $children);
 
+        // Before adding a line item to the cart check if a line item with the same unit ID exists
         if (in_array(COMMERCE_UNCORFIMED, variable_get('rooms_commerce_uncorfirmed', array(COMMERCE_UNCORFIMED)))) {
           $rooms_results = $this->filterByLineItems($rooms_results);
         }
@@ -176,6 +177,7 @@ class AvailabilityAgent {
         if ($this->searchForAvailability($rooms_results) == 1) {
           $results = $this->getAvailabilityRooms($min_group_size, $min_group_size_children);
 
+          // Before adding a line item to the cart check if a line item with the same unit ID exists
           if (in_array(COMMERCE_UNCORFIMED, variable_get('rooms_commerce_uncorfirmed', array(COMMERCE_UNCORFIMED)))) {
             $results = $this->filterByLineItems($results);
           }
@@ -345,6 +347,7 @@ class AvailabilityAgent {
   }
 
   /**
+   * Filter results by remove Unit that are already in cart
    */
   function filterByLineItems($rooms_results) {
     global $user;
