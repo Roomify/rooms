@@ -8,6 +8,8 @@ package = Rooms
 files[] = rooms_booking_manager.commerce.inc
 files[] = views/rooms_booking_manager.views.inc
 
+dependencies[] = number
+
 dependencies[] = rooms
 dependencies[] = rooms_unit
 dependencies[] = rooms_booking
