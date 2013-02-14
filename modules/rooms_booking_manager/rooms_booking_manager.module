@@ -773,7 +773,7 @@ function room_booking_manager_send_email($form_state) {
   $booking_request = array();
   foreach ($form_state['values'] as $value_key => $value) {
     $values = explode(':', $value_key);
-    if (count($values) == 3 && $values[2] == 'group_size') {
+    if (count($values) == 3 && $values[2] == 'adults') {
       $label = db_select('rooms_unit_type', 'n')->fields('n', array('label'))->condition('type', $values[0], '=')->execute()->fetchField();
 
       $booking_request[] = '<p>' . $label . ' (Adults: ' . $value . ' - Children: ' . $form_state['values'][$values[0] . ':' . $values[1] . ':children']  . ')</p>';
@@ -1745,11 +1745,22 @@ function rooms_booking_manager_block_info() {
  */
 function rooms_booking_manager_block_view($block_name = '') {
   if ($block_name == 'rooms_availability_search') {
-    module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.availability_search');
+
+    // Add css to align date boxes
+    drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
+
+    // Use form_load_include() instead of module_load_include() as it ensures that the include file is loaded whenever the
+    // form is processed. In contrast to using module_load_include() directly, form_load_include() makes sure the
+    // include file is correctly loaded also if the form is cached.
+    $form_state = array();
+    $form_state['build_info']['args'] = array();
+    form_load_include($form_state, 'inc', 'rooms_booking_manager', 'rooms_booking_manager.availability_search');
+
+    $form = drupal_build_form('rooms_booking_availability_search_form', $form_state);
 
     $block = array(
       'subject' => t('Availability Search'),
-      'content' => drupal_get_form('rooms_booking_availability_search_form'),
+      'content' => $form,
     );
     return $block;
   }
