@@ -71,3 +71,4 @@ UPGRADING FROM PREVIOUS BETA VERSIONS
 If you are upgrading from Beta 4 make sure that your Rooms Product in Commerce has a price set, the price is not
 actually used to calculate the cost of the room but we need a price in order for Commerce to properly add the product
 to the cart and do tax calculations.
+
