@@ -33,7 +33,7 @@ in the modules page).
 At this point the module is installed and what is required is configuration.
 
 CONFIGURATION
-------------_
+-------------
 
 1. Visit admin/rooms/units/unit-types and create a unit type (e.g. standard double room).
 
