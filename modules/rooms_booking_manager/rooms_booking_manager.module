@@ -152,46 +152,34 @@ function rooms_booking_manager_enquiry_page_form_submit(&$form, &$form_state) {
  * @param $end_date
  * The end date for the search
  *
- * @param $b_units
- * In how many rooms are we to accommodate them
+ * @param $booking_units
+ * In how many units are we to accommodate them
  */
-function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $b_units = 1) {
+function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $booking_units = 1) {
+  
+  // Check validity of date range - this is repeating what we do in rooms_booking_manager_availability_search_form_validate
+  // but if we want to cater for both direct links and query coming through form need to accommodate both.
+  $valid_dates = rooms_booking_manager_check_dates($start_date, $end_date);
+
+  // Check validity of the rest of the booking paramenters that are stored in _GET. Again this is to ensure that
+  // any direct links were structured appropriately.
+  $booking_parameters = rooms_booking_manager_retrieve_booking_parameters($booking_units, $_GET);
+
   // The array of content to render
   $content = array();
 
-  // Make sure variables are clear
-  $booking_parameters = array();
-  foreach ($_GET as $key => $value) {
-    $tmp_key = check_plain($key);
-    if (strpos($tmp_key, 'group_size') === 0) {
-      $room_number = (int)substr($tmp_key, 10);
-      $number_people = (int)check_plain($value);
-      if (is_integer($room_number) && is_integer($number_people)) {
-        $booking_parameters[$room_number]['adults'] = $number_people;
-      }
-    }
-    if (strpos($tmp_key, 'children') === 0) {
-      $room_number = (int)substr($tmp_key, 8);
-      $number_people = (int)check_plain($value);
-      if (is_integer($room_number) && is_integer($number_people)) {
-        $booking_parameters[$room_number]['children'] = $number_people;
-      }
-    }
-  }
-  $b_units = check_plain($b_units);
+  if ($valid_dates && is_array($booking_parameters)) {
 
-  // Check validity of date range - this is repeating what we do in rooms_booking_manager_availability_search_form_validate
-  // but if we want to cater for both direct links and query coming through form need to accommodate both.
-  $datesok = rooms_booking_manager_check_dates($start_date, $end_date);
-
-  if ($datesok) {
     $content['booking_results'] = 1;
-    // Get all the units - note: we instantiate the Availability Agent using the date form set by the user
+    
+    // Get all the units - note: we instantiate the Availability Agent using the date format set by the user
     $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
-    $agent = new AvailabilityAgent($start_date->format($date_format), $end_date->format($date_format), $booking_parameters, $b_units);
+    $agent = new AvailabilityAgent($start_date->format($date_format), $end_date->format($date_format), $booking_parameters, $booking_units);
     $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS)));
 
     $units_per_type = $agent->checkAvailability();
+
+    // If we don't have any useful result to show just display a failure message and the search form    
     if (($units_per_type == ROOMS_NO_ROOMS) || ($units_per_type == ROOMS_SIZE_FAILURE)) {
       $content['booking_results'] = 0;
 
@@ -216,7 +204,7 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $b_u
       $content['booking_search_form'] = $booking_search_form;
     }
     elseif (variable_get('rooms_presentation_style', ROOMS_PER_TYPE) == ROOMS_PER_TYPE) {
-      $content = rooms_booking_manager_present_types($units_per_type, $content, $start_date, $end_date, $booking_parameters, $b_units);
+      $content = rooms_booking_manager_present_types($units_per_type, $content, $start_date, $end_date, $booking_parameters, $booking_units);
     }
     elseif (variable_get('rooms_presentation_style', ROOMS_PER_TYPE) == ROOMS_INDIVIDUAL) {
       $content = rooms_booking_manager_present_individual_rooms($units_per_type, $content, $start_date, $end_date, $booking_parameters);
@@ -231,7 +219,7 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $b_u
 
   $content['legend'] = rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, array());
 
-  $change_search_form = drupal_get_form('rooms_booking_manager_change_search_form', $start_date, $end_date, $booking_parameters, $b_units);
+  $change_search_form = drupal_get_form('rooms_booking_manager_change_search_form', $start_date, $end_date, $booking_parameters, $booking_units);
   $content['change_search'] = $change_search_form;
 
   $output = theme('rooms_booking_results', $content);
@@ -302,6 +290,46 @@ function rooms_booking_manager_check_dates($start_date, $end_date) {
   }
 
   return $datesok;
+}
+
+
+/**
+ * Checks that the booking parameters given are valid. This is mainly used to
+ * clean up values that came through the URL and are set in $_GET.
+ *
+ * @param int $booking_units 
+ * The amount of booking units
+ *
+ * @param array $booking_info
+ * Booking info supplied
+ *
+ * @return array - An array of booking parameters
+ */
+function rooms_booking_manager_retrieve_booking_parameters($booking_units, $booking_info) {
+  $booking_units = check_plain($booking_units);
+  
+  $booking_parameters = array();
+  
+  // Given a certain number of units lets hunt in the $booking_info array for them
+  for ($i = 1; $i <= $booking_units; $i++) {
+    // If not data has invalidated booking parameters yet
+    if ($booking_parameters != 0) {
+      if ((isset($booking_info['rooms_group_size' . $i])) && (isset($booking_info['rooms_children' . $i]))) {
+        $booking_parameters[$i]['adults'] = check_plain($booking_info['rooms_group_size' . $i]);
+        $booking_parameters[$i]['children'] = check_plain($booking_info['rooms_children' . $i]);
+      } else {
+        $booking_parameters = 0;
+      }
+    }
+  }
+  
+  // If the booking parameter data was not valid or did not correspond to the number of units
+  // invalidate the data
+  if (($booking_parameters == 0) || (count($booking_parameters) < $booking_units)) {
+    return FALSE;
+  } else {
+    return $booking_parameters;
+  }
 }
 
 
@@ -935,18 +963,18 @@ function rooms_booking_manager_change_search_form_submit(&$form, &$form_state) {
   foreach ($booking_parameters as $b_key => $param) {
     foreach ($param as $key => $value) {
       if ($key == 'adults') {
-        $b_parameters['group_size' . $b_key] = $value;
+        $b_parameters['rooms_group_size' . $b_key] = $value;
       }
       else {
-        $b_parameters[$key . $b_key] = $value;
+        $b_parameters['rooms_' . $key . $b_key] = $value;
       }
     }
   }
 
   drupal_goto('booking', array('query' => array(
-    'start_date' => $form_state['values']['start_date'],
-    'end_date' => $form_state['values']['end_date'],
-    'b_units' => $form_state['values']['b_units'],
+    'rooms_start_date' => $form_state['values']['start_date'],
+    'rooms_end_date' => $form_state['values']['end_date'],
+    'rooms_b_units' => $form_state['values']['b_units'],
     $b_parameters,
   )));
 }
