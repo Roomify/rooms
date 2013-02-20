@@ -177,3 +177,83 @@ class RoomsBookingTestSingleOccupancy extends DrupalWebTestCase {
     $this->assertText('Delete');
   }
 }
+
+
+class RoomsBookingFilterTestCase extends DrupalWebTestCase {
+
+  public function setUp() {
+    // Enable module Rooms Unit
+    parent::setUp(array('rooms_booking', 'rooms_booking_manager', 'rooms_test', 'entity'));
+
+    // Create a new user with permissions of Configure rooms settings
+    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view availability information', 'administer bookable units', 'manage booking unit pricing', 'administer booking types', 'administer bookings'));
+    $this->drupalLogin($admin);
+  }
+
+  public static function getInfo() {
+    return array(
+      'name' => 'RoomsBookingFilter Test',
+      'description' => t('RoomsBookingFilter Test.'),
+      'group' => 'Rooms',
+    );
+  }
+
+  public function testRoomsBookingFilterTestCase() {
+
+    // Create bookable unit type "Deluxe Room"
+    entity_save('rooms_unit_type', entity_import('rooms_unit_type', '{
+      "type" : "deluxe_unit",
+      "label" : "Deluxe Room",
+      "weight" : "0",
+      "data" : {
+        "base_price" : 200,
+        "sleeps" : 2
+      },
+      "rdf_mapping" : []
+    }'));
+    // Create bookable unit type "Standard Room"
+    entity_save('rooms_unit_type', entity_import('rooms_unit_type', '{
+      "type" : "standard_unit",
+      "label" : "Standard Room",
+      "weight" : "0",
+      "data" : {
+        "base_price" : 100,
+        "sleeps" : 2
+      },
+      "rdf_mapping" : []
+    }'));
+
+
+    // Create a Bookable Unit (Standard Unit)
+    $std_unit = rooms_unit_create(array('type' => 'standard_unit'));
+    $std_unit->name = 'Standard';
+    $std_unit->default_state = ROOMS_AVAILABLE;
+    $std_unit->save();
+
+    // Create a Bookable Unit (Deluxe Unit)
+    $del_unit = rooms_unit_create(array('type' => 'deluxe_unit'));
+    $del_unit->name = 'Deluxe';
+    $del_unit->default_state = ROOMS_AVAILABLE;
+    $del_unit->save();
+
+
+    // Make Deluxe Unit not available from 21-02-2013 to 25-02-2013
+    $be = new BookingEvent($del_unit->unit_id, ROOMS_NOT_AVAILABLE, new DateTime('21-02-2013'), new DateTime('25-02-2013'));
+    $events = array($be);
+    $rc = new UnitCalendar($del_unit->unit_id);
+    $response = $rc->updateCalendar($events);
+
+
+    // Test AvailabilityAgentSizeFilter
+    $this->drupalGet('admin/rooms/test/availabilitysizefilter');
+
+    $this->assertText('a:1:{s:10:"rooms_unit";a:2:{i:1;O:8:"stdClass":2:{s:7:"unit_id";s:1:"1";s:4:"type";s:13:"standard_unit";}i:2;O:8:"stdClass":2:{s:7:"unit_id";s:1:"2";s:4:"type";s:11:"deluxe_unit";}}}');
+
+
+    // Test AvailabilityAgentDateFilter
+    $this->drupalGet('admin/rooms/test/availabilitydatefilter');
+
+    $this->assertText('a:1:{s:10:"rooms_unit";a:1:{i:1;O:8:"stdClass":2:{s:7:"unit_id";s:1:"1";s:4:"type";s:13:"standard_unit";}}}');
+  }
+
+}

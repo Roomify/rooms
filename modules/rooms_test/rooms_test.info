@@ -1,0 +1,10 @@
+name = Rooms Test
+description = Provide Rooms Tests
+core = 7.x
+
+package = Rooms
+
+version = 1.x-dev
+
+dependencies[] = rooms_unit
+dependencies[] = rooms_booking
