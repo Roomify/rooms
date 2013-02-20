@@ -206,7 +206,7 @@ class AvailabilityAgent {
             // Get the unit IDs already in the cart.
             foreach ($wrapper->commerce_line_items as $line_item) {
               //Need to check if line_item_type = 'rooms_booking', otherwise errors if cart contains non-rooms product(s)
-              if ($line_item->type == 'rooms_booking') {
+              if ($line_item->commerce_product->value()->type == 'rooms_product') {
                 $line_item_values = $line_item->value();
                 // Add this unit's ID to the list of units in the cart.
                 $units_in_cart[] = $line_item_values->rooms_booked_unit_id['und'][0]['value'];

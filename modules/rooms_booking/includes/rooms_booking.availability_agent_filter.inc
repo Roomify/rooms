@@ -6,19 +6,18 @@
  * to them returning the remainder.
  */
 interface AvailabilityAgentFilter {
-  
+
   /**
-   *@param array rooms The set of rooms to filter through
+   * @param array rooms The set of rooms to filter through
    */
   public function __construct($units, $parameters);
   
   /**
-   *@return array The rooms remaining following the application of the filter
+   * @return array The rooms remaining following the application of the filter
    */
   public function applyFilter();
   
 }
-
 
 
 class AvailabilityAgentSizeFilter implements AvailabilityAgentFilter {
@@ -28,19 +27,47 @@ class AvailabilityAgentSizeFilter implements AvailabilityAgentFilter {
   protected $parameters;
   
   public function __construct($units, $parameters) {
-    
+    $this->units = $units;
+    $this->parameters = $parameters;
   }
   
   public function applyFilter() {
-    
-    // Search for suitbale units
-    
-    return $units;
+
+    // Check parameters
+    $group_size = isset($this->parameters['group_size']) ? $this->parameters['group_size'] : 0;
+    $group_size_children = isset($this->parameters['group_size_children']) ? $this->parameters['group_size_children'] : 0;
+    $unit_types = isset($this->parameters['unit_types']) ? $this->parameters['unit_types'] : NULL;
+
+    $query = new EntityFieldQuery();
+    $query->entityCondition('entity_type', 'rooms_unit')
+          ->propertyOrderBy('sleeps', 'ASC')
+          ->propertyCondition('sleeps', $group_size, '>=')
+          ->propertyCondition('children', $group_size_children, '>=')
+          ->propertyCondition('bookable', 1);
+
+    // Add a unit type condition if this has been defined
+    if ($unit_types != NULL) {
+      $query->propertyCondition('type', $this->unit_types);
+    }
+
+    // Execute the query and collect the results
+    $results = $query->execute();
+
+    if (count($results) == 0) {
+      return ROOMS_SIZE_FAILURE;
+    }
+
+    if (empty($this->units)) {
+      return $results;
+    }
+    else {
+      // Computes the intersection of units and results
+      return array_intersect($this->units, $results);
+    }
+
   }
   
 }
-
-
 
 
 class AvailabilityAgentDateFilter implements AvailabilityAgentFilter {
@@ -50,18 +77,56 @@ class AvailabilityAgentDateFilter implements AvailabilityAgentFilter {
   protected $parameters;
   
   public function __construct($units, $parameters) {
-    
+    $this->units = $units;
+    $this->parameters = $parameters;
   }
   
   public function applyFilter() {
-    
-    // Search for suitbale units
-    
-    return $units;
+
+    // Check parameters
+    $start_date = isset($this->parameters['start_date']) ? $this->parameters['start_date'] : NULL;
+    $end_date = isset($this->parameters['end_date']) ? $this->parameters['end_date'] : NULL;
+
+    // Stard date and end date parameters must be set
+    if ($start_date == NULL || $end_date == NULL) return $this->units;
+
+    $valid_states = isset($this->parameters['valid_states']) ? $this->parameters['valid_states'] : array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS);
+
+    $query = new EntityFieldQuery();
+    $query->entityCondition('entity_type', 'rooms_unit')
+            ->propertyOrderBy('sleeps', 'ASC')
+            ->propertyCondition('bookable', 1);
+
+    // Execute the query and collect the results
+    $results = $query->execute();
+
+    foreach ($results['rooms_unit'] as $key => $unit) {
+      $unit = rooms_unit_load($unit->unit_id);
+
+      // Get a calendar and check availability
+      $rc = new UnitCalendar($unit->unit_id);
+      // We need to make this based on user-set vars
+
+      // Rather than using $rc->stateAvailability we will get the states check directly
+      // as different states will impact on what products we create.
+      $states = $rc->getStates($start_date, $end_date);
+      $state_diff = array_diff($states, $valid_states);
+
+      if (count($state_diff) != 0) {
+        unset($results['rooms_unit'][$key]);
+      }
+    }
+
+    if (empty($this->units)) {
+      return $results;
+    }
+    else {
+      return array_intersect($this->units, $results);
+    }
+
   }
   
 }
-
 
 
 class AvailabilityAgentCommerceFilter implements AvailabilityAgentFilter {
@@ -71,16 +136,75 @@ class AvailabilityAgentCommerceFilter implements AvailabilityAgentFilter {
   protected $parameters;
   
   public function __construct($units, $parameters) {
-    
+    $this->units = $units;
+    $this->parameters = $parameters;
   }
   
   public function applyFilter() {
-    
-    // Search for suitbale units
-    
-    return $units;
+
+    global $user;
+
+    // Check parameters
+    $start_date = isset($this->parameters['start_date']) ? $this->parameters['start_date'] : date_create()->setTimestamp(0);
+    $end_date = isset($this->parameters['end_date']) ? $this->parameters['end_date'] : date_create()->setTimestamp(2147483647);
+
+    if (empty($this->units)) {
+      $query = new EntityFieldQuery();
+      $query->entityCondition('entity_type', 'rooms_unit')
+            ->propertyOrderBy('sleeps', 'ASC')
+            ->propertyCondition('bookable', 1);
+
+      // Execute the query and collect the results
+      $results = $query->execute();
+    }
+    else {
+      $results = $this->units;
+    }
+
+    // Load order for current user
+    if ($order = commerce_cart_order_load($user->uid)) {
+      $wrapper = entity_metadata_wrapper('commerce_order', $order);
+
+      // See if there are any product line items.
+      if (commerce_line_items_quantity($wrapper->commerce_line_items, commerce_product_line_item_types()) > 0) {
+        // Get the unit IDs already in the cart.
+        foreach ($wrapper->commerce_line_items as $line_item) {
+          // Need to check if commerce_product_type = 'rooms_product'
+          if ($line_item->commerce_product->value()->type == 'rooms_product') {
+            $line_item_values = $line_item->value();
+
+            // Current line_item start_date and end_date values
+            $s_date = new DateTime($line_item_values->rooms_booking_dates['und'][0]['value']);
+            $e_date = new DateTime($line_item_values->rooms_booking_dates['und'][0]['value2']);
+
+            // If current line_item date interval overlap parameters interval remove unit from results
+            if ( $this->check_in_range($s_date, $e_date, $start_date, $end_date) ) {
+              if (isset($results['rooms_unit'][$line_item_values->rooms_booked_unit_id['und'][0]['value']])) {
+                unset($results['rooms_unit'][$line_item_values->rooms_booked_unit_id['und'][0]['value']]);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return $results;
+  }
+
+  private function check_in_range($line_item_start_date, $line_item_end_date, $start_date, $end_date) {
+    if ( ($line_item_start_date < $start_date && $line_item_end_date > $end_date) ||
+         ($line_item_start_date > $start_date && $line_item_end_date < $end_date) ||
+         ($line_item_start_date < $start_date && $line_item_end_date > $start_date) ||
+         ($line_item_start_date < $end_date && $line_item_end_date > $end_date) ) {
+
+      return TRUE;
+
+    }
+    else {
+
+      return FALSE;
+
+    }
   }
   
 }
-
-
