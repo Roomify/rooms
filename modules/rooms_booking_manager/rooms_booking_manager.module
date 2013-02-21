@@ -307,7 +307,7 @@ function rooms_booking_manager_check_dates($start_date, $end_date) {
  */
 function rooms_booking_manager_retrieve_booking_parameters($booking_units, $booking_info) {
   $booking_units = check_plain($booking_units);
-  
+
   $booking_parameters = array();
   
   // Given a certain number of units lets hunt in the $booking_info array for them
@@ -325,7 +325,7 @@ function rooms_booking_manager_retrieve_booking_parameters($booking_units, $book
   
   // If the booking parameter data was not valid or did not correspond to the number of units
   // invalidate the data
-  if (($booking_parameters == 0) || (count($booking_parameters) < $booking_units)) {
+  if (($booking_parameters == 0) || (count($booking_parameters) < $booking_units)) {;
     return FALSE;
   } else {
     return $booking_parameters;
@@ -601,28 +601,30 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         );
 
         // Check if a description source is loaded and if so render
-        if ($type_obj->data['rooms_description_source'] != '') {
-          $source_ref = explode(':', $type_obj->data['rooms_description_source']);
-          if (isset($source_ref[1])) {
-            $node_id = $source_ref[1];
+        if (isset($type_obj->data['rooms_description_source'])) {
+          if ($type_obj->data['rooms_description_source'] != '') {
+            $source_ref = explode(':', $type_obj->data['rooms_description_source']);
+            if (isset($source_ref[1])) {
+              $node_id = $source_ref[1];
 
-            if (module_exists('translation')) {
-              $node_translations = translation_node_get_translations($node_id);
-              if (!empty($node_translations)) {
-                $node_id = $node_translations[$GLOBALS['language']->language]->nid;
+              if (module_exists('translation')) {
+                $node_translations = translation_node_get_translations($node_id);
+                if (!empty($node_translations)) {
+                  $node_id = $node_translations[$GLOBALS['language']->language]->nid;
+                }
               }
-            }
 
-            $node = node_load($node_id);
+              $node = node_load($node_id);
 
-            if ($node !== FALSE) {
-              $node_html = render(node_view($node,'rooms_list'));
+              if ($node !== FALSE) {
+                $node_html = render(node_view($node,'rooms_list'));
 
-              $form[$type . ':' . $price][$type . ':' . $price . ':description'] = array(
-                '#prefix' => '<tr><td class="room_description">',
-                '#markup' => $node_html,
-                '#suffix' => '</td><td></td><td></td></tr>',
-              );
+                $form[$type . ':' . $price][$type . ':' . $price . ':description'] = array(
+                  '#prefix' => '<tr><td class="room_description">',
+                  '#markup' => $node_html,
+                  '#suffix' => '</td><td></td><td></td></tr>',
+                );
+              }
             }
           }
         }
@@ -630,14 +632,14 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         // Element to display price
         $form[$type . ':' . $price][$type . ':' . $price . ':price'] = array(
           '#prefix' => '<tr><td><div class="unit_price" style="font-weight:bold">',
-          '#markup' =>  t('Cost:') . ' ' . $units[key($units)]['price'] . ' ' . $currency_symbol,
+          '#markup' =>  t('Cost:') . ' ' . $price . ' ' . $currency_symbol,
           '#suffix' => '</div>'
         );
 
         // Element to hold price
         $form[$type . ':' . $price][$type . ':' . $price . ':price_value'] = array(
           '#type' => 'hidden',
-          '#value' => $units[key($units)]['price'],
+          '#value' => $price,
           '#suffix' => '</td>',
         );
 
@@ -868,7 +870,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
       $order[$type][$price_level][$value_type] = $value;
     }
   }
-
+  dpm($order);
   // This is very inefficient right now but we need to create date objects
   // reconvert them back to strings to only recreate them in the Availability Agent
   $sd = start_date_load($start_date);

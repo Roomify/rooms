@@ -33,8 +33,8 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent, $bookin
     $unit_info = $agent->checkAvailabilityForUnit($unit_id);
 
     // Check $unit_info to make sure we still have availbility
-    if ($unit_info == ROOMS_NO_ROOMS) {
-      form_set_error('', t('We are soory, booking unit is no longer available.'));
+    if ($unit_info == ROOMS_NO_ROOMS) {dpm($unit_id);
+      form_set_error('', t('We are sorry, booking unit is no longer available.'));
     }
     else {
       // If available set price and create line item

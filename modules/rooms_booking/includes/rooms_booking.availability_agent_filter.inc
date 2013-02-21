@@ -20,7 +20,34 @@ interface AvailabilityAgentFilter {
 }
 
 
-class AvailabilityAgentSizeFilter implements AvailabilityAgentFilter {
+/**
+ * Abstract class implementing AvailabilityAgentFilter that expose common functions.
+ */
+abstract class AvailabilityAgentCommonFilter implements AvailabilityAgentFilter {
+
+  // Returns an array containing all the values of units_a that are present in units_b
+  function array_units_intersect($units_a, $units_b) {
+    $keys_units_a = array_keys($units_b['rooms_unit']);
+    $keys_units_b = array_keys($units_a['rooms_unit']);
+
+    $keys_units = array_intersect($keys_units_a, $keys_units_b);
+
+    $results = array();
+
+    foreach ($keys_units as $key) {
+      $results['rooms_unit'][$key] = $units_a['rooms_unit'][$key];
+    }
+
+    return $results;
+  }
+
+}
+
+
+/**
+ * Filter by group_size and group_size_children.
+ */
+class AvailabilityAgentSizeFilter extends AvailabilityAgentCommonFilter {
   
   protected $units;
   
@@ -62,7 +89,7 @@ class AvailabilityAgentSizeFilter implements AvailabilityAgentFilter {
     }
     else {
       // Computes the intersection of units and results
-      return array_intersect($this->units, $results);
+      return $this->array_units_intersect($this->units, $results);
     }
 
   }
@@ -70,7 +97,10 @@ class AvailabilityAgentSizeFilter implements AvailabilityAgentFilter {
 }
 
 
-class AvailabilityAgentDateFilter implements AvailabilityAgentFilter {
+/**
+ * Filter by start_date, end_date, valid_states.
+ */
+class AvailabilityAgentDateFilter extends AvailabilityAgentCommonFilter {
   
   protected $units;
   
@@ -121,7 +151,8 @@ class AvailabilityAgentDateFilter implements AvailabilityAgentFilter {
       return $results;
     }
     else {
-      return array_intersect($this->units, $results);
+      // Computes the intersection of units and results
+      return $this->array_units_intersect($this->units, $results);
     }
 
   }
@@ -129,7 +160,10 @@ class AvailabilityAgentDateFilter implements AvailabilityAgentFilter {
 }
 
 
-class AvailabilityAgentCommerceFilter implements AvailabilityAgentFilter {
+/**
+ * Filter units if is in the commerce cart.
+ */
+class AvailabilityAgentCommerceFilter extends AvailabilityAgentCommonFilter {
   
   protected $units;
   
@@ -188,14 +222,21 @@ class AvailabilityAgentCommerceFilter implements AvailabilityAgentFilter {
       }
     }
 
-    return $results;
+    if (empty($this->units)) {
+      return $results;
+    }
+    else {
+      // Computes the intersection of units and results
+      return $this->array_units_intersect($this->units, $results);
+    }
   }
 
+  // Check if search interval overlaps line_item interval
   private function check_in_range($line_item_start_date, $line_item_end_date, $start_date, $end_date) {
-    if ( ($line_item_start_date < $start_date && $line_item_end_date > $end_date) ||
-         ($line_item_start_date > $start_date && $line_item_end_date < $end_date) ||
-         ($line_item_start_date < $start_date && $line_item_end_date > $start_date) ||
-         ($line_item_start_date < $end_date && $line_item_end_date > $end_date) ) {
+    if ( ($line_item_start_date <= $start_date && $line_item_end_date >= $end_date) ||
+         ($line_item_start_date >= $start_date && $line_item_end_date <= $end_date) ||
+         ($line_item_start_date <= $start_date && $line_item_end_date >= $start_date) ||
+         ($line_item_start_date <= $end_date && $line_item_end_date >= $end_date) ) {
 
       return TRUE;
 
@@ -206,5 +247,5 @@ class AvailabilityAgentCommerceFilter implements AvailabilityAgentFilter {
 
     }
   }
-  
+
 }

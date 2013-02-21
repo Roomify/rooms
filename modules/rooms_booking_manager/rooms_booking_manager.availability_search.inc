@@ -21,6 +21,8 @@ function rooms_booking_availability_search_form($form, $form_state) {
   if (isset($_GET['rooms_b_units'])) {
     $b_units = check_plain($_GET['rooms_b_units']);
     if ($b_units != '') $rooms_number = $b_units;
+
+    $booking_parameters = rooms_booking_manager_retrieve_booking_parameters($b_units, $_GET);
   }
 
 
@@ -59,8 +61,6 @@ function rooms_booking_availability_search_form($form, $form_state) {
     '#suffix' => '</div>',
   );
 
-  $booking_parameters = rooms_booking_manager_retrieve_booking_parameters($b_units, $_GET);
-  
   if (variable_get('rooms_presentation_style', ROOMS_PER_TYPE) == ROOMS_PER_TYPE) {
     $form['rooms_fieldset']['table_header'] = array(
       '#prefix' => '<table><thead>',
@@ -109,7 +109,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
             '2' => '2',
             '3' => '3',
           ),
-          '#default_value' =>  isset($booking_parameters[$i]['children']) ? $booking_parameters[$i]['children'] : '2',
+          '#default_value' =>  isset($booking_parameters[$i]['children']) ? $booking_parameters[$i]['children'] : '0',
           '#prefix' => '<td>',
           '#suffix' => '</td>',
         );

@@ -30,7 +30,11 @@ class AvailabilityAgent {
   // What unit types we are looking for
   public $unit_types;
 
-  public $units = array();
+  // Store available rooms for each booking_parameters
+  public $rooms_results = array();
+
+  // Store first valid rooms combination for booking_parameters in input
+  public $valid_rooms_combination = array();
 
   public function __construct($start_date, $end_date, $booking_parameters = array(), $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS), $unit_types = array()) {
     $this->valid_states = $valid_states;
@@ -49,41 +53,14 @@ class AvailabilityAgent {
 
 
   /**
-   * Sets the valid states for an availability search - default is "ROOMS_AVAILABLE" and
-   * "ROOMS_ON_REQUEST"
+   * Sets the valid states for an availability search - default is "ROOMS_AVAILABLE" and "ROOMS_ON_REQUEST"
    */
   public function setValidStates($states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS)) {
     $this->valid_states = $states;
   }
 
-  private function getAvailabilityRooms($group_size, $group_size_children) {
-    $query = new EntityFieldQuery();
-    $query->entityCondition('entity_type', 'rooms_unit')
-          ->propertyOrderBy('sleeps', 'ASC')
-          ->propertyCondition('sleeps', $group_size, '>=')
-           ->propertyCondition('bookable', 1);
-
-    if ($group_size_children != PHP_INT_MAX) {
-      $query->propertyCondition('children', $group_size_children, '>=');
-    }
-
-    // Add a unit type condition if this has been defined
-    if (count($this->unit_types) > 0) {
-      $query->propertyCondition('type', $this->unit_types);
-    }
-
-    // Execute the query and collect the results
-    $results = $query->execute();
-
-    if (count($results) == 0) {
-      return ROOMS_SIZE_FAILURE;
-    }
-
-    return $results;
-  }
-
+  // Try to find a valid rooms combination that satisfies booking request
   private function searchForAvailability($rooms_results) {
-    $tmp = array_shift(array_values($rooms_results));
     $el_key = array_shift(array_keys($rooms_results));
 
     if (!isset($rooms_results[$el_key]['rooms_unit'])) return 0;
@@ -100,12 +77,16 @@ class AvailabilityAgent {
         }
       }
 
+      // Combination fails, roolback and try a new combination
       if (empty($tmp_rooms_results[$el_key]['rooms_unit'])) return 0;
+
+      $this->valid_rooms_combination[] = $tmp_rooms_results[$el_key]['rooms_unit'][$c_key];
 
       unset($tmp_rooms_results[$el_key]);
 
       if (empty($tmp_rooms_results)) return 1;
 
+      // Call recursively this function
       $return = $this->searchForAvailability($tmp_rooms_results);
 
       if ($return == 1) return $return;
@@ -129,57 +110,38 @@ class AvailabilityAgent {
 
     // If no booking_parameters or no group size get all available units
     if ($this->booking_parameters == array() || $this->booking_units == 0) {
-      $query = new EntityFieldQuery();
-      $query->entityCondition('entity_type', 'rooms_unit')
-            ->propertyCondition('bookable', 1);
+      $results = applyAvailabilityFilter();
 
-      // Add a unit type condition if this has been defined
-      if (count($this->unit_types) > 0) {
-        $query->propertyCondition('type', $this->unit_types);
-      }
-
-      $results = $query->execute();
-      if (count($results) == 0) {
+      if ($results == ROOMS_NO_ROOMS) {
         return ROOMS_NO_ROOMS;
       }
     }
-
     else {
-      $rooms_results = array();
+      $this->rooms_results = array();
 
-      $min_group_size = PHP_INT_MAX;
-      $min_group_size_children = PHP_INT_MAX;
       foreach ($this->booking_parameters as $key => $parameter) {
         $adults = 0;
         $children = 0;
 
         if (isset($parameter['adults'])) {
-          if ($min_group_size > $parameter['adults']) $min_group_size = $parameter['adults'];
           $adults = $parameter['adults'];
         }
         if (isset($parameter['children'])) {
-          if ($min_group_size_children > $parameter['children']) $min_group_size_children = $parameter['children'];
           $children = $parameter['children'];
         }
-        else {
-          $min_group_size_children = 0;
-        }
 
-        $rooms_results[$key] = $this->getAvailabilityRooms($adults, $children);
-
-        // Before adding a line item to the cart check if a line item with the same unit ID exists
-        if (in_array(COMMERCE_UNCORFIMED, variable_get('rooms_commerce_uncorfirmed', array(COMMERCE_UNCORFIMED)))) {
-          $rooms_results = $this->filterByLineItems($rooms_results);
-        }
+        $this->rooms_results[$key] = $this->applyAvailabilityFilter(array(), $adults, $children);
       }
 
-      if (!empty($rooms_results)) {
-        if ($this->searchForAvailability($rooms_results) == 1) {
-          $results = $this->getAvailabilityRooms($min_group_size, $min_group_size_children);
+      if (!empty($this->rooms_results)) {
+        $this->valid_rooms_combination = array();
 
-          // Before adding a line item to the cart check if a line item with the same unit ID exists
-          if (in_array(COMMERCE_UNCORFIMED, variable_get('rooms_commerce_uncorfirmed', array(COMMERCE_UNCORFIMED)))) {
-            $results = $this->filterByLineItems($results);
+        // If a valid combination exist for booking request
+        if ($this->searchForAvailability($this->rooms_results) == 1) {
+          $results = array();
+
+          foreach ($this->rooms_results as $result) {
+            $results = array_merge($results, $result);
           }
         }
         else {
@@ -191,88 +153,8 @@ class AvailabilityAgent {
       }
     }
 
-
     // Of the rooms that fit the criteria lets see what availability we have
-    if (count($results) > 0) {
-      // Check for rooms currently in the logged in user's cart, so that they will not
-      // be able to add them again.
-      $units_in_cart = array();
-      if (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_COMMERCE_CHECKOUT) {
-        if ($order = commerce_cart_order_load($user->uid)) {
-          $wrapper = entity_metadata_wrapper('commerce_order', $order);
-  
-          // See if there are any product line items.
-          if (commerce_line_items_quantity($wrapper->commerce_line_items, commerce_product_line_item_types()) > 0) {
-            // Get the unit IDs already in the cart.
-            foreach ($wrapper->commerce_line_items as $line_item) {
-              //Need to check if line_item_type = 'rooms_booking', otherwise errors if cart contains non-rooms product(s)
-              if ($line_item->commerce_product->value()->type == 'rooms_product') {
-                $line_item_values = $line_item->value();
-                // Add this unit's ID to the list of units in the cart.
-                $units_in_cart[] = $line_item_values->rooms_booked_unit_id['und'][0]['value'];
-              }
-            }
-          }
-        }
-      }
-
-      foreach ($results['rooms_unit'] as $unit) {
-        // Check if this unit is in the user's cart, and skip adding
-        // it to the available units if so.
-        if (array_search($unit->unit_id, $units_in_cart) !== FALSE) {
-          // @TODO: make displaying this message optional?
-          drupal_set_message(t('A unit or units was not displayed, as it is already in your cart.'), 'status', FALSE);
-          continue;
-        }
-
-        // Get the actual entity
-        $unit = rooms_unit_load($unit->unit_id);
-
-        // Get a calendar and check availability
-        $rc = new UnitCalendar($unit->unit_id);
-        // We need to make this based on user-set vars
-
-        // Rather than using $rc->stateAvailability we will get the states check directly
-        // as different states will impact on what products we create.
-        $states = $rc->getStates($this->start_date, $this->end_date);
-        $state_diff = array_diff($states, $this->valid_states);
-        if (count($state_diff) == 0) {
-          // Calculate the price as well to add to the array
-
-          // First set up price modifiers
-          $price_modifiers = array();
-
-          /*if ($this->group_size == 1) {
-            $price_modifiers['single'] = array('#type' => ROOMS_PRICE_SINGLE_OCCUPANCY);
-          }
-
-          if ($this->group_size_children > 0) {
-            $price_modifiers['children'] = array(
-              '#type' => ROOMS_DYNAMIC_MODIFIER,
-              '#op_type' => ROOMS_ADD,
-              '#amount' => $unit->cot_surcharge * ($this->start_date->diff($this->end_date)->days + 1),
-            );
-          }*/
-
-          // Give other modules a chance to change the price modifiers
-          drupal_alter('rooms_price_modifier', $price_modifiers);
-
-          $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
-          $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
-          $full_price = $price['full_price'];
-          $units[$unit->type][$full_price][$unit->unit_id]['unit'] = $unit;
-          $units[$unit->type][$full_price][$unit->unit_id]['price'] = $full_price;
-          $units[$unit->type][$full_price][$unit->unit_id]['booking_price'] = $price['booking_price'];
-          if (in_array(ROOMS_ON_REQUEST, $states)) {
-            $units[$unit->type][$full_price][$unit->unit_id]['state'] = ROOMS_ON_REQUEST;
-          }
-          else {
-            $units[$unit->type][$full_price][$unit->unit_id]['state'] = ROOMS_AVAILABLE;
-          }
-
-        }
-      }
-    }
+    $units = $this->getUnitsByPriceType($results);
 
     if (count($units) == 0) {
       return ROOMS_NO_ROOMS;
@@ -304,32 +186,23 @@ class AvailabilityAgent {
     // as different states will impact on what products we create.
     $states = $rc->getStates($this->start_date, $this->end_date);
     $state_diff = array_diff($states, $this->valid_states);
+
     if (count($state_diff) == 0) {
       // Calculate the price as well to add to the array
 
       // First set up price modifiers
       $price_modifiers = array();
 
-      /*if ($this->group_size == 1) {
-        $price_modifiers['single'] = array('#type' => ROOMS_PRICE_SINGLE_OCCUPANCY);
-      }
-
-      if ($this->group_size_children > 0) {
-        $price_modifiers['children'] = array(
-          '#type' => ROOMS_DYNAMIC_MODIFIER,
-          '#op_type' => ROOMS_ADD,
-          '#amount' => $unit->cot_surcharge * ($this->start_date->diff($this->end_date)->days + 1),
-        );
-      }*/
-
       // Give other modules a chance to change the price modifiers
       drupal_alter('rooms_price_modifier', $price_modifiers);
 
       $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
       $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
+
       $units[$unit->unit_id]['unit'] = $unit;
       $units[$unit->unit_id]['price'] = $price['full_price'];
       $units[$unit->unit_id]['booking_price'] = $price['booking_price'];
+
       if (in_array(ROOMS_ON_REQUEST, $states)) {
         $units[$unit->unit_id]['state'] = ROOMS_ON_REQUEST;
       }
@@ -346,41 +219,73 @@ class AvailabilityAgent {
     }
   }
 
-  /**
-   * Filter results by remove Unit that are already in cart
-   */
-  function filterByLineItems($rooms_results) {
-    global $user;
 
-    $order = commerce_cart_order_load($user->uid);
+  function applyAvailabilityFilter($units = array(), $adults = 0, $children = 0) {
+    // Apply AvailabilityAgentSizeFilter
+    $av_sizefilter = new AvailabilityAgentSizeFilter($units, array('group_size' => $adults, 'group_size_children' => $children));
+    $units = $av_sizefilter->applyFilter();
 
-    if (isset($order->commerce_line_items['und'])) {
-      foreach ($order->commerce_line_items['und'] as $key => $value) {
+    // Apply AvailabilityAgentDateFilter
+    $av_datefilter = new AvailabilityAgentDateFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date, 'valid_states' => $this->valid_states));
+    $units = $av_datefilter->applyFilter();
 
-        $line_item = commerce_line_item_load($value['line_item_id']);
+    // Apply AvailabilityAgentCommerceFilter
+    $av_commercefilter = new AvailabilityAgentCommerceFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date));
+    $results = $av_commercefilter->applyFilter();
 
-        $s_date = new DateTime($line_item->rooms_booking_dates['und'][0]['value']);
-        $e_date = new DateTime($line_item->rooms_booking_dates['und'][0]['value2']);
+    return $results;
+  }
 
-        if ( ($s_date < $this->start_date && $e_date > $this->end_date) ||
-             ($s_date > $this->start_date && $e_date < $this->end_date) ||
-             ($s_date < $this->start_date && $e_date > $this->start_date) ||
-             ($s_date < $this->end_date && $e_date > $this->end_date) ) {
 
-          foreach ($rooms_results as $key2 => $res) {
-            if (isset($rooms_results[$key2]['rooms_unit'][$line_item->rooms_booked_unit_id['und'][0]['value']])) {
-              unset($rooms_results[$key2]['rooms_unit'][$line_item->rooms_booked_unit_id['und'][0]['value']]);
-            }
-          }
+  function getUnitsByPriceType($results) {
+    $units = array();
 
-          if (isset($rooms_results['rooms_unit'])) {
-            unset($rooms_results['rooms_unit'][$line_item->rooms_booked_unit_id['und'][0]['value']]);
-          }
+    if (count($results) > 0) {
+      foreach ($results['rooms_unit'] as $unit) {
+        // Get the actual entity
+        $unit = rooms_unit_load($unit->unit_id);
+
+        // Get a calendar and check availability
+        $rc = new UnitCalendar($unit->unit_id);
+        // We need to make this based on user-set vars
+
+        // Rather than using $rc->stateAvailability we will get the states check directly
+        // as different states will impact on what products we create.
+        $states = $rc->getStates($this->start_date, $this->end_date);
+
+        // Calculate the price as well to add to the array
+          
+        // First set up price modifiers
+        $price_modifiers = array();
+
+        $booking_info = array(
+          'start_date' => $this->start_date,
+          'end_date' => $this->end_date,
+          'unit' => $unit,
+          'booking_parameters' => $this->booking_parameters
+        );
+
+        // Give other modules a chance to change the price modifiers
+        drupal_alter('rooms_price_modifier', $price_modifiers, $booking_info);
+
+        $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
+        $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
+        $full_price = $price['full_price'];
+
+        $units[$unit->type][$full_price][$unit->unit_id]['unit'] = $unit;
+        $units[$unit->type][$full_price][$unit->unit_id]['price'] = $full_price;
+        $units[$unit->type][$full_price][$unit->unit_id]['booking_price'] = $price['booking_price'];
+
+        if (in_array(ROOMS_ON_REQUEST, $states)) {
+          $units[$unit->type][$full_price][$unit->unit_id]['state'] = ROOMS_ON_REQUEST;
+        }
+        else {
+          $units[$unit->type][$full_price][$unit->unit_id]['state'] = ROOMS_AVAILABLE;
         }
       }
     }
 
-    return $rooms_results;
+    return $units;
   }
 
 }
