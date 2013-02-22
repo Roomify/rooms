@@ -1,0 +1,76 @@
+<?php
+
+
+/**
+ * Implements hook_menu().
+ */
+function rooms_test_menu() {
+  $items = array();
+  
+  $items['admin/rooms/test/availabilitysizefilter'] = array(
+    'title' => t('AvailabilityAgentSizeFilter Test'),
+    'page callback' => 'rooms_test_availabilitysizefilter',
+    'access callback' => 'rooms_availability_admin_access',
+    'access arguments' => array('configure room settings'),
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/rooms/test/availabilitydatefilter'] = array(
+    'title' => t('AvailabilityAgentDateFilter Test'),
+    'page callback' => 'rooms_test_availabilitydatefilter',
+    'access callback' => 'rooms_availability_admin_access',
+    'access arguments' => array('configure room settings'),
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/rooms/test/availabilitycommercefilter'] = array(
+    'title' => t('AvailabilityAgentCommerceFilter Test'),
+    'page callback' => 'rooms_test_availabilitycommercefilter',
+    'access callback' => 'rooms_availability_admin_access',
+    'access arguments' => array('configure room settings'),
+    'type' => MENU_LOCAL_TASK,
+  );
+  
+  return $items;
+}
+
+
+function rooms_test_availabilitysizefilter() {
+	$av_sizefilter = new AvailabilityAgentSizeFilter(array(), array());
+  $units = $av_sizefilter->applyFilter();
+
+  $output = 'All size: ' . serialize($units) . '<br><br>';
+
+  $av_sizefilter = new AvailabilityAgentSizeFilter(array(), array('group_size' => 2));
+  $units = $av_sizefilter->applyFilter();
+
+  $output .= 'Group size 2: ' . serialize($units) . '<br><br>';
+
+
+  $unit = new stdClass();
+  $unit->unit_id = 2;
+  $unit->type = 'deluxe_unit';
+  
+  $av_sizefilter = new AvailabilityAgentSizeFilter(array('rooms_unit' => array($unit)), array('group_size' => 2));
+  $units = $av_sizefilter->applyFilter();
+
+  $output .= 'Deluxe unit: ' . serialize($units);
+
+  return $output;
+}
+
+
+function rooms_test_availabilitydatefilter() {
+	$av_datefilter = new AvailabilityAgentDateFilter(array(), array('start_date' => new DateTime('20-02-2013'), 'end_date' => new DateTime('27-02-2013')));
+  $units = $av_datefilter->applyFilter();
+
+  return serialize($units);
+}
+
+
+function rooms_test_availabilitycommercefilter() {
+  $av_commercefilter = new AvailabilityAgentCommerceFilter(array(), array());
+  $units = $av_commercefilter->applyFilter();
+
+  return serialize($units);
+}

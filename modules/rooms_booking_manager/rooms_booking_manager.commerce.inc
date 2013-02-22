@@ -7,7 +7,7 @@
  */
 
 
-function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
+function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent, $booking_size) {
     $date_format = variable_get('rooms_date_format', 'd-m-Y');
 
     $unit_id = $unit_to_book['unit']->unit_id;
@@ -33,8 +33,8 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
     $unit_info = $agent->checkAvailabilityForUnit($unit_id);
 
     // Check $unit_info to make sure we still have availbility
-    if ($unit_info == ROOMS_NO_ROOMS) {
-      form_set_error('', t('We are soory, booking unit is no longer available.'));
+    if ($unit_info == ROOMS_NO_ROOMS) {dpm($unit_id);
+      form_set_error('', t('We are sorry, booking unit is no longer available.'));
     }
     else {
       // If available set price and create line item
@@ -83,10 +83,10 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent) {
       $group_size = array(
         LANGUAGE_NONE => array(
           array(
-            'value' => $agent->group_size,
+            'value' => isset($booking_size['adults']) ? $booking_size['adults'] : 0,
           ),
           array(
-            'value' => $agent->group_size_children,
+            'value' => isset($booking_size['children']) ? $booking_size['children'] : 0,
           ),
         ),
       );
