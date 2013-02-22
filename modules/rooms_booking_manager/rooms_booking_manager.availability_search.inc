@@ -68,9 +68,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
       '#suffix' => '</thead>',
     );
 
-    if (in_array(ROOMS_CHILDREN_FEATURES, array_filter(variable_get('rooms_experimental_features', array(''))))) {
-      $form['rooms_fieldset']['table_header']['#markup'] .= '<th>' . t('Children') . '</th>';
-    }
+    $form['rooms_fieldset']['table_header']['#markup'] .= '<th>' . t('Children') . '</th>';
    
     $form['rooms_fieldset']['table_body'] = array(
       '#markup' => '<tbody>',
@@ -100,20 +98,18 @@ function rooms_booking_availability_search_form($form, $form_state) {
         '#suffix' => '</td>',
       );
    
-      if (in_array(ROOMS_CHILDREN_FEATURES, array_filter(variable_get('rooms_experimental_features', array(''))))) {
-        $form['rooms_fieldset']['group_size_children:' . $i] = array(
-          '#type' => 'select',
-          '#options' => array(
-            '0' => '0',
-            '1' => '1',
-            '2' => '2',
-            '3' => '3',
-          ),
-          '#default_value' =>  isset($booking_parameters[$i]['children']) ? $booking_parameters[$i]['children'] : '0',
-          '#prefix' => '<td>',
-          '#suffix' => '</td>',
-        );
-      }
+      $form['rooms_fieldset']['group_size_children:' . $i] = array(
+        '#type' => 'select',
+        '#options' => array(
+          '0' => '0',
+          '1' => '1',
+          '2' => '2',
+          '3' => '3',
+        ),
+        '#default_value' =>  isset($booking_parameters[$i]['children']) ? $booking_parameters[$i]['children'] : '0',
+        '#prefix' => '<td>',
+        '#suffix' => '</td>',
+      );
    
       $form['rooms_fieldset']['table_row:' . $i] = array(
         '#markup' => '</tr>',
@@ -140,19 +136,17 @@ function rooms_booking_availability_search_form($form, $form_state) {
       '#default_value' => isset($booking_parameters[1]['adults']) ? $booking_parameters[1]['adults'] : 2,
     );
 
-    if (in_array(ROOMS_CHILDREN_FEATURES, array_filter(variable_get('rooms_experimental_features', array(''))))) {
-      $form['rooms_fieldset']['group_size_children:1'] = array(
-        '#type' => 'select',
-        '#title' => t('Children'),
-        '#options' => array(
-          '0' => '0',
-          '1' => '1',
-          '2' => '2',
-          '3' => '3',
-        ),
-        '#default_value' =>  isset($booking_parameters[1]['children']) ? $booking_parameters[1]['children'] : 0,
-      );
-    }
+    $form['rooms_fieldset']['group_size_children:1'] = array(
+      '#type' => 'select',
+      '#title' => t('Children'),
+      '#options' => array(
+        '0' => '0',
+        '1' => '1',
+        '2' => '2',
+        '3' => '3',
+      ),
+      '#default_value' =>  isset($booking_parameters[1]['children']) ? $booking_parameters[1]['children'] : 0,
+    );
   }
 
   $form['actions'] = array(
