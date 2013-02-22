@@ -181,7 +181,7 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $boo
     $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS)));
 
     $units_per_type = $agent->checkAvailability();
-
+    
     // If we don't have any useful result to show just display a failure message and the search form    
     if (($units_per_type == ROOMS_NO_ROOMS) || ($units_per_type == ROOMS_SIZE_FAILURE)) {
       $content['booking_results'] = 0;

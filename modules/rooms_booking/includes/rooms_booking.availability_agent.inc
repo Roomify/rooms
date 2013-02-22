@@ -35,6 +35,7 @@ class AvailabilityAgent {
 
   // Store first valid rooms combination for booking_parameters in input
   public $valid_rooms_combination = array();
+  
 
   public function __construct($start_date, $end_date, $booking_parameters = array(), $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS), $unit_types = array()) {
     $this->valid_states = $valid_states;
@@ -59,7 +60,12 @@ class AvailabilityAgent {
     $this->valid_states = $states;
   }
 
-  // Try to find a valid rooms combination that satisfies booking request
+
+  /**
+   * This function is used to recursively iterate over sets of rooms identifying
+   * whether there is a solution across the sets that has at least one option in 
+   * each set.
+   */
   private function searchForAvailability($rooms_results) {
     $el_key = array_shift(array_keys($rooms_results));
 
