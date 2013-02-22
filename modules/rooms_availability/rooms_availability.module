@@ -197,9 +197,11 @@ function rooms_availability_bulk_unit_management($year='', $month='', $type='all
   drupal_add_js(array('roomsUnitManagement' => array('currentMonth' => $month)), 'setting');
   drupal_add_js(array('roomsUnitManagement' => array('currentYear' => $year)), 'setting');
 
-  $output = render(drupal_get_form('rooms_availability_filter_month_form', $month, $year));
+  $filter_month_form = drupal_get_form('rooms_availability_filter_month_form', $month, $year);
+  $output = render($filter_month_form);
 
-  $output .= render(drupal_get_form('rooms_availability_update_status_form', $month, $year, $type, $rooms_units));
+  $update_status_form = drupal_get_form('rooms_availability_update_status_form', $month, $year, $type, $rooms_units);
+  $output .= render($update_status_form);
 
   $rooms_id = array();
   foreach ($rooms_units as $value) {
@@ -399,7 +401,6 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
       '7' => t('Sat'),
     ),
   );
-
  
   $form['rooms_pricing_update']['op'] = array(
     '#title' => t('Operation'),
@@ -693,9 +694,11 @@ function rooms_availability_update_status_form_validate(&$form, &$form_state) {
   if ($form_state['values']['rooms_end_date']['date'] == '') {
     return;
   }
+
   if ($form_state['values']['change_event_status'] == -1) {
     form_set_error('change_event_status', t('Select a valid status'));
   }
+
   $date1 = new DateTime($form_state['values']['rooms_start_date']);
   $date2 = new DateTime($form_state['values']['rooms_end_date']);
   $diff = $date1->diff($date2);
@@ -703,6 +706,7 @@ function rooms_availability_update_status_form_validate(&$form, &$form_state) {
   if ($diff->invert) {
     form_set_error('date_range', t('End date must be after start date'));
   }
+
   $curr_month = $form_state['values']['curr_month'];
   $curr_year = $form_state['values']['curr_year'];
   if ($date1->format('n') != $curr_month || $date2->format('n') != $curr_month
@@ -710,7 +714,7 @@ function rooms_availability_update_status_form_validate(&$form, &$form_state) {
     form_set_error('date_range', t('End date and start date are out of current month'));
   }
 
-    $select_rooms = FALSE;
+  $select_rooms = FALSE;
   if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'false') {
     foreach ($form_state['values'] as $key => $value) {
       if (strpos($key, 'rooms-') === 0 && $value == '1') {
@@ -721,7 +725,6 @@ function rooms_availability_update_status_form_validate(&$form, &$form_state) {
   else {
     $select_rooms = TRUE;
   }
-
   if (!$select_rooms) form_set_error('select-all', t('Select at least one room'));
 }
 

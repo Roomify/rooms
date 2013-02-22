@@ -9,14 +9,15 @@ interface AvailabilityAgentFilter {
 
   /**
    * @param array rooms The set of rooms to filter through
+   * @param array parameters A set of filter parameters
    */
   public function __construct($units, $parameters);
-  
+
   /**
    * @return array The rooms remaining following the application of the filter
    */
   public function applyFilter();
-  
+
 }
 
 
@@ -233,10 +234,8 @@ class AvailabilityAgentCommerceFilter extends AvailabilityAgentCommonFilter {
 
   // Check if search interval overlaps line_item interval
   private function check_in_range($line_item_start_date, $line_item_end_date, $start_date, $end_date) {
-    if ( ($line_item_start_date <= $start_date && $line_item_end_date >= $end_date) ||
-         ($line_item_start_date >= $start_date && $line_item_end_date <= $end_date) ||
-         ($line_item_start_date <= $start_date && $line_item_end_date >= $start_date) ||
-         ($line_item_start_date <= $end_date && $line_item_end_date >= $end_date) ) {
+    if (!(($line_item_start_date < $start_date && $line_item_end_date < $start_date) ||
+          ($line_item_start_date > $end_date && $line_item_end_date > $end_date))) {
 
       return TRUE;
 

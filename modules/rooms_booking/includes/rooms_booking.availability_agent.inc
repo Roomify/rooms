@@ -138,10 +138,10 @@ class AvailabilityAgent {
 
         // If a valid combination exist for booking request
         if ($this->searchForAvailability($this->rooms_results) == 1) {
-          $results = array();
+          $results = array('rooms_unit' => array());
 
           foreach ($this->rooms_results as $result) {
-            $results = array_merge($results, $result);
+            $results['rooms_unit'] = $results['rooms_unit'] + $result['rooms_unit'];
           }
         }
         else {
