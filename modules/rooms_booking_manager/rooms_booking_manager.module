@@ -133,8 +133,8 @@ function rooms_booking_manager_enquiry_page_form($form, $form_state, $start_date
 
 
 /**
- *@todo - check that original availability still holds
- *@todo - fix the user ownership of products
+ * @todo - check that original availability still holds
+ * @todo - fix the user ownership of products
  */
 function rooms_booking_manager_enquiry_page_form_submit(&$form, &$form_state) {
   if (isset($form_state['values']['enquiry_form'])) {
@@ -346,9 +346,6 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
       '#suffix' => '</h2>'
     );
 
-    $currency_setting = commerce_currency_load(commerce_default_currency());
-    $currency_symbol = $currency_setting['symbol'];
-
     foreach ($price_level as $price => $units) {
       foreach ($units as $unit_id => $unit) {
         // Load the unit and render
@@ -356,14 +353,12 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
         $controller = entity_get_controller('rooms_unit');
         $unit_content = $controller->view(array($unit_id => $unit_obj));
         $content['units_per_type'][$type][$price][$unit_id]['unit'] = $unit_content;
-        $content['units_per_type'][$type][$price][$unit_id]['price'] = array(
-          '#prefix' => '<div class="unit_price" style="font-weight:bold">',
-          '#markup' =>  t('Cost:') . ' ' . $unit['price'] . ' ' . $currency_symbol,
-          '#suffix' => '</div>'
-        );
+
+        $singlediscount = isset($unit['singlediscount']) ? $unit['singlediscount'] : '';
+
         // Add purchase forms - passing through hook_forms to handle multiple forms on the page
         $form = 'book_unit_form_' . $unit_id;
-        $content['units_per_type'][$type][$price][$unit_id]['book_unit_form'] = drupal_get_form($form, $unit_obj, $start_date, $end_date, $booking_parameters[1]['adults'], $unit['state']);
+        $content['units_per_type'][$type][$price][$unit_id]['book_unit_form'] = drupal_get_form($form, $unit_obj, $start_date, $end_date, $booking_parameters[1]['adults'], $unit['state'], $unit['price'], $singlediscount);
       }
     }
   }
@@ -415,7 +410,10 @@ function rooms_booking_manager_forms($form_id, $args) {
  *
  * The available units have already been identified by rooms_booking_manager_results_page.
  */
-function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_date, $group_size_adults, $status) {
+function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_date, $group_size_adults, $status, $price, $single_price) {
+
+  $currency_setting = commerce_currency_load(commerce_default_currency());
+  $currency_symbol = $currency_setting['symbol'];
 
   $form['unit_id'] = array(
     '#type' => 'hidden',
@@ -442,12 +440,38 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     '#value' => $group_size_adults,
   );
 
+  // If 'For single use' option is selected we display unit price with singlediscount
+  if (isset($form_state['values']['singlediscount'])) {
+    if ($form_state['values']['singlediscount']) {
+      $price = $single_price;
+    }
+  }
+
+  $form['price'] = array(
+    '#prefix' => '<div class="unit_price" id="' . $unit->unit_id . '_price" style="font-weight:bold">',
+    '#markup' =>  t('Cost:') . ' ' . $price . ' ' . $currency_symbol,
+    '#suffix' => '</div>'
+  );
+
   // We add the form's #submit array to this button along with the actual submit
   // handler to preserve any submit handlers added by a form callback_wrapper.
   $submit = array();
 
   if (!empty($form['#submit'])) {
     $submit += $form['#submit'];
+  }
+
+  if (isset($unit->data['singlediscount'])) {
+    if (is_numeric($unit->data['singlediscount'])) {
+      $form['singlediscount'] = array(
+        '#type' => 'checkbox',
+        '#title' => 'For single use',
+        '#ajax' => array(
+          'callback' => 'rooms_booking_manager_price_change_callback',
+          'wrapper' => $unit->unit_id . '_price',
+        ),
+      );
+    }
   }
 
   $form['actions']['submit'] = array(
@@ -460,6 +484,11 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
   // is used to add validate handlers earlier.
   $form['#validate'][] = 'book_unit_form_validate';
   return $form;
+}
+
+
+function rooms_booking_manager_price_change_callback(&$form, $form_state) {
+  return $form['price'];
 }
 
 
@@ -501,6 +530,13 @@ function book_unit_form_submit(&$form, &$form_state) {
     if (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_COMMERCE_CHECKOUT) {
 
       $unit = array_pop($available_units);
+
+      // If is set 'For single use' option
+      if (isset($form_state['values']['singlediscount'])) {
+        if ($form_state['values']['singlediscount'] == '1') {
+          $group_size = 1;
+        }
+      }
 
       // Create line item
       $line_item = rooms_create_line_item($unit, $agent, array('adults' => $group_size, 'children' => 0));
@@ -632,7 +668,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         // Element to display price
         $form[$type . ':' . $price][$type . ':' . $price . ':price'] = array(
           '#prefix' => '<tr><td><div class="unit_price" style="font-weight:bold">',
-          '#markup' =>  t('Cost:') . ' ' . $price . ' ' . $currency_symbol,
+          '#markup' =>  t('Base Cost:') . ' ' . $price . ' ' . $currency_symbol,
           '#suffix' => '</div>'
         );
 
@@ -648,14 +684,25 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         for ($i = 0; $i <= count($units); $i++) {
           $options[$i] = $i;
         }
+        // ajax wrapper id
+        $id = 'rooms_' . $type . '_' . $price;
         $form[$type . ':' . $price][$type . ':' . $price . ':quantity'] = array(
           '#prefix' => '<td style="width:15%;" class="room_units">',
           '#title' => t('Units'),
           '#type' => 'select',
           '#options' => $options,
           '#suffix' => '</td>',
+          '#ajax' => array(
+            'callback' => 'rooms_booking_manager_quantity_change_callback',
+            'wrapper' => $type . '_' . $price . '_container',
+          ),
+          '#attributes' => array(
+            'onchange' => "if (this.value == 0) document.getElementById('" . $id . "').style.display = 'none';
+                           else document.getElementById('" . $id . "').style.display = 'table-row';"
+          )
         );
 
+        // Show button 'Place Booking' only on the first row
         if ($index == 0) {
           $form[$type . ':' . $price]['submit'] = array(
             '#prefix' => '<td style="width:15%;" class="room_placebooking"><div id="rooms_booking_button">',
@@ -674,8 +721,50 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
           );
         }
 
+        // Display single units price and options (for now only singlediscount option)
+        $form[$type . ':' . $price][$type . ':' . $price . ':field_start'] = array (
+         '#markup' => '<tr style="display:none;" id="rooms_' . $type . '_' . $price . '"><td>',
+        );
+
+        $form[$type . ':' . $price][$type . ':' . $price . ':fieldset'] = array (
+         '#prefix' => '<div id="' . $type . '_' . $price . '_container">',
+         '#type' => 'fieldset',
+         '#suffix' => '</div>'
+        );
+
+        if (isset($form_state['values'][$type . ':' . $price . ':quantity'])) {
+          $units_keys = array_keys($units);
+
+          for ($c = 1; $c <= $form_state['values'][$type . ':' . $price . ':quantity']; $c++) {
+            $form[$type . ':' . $price][$type . ':' . $price . ':fieldset']['label:' . $c]['#markup'] = $type_obj->label . ' ' . $c;
+
+            if (isset($units[$units_keys[$c - 1]]['singlediscount'])) {
+              $form[$type . ':' . $price][$type . ':' . $price . ':fieldset'][$type . ':' . $price . ':' . $c . ':singlediscount'] = array(
+                '#type' => 'checkbox',
+                '#title' => 'For single use',
+                '#ajax' => array(
+                  'callback' => 'rooms_booking_manager_singlediscount_change_callback',
+                  'wrapper' => $type . '_' . $price . '_' . $c . '_price',
+                ),
+              );
+            }
+
+            $form[$type . ':' . $price][$type . ':' . $price . ':fieldset'][$type . ':' . $price . ':' . $c . ':price'] = array(
+              '#prefix' => '<div id="' . $type . '_' . $price . '_' . $c . '_price">',
+              '#markup' => $price . ' ' . $currency_symbol,
+              '#suffix' => '</div>',
+            );
+
+            if (isset($form_state['values'][$type . ':' . $price . ':' . $c . ':singlediscount'])) {
+              if ($form_state['values'][$type . ':' . $price . ':' . $c . ':singlediscount'] == 1) {
+                $form[$type . ':' . $price][$type . ':' . $price . ':fieldset'][$type . ':' . $price . ':' . $c . ':price']['#markup'] = $units[$units_keys[$c - 1]]['singlediscount'] . ' ' . $currency_symbol;
+              }
+            }
+          }
+        }
+
         $form[$type . ':' . $price][$type . ':' . $price . ':close-markup'] = array(
-        '#markup' => '</table>',
+        '#markup' => '</td></tr></table>',
         );
       }
 
@@ -699,6 +788,26 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
   }
 
   return $form;
+}
+
+
+/**
+ * Ajax callback on booking search results page when quantity change
+ */
+function rooms_booking_manager_quantity_change_callback(&$form, $form_state) {
+  list($type, $price) = explode(':', $form_state['triggering_element']['#name']);
+
+  return $form[$type . ':' . $price][$type . ':' . $price . ':' . 'fieldset'];
+}
+
+
+/**
+ * Ajax callback on booking search results page when 'For single use' change
+ */
+function rooms_booking_manager_singlediscount_change_callback(&$form, $form_state) {
+  list($type, $price, $index) = explode(':', $form_state['triggering_element']['#name']);
+
+  return $form[$type . ':' . $price][$type . ':' . $price . ':fieldset'][$type . ':' . $price . ':' . $index . ':price'];
 }
 
 
@@ -840,8 +949,8 @@ function room_booking_manager_send_email($form_state) {
 
 
 /**
- *@todo - check that original availability still holds
- *@todo - fix the user ownership of products
+ * @todo - check that original availability still holds
+ * @todo - fix the user ownership of products
  */
 function book_units_per_type_form_submit(&$form, &$form_state) {
 
@@ -870,7 +979,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
       $order[$type][$price_level][$value_type] = $value;
     }
   }
-  dpm($order);
+
   // This is very inefficient right now but we need to create date objects
   // reconvert them back to strings to only recreate them in the Availability Agent
   $sd = start_date_load($start_date);
@@ -892,11 +1001,23 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
       if ($unit_order['quantity'] > 0) {
         for ($i = 1; $i <= $unit_order['quantity']; $i++) {
           $unit = array_pop($units_per_type[$type][$price_level]);
-          
+
           // If we are using Commerce create the line items and pop in cart
           if (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_COMMERCE_CHECKOUT) {
+
+            // Fill group_size with unit size
+            $group_size = array('adults' => $unit['unit']->sleeps, 'children' => $unit['unit']->children);
+
+            // Is user have selected 'For single use' set adults = 1 and children = 0
+            if (isset($form_state['values'][$type . ':' . $price_level . ':' . $i .':singlediscount'])) {
+              if ($form_state['values'][$type . ':' . $price_level . ':' . $i .':singlediscount'] == 1) {
+                $group_size['adults'] = 1;
+                $group_size['children'] = 0;
+              }
+            }
+
             // Create line item
-            $line_item = rooms_create_line_item($unit, $agent, $booking_parameters[$j + 1]);
+            $line_item = rooms_create_line_item($unit, $agent, $group_size);
 
             // Add line item to cart
             if (!empty($line_item)) {
@@ -953,6 +1074,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
     $form_state['rebuild'] = TRUE;
   }
 }
+
 
 /**
  * This function redirects the user back to the search box and sets up the values
@@ -1110,7 +1232,6 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
     }
   }
 }
-
 
 
 function rooms_booking_manager_commerce_order_state_info() {
@@ -1638,7 +1759,6 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
 }
 
 
-
 function rooms_booking_manager_settings_form_submit($form, &$form_state) {
   /*if($form_state['values']['rooms_payment_options'] == PERCENT_PAYMENT) {
     variable_set('rooms_payment_options_percentual', $form_state['values']['perc_textfield']);
@@ -1688,9 +1808,11 @@ function rooms_booking_manager_rules_action_info() {
   return $actions;
 }
 
+
 function rooms_booking_cancel_order_booking() {
 
 }
+
 
 function rooms_booking_manager_price_apply($line_item, $name) {
   if ($line_item->type == 'rooms_booking') {
@@ -1734,6 +1856,7 @@ function rooms_booking_manager_price_apply($line_item, $name) {
   }
 }
 
+
 /**
  * Implements hook_default_rules_configuration().
  */
@@ -1756,6 +1879,7 @@ function rooms_booking_manager_default_rules_configuration() {
   return $rules;
 }
 
+
 /**
  * Implements hook_block_info()
  */
@@ -1769,6 +1893,7 @@ function rooms_booking_manager_block_info() {
 
   return $blocks;
 }
+
 
 /**
  * Implements hook_block_view()
@@ -1796,6 +1921,7 @@ function rooms_booking_manager_block_view($block_name = '') {
   }
 }
 
+
 /**
  * Implements hook_commerce_line_item_type_info().
  */
@@ -1810,6 +1936,7 @@ function rooms_booking_manager_commerce_line_item_type_info() {
     ),
   );
 }
+
 
 /**
  * Ensures the booking line item type contains a product reference field and
@@ -1838,6 +1965,7 @@ function rooms_booking_manager_line_item_configuration($line_item_type) {
   }
 }
 
+
 /**
  * Implements hook_line_item_title()
  * Returns the title of a line item based on its type.
@@ -1853,6 +1981,7 @@ function rooms_booking_manager_line_item_title($line_item) {
   return ($line_item->line_item_label);
 }
 
+
 /**
  * Implements hook_commerce_product_type_info().
  */
@@ -1866,6 +1995,7 @@ function rooms_booking_manager_commerce_product_type_info() {
     ),
   );
 }
+
 
 /**
  * Implements hook_enable().
@@ -1898,6 +2028,7 @@ function rooms_booking_manager_enable() {
   }
 }
 
+
 /**
  * Implements hook_views_api().
  */
@@ -1907,7 +2038,6 @@ function rooms_booking_manager_views_api() {
     'path' => drupal_get_path('module', 'rooms_booking_manager') . '/views',
   );
 }
-
 
 
 /**

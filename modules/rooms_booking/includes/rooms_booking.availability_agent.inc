@@ -177,40 +177,8 @@ class AvailabilityAgent {
     // Load the unit
     $unit = rooms_unit_load($unit_id);
 
-    // Get a calendar and check availability
-    $rc = new UnitCalendar($unit_id);
-
-    // We need to make this based on user-set vars
-
-    // Rather than using $rc->stateAvailability we will get the states check directly
-    // as different states will impact on what products we create.
-    $states = $rc->getStates($this->start_date, $this->end_date);
-    $state_diff = array_diff($states, $this->valid_states);
-
-    if (count($state_diff) == 0) {
-      // Calculate the price as well to add to the array
-
-      // First set up price modifiers
-      $price_modifiers = array();
-
-      // Give other modules a chance to change the price modifiers
-      drupal_alter('rooms_price_modifier', $price_modifiers);
-
-      $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
-      $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
-
-      $units[$unit->unit_id]['unit'] = $unit;
-      $units[$unit->unit_id]['price'] = $price['full_price'];
-      $units[$unit->unit_id]['booking_price'] = $price['booking_price'];
-
-      if (in_array(ROOMS_ON_REQUEST, $states)) {
-        $units[$unit->unit_id]['state'] = ROOMS_ON_REQUEST;
-      }
-      else {
-        $units[$unit->unit_id]['state'] = ROOMS_AVAILABLE;
-      }
-    }
-
+    $units = array_pop(array_pop($this->getUnitsByPriceType(array('rooms_unit' => array($unit_id => $unit)))));
+    
     if (count($units) == 0) {
       return ROOMS_NO_ROOMS;
     }
@@ -275,6 +243,19 @@ class AvailabilityAgent {
         $units[$unit->type][$full_price][$unit->unit_id]['unit'] = $unit;
         $units[$unit->type][$full_price][$unit->unit_id]['price'] = $full_price;
         $units[$unit->type][$full_price][$unit->unit_id]['booking_price'] = $price['booking_price'];
+
+        if ($unit->data['singlediscount'] != '') {
+          if (is_numeric($unit->data['singlediscount'])) {
+            // First set up price modifiers
+            $price_modifiers = array('single' => array('#type' => ROOMS_PRICE_SINGLE_OCCUPANCY));
+
+            $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
+            $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
+            $price_singlediscount = $price['full_price'];
+
+            $units[$unit->type][$full_price][$unit->unit_id]['singlediscount'] = $price_singlediscount;
+          }
+        }
 
         if (in_array(ROOMS_ON_REQUEST, $states)) {
           $units[$unit->type][$full_price][$unit->unit_id]['state'] = ROOMS_ON_REQUEST;
