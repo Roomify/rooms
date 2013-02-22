@@ -16,6 +16,9 @@ define ('ROOMS_INDIVIDUAL', 'rooms_individual');
 define ('ROOMS_ENQ_CHECKOUT', 'rooms_enq_checkout');
 define ('ROOMS_COMMERCE_CHECKOUT', 'rooms_commerce_checkout');
 
+define ('ROOMS_DISPLAY_CHILDREN', 1);
+define ('ROOMS_DISPLAY_CHILDREN_NO', 0);
+
 define ('FULL_PAYMENT', 10);
 define ('PERCENT_PAYMENT', 11);
 define ('FIRST_NIGHT_PAYMENT', 12);
@@ -1675,6 +1678,14 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
       ),
       '#default_value' => variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT),
     );
+
+    $form['rooms_display_children'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Display children choice in availability search'),
+      '#description' => t('Select whether both group size and children can be shown.'),
+      '#default_value' => variable_get('rooms_display_children', ROOMS_DISPLAY_CHILDREN_NO),
+    );
+
 
     $form['rooms_valid_availability_states'] = array(
       '#type' => 'checkboxes',

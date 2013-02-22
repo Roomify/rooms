@@ -228,27 +228,26 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#default_value' =>  isset($booking->data['group_size']) ? $booking->data['group_size'] : '2',
     '#description' => t('The number of adults staying in this room.'),
   );
-  if (in_array(ROOMS_CHILDREN_FEATURES, array_filter(variable_get('rooms_experimental_features', array(''))))) {
-    $form['data']['group_size_children'] = array(
-      '#type' => 'select',
-      '#title' => 'Children',
-      '#options' => array(
-        '0' => '0',
-        '1' => '1',
-        '2' => '2',
-        '3' => '3',
-        '4' => '4',
-        '5' => '5',
-        '6' => '6',
-        '7' => '7',
-        '8' => '8',
-        '9' => '9',
-        '10' => '10',
-      ),
-      '#default_value' =>  isset($booking->data['group_size_children']) ? $booking->data['group_size_children'] : '0',
-      '#description' => t('The number of children staying in this room.'),
-    );
-  }
+
+  $form['data']['group_size_children'] = array(
+    '#type' => 'select',
+    '#title' => 'Children',
+    '#options' => array(
+      '0' => '0',
+      '1' => '1',
+      '2' => '2',
+      '3' => '3',
+      '4' => '4',
+      '5' => '5',
+      '6' => '6',
+      '7' => '7',
+      '8' => '8',
+      '9' => '9',
+      '10' => '10',
+    ),
+    '#default_value' =>  isset($booking->data['group_size_children']) ? $booking->data['group_size_children'] : '0',
+    '#description' => t('The number of children staying in this room.'),
+  );
 
   // A fieldset to hold the date range fields
   $form['rooms_date_range'] = array(

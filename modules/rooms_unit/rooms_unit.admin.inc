@@ -214,21 +214,19 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#title' => t('Adults sleeps'),
   );
 
-  if (in_array(ROOMS_CHILDREN_FEATURES, array_filter(variable_get('rooms_experimental_features', array(''))))) {
-    $form['children'] = array(
-      '#type' => 'textfield',
-      '#size' => 5,
-      '#default_value' => isset($unit->children) ? $unit->children : 0,
-      '#title' => t('Children sleeps'),
-    );
+  $form['children'] = array(
+    '#type' => 'textfield',
+    '#size' => 5,
+    '#default_value' => isset($unit->children) ? $unit->children : 0,
+    '#title' => t('Children sleeps'),
+  );
 
-    $form['cot_surcharge'] = array(
-      '#type' => 'textfield',
-      '#size' => 5,
-      '#default_value' => isset($unit->cot_surcharge) ? $unit->cot_surcharge : '',
-      '#title' => t('Cot surcharge'),
-    );
-  }
+  $form['cot_surcharge'] = array(
+    '#type' => 'textfield',
+    '#size' => 5,
+    '#default_value' => isset($unit->cot_surcharge) ? $unit->cot_surcharge : '',
+    '#title' => t('Cot surcharge'),
+  );
   
   $form['default_state'] = array(
     '#type' => 'select',
