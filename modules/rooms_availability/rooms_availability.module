@@ -165,10 +165,11 @@ function rooms_availability_pr_ajax_callback() {
 }
 
 
-function rooms_availability_bulk_unit_management($year='', $month='', $type='all', $action='', $start='', $end='') {
+function rooms_availability_bulk_unit_management($year = '', $month = '', $type = 'all', $action = '', $start = '', $end = '') {
+
   // If year is not set then give it the current date
-  $year = ($year == '') ? date('Y', time()) : $year;
-  $month = ($month == '') ? date('n', time()) : $month;
+  $year = ($year != '' && is_numeric($year)) ? $year : date('Y', time());
+  $month = ($month != '' && is_numeric($month)) ? $month : date('n', time());
   $type = ($type == '') ? 'all' : $type;
 
   $page = 0;
@@ -300,7 +301,7 @@ function rooms_availability_filter_month_form($form, &$form_state, $month, $year
     '#title' => t("Year"),
     '#type' => 'select',
     '#options' => $year_options,
-    '#default_value' => 2,
+    '#default_value' => $year - date('Y', time()) + 2,
   );
 
   $query = db_select('rooms_unit_type', 'n')->fields('n', array('type', 'label'));
