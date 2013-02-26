@@ -172,6 +172,16 @@ function rooms_availability_bulk_unit_management($year = '', $month = '', $type 
   $month = ($month != '' && is_numeric($month)) ? $month : date('n', time());
   $type = ($type == '') ? 'all' : $type;
 
+  // It's not a valid unit type
+  if (rooms_unit_get_types($type) == FALSE) {
+    $type = 'all';
+  }
+
+  // It's not a valid month
+  if ($month < 1 || $month > 12) {
+    $month = 1;
+  }
+
   $page = 0;
   if (isset($_GET['page'])) {
     $page = check_plain($_GET['page']);
@@ -220,11 +230,24 @@ function rooms_availability_bulk_unit_management($year = '', $month = '', $type 
 }
 
 
-function rooms_availability_bulk_pricing_management($year='', $month='', $type='all', $action='', $start='', $end='') {
+function rooms_availability_bulk_pricing_management($year = '', $month = '', $type = 'all', $action = '', $start = '', $end = '') {
+
   // If year is not set then give it the current date
   $year = ($year == '') ? date('Y', time()) : $year;
   $month = ($month == '') ? date('n', time()) : $month;
   $type = ($type == '') ? 'all' : $type;
+
+  // It's not a valid unit type
+  if (rooms_unit_get_types($type) == FALSE) {
+    $type = 'all';
+  }
+
+  // It's not a valid month or not valid year
+  $year_options = range(date('Y', time()) - 2, date('Y', time()) + 5);
+  if ($month < 1 || $month > 12 || !in_array($year, $year_options)) {
+    $year = date('Y', time());
+    $month = date('n', time());
+  }
 
   $page = 0;
   if (isset($_GET['page'])) {
