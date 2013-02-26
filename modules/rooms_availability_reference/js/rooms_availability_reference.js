@@ -7,6 +7,9 @@ Drupal.behaviors.rooms_availability_reference = {
     var i = 0;
 
     $('.cal').each(function() {
+      var j = i;
+      var lastSource;
+
       $(this).fullCalendar({
         ignoreTimezone:false,
         editable:false,
@@ -17,20 +20,32 @@ Drupal.behaviors.rooms_availability_reference = {
   				center: 'title',
   				right: 'prev, next'
         },
-        events: Drupal.settings.basePath + '?q=rooms/units/unit/'
-                                          + Drupal.settings.roomsAvailabilityRef[i].unitID
-                                          + '/availability/json/'
-                                          + Drupal.settings.roomsAvailabilityRef[i].startyear
-                                          + '/'
-                                          + Drupal.settings.roomsAvailabilityRef[i].startmonth
-                                          +'/1/' //start day
-                                          + Drupal.settings.roomsAvailabilityRef[i].endyear
-                                          +'/'
-                                          + Drupal.settings.roomsAvailabilityRef[i].endmonth
-                                          +'/'
-                                          + Drupal.settings.roomsAvailabilityRef[i].endday
-                                          + '/'
-                                          + Drupal.settings.roomsAvailabilityRef[i].style
+        viewDisplay: function(view) {
+          if (view.name == 'month') {
+            source = {
+              url: '?q=rooms/units/unit/'
+                      + Drupal.settings.roomsAvailabilityRef[j].unitID
+                      + '/availability/json/'
+                      + view.start.getFullYear()
+                      + '/'
+                      + (view.start.getMonth() + 1)
+                      +'/1/' //start day
+                      + view.end.getFullYear()
+                      +'/'
+                      + (view.end.getMonth() + 1)
+                      +'/1/' // end day
+                      + Drupal.settings.roomsAvailabilityRef[j].style
+            };
+
+            view.calendar.removeEventSource(lastSource)
+            view.calendar.refetchEvents();
+
+            view.calendar.addEventSource(source)
+            view.calendar.refetchEvents();
+
+            lastSource = source;
+          }
+        }
       });
 
       i++;
@@ -43,6 +58,3 @@ Drupal.behaviors.rooms_availability_reference = {
   }
 };
 })(jQuery);
-  
-  
-

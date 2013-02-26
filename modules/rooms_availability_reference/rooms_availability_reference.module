@@ -116,19 +116,6 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
   switch ($display['type']) {
     case 'rooms_availability_reference_default':
 
-      // Get the current time
-      $time = new DateTime();
-      $startyear = $time->format('y');
-      $startmonth = $time->format('n');
-      
-      // Add a year to get the end year and month
-      $time->add(new DateInterval('P1Y'));
-      $endyear = $time->format('y');
-      $endmonth = $time->format('n');
-      $eod = rooms_end_of_month_dates($endyear);
-      $endday = $eod[$endmonth];
-      $time->format('n');
-      
       drupal_add_library('rooms_availability', 'rooms_fullcalendar');
       drupal_add_js(drupal_get_path('module', 'rooms_availability_reference') . '/js/rooms_availability_reference.js');
 
@@ -145,11 +132,6 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
       // Inject settings in javascript that we will use
       $js_settings['roomsAvailabilityRef'][] = array(
         'unitID' => implode(',', $unit_ids),
-        'startyear' => $startyear,
-        'startmonth' => $startmonth,
-        'endyear' => $endyear,
-        'endmonth' => $endmonth,
-        'endday' => $endday,
         'style' => ROOMS_AVAILABILITY_GENERIC_STYLE,
       );
 

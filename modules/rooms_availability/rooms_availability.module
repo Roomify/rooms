@@ -1027,7 +1027,7 @@ function update_availability_calendar_form_submit(&$form, &$form_state) {
  * return the entire month.
  */
 function rooms_availability_event($units, $start_year = '', $start_month = '', $start_day = '', $end_year = '', $end_month = '', $end_day = '', $event_style = ROOMS_AVAILABILITY_ADMIN_STYLE) {
-  
+
   // Check if units is array and if not place in array
   if (!is_array($units)) {
     $units = array($units);
