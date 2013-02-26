@@ -22,28 +22,17 @@ Drupal.behaviors.rooms_availability_reference = {
         },
         viewDisplay: function(view) {
           if (view.name == 'month') {
-            source = {
-              url: '?q=rooms/units/unit/'
-                      + Drupal.settings.roomsAvailabilityRef[j].unitID
-                      + '/availability/json/'
-                      + view.start.getFullYear()
-                      + '/'
-                      + (view.start.getMonth() + 1)
-                      +'/1/' //start day
-                      + view.end.getFullYear()
-                      +'/'
-                      + (view.end.getMonth() + 1)
-                      +'/1/' // end day
-                      + Drupal.settings.roomsAvailabilityRef[j].style
-            };
-
-            view.calendar.removeEventSource(lastSource)
+            view.calendar.removeEventSource(lastSource);
             view.calendar.refetchEvents();
 
-            view.calendar.addEventSource(source)
-            view.calendar.refetchEvents();
+            url = '?q=rooms/units/unit/' + Drupal.settings.roomsAvailabilityRef[j].unitID + '/availability/json/'
+                      + view.start.getFullYear() + '/' + (view.start.getMonth() + 1) + '/1/' //start day
+                      + view.end.getFullYear() +'/' + (view.end.getMonth() + 1) +'/0/' // end day
+                      + Drupal.settings.roomsAvailabilityRef[j].style;
 
-            lastSource = source;
+            view.calendar.addEventSource(url);
+
+            lastSource = url;
           }
         }
       });
