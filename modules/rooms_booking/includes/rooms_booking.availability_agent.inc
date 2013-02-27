@@ -196,8 +196,10 @@ class AvailabilityAgent {
 
   function applyAvailabilityFilter($units = array(), $adults = 0, $children = 0) {
     // Apply AvailabilityAgentSizeFilter
-    $av_sizefilter = new AvailabilityAgentSizeFilter($units, array('group_size' => $adults, 'group_size_children' => $children));
+    $av_sizefilter = new AvailabilityAgentSizeFilter($units, array('group_size' => $adults, 'group_size_children' => $children, 'unit_types' => $this->unit_types));
     $units = $av_sizefilter->applyFilter();
+
+    if ($units == ROOMS_SIZE_FAILURE) return array();
 
     // Apply AvailabilityAgentDateFilter
     $av_datefilter = new AvailabilityAgentDateFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date, 'valid_states' => $this->valid_states));

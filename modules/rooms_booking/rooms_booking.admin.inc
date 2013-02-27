@@ -351,7 +351,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     // If the user has selected a unit type or we already have a unit assigned
     // show all the available units of that type (including the already assign unit)
     if (isset($form_state['values']['unit_type']) || isset($booking->unit_type)) {
-      
+
       $search_unit_type = '';
       if (isset($form_state['values']['unit_type'])) {
         $search_unit_type =  $form_state['values']['unit_type'];
