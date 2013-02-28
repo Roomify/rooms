@@ -116,7 +116,7 @@ class AvailabilityAgent {
 
     // If no booking_parameters or no group size get all available units
     if ($this->booking_parameters == array() || $this->booking_units == 0) {
-      $results = applyAvailabilityFilter();
+      $results = $this->applyAvailabilityFilter();
 
       if ($results == ROOMS_NO_ROOMS) {
         return ROOMS_NO_ROOMS;
