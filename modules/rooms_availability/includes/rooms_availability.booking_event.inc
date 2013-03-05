@@ -209,7 +209,7 @@ class BookingEvent {
       // Get the actual booking id
       $booking_id = rooms_availability_return_id($this->id); 
       $booking = rooms_booking_load($booking_id);
-      if ($style == 'admin') {
+      if ($style == ROOMS_AVAILABILITY_ADMIN_STYLE) {
         $name = $booking->name;
         $interval = $this->diff();
         if ((strlen($name) > 7) && ($interval->d < 1)) {

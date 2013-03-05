@@ -768,8 +768,7 @@ function rooms_booking_delete_form_submit($form, &$form_state) {
                              new DateTime($booking->end_date));
       $uc->removeEvents(array($be));
   }
-  
-  
+
   rooms_booking_delete($booking);
 
   drupal_set_message(t('The booking %name has been deleted.', array('%name' => $booking->name)));

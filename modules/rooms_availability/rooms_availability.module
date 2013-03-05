@@ -63,10 +63,18 @@ function rooms_availability_permission() {
       'description' => t('Allows users to manage availability settings for Rooms'),
       'restrict access' => TRUE,
     ),
-    'view availability information' => array(
-      'title' => t('View availability information'),
-      'description' => t('Allow users to view availability info (especially via availability reference field)'),
-    )
+    'view anonymous availability information' => array(
+      'title' => t('View anonymous availability information'),
+      'description' => t('Allow users to view anonymous availability info (especially via availability reference field)'),
+    ),
+    'view named availability information' => array(
+      'title' => t('View named availability information'),
+      'description' => t('Allow users to view named availability info (especially via availability reference field)'),
+    ),
+    'view past availability information' => array(
+      'title' => t('View past availability information'),
+      'description' => t('Allow users to view availability info in the past (especially via availability reference field)'),
+    ),
   );
   return $permissions;
 }
@@ -846,7 +854,7 @@ function rooms_availability_admin_access($rooms_unit) {
  * Room availability access callback
  */ 
 function rooms_availability_access($rooms_unit) {
-  if (user_access('view availability information')) {
+  if (user_access('view anonymous availability information') || user_access('view named availability information')) {
     return TRUE;
   }
   return FALSE;
@@ -1062,11 +1070,29 @@ function rooms_availability_event($units, $start_year = '', $start_month = '', $
   $end_year = (int)$end_year;
   $end_month = (int)$end_month;
   $end_day = (int)$end_day;
-  
-  $event_style = (int)$event_style;
-  
+
+  if (is_numeric($event_style)) $event_style = (int)$event_style;
+  else $event_style = (int)ROOMS_AVAILABILITY_ADMIN_STYLE;
+
+  // If user don't have 'view named availability information' permission
+  if (!user_access('view named availability information') && !user_access('manage booking unit availability')
+          && $event_style == ROOMS_AVAILABILITY_ADMIN_STYLE) {
+    $event_style = (int)ROOMS_AVAILABILITY_GENERIC_STYLE;
+  }
+  // If user don't have 'view anonymous availability information' permission
+  if (!user_access('view anonymous availability information')  && !user_access('manage booking unit availability')
+          && $event_style == ROOMS_AVAILABILITY_GENERIC_STYLE) {
+    echo drupal_json_encode(array());
+  }
+
+  if (!user_access('view past availability information')) {
+    $start_day = date('j');
+    $start_month = date('n');
+    $start_year = date('Y');
+  }
+
   $eom = rooms_end_of_month_dates($start_year);
-    
+
   if (($start_year == 0) || ($start_month == 0)) {
     echo drupal_json_encode('missing basic info');
     return;
