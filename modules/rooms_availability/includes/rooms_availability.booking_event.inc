@@ -104,7 +104,7 @@ class BookingEvent {
   
   public function unlock() {
     db_delete('rooms_booking_locks')
-    ->condition('state', $this->id)
+    ->condition(db_or()->condition('state', $this->id)->condition('state', -($this->id)))
     ->execute();
   }
   
