@@ -221,13 +221,6 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#title' => t('Children sleeps'),
   );
 
-  $form['cot_surcharge'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($unit->cot_surcharge) ? $unit->cot_surcharge : '',
-    '#title' => t('Cot surcharge'),
-  );
-  
   $form['default_state'] = array(
     '#type' => 'select',
     '#title' => t('Bookable Unit Default State'),
@@ -241,8 +234,14 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#description' => t('Choose what state to put the unit in for the dates chosen above'),
   );
 
-
   $form['data']['#tree'] = TRUE;
+  $form['data']['cot_surcharge'] = array(
+    '#type' => 'textfield',
+    '#size' => 5,
+    '#default_value' => isset($unit->data['cot_surcharge']) ? $unit->data['cot_surcharge'] : '',
+    '#title' => t('Cot surcharge'),
+  );
+
   $form['data']['singlediscount'] = array(
     '#type' => 'textfield',
     '#size' => 5,

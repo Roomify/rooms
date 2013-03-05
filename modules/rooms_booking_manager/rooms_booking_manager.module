@@ -1846,7 +1846,7 @@ function rooms_booking_manager_price_apply($line_item, $name) {
       $price_modifiers['children'] = array(
         '#type' => ROOMS_DYNAMIC_MODIFIER,
         '#op_type' => ROOMS_ADD,
-        '#amount' => $unit->cot_surcharge * ($start_date->diff($end_date)->days + 1),
+        '#amount' => $unit->data['cot_surcharge'] * ($start_date->diff($end_date)->days + 1),
       );
     }
 

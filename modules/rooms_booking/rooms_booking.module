@@ -168,10 +168,12 @@ function rooms_booking_access($op, $booking = NULL, $account = NULL) {
   if (user_access('administer bookings', $account)) {
     return TRUE;
   }
-  if (isset($booking) && $type_name = $booking->type) {
-    $op = ($op == 'view') ? 'view' : 'edit';
-    if (user_access("$op any $type_name booking", $account)) {
-      return TRUE;
+  if (is_object($booking)) {
+    if ($type_name = $booking->type) {
+      $op = ($op == 'view') ? 'view' : 'edit';
+      if (user_access("$op any $type_name booking", $account)) {
+        return TRUE;
+      }
     }
   }
   return FALSE;

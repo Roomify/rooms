@@ -78,14 +78,6 @@ function rooms_unit_schema() {
         'scale' => 2,
         'default' => 0,
       ),
-      'cot_surcharge' => array(
-        'description' => 'The default cot_surcharge',
-        'type' => 'numeric',
-        'not null' => TRUE,
-        'precision' => 10,
-        'scale' => 2,
-        'default' => 0,
-      ),
       'default_state' => array(
         'description' => 'The default booking state for the room',
         'type' => 'int',
@@ -361,4 +353,12 @@ function rooms_unit_update_7003() {
   );
 
   db_add_field('rooms_units', 'children', $children);
+}
+
+
+/**
+ * Remove field cot_surcharge
+ */
+function rooms_unit_update_7004() {
+  db_drop_field('rooms_units', 'cot_surcharge');
 }

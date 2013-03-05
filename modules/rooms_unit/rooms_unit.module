@@ -186,7 +186,7 @@ function rooms_unit_access($op, $unit = NULL, $account = NULL) {
   if (user_access('administer bookable units', $account)) {
     return TRUE;
   }
-  if (isset($unit)) {
+  if (is_object($unit)) {
     $op = ($op == 'view') ? 'view' : 'edit';
     if (user_access("$op any $unit->type bookable unit", $account)) {
       return TRUE;
@@ -540,7 +540,7 @@ class RoomsUnitController extends EntityAPIController {
   public function create(array $values = array()) {
     $unit_type = rooms_unit_type_load($values['type'], TRUE);
     $values['base_price'] = $unit_type->data['base_price'];
-    $values['cot_surcharge'] = (isset($unit_type->data['cot_surcharge'])) ? $unit_type->data['cot_surcharge'] : 0;
+    $values['data']['cot_surcharge'] = (isset($unit_type->data['cot_surcharge'])) ? $unit_type->data['cot_surcharge'] : 0;
     $values['children_sleeps'] = (isset($unit_type->data['children_sleeps'])) ? $unit_type->data['children_sleeps'] : 0;
     $values['sleeps'] = $unit_type->data['sleeps'];
     $values['data']['singlediscount'] = (isset($unit_type->data['singlediscount'])) ? $unit_type->data['singlediscount'] : '';

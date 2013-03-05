@@ -1085,7 +1085,7 @@ function rooms_availability_event($units, $start_year = '', $start_month = '', $
     $end_day = $eom[$end_date->format('n')];
     $end_date = new DateTime("$end_year-$end_month-$end_day");
   }
-  else{
+  else {
     $start_date = new DateTime("$start_year-$start_month-$start_day");
     $end_date = new DateTime("$end_year-$end_month-$end_day");
   }
