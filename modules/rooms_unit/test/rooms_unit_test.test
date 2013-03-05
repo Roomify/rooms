@@ -27,7 +27,7 @@ class RoomsUnitTestMain extends DrupalWebTestCase {
     $this->drupalGet('admin/rooms');
 
     $this->assertText('Bookable Units');
-    $this->assertText('Create units that can be booked, such as rooms for a hotel.');
+    $this->assertText('Create and administer units that can be booked, such as rooms for a hotel. Bookable units have availability and pricing information attached to them by the Rooms module and can have extra fields added via the standard Drupal Field API functionality.');
   }
 }
 
