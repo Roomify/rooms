@@ -209,13 +209,13 @@ class AvailabilityAgentCommerceFilter extends AvailabilityAgentCommonFilter {
             $line_item_values = $line_item->value();
 
             // Current line_item start_date and end_date values
-            $s_date = new DateTime($line_item_values->rooms_booking_dates['und'][0]['value']);
-            $e_date = new DateTime($line_item_values->rooms_booking_dates['und'][0]['value2']);
+            $s_date = new DateTime($line_item_values->rooms_booking_dates[LANGUAGE_NONE][0]['value']);
+            $e_date = new DateTime($line_item_values->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
 
             // If current line_item date interval overlap parameters interval remove unit from results
             if ( $this->check_in_range($s_date, $e_date, $start_date, $end_date) ) {
-              if (isset($results['rooms_unit'][$line_item_values->rooms_booked_unit_id['und'][0]['value']])) {
-                unset($results['rooms_unit'][$line_item_values->rooms_booked_unit_id['und'][0]['value']]);
+              if (isset($results['rooms_unit'][$line_item_values->rooms_booked_unit_id[LANGUAGE_NONE][0]['value']])) {
+                unset($results['rooms_unit'][$line_item_values->rooms_booked_unit_id[LANGUAGE_NONE][0]['value']]);
               }
             }
           }

@@ -101,3 +101,65 @@ function rooms_booking_manager_update_7002() {
     commerce_product_save($rooms_product);
   }
 }
+
+
+/**
+ * Add "Booking Options" field to the rooms_booking_manager_line_item
+ */
+function rooms_booking_manager_update_7003() {
+  $field = array(
+    'field_name' => 'rooms_booking_options',
+    'label' => t('Booking Options'),
+    'cardinality' => -1,
+    'required' => 0,
+    'type' => 'rooms_options',
+    'module' => 'rooms_unit',
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'rooms_unit',
+      'settings' => array(),
+      'type' => 'rooms_options_combined',
+      'weight' => '0',
+    ),
+  );
+
+  field_create_field($field);
+
+  $instance = array(
+    'field_name' => 'rooms_booking_options',
+    'label' => t('Booking Options'),
+    'entity_type' => 'commerce_line_item',
+    'bundle' => 'rooms_booking',
+    'default_value' => NULL,
+    'deleted' => '0',
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => NULL,
+        'settings' => array(),
+        'type' => 'rooms_options_default',
+        'weight' => 12,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'module' => 'rooms_unit',
+      'type' => 'rooms_options_combined',
+    ),
+  );
+
+  field_create_instance($instance);
+}

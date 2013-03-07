@@ -176,14 +176,14 @@ class AvailabilityAgent {
    * TODO: This code repeats what is above - we can shove off into a different function
    * that both make use of.
    */
-  function checkAvailabilityForUnit($unit_id) {
+  function checkAvailabilityForUnit($unit_id, $price_modifiers = array()) {
 
     $units = array();
 
     // Load the unit
     $unit = rooms_unit_load($unit_id);
 
-    $units = array_pop(array_pop($this->getUnitsByPriceType(array('rooms_unit' => array($unit_id => $unit)))));
+    $units = array_pop(array_pop($this->getUnitsByPriceType(array('rooms_unit' => array($unit_id => $unit)), $price_modifiers)));
     
     if (count($units) == 0) {
       return ROOMS_NO_ROOMS;
@@ -213,7 +213,7 @@ class AvailabilityAgent {
   }
 
 
-  function getUnitsByPriceType($results) {
+  function getUnitsByPriceType($results, $price_modifiers = array()) {
     $units = array();
 
     if (count($results) > 0) {
@@ -231,9 +231,6 @@ class AvailabilityAgent {
 
         // Calculate the price as well to add to the array
           
-        // First set up price modifiers
-        $price_modifiers = array();
-
         $booking_info = array(
           'start_date' => $this->start_date,
           'end_date' => $this->end_date,
@@ -252,19 +249,6 @@ class AvailabilityAgent {
         $units[$unit->type][$full_price][$unit->unit_id]['price'] = $full_price;
         $units[$unit->type][$full_price][$unit->unit_id]['booking_price'] = $price['booking_price'];
 
-        if ($unit->data['singlediscount'] != '') {
-          if (is_numeric($unit->data['singlediscount'])) {
-            // First set up price modifiers
-            $price_modifiers = array('single' => array('#type' => ROOMS_PRICE_SINGLE_OCCUPANCY));
-
-            $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
-            $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
-            $price_singlediscount = $price['full_price'];
-
-            $units[$unit->type][$full_price][$unit->unit_id]['singlediscount'] = $price_singlediscount;
-          }
-        }
-
         if (in_array(ROOMS_ON_REQUEST, $states)) {
           $units[$unit->type][$full_price][$unit->unit_id]['state'] = ROOMS_ON_REQUEST;
         }
@@ -274,7 +258,36 @@ class AvailabilityAgent {
       }
     }
 
+    $units = $this->orderbyOptionals($units);
+
     return $units;
   }
 
+  function orderbyOptionals($units) {
+    foreach ($units as $type => $v) {
+      foreach ($v as $price => $value) {
+        uasort($value, 'comparebyOptionals');
+        $units[$type][$price] = $value;
+      }
+    }
+
+    return $units;
+  }
+
+}
+
+function comparebyOptionals($a, $b) {
+  if (!isset($b['unit']->field_options[LANGUAGE_NONE]) && !isset($a['unit']->field_options[LANGUAGE_NONE])) {
+    return 0;
+  }
+
+  if (!isset($b['unit']->field_options[LANGUAGE_NONE]) && isset($a['unit']->field_options[LANGUAGE_NONE])) {
+    return -1;
+  }
+
+  if (isset($b['unit']->field_options[LANGUAGE_NONE]) && !isset($a['unit']->field_options[LANGUAGE_NONE])) {
+    return 1;
+  }
+
+  return count($a['unit']->field_options[LANGUAGE_NONE]) < count($a['unit']->field_options[LANGUAGE_NONE]) ? -1 : 1;
 }

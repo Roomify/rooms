@@ -235,27 +235,10 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
   );
 
   $form['data']['#tree'] = TRUE;
-  $form['data']['cot_surcharge'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($unit->data['cot_surcharge']) ? $unit->data['cot_surcharge'] : '',
-    '#title' => t('Cot surcharge'),
-  );
-
-  $form['data']['singlediscount'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($unit->data['singlediscount']) ? $unit->data['singlediscount'] : '',
-    '#title' => t('Discount for single occupancy'),
-    '#postfix' => '%',
-    '#description' => t('The percentage stated will be removed from the final price'),
-  );
-
 
   $form['data']['bed_arrangement'] = array(
     '#type' => 'fieldset',
     '#title' => t('Bed Arrangement'),
-    //'#description' => t('Describe bed arrangements'),
   );
 
   $form['data']['bed_arrangement']['singles'] = array(
@@ -272,14 +255,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#title' => t('Double Beds'),
   );
   
-  /*$form['data']['bed_arrangement']['cot_available'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Cot available'),
-    '#default_value' => isset($unit->data['bed_arrangement']['cot_available']) ? $unit->data['bed_arrangement']['cot_available'] : 0,
-  );*/
-  
   // If we are creating a new booking unit
-  
   if ($unit->unit_id == '') {
     $form['multi'] = array(
       '#type' => 'fieldset',
@@ -357,10 +333,9 @@ function rooms_unit_edit_form_validate(&$form, &$form_state) {
     form_set_error('Discount value error', t('%name: you must enter a numeric value for the discount from 1 to 100%.', array('%name' => 'Single Discount')));
   }
   
-  if ((($form_state['values']['data']['singlediscount'] > 100) || ($form_state['values']['data']['singlediscount'] < 1)) && ($form_state['values']['data']['singlediscount'] != '')) {
+  /*if ((($form_state['values']['data']['singlediscount'] > 100) || ($form_state['values']['data']['singlediscount'] < 1)) && ($form_state['values']['data']['singlediscount'] != '')) {
     form_set_error('Discount value error', t('%name: you must enter a numeric value for the discount from 1 to 100%.', array('%name' => 'Single Discount')));
-  }
-
+  }*/
 
   if (!empty($form_state['values']['multiple']) && !is_numeric($form_state['values']['multiple'])) {
     form_set_error('Multiple Rooms Error', t('%name: you must enter at least 1 as the number of multiple rooms.', array('%name' => 'Multiple Rooms')));
@@ -374,13 +349,13 @@ function rooms_unit_edit_form_validate(&$form, &$form_state) {
  * @todo remove hard-coded link
  */
 function rooms_unit_edit_form_submit(&$form, &$form_state) {
-    
+
   $multiple = 1;
   $units = array();
-  
+
   if ($form_state['rooms_unit']->unit_id == '') {
     $multiple = $form_state['values']['multiple'];
-  
+
     $name = $form_state['values']['name'];
     for ($i = 1; $i <= $multiple ; $i++ ) {
       $units[$i] = rooms_unit_create(array('type' => $form_state['rooms_unit']->type));
@@ -390,7 +365,7 @@ function rooms_unit_edit_form_submit(&$form, &$form_state) {
       }
 
       $units[$i] = entity_ui_controller('rooms_unit')->entityFormSubmitBuildEntity($form, $form_state);
-    
+
       // Add in created and changed times.
       if ($units[$i]->is_new = isset($units[$i]->is_new) ? $units[$i]->is_new : 0) {
         $units[$i]->created = time();
@@ -404,7 +379,7 @@ function rooms_unit_edit_form_submit(&$form, &$form_state) {
     $unites[0] = entity_ui_controller('rooms_unit')->entityFormSubmitBuildEntity($form, $form_state);
     $units[0]->changed = time();
   }
-  
+
   foreach ($units as $unit) {
     $unit->save();
   }
@@ -500,9 +475,6 @@ function theme_rooms_unit_add_list($variables) {
 
   return $output;
 }
-
-
-
 
 
 /**

@@ -56,11 +56,6 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
   );
 
   $form['data']['#tree'] = TRUE;
-//  $form['data']['extra_data'] = array(
-//    '#type' => 'checkbox',
-//    '#title' => t('An interesting room switch'),
-//    '#default_value' => !empty($room_type->data['extra_data']),
-//  );
 
   $form['data']['base_price'] = array(
     '#type' => 'textfield',
@@ -88,13 +83,6 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#maxlength' => 2,
   );
 
-  $form['data']['cot_surcharge'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Cot surcharge'),
-    '#default_value' => isset($unit->data['cot_surcharge']) ? $unit->data['cot_surcharge'] : '',
-    '#size' => '5',
-  );
-
   $form['data']['rooms_description_source'] = array(
     '#type' => 'textfield',
     '#title' => t('Select Unit Description source'),
@@ -104,15 +92,6 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#autocomplete_path' => 'admin/rooms/unit-type/description-source',
     '#default_value' => isset($unit_type->data['rooms_description_source']) ? $unit_type->data['rooms_description_source'] : '',
     '#weight' => 3,
-  );
-
-  $form['data']['singlediscount'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($unit_type->data['singlediscount']) ? $unit_type->data['singlediscount'] : '',
-    '#title' => t('Discount for single occupancy'),
-    '#postfix' => '%',
-    '#description' => t('The percentage (stated as a numeral between 1 and 100) by which to discount the full price for single occupancy. Leave blank if you do not wish to offer a discount.'),
   );
 
   $form['actions'] = array('#type' => 'actions');
@@ -144,9 +123,6 @@ function rooms_unit_type_form_validate(&$form, &$form_state) {
 
   // Validate discount field
   if (!empty($form_state['values']['data']['singlediscount']) && !is_numeric($form_state['values']['data']['singlediscount'])) {
-    form_set_error('data][singlediscount', t('%name: you must enter a numeric value between 1 and 100 for the discount.', array('%name' => 'Single Discount')));
-  }
-  if ((($form_state['values']['data']['singlediscount'] > 100) || ($form_state['values']['data']['singlediscount'] < 1)) && ($form_state['values']['data']['singlediscount'] != '')) {
     form_set_error('data][singlediscount', t('%name: you must enter a numeric value between 1 and 100 for the discount.', array('%name' => 'Single Discount')));
   }
 
@@ -184,6 +160,31 @@ function rooms_unit_type_form_submit(&$form, &$form_state) {
   $unit_type = entity_ui_form_submit_build_entity($form, $form_state);
   // Save and go back.
   $unit_type->save();
+
+  if (!isset($unit_type->field_options)) {
+    if (field_read_field('field_options') === FALSE) {
+      $field = array(
+        'field_name' => 'field_options', 
+        'type' => 'rooms_options', 
+      );
+      field_create_field($field);
+    }
+
+    // Create the instance on the bundle.
+    $instance = array(
+      'field_name' => 'field_options', 
+      'entity_type' => 'rooms_unit', 
+      'label' => 'Options', 
+      'bundle' => $unit_type->type,
+      // If you don't set the "required" property then the field wont be required by default.
+      'required' => FALSE,
+      'widget' => array(
+        'type' => 'rooms_options',
+      ), 
+    );
+    field_create_instance($instance);
+  }
+
   $form_state['redirect'] = 'admin/rooms/units/unit-types';
 }
 

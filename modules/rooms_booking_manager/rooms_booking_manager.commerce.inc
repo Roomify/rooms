@@ -7,7 +7,7 @@
  */
 
 
-function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent, $booking_size) {
+function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent, $booking_size, $price_modifiers) {
     $date_format = variable_get('rooms_date_format', 'd-m-Y');
 
     $unit_id = $unit_to_book['unit']->unit_id;
@@ -30,10 +30,10 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent, $bookin
     $line_item_label = 'Booking for ' . $unit_type->label . ' (' . $nights . ' Nights; Arrival: ' . $agent->start_date->format($date_format) . ' Departure: ' . $dd->format($date_format) . ')';
     $line_item->line_item_label = $line_item_label;
 
-    $unit_info = $agent->checkAvailabilityForUnit($unit_id);
+    $unit_info = $agent->checkAvailabilityForUnit($unit_id, $price_modifiers);
 
     // Check $unit_info to make sure we still have availbility
-    if ($unit_info == ROOMS_NO_ROOMS) {dpm($unit_id);
+    if ($unit_info == ROOMS_NO_ROOMS) {
       form_set_error('', t('We are sorry, booking unit is no longer available.'));
     }
     else {
@@ -91,12 +91,25 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent, $bookin
         ),
       );
 
+      $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
+
+      $price_options = array();
+      foreach ($price_modifiers as $mod) {
+        $price_options[LANGUAGE_NONE][0] = array(
+          'name' => $mod['#name'],
+          'quantity' => 1,
+          'operation' => array_search($mod['#op_type'], $operation_list),
+          'value' => $mod['#amount'],
+        );
+      }
+
       $line_item->rooms_booking_number_people = $group_size;
       $line_item->rooms_booking_dates = $commerce_dates;
       $line_item->rooms_booked_unit_id = $commerce_unit;
       $line_item->rooms_booked_status = $commerce_status;
       $line_item->rooms_booked_price = $commerce_price;
       $line_item->rooms_booked_bookingprice = $booking_price;
+      $line_item->rooms_booking_options = $price_options;
 
       return $line_item;
     }
