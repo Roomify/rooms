@@ -6,7 +6,7 @@ Drupal.behaviors.rooms_availability_reference = {
     var minDate =new Date();
     var i = 0;
 
-    $('.cal').each(function() {
+    $('.cal').once('cal', function() {
       var j = i;
       var lastSource;
 
@@ -17,8 +17,8 @@ Drupal.behaviors.rooms_availability_reference = {
         year:minDate.getFullYear(),
         header:{
           left: 'today',
-  				center: 'title',
-  				right: 'prev, next'
+          center: 'title',
+          right: 'prev, next'
         },
         viewDisplay: function(view) {
           if (view.name == 'month') {
