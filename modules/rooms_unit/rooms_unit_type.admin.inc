@@ -121,11 +121,6 @@ function rooms_unit_type_form_validate(&$form, &$form_state) {
     form_set_error('data][base_price', t('%name: you must enter a numeric value for the price.', array('%name' => 'Base Price')));
   }
 
-  // Validate discount field
-  if (!empty($form_state['values']['data']['singlediscount']) && !is_numeric($form_state['values']['data']['singlediscount'])) {
-    form_set_error('data][singlediscount', t('%name: you must enter a numeric value between 1 and 100 for the discount.', array('%name' => 'Single Discount')));
-  }
-
   // Validate room unit description
   if (!empty($form_state['values']['data']['rooms_description_source'])) {
     $source_ref = explode(':', $form_state['values']['data']['rooms_description_source']);

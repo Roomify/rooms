@@ -380,7 +380,7 @@ function rooms_unit_ids($bundle = '') {
   
   $query->entityCondition('entity_type', 'rooms_unit');
   
-  if ($bundle != ''){
+  if ($bundle != '') {
     $query->entityCondition('bundle', $bundle);
   }
   

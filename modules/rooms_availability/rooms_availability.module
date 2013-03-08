@@ -229,8 +229,8 @@ function rooms_availability_bulk_unit_management($year = '', $month = '', $type 
 
   // Add pager
   pager_default_initialize($n_total_row, 20);
-  $args = array('quantity' => $n_total_row,'tags' => array(t('« first'),t('‹ previous'),'',t('next ›'),t('last »')));
-  $output .= theme('pager',$args);
+  $args = array('quantity' => $n_total_row, 'tags' => array(t('« first'), t('‹ previous'), '', t('next ›'), t('last »')));
+  $output .= theme('pager', $args);
 
   drupal_add_js(array('roomsUnitManagement' => array('roomsId' => $rooms_id)), 'setting');
 
@@ -285,7 +285,7 @@ function rooms_availability_bulk_pricing_management($year = '', $month = '', $ty
 
   $output = render(drupal_get_form('rooms_availability_filter_month_form', $month, $year));
 
-  $output .= render(drupal_get_form('rooms_availability_pricing_update_form', $month, $year, $type ,$rooms_units));
+  $output .= render(drupal_get_form('rooms_availability_pricing_update_form', $month, $year, $type, $rooms_units));
 
   $rooms_id = array();
   foreach ($rooms_units as $value) {
@@ -294,8 +294,8 @@ function rooms_availability_bulk_pricing_management($year = '', $month = '', $ty
 
   // Add pager
   pager_default_initialize($n_total_row, 20);
-  $args = array('quantity' => $n_total_row,'tags' => array(t('« first'),t('‹ previous'),'',t('next ›'),t('last »')));
-  $output .= theme('pager',$args);
+  $args = array('quantity' => $n_total_row,'tags' => array(t('« first'), t('‹ previous'), '', t('next ›'), t('last »')));
+  $output .= theme('pager', $args);
 
   drupal_add_js(array('roomsUnitManagement' => array('roomsId' => $rooms_id)), 'setting');
 
@@ -477,7 +477,7 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
 
   $form['#validate'][] = 'rooms_availability_pricing_update_form_validate';
 
-  $form['rooms_data'] = array (
+  $form['rooms_data'] = array(
     '#prefix' => '<table>',
     '#type' => 'container',
     '#suffix' => '</table>',
@@ -487,7 +487,7 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
     $form['rooms_data']['select-all'] = array(
       '#type' => 'select',
       '#prefix' => '<tr><td>',
-      '#options' => array (t('Select...'), t('All (this page)'), t('All (all pages)'), t('None')),
+      '#options' => array(t('Select...'), t('All (this page)'), t('All (all pages)'), t('None')),
       '#suffix' => '</td><td></td></tr>',
     );
 
@@ -497,7 +497,7 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
   }
 
   foreach ($rooms_units as $key => $value) {
-    $form['rooms_data']['rooms-'.$value->unit_id] = array (
+    $form['rooms_data']['rooms-'.$value->unit_id] = array(
       '#type' => 'checkbox',
       '#title' => $value->name,
       '#prefix' => '<tr><td>',
@@ -505,7 +505,7 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
     );
 
     if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'true') {
-      $form['rooms_data']['rooms-'.$value->unit_id]['#default_value'] = '1';
+      $form['rooms_data']['rooms-' . $value->unit_id]['#default_value'] = '1';
     }
   }
 
@@ -682,7 +682,7 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
 
   $form['#validate'][] = 'rooms_availability_update_status_form_validate';
 
-  $form['rooms_data'] = array (
+  $form['rooms_data'] = array(
     '#prefix' => '<table>',
     '#type' => 'container',
     '#suffix' => '</table>',
@@ -692,7 +692,7 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
     $form['rooms_data']['select-all'] = array(
       '#type' => 'select',
       '#prefix' => '<tr><td>',
-      '#options' => array (t('Select...'), t('All (this page)'), t('All (all pages)'), t('None')),
+      '#options' => array(t('Select...'), t('All (this page)'), t('All (all pages)'), t('None')),
       '#suffix' => '</td><td></td></tr>',
     );
 
@@ -702,7 +702,7 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
   }
 
   foreach ($rooms_units as $key => $value) {
-    $form['rooms_data']['rooms-'.$value->unit_id] = array (
+    $form['rooms_data']['rooms-' . $value->unit_id] = array(
       '#type' => 'checkbox',
       '#title' => $value->name,
       '#prefix' => '<tr><td>',
@@ -710,7 +710,7 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
     );
 
     if (variable_get('ROOMS_SELECT_ALL_PAGES_AV') == 'true') {
-      $form['rooms_data']['rooms-'.$value->unit_id]['#default_value'] = '1';
+      $form['rooms_data']['rooms-' . $value->unit_id]['#default_value'] = '1';
     }
   }
 
@@ -825,7 +825,8 @@ function availability_unit_load($unit_id) {
   if (count($unit_ids) == 1) {
     $units = rooms_unit_load($unit_ids[0]);
     return $units;
-  } else {
+  }
+  else {
   
     $units = array();
 
@@ -1526,7 +1527,7 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
  * Utility function to validate hex color numbers
  */
 function rooms_availability_validate_hex_color($element, &$form_state) {
-  if(!preg_match('/^#[a-f0-9]{6}$/i', $element['#value'])) {
+  if (!preg_match('/^#[a-f0-9]{6}$/i', $element['#value'])) {
     form_error($element, t('This is not a valid hexadecimal color!'));
   }
 }

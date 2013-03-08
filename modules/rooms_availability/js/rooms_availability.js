@@ -3,8 +3,7 @@
 Drupal.behaviors.rooms_availability = {
   attach: function(context) {
         
-    // Current month is whatever comes through -1 since js counts months starting
-    // from 0
+    // Current month is whatever comes through -1 since js counts months starting from 0
     currentmonth = parseInt(Drupal.settings.roomsAvailability.currentMonth)-1;
     currentyear = parseInt(Drupal.settings.roomsAvailability.currentYear);
     
@@ -12,8 +11,7 @@ Drupal.behaviors.rooms_availability = {
     month1 = currentmonth;
     year1 = currentyear;
     
-    // Second month is the next one obviously unless it is 11 in
-    // which case we need to move a year ahead 
+    // Second month is the next one obviously unless it is 11 in which case we need to move a year ahead 
     if (currentmonth == 11) {
       month2 = 0;
       year2 = year1 + 1;
@@ -24,8 +22,7 @@ Drupal.behaviors.rooms_availability = {
     }
 
     currentmonth = month2;
-    // And finally the last month where we do the same as above
-    // worth streamlining this probably
+    // And finally the last month where we do the same as above worth streamlining this probably
     if (currentmonth == 11) {
       month3 = 0;
       year3 = year2 + 1;
@@ -46,11 +43,11 @@ Drupal.behaviors.rooms_availability = {
       // months starting from 1 not zero
       phpmonth = value[1]+1;
       $(value[0]).once().fullCalendar({
-        ignoreTimezone:false,
-        editable:false,
-        selectable:true,
-        month:value[1],
-        year:value[2],
+        ignoreTimezone: false,
+        editable: false,
+        selectable: true,
+        month: value[1],
+        year: value[2],
         header:{
           left: 'title',
           center: '',
@@ -71,7 +68,7 @@ Drupal.behaviors.rooms_availability = {
             var url = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/' + calEvent.id + '/' + sd + '/' + ed; 
             $.colorbox({
               href: url,
-              opacity:0.7,
+              opacity: 0.7,
               width: 400,
               height: 400,
               onClosed:function(){
@@ -88,7 +85,7 @@ Drupal.behaviors.rooms_availability = {
             var url = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/-2/' + sd + '/' + ed; 
             $.colorbox({
               href: url,
-              opacity:0.7,
+              opacity: 0.7,
               width: 400,
               height: 400,
               onClosed:function(){
@@ -108,6 +105,3 @@ Drupal.behaviors.rooms_availability = {
   }
 };
 })(jQuery);
-  
-  
-

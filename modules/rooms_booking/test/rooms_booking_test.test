@@ -30,7 +30,6 @@ class RoomsBookingTestMain extends DrupalWebTestCase {
           'type' => 'single_rooms',
           'data[base_price]' => '100',
           'data[sleeps]' => '2',
-          'data[singlediscount]' => '10',
         ),
       t('Save unit type'));
 
@@ -41,7 +40,6 @@ class RoomsBookingTestMain extends DrupalWebTestCase {
           'base_price' => '100',
           'bookable' => 1,
           'default_state' => 1,
-          'data[singlediscount]' => '10',
         ),
       t('Save Unit'));
 
@@ -117,7 +115,6 @@ class RoomsBookingTestSingleOccupancy extends DrupalWebTestCase {
           'type' => 'single_rooms',
           'data[base_price]' => '100',
           'data[sleeps]' => '2',
-          'data[singlediscount]' => '10',
         ),
       t('Save unit type'));
 
@@ -128,7 +125,6 @@ class RoomsBookingTestSingleOccupancy extends DrupalWebTestCase {
           'base_price' => '100',
           'bookable' => 1,
           'default_state' => 1,
-          'data[singlediscount]' => '10',
         ),
       t('Save Unit'));
 

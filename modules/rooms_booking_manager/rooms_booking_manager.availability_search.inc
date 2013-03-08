@@ -105,7 +105,8 @@ function rooms_booking_availability_search_form($form, $form_state) {
         '#type' => 'hidden',
         '#value' => 0,
         );
-      } else {
+      }
+      else {
         $form['rooms_fieldset']['group_size_children:' . $i] = array(
           '#type' => 'select',
           '#options' => array(
@@ -150,7 +151,8 @@ function rooms_booking_availability_search_form($form, $form_state) {
         '#type' => 'hidden',
         '#value' => 0,
       );
-    } else {
+    }
+    else {
       $form['rooms_fieldset']['group_size_children:1'] = array(
         '#type' => 'select',
         '#title' => t('Children'),

@@ -130,7 +130,6 @@ class RoomsUnitTestAddUnitType extends DrupalWebTestCase {
           'type' => 'single_rooms',
           'data[base_price]' => '100',
           'data[sleeps]' => '2',
-          'data[singlediscount]' => '10',
         ),
       t('Save unit type'));
 
@@ -167,7 +166,6 @@ class RoomsUnitTestAddBookableUnit extends DrupalWebTestCase {
           'type' => 'single_rooms',
           'data[base_price]' => '100',
           'data[sleeps]' => '2',
-          'data[singlediscount]' => '10',
         ),
       t('Save unit type'));
 
@@ -175,7 +173,6 @@ class RoomsUnitTestAddBookableUnit extends DrupalWebTestCase {
 
     $this->assertRaw('name="base_price" value="100"');
     $this->assertRaw('name="sleeps" value="2"');
-    $this->assertRaw('name="data[singlediscount]" value="10"');
 
     $this->drupalPost('admin/rooms/units/add/single_rooms',
         array(
@@ -184,7 +181,6 @@ class RoomsUnitTestAddBookableUnit extends DrupalWebTestCase {
           'base_price' => '100',
           'bookable' => 1,
           'default_state' => 1,
-          'data[singlediscount]' => '10',
         ),
       t('Save Unit'));
 

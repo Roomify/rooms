@@ -28,7 +28,7 @@ function rooms_booking_manager_uninstall() {
  * Add "Booking Number People" field to the rooms_booking_manager_line_item
  */
 function rooms_booking_manager_update_7001() {
-	$field = array(
+  $field = array(
     'field_name' => 'rooms_booking_number_people',
     'label' => t('Booking Number People'),
     'cardinality' => 2,
@@ -37,10 +37,10 @@ function rooms_booking_manager_update_7001() {
     'active' => 1,
     'locked' => 1,
     'settings' => array(
-	    'size' => 8,
-	    'max_length' => 10,
-	    'text_processing' => 0,
-	  ),
+      'size' => 8,
+      'max_length' => 10,
+      'text_processing' => 0,
+    ),
   );
 
   field_create_field($field);
@@ -73,11 +73,11 @@ function rooms_booking_manager_update_7001() {
         'weight' => 11,
       ),
       'teaser' => array(
-	      'label' => 'above',
-	      'settings' => array(),
-	      'type' => 'hidden',
-	      'weight' => 0,
-	    ),
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
     ),
   );
 

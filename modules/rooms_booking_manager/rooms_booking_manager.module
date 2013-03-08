@@ -328,9 +328,10 @@ function rooms_booking_manager_retrieve_booking_parameters($booking_units, $book
   
   // If the booking parameter data was not valid or did not correspond to the number of units
   // invalidate the data
-  if (($booking_parameters == 0) || (count($booking_parameters) < $booking_units)) {;
+  if (($booking_parameters == 0) || (count($booking_parameters) < $booking_units)) {
     return FALSE;
-  } else {
+  }
+  else {
     return $booking_parameters;
   }
 }
@@ -441,13 +442,6 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     '#value' => $group_size_adults,
   );
 
-  // If 'For single use' option is selected we display unit price with singlediscount
-  if (isset($form_state['values']['singlediscount'])) {
-    if ($form_state['values']['singlediscount']) {
-      $price = $single_price;
-    }
-  }
-
   $form['price'] = array(
     '#prefix' => '<div class="unit_price" id="' . $unit->unit_id . '_price" style="font-weight:bold">',
     '#markup' =>  t('Cost:') . ' ' . $price . ' ' . $currency_symbol,
@@ -529,13 +523,15 @@ function book_unit_form_submit(&$form, &$form_state) {
 
       drupal_goto('bookings');
 
-    } elseif (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT) {  
+    }
+    elseif (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT) {  
 
       drupal_goto('enquiry/' . $start_date . '/' . $end_date . '/' . $unit_id);
 
     }
 
-  } else {
+  }
+  else {
 
     drupal_set_message(t('We apologize it seems the room is no longer available'));
     drupal_goto('<front>');
@@ -554,7 +550,8 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
   if (($form_state['rebuild']) && (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT)) {
     $form = rooms_booking_manager_enquiry_form($form_state['values']['form_data'], $start_date, $end_date, $booking_parameters, $b_units);
     // If not display the per type choices  
-  } else {
+  }
+  else {
 
     // We add the form's #submit array to this button along with the actual submit
     // handler to preserve any submit handlers added by a form callback_wrapper.
@@ -634,7 +631,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               $node = node_load($node_id);
 
               if ($node !== FALSE) {
-                $node_html = render(node_view($node,'rooms_list'));
+                $node_html = render(node_view($node, 'rooms_list'));
 
                 $form[$type . ':' . $price][$type . ':' . $price . ':description'] = array(
                   '#prefix' => '<tr><td class="room_description">',
@@ -703,11 +700,11 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         }
 
         // Display price options
-        $form[$type . ':' . $price][$type . ':' . $price . ':field_start'] = array (
+        $form[$type . ':' . $price][$type . ':' . $price . ':field_start'] = array(
          '#markup' => '<tr style="display:none;" id="rooms_' . $type . '_' . $price . '"><td>',
         );
 
-        $form[$type . ':' . $price][$type . ':' . $price . ':fieldset'] = array (
+        $form[$type . ':' . $price][$type . ':' . $price . ':fieldset'] = array(
          '#prefix' => '<div id="' . $type . '_' . $price . '_container">',
          '#type' => 'fieldset',
          '#suffix' => '</div>'
@@ -976,7 +973,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
 
   // Create an "order" based on the form submitted
   $order = array();
-  foreach($form_state['values'] as $value_key => $value) {
+  foreach ($form_state['values'] as $value_key => $value) {
     $values = explode(':', $value_key);
     if (count($values) == 3) {
       list($type, $price_level, $value_type) = $values;
@@ -1012,14 +1009,6 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
             // Fill group_size with unit size
             $group_size = array('adults' => $unit['unit']->sleeps, 'children' => $unit['unit']->children);
 
-            // Is user have selected 'For single use' set adults = 1 and children = 0
-            /*if (isset($form_state['values'][$type . ':' . $price_level . ':' . $i .':singlediscount'])) {
-              if ($form_state['values'][$type . ':' . $price_level . ':' . $i .':singlediscount'] == 1) {
-                $group_size['adults'] = 1;
-                $group_size['children'] = 0;
-              }
-            }*/
-
             $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
 
             $price_modifiers = array();
@@ -1048,7 +1037,8 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
             
             // If we are doing a straight forward enquiry form add some form elements and rebuild form
             // this allows us to preserve state across page loads and avoid repeating code 
-          } elseif (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT) {
+          }
+          elseif (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT) {
             $type_obj = rooms_unit_type_load($type);
 
             $unit_info = $agent->checkAvailabilityForUnit($unit['unit']->unit_id);
@@ -1092,7 +1082,8 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
   if (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_COMMERCE_CHECKOUT) {
     // Send user to cart
     drupal_goto('bookings');
-  } elseif (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT) {  
+  }
+  elseif (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT) {  
     $form_state['rebuild'] = TRUE;
   }
 }
@@ -1666,7 +1657,7 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
 
     // Change any Delete buttons to say Remove.
     if (!empty($form['edit_delete'])) {
-      foreach(element_children($form['edit_delete']) as $key) {
+      foreach (element_children($form['edit_delete']) as $key) {
         // Load and wrap the line item to have the title in the submit phase.
         if (!empty($form['edit_delete'][$key]['#line_item_id'])) {
           $line_item_id = $form['edit_delete'][$key]['#line_item_id'];

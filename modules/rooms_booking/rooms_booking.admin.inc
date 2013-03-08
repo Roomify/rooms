@@ -520,8 +520,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
   
   $booking = $form_state['rooms_booking'];
 
-  if ($form_state['values']['rooms_start_date']['date']=='' || $form_state['values']['rooms_end_date']['date']=='' ) {
-  } else {
+  if ($form_state['values']['rooms_start_date']['date'] != '' && $form_state['values']['rooms_end_date']['date'] != '') {
     $date1 = new DateTime($form_state['values']['rooms_start_date']);
     $date2 = new DateTime($form_state['values']['rooms_end_date']);
     $diff = $date1->diff($date2);
