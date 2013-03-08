@@ -165,7 +165,8 @@ function rooms_unit_type_form_submit(&$form, &$form_state) {
     if (field_read_field('field_options') === FALSE) {
       $field = array(
         'field_name' => 'field_options', 
-        'type' => 'rooms_options', 
+        'type' => 'rooms_options',
+        'cardinality' => -1,
       );
       field_create_field($field);
     }

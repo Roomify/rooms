@@ -403,7 +403,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   // Add the field related form elements.
   $form_state['rooms_booking'] = $booking;
   field_attach_form('rooms_booking', $booking, $form, $form_state);
-  
+
   $form['actions'] = array(
     '#type' => 'container',
     '#attributes' => array('class' => array('form-actions')),
