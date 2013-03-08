@@ -99,7 +99,6 @@ class RoomsUnitTestUnitTypes extends DrupalWebTestCase {
     $this->assertText('The human-readable name of this unit type.');
     $this->assertText('Base price is per unit per night - the price you set here will be the default price for all units of this type. You may then change the default base price on a per unit basis.');
     $this->assertText('The default number of people that can sleep in units of this type.');
-    $this->assertText('The percentage (stated as a numeral between 1 and 100) by which to discount the full price for single occupancy. Leave blank if you do not wish to offer a discount.');
     $this->assertText('The node you choose here will be rendered in the booking results.');
   }
 }

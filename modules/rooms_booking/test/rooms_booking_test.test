@@ -19,7 +19,7 @@ class RoomsBookingTestMain extends DrupalWebTestCase {
     parent::setUp(array('rooms_booking', 'rooms_booking_manager'));
 
     // Create a new user with permissions of Configure rooms settings
-    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view availability information', 'administer bookable units', 'manage booking unit pricing', 'administer booking types', 'administer bookings'));
+    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view anonymous availability information', 'view named availability information', 'administer bookable units', 'manage booking unit pricing', 'administer booking types', 'administer bookings'));
     $this->drupalLogin($admin);
   }
 
@@ -104,7 +104,7 @@ class RoomsBookingTestSingleOccupancy extends DrupalWebTestCase {
     parent::setUp(array('rooms_booking', 'rooms_booking_manager'));
 
     // Create a new user with permissions of Configure rooms settings
-    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view availability information', 'administer bookable units', 'manage booking unit pricing', 'administer booking types', 'administer bookings'));
+    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view anonymous availability information', 'view named availability information', 'administer bookable units', 'manage booking unit pricing', 'administer booking types', 'administer bookings'));
     $this->drupalLogin($admin);
   }
 
@@ -125,6 +125,10 @@ class RoomsBookingTestSingleOccupancy extends DrupalWebTestCase {
           'base_price' => '100',
           'bookable' => 1,
           'default_state' => 1,
+          /*'field_options[und][0][name]' => 'Single discount',
+          'field_options[und][0][quantity]' => '1',
+          'field_options[und][0][operation]' => '4',
+          'field_options[und][0][value]' => '10',*/
         ),
       t('Save Unit'));
 
@@ -151,7 +155,7 @@ class RoomsBookingTestSingleOccupancy extends DrupalWebTestCase {
       ),
       'unit_type');
 
-    $this->assertText('Room 100 - Cost: 630 $');
+    $this->assertText('Room 100 - Cost: 700 $');
 
     $this->drupalPost(NULL,
         array(
@@ -182,7 +186,7 @@ class RoomsBookingFilterTestCase extends DrupalWebTestCase {
     parent::setUp(array('rooms_booking', 'rooms_booking_manager', 'rooms_test', 'entity'));
 
     // Create a new user with permissions of Configure rooms settings
-    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view availability information', 'administer bookable units', 'manage booking unit pricing', 'administer booking types', 'administer bookings', 'book units'));
+    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view anonymous availability information', 'view named availability information', 'administer bookable units', 'manage booking unit pricing', 'administer booking types', 'administer bookings', 'book units'));
     $this->drupalLogin($admin);
   }
 
@@ -293,7 +297,7 @@ class RoomsBookingFilterTestCase extends DrupalWebTestCase {
 
     $this->assertText('All size: a:1:{s:10:"rooms_unit";a:3:{i:3;O:8:"stdClass":2:{s:7:"unit_id";s:1:"3";s:4:"type";s:11:"single_unit";}i:1;O:8:"stdClass":2:{s:7:"unit_id";s:1:"1";s:4:"type";s:13:"standard_unit";}i:2;O:8:"stdClass":2:{s:7:"unit_id";s:1:"2";s:4:"type";s:11:"deluxe_unit";}}}');
 
-    $this->assertText('Deluxe unit: a:1:{s:10:"rooms_unit";a:1:{i:0;O:8:"stdClass":2:{s:7:"unit_id";i:2;s:4:"type";s:11:"deluxe_unit";}}}');
+    $this->assertText('Deluxe unit: a:0:{}');
 
 
     // Test AvailabilityAgentCommerceFilter

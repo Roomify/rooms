@@ -157,6 +157,7 @@ function rooms_unit_type_form_submit(&$form, &$form_state) {
   $unit_type->save();
 
   if (!isset($unit_type->field_options)) {
+    // Create field ('field_options') if not exist
     if (field_read_field('field_options') === FALSE) {
       $field = array(
         'field_name' => 'field_options', 
@@ -166,19 +167,21 @@ function rooms_unit_type_form_submit(&$form, &$form_state) {
       field_create_field($field);
     }
 
-    // Create the instance on the bundle.
-    $instance = array(
-      'field_name' => 'field_options', 
-      'entity_type' => 'rooms_unit', 
-      'label' => 'Options', 
-      'bundle' => $unit_type->type,
-      // If you don't set the "required" property then the field wont be required by default.
-      'required' => FALSE,
-      'widget' => array(
-        'type' => 'rooms_options',
-      ), 
-    );
-    field_create_instance($instance);
+    if (field_read_instance('rooms_unit', 'field_options', $unit_type->type) === FALSE) {
+      // Create the instance on the bundle.
+      $instance = array(
+        'field_name' => 'field_options', 
+        'entity_type' => 'rooms_unit', 
+        'label' => 'Options', 
+        'bundle' => $unit_type->type,
+        // If you don't set the "required" property then the field wont be required by default.
+        'required' => FALSE,
+        'widget' => array(
+          'type' => 'rooms_options',
+        ), 
+      );
+      field_create_instance($instance);
+    }
   }
 
   $form_state['redirect'] = 'admin/rooms/units/unit-types';

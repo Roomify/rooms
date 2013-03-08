@@ -45,9 +45,8 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent, $bookin
       $price = commerce_currency_decimal_to_amount($price, commerce_default_currency());
 
       // We do not need to setup the line item's commerce_unit_price here, as it will be overwritten
-      // with the values from the product entity anyway. Setting commerce unit price
-      // to the correct value is now done completely by the function
-      // rooms_booking_manager_commerce_cart_line_item_refresh() in rooms_booking_manager.module
+      // with the values from the product entity anyway. Setting commerce unit price to the correct value
+      // is now done completely by the function rooms_booking_manager_price_apply() in rooms_booking_manager.module
 
       $commerce_dates = array(
         LANGUAGE_NONE => array( array(
@@ -91,6 +90,7 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent, $bookin
         ),
       );
 
+      // Convert Price modifiers in Price options
       $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
 
       $price_options = array();

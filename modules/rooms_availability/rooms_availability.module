@@ -140,7 +140,7 @@ function rooms_availability_menu() {
     'title' => t('AJAX Select all availability pages callback'),
     'type' => MENU_CALLBACK,
     'page callback' => 'rooms_availability_av_ajax_callback',
-    'access arguments' => array('view availability information'),
+    'access arguments' => array('view named availability information'),
   );
 
   $items['admin/rooms/select-all-pages-pr'] = array(

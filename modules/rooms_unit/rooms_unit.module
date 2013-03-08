@@ -442,7 +442,7 @@ function rooms_unit_theme() {
 
 
 /**
- *
+ * Helper function for Unit Description autocomplete.
  */
 function rooms_unit_type_description_source($string = '') {
   $matches = array();

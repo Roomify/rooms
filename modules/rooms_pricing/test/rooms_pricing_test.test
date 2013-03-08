@@ -19,7 +19,7 @@ class RoomsPricingTestMain extends DrupalWebTestCase {
     parent::setUp('rooms_pricing');
 
     // Create a new user with permissions of Configure rooms settings
-    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view availability information', 'administer bookable units', 'manage booking unit pricing'));
+    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view anonymous availability information', 'view named availability information', 'administer bookable units', 'manage booking unit pricing'));
     $this->drupalLogin($admin);
   }
 

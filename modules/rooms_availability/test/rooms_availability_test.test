@@ -19,7 +19,7 @@ class RoomsAvailabilityTestMain extends DrupalWebTestCase {
     parent::setUp('rooms_availability');
 
     // Create a new user with permissions of Configure rooms settings
-    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view availability information', 'administer bookable units'));
+    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view anonymous availability information', 'view named availability information', 'view past availability information', 'administer bookable units'));
     $this->drupalLogin($admin);
   }
 
@@ -85,7 +85,7 @@ class RoomsAvailabilityTestMain extends DrupalWebTestCase {
 
     $this->drupalGet('rooms/units/unit/1/availability/json/2012/4&_=1331561292818&start=1333231200&end=1336860000');
 
-    $this->assertText('[{"id":"1","start":"2012-04-01T13:00:00Z","end":"2012-04-09T13:00:00Z","title":"AV","color":"#8CBF62","borderColor":"#04711B"},{"id":"3","start":"2012-04-10T13:00:00Z","end":"2012-04-20T13:00:00Z","title":"A-B","color":"#481600"},{"id":"1","start":"2012-04-21T13:00:00Z","end":"2012-04-30T13:00:00Z","title":"AV","color":"#8CBF62","borderColor":"#04711B"}]');
+    $this->assertText('[{"id":"1","start":"2012-04-01T13:00:00Z","end":"2012-04-09T13:00:00Z","title":"AV","color":"#8CBF62","borderColor":"#04711B"},{"id":"3","start":"2012-04-10T13:00:00Z","end":"2012-04-20T13:00:00Z","title":"3"},{"id":"1","start":"2012-04-21T13:00:00Z","end":"2012-04-30T13:00:00Z","title":"AV","color":"#8CBF62","borderColor":"#04711B"}]');
 
     $this->drupalGet('rooms/units/unit/1/availability/json/2012/5&_=1331562112753&start=1335650400&end=1339279200');
 
