@@ -10,13 +10,13 @@
  * Implements hook_views_data()
  */
 function rooms_unit_views_data_alter(&$data) {
-  
+
   $data['rooms_units']['type']['field'] = array(
     'title' => t('Booking Unit Type'),
     'help' => t('Booking Unit Type Label.'),
     'handler' => 'rooms_unit_handler_unit_type_field',
   );
-  
+
   $data['rooms_units']['link_unit'] = array(
     'field' => array(
       'title' => t('Link'),

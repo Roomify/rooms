@@ -19,7 +19,7 @@ class RoomsUnitUIController extends EntityDefaultUIController {
    * parent class hook_menu() is optimized for entity type administration.
    */
   public function hook_menu() {
-    
+
     $items = array();
     $id_count = count(explode('/', $this->path));
     $wildcard = isset($this->entityInfo['admin ui']['menu wildcard']) ? $this->entityInfo['admin ui']['menu wildcard'] : '%' . $this->entityType;
@@ -34,7 +34,7 @@ class RoomsUnitUIController extends EntityDefaultUIController {
       //'type' => MENU_NORMAL_ITEM,
       'weight' => 10,
     );
-        
+
     // Change the add page menu to multiple types of entities
     $items[$this->path . '/add'] = array(
       'title' => 'Add a Bookable Unit',
@@ -48,8 +48,8 @@ class RoomsUnitUIController extends EntityDefaultUIController {
       'file path' => drupal_get_path('module', $this->entityInfo['module'])
 
     );
-    
-    
+
+
     // Add menu items to add each different type of room.
     foreach (rooms_unit_get_types() as $type) {
       $items[$this->path . '/add/' . $type->type] = array(
@@ -80,7 +80,7 @@ class RoomsUnitUIController extends EntityDefaultUIController {
       'weight' => -10,
       'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
     );
-    
+
     $items[$this->path . '/unit/' . $wildcard . '/delete'] = array(
       'title' => 'Delete',
       'page callback' => 'rooms_unit_delete_form_wrapper',
@@ -93,7 +93,7 @@ class RoomsUnitUIController extends EntityDefaultUIController {
       'file' => 'rooms_unit.admin.inc',
       'file path' => drupal_get_path('module', $this->entityInfo['module'])
     );
-    
+
     // Menu item for viewing rooms
     $items['unit/' . $wildcard] = array(
       //'title' => 'Title',
@@ -107,8 +107,8 @@ class RoomsUnitUIController extends EntityDefaultUIController {
     );
     return $items;
   }
-  
-  
+
+
   /**
    * Create the markup for the add Bookable Unit Entities page within the class
    * so it can easily be extended/overriden.
@@ -120,7 +120,7 @@ class RoomsUnitUIController extends EntityDefaultUIController {
     if (count($content) == 1) {
       $item = array_shift($content);
       drupal_goto($item['href']);
-    }    
+    }
     return theme('rooms_unit_add_list', array('content' => $content));
   }
   
@@ -269,7 +269,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
       '#type' => 'textfield',
       '#size' => 5,
       '#default_value' => 1,
-      '#title' => t('How many booking units like this should we create'),    
+      '#title' => t('How many booking units like this should we create'),
     );
   }
   
@@ -319,7 +319,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
  */
 function rooms_unit_edit_form_validate(&$form, &$form_state) {
   $unit = $form_state['rooms_unit'];
-    
+
   // Notify field widgets to validate their data.
   field_attach_form_validate('rooms_unit', $unit, $form, $form_state);
   

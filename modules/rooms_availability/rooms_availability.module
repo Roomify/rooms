@@ -85,7 +85,7 @@ function rooms_availability_permission() {
  */
 function rooms_availability_menu() {
   $items = array();
-  
+
   $items['admin/rooms/units/unit/%availability_unit/availability'] = array(
     'title' => t('Manage Availability'),
     'page callback' => 'rooms_availability_page',
@@ -96,7 +96,7 @@ function rooms_availability_menu() {
     'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
     'weight' => '20',
   );
-  
+
   $items['rooms/units/unit/%availability_unit/availability/json/%/%'] = array(
     'title' => t('Availability Event'),
     'page callback' => 'rooms_availability_event',
@@ -843,7 +843,6 @@ function availability_unit_load($unit_id) {
 
 /**
  * Room availability admin access callback
- * @todo check unauthorised access for calendar js
  */ 
 function rooms_availability_admin_access($rooms_unit) {
   if (user_access('manage booking unit availability')) {
@@ -1144,14 +1143,14 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
   if ($event_id == NULL || $start_date == 0 || $end_date == 0) {
     return 'Unable to load event';
   }
-    
+
   $state_options = array(
     ROOMS_NOT_AVAILABLE => 'Unavailable',
     ROOMS_AVAILABLE => 'Available',
     ROOMS_ON_REQUEST => 'On Request',
     ROOMS_ANON_BOOKED => 'Anonymous Booking',
   );
-  
+
   // Basic check to avoid damage from dirty input
   $event_id = check_plain($event_id);
   $start_date = check_plain($start_date);
@@ -1161,7 +1160,7 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
   if ($event_id > 10) {
     $booked = TRUE;
   }
-  
+
   $sd = new DateTime();
   $sd->setTimezone(new DateTimeZone('UTC'))->setTimestamp($start_date);
   
@@ -1288,10 +1287,10 @@ function rooms_availability_ajax_event_status_change($form, $form_state) {
 
     $start_date = new DateTime();
     $start_date->setTimestamp($start_time);
-    
+
     $end_date = new DateTime();
     $end_date->setTimestamp($end_time);  
-    
+
     $event = new BookingEvent($unit_id, $new_event_id, $start_date, $end_date);
     $uc = new UnitCalendar($unit_id);
     $responses = $uc->updateCalendar(array($event));
@@ -1535,21 +1534,13 @@ function rooms_availability_validate_hex_color($element, &$form_state) {
 }
 
 
-/**
- * Implements hook_colorbox_settings_alter
- *
- * @todo Figure out if this is the right way to get the settings we need
- */
-function rooms_availability_colorbox_settings_alter(&$settings, &$style) {
-}
-
 function rooms_availability_date_range_fields($year, $month) {
   $date_range_fields = array();
 
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
 
   $date_range_fields['rooms_start_date'] = array(
-    '#prefix' => '<div class="start-date">',    
+    '#prefix' => '<div class="start-date">',
     '#suffix' => '</div>',
     '#type' => 'date_popup',
     '#title' => t('Start Date'),
@@ -1561,7 +1552,7 @@ function rooms_availability_date_range_fields($year, $month) {
   );
 
   $date_range_fields['rooms_end_date'] = array(
-    '#prefix' => '<div class="end-date">',    
+    '#prefix' => '<div class="end-date">',
     '#suffix' => '</div>',
     '#type' => 'date_popup',
     '#title' => t('End Date'),

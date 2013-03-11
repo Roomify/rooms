@@ -75,7 +75,6 @@ function pricing_unit_load($unit_id) {
 
 /**
  * Room pricing access callback
- * @todo check unauthorised access for calendar js
  */ 
 function rooms_pricing_access($rooms_unit) {
   if (user_access('manage booking unit pricing')) {
@@ -263,7 +262,7 @@ function update_unit_pricing_form_submit(&$form, &$form_state) {
   $events = array($pe);
   
   $rc->updateCalendar($events);
-    
+
 }
 
 
@@ -283,7 +282,7 @@ function rooms_pricing_json($unit, $start_year = '', $start_month = '', $start_d
   $end_day = (int)$end_day;
   
   $eom = rooms_end_of_month_dates($start_year);
-    
+
   if (($start_year == 0) || ($start_month == 0)) {
     echo drupal_json_encode('missing basic info');
     return;

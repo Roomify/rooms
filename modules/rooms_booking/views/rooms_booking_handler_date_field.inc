@@ -6,11 +6,11 @@
  * @ingroup views_field_handlers
  */
 class rooms_booking_handler_date_field extends views_handler_field_date {
-  
+
   function construct() {
     parent::construct();
   }
-  
+
   function render($values) {
     $value = $this->get_value($values);
     $date = new DateTime($value);

@@ -2,15 +2,15 @@
 
 Drupal.behaviors.rooms_availability = {
   attach: function(context) {
-        
+
     // Current month is whatever comes through -1 since js counts months starting from 0
     currentmonth = parseInt(Drupal.settings.roomsAvailability.currentMonth)-1;
     currentyear = parseInt(Drupal.settings.roomsAvailability.currentYear);
-    
+
     // The first month on the calendar
     month1 = currentmonth;
     year1 = currentyear;
-    
+
     // Second month is the next one obviously unless it is 11 in which case we need to move a year ahead 
     if (currentmonth == 11) {
       month2 = 0;
@@ -31,13 +31,13 @@ Drupal.behaviors.rooms_availability = {
       month3 = currentmonth+1;
       year3 = year2;
     }
-    
+
     var calendars = new Array();
     calendars[0] = new Array('#calendar', month1, year1);
     calendars[1] = new Array('#calendar1', month2, year2);
     calendars[2] = new Array('#calendar2', month3, year3);
-    
-    
+
+
     $.each(calendars, function(key, value) {
       // phpmonth is what we send via the url and need to add one since php handles
       // months starting from 1 not zero
@@ -98,7 +98,7 @@ Drupal.behaviors.rooms_availability = {
         }
       });
     });
-    
+
     // Resize takes care of some quirks on occasion
     $(window).resize();
 

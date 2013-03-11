@@ -35,7 +35,7 @@ class AvailabilityAgent {
 
   // Store first valid rooms combination for booking_parameters in input
   public $valid_rooms_combination = array();
-  
+
 
   public function __construct($start_date, $end_date, $booking_parameters = array(), $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS), $unit_types = array()) {
     $this->valid_states = $valid_states;
@@ -184,7 +184,7 @@ class AvailabilityAgent {
     $unit = rooms_unit_load($unit_id);
 
     $units = array_pop(array_pop($this->getUnitsByPriceType(array('rooms_unit' => array($unit_id => $unit)), $price_modifiers)));
-    
+
     if (count($units) == 0) {
       return ROOMS_NO_ROOMS;
     }
@@ -230,7 +230,7 @@ class AvailabilityAgent {
         $states = $rc->getStates($this->start_date, $this->end_date);
 
         // Calculate the price as well to add to the array
-          
+
         $booking_info = array(
           'start_date' => $this->start_date,
           'end_date' => $this->end_date,

@@ -55,7 +55,7 @@ function rooms_booking_type_form($form, &$form_state, $booking_type, $op = 'edit
   );
 
 
-  
+
   $form['actions'] = array('#type' => 'actions');
   $form['actions']['submit'] = array(
     '#type' => 'submit',

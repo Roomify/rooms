@@ -42,7 +42,7 @@ $(document).ready(function()
 
 Drupal.behaviors.rooms_availability = {
   attach: function(context) {
-        
+
     // Current month is whatever comes through -1 since js counts months starting from 0
     currentmonth = parseInt(Drupal.settings.roomsUnitManagement.currentMonth)-1;
     currentyear = parseInt(Drupal.settings.roomsUnitManagement.currentYear);
@@ -50,13 +50,13 @@ Drupal.behaviors.rooms_availability = {
     // The first month on the calendar
     month1 = currentmonth;
     year1 = currentyear;
-    
+
     var calendars = new Array();
     var i = 0;
     for (i=0;i<Drupal.settings.roomsUnitManagement.roomsNumber;i++) {
       calendars[i] = new Array('#calendar' + i, month1, year1);
     }
-    
+
     var c = 0;
     $.each(calendars, function(key, value) {
       phpmonth = value[1]+1;
@@ -75,7 +75,7 @@ Drupal.behaviors.rooms_availability = {
 
       c++;
     });
-    
+
     // Resize takes care of some quirks on occasion
     $(window).resize();
 

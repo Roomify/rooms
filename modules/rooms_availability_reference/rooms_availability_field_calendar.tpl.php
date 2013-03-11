@@ -2,6 +2,6 @@
 <?php foreach ($rooms_availability_field_calendar['calendar'] as $unit_calendar) { ?>
   <?php print render($unit_calendar); ?>
   <div class="cal">
-  </div>  
+  </div>
 <?php } ?>
 </div>

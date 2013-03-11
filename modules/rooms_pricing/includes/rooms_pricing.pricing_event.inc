@@ -101,7 +101,7 @@ class PricingEvent {
       default:
         break;
     }
-    
+
   }
   
   /**
@@ -118,7 +118,7 @@ class PricingEvent {
       $be = new PricingEvent($this->unit_id, $this->amount, $sd, $ed, $this->operation);
       return array($be);
     }
-    
+
     // Else split into years
     $events = array();
     for ($i = $this->startYear(); $i <= $this->endYear(); $i++) {
@@ -140,7 +140,7 @@ class PricingEvent {
         $events[$i] = new PricingEvent($this->unit_id, $this->amount, $sd, $ed, $this->operation);
       }
     }
-    
+
     return $events;
   }
   
@@ -194,14 +194,14 @@ class PricingEvent {
   public function formatJson() {
     //print $this->amount;
     $amount = $this->amount;
-    
+
     $event = array(
       "id" => $amount,
       //'title' => 'Event ID: ' . $this->amount . ' - Unit ID: ' . $this->unit_id,
       "start" => $this->startYear() . '-' . $this->startMonth('m') . '-' . $this->startDay('d'),
       "end" => $this->endYear() . '-' . $this->endMonth('m') . '-' . $this->endDay('d'),
     );
-    
+
     //set the color
     if ($this->amount < 100) {
       $event['color']  = "orange";
@@ -211,7 +211,7 @@ class PricingEvent {
       $event['color'] = "green";
       $event['title'] = "$amount";
     }
-    
+
     return $event;
   }
   

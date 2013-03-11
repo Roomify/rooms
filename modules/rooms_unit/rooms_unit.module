@@ -401,7 +401,7 @@ function rooms_unit_ids($bundle = '') {
  * Sets up content to show an individual unit
  * @todo - get rid of drupal_set_title();
  */
-function rooms_unit_page_view($unit, $view_mode = 'full') {    
+function rooms_unit_page_view($unit, $view_mode = 'full') {
   $controller = entity_get_controller('rooms_unit');  
   $content = $controller->view(array($unit->unit_id => $unit));
   drupal_set_title($unit->name);
@@ -658,7 +658,7 @@ class RoomsUnitController extends EntityAPIController {
       'created' => '',
       'changed' => '',
     );
-    
+
     $unit = parent::create($values);
     return $unit;
   }
@@ -670,11 +670,11 @@ class RoomsUnitController extends EntityAPIController {
     $content = parent::buildContent($entity, $view_mode, $langcode, $content);
 
     $content[t('state')] =  array(
-      '#markup' => t('State:') . $entity->bookable . '<br/>',      
+      '#markup' => t('State:') . $entity->bookable . '<br/>',
     );
-    
+
     $content[t('type')] =  array(
-      '#markup' => t('Type:') . ' ' . $entity->type . '<br/>',      
+      '#markup' => t('Type:') . ' ' . $entity->type . '<br/>',
     );
 
     $content[t('sleeps')] =  array(

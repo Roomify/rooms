@@ -236,7 +236,7 @@ function rooms_availability_schema() {
       ),
     ),
   );
-  
+
    $schema['rooms_booking_locks'] = array(
     'description' => 'Booking states held in this table can be set to lock - so they cannot be deleted',
     'fields' => array(
@@ -261,7 +261,7 @@ function rooms_availability_schema() {
     )
   );
 
-  
+
   return $schema;
 }
 

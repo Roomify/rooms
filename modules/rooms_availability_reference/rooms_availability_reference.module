@@ -182,7 +182,7 @@ function rooms_availability_reference_field_settings_form($field, $instance, $ha
 function rooms_availability_reference_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
   // Extract unit ids to check
   $ids = array();
-  
+
   // Check for non-numeric values
     // First check non-numeric "nid's to avoid losing time with them.
   foreach ($items as $delta => $item) {

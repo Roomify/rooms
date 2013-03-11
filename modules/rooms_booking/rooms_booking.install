@@ -68,7 +68,7 @@ function rooms_booking_schema() {
         'description' => 'The customer_id this booking is tied to.',
         'type' => 'int',
         'not null' => TRUE,
-        'default' => 0,        
+        'default' => 0,
       ),
       'unit_type' => array(
         'description' => 'The type of Unit the booking refers to',
@@ -235,9 +235,9 @@ function rooms_booking_update_7001() {
     'default' => 0,
     'initial' => 1,
   );
-    
+
   db_add_field('rooms_bookings', 'booking_status', $booking_status);
-  
+
   return t('Add field booking_status in Rooms Booking table.');
 }
 
@@ -287,7 +287,7 @@ function rooms_booking_update_7003() {
     'default' => 0,
     'initial' => 0,
   );
-    
+
   db_add_field('rooms_bookings', 'price', $price);
   
   return t('Add field price in Rooms Booking table.');

@@ -34,7 +34,7 @@ class RoomsBookingUIController extends EntityDefaultUIController {
       //'type' => MENU_NORMAL_ITEM,
       'weight' => 10,
     );
-        
+
     // Change the add page menu to multiple types of entities
     $items[$this->path . '/add'] = array(
       'title' => 'Add a Booking',
@@ -48,7 +48,7 @@ class RoomsBookingUIController extends EntityDefaultUIController {
       'file path' => drupal_get_path('module', $this->entityInfo['module'])
 
     );
-    
+
     // Add menu items to add each different type of room.
     foreach (rooms_booking_get_types() as $type) {
       $items[$this->path . '/add/' . $type->type] = array(
@@ -79,7 +79,7 @@ class RoomsBookingUIController extends EntityDefaultUIController {
       'weight' => -10,
       'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
     );
-    
+
     $items[$this->path . '/booking/' . $wildcard . '/delete'] = array(
       'title' => 'Delete',
       'page callback' => 'rooms_booking_delete_form_wrapper',
@@ -92,7 +92,7 @@ class RoomsBookingUIController extends EntityDefaultUIController {
       'file' => 'rooms_booking.admin.inc',
       'file path' => drupal_get_path('module', $this->entityInfo['module'])
     );
-    
+
     // Menu item for viewing rooms
     $items['booking/' . $wildcard] = array(
       'title callback' => 'rooms_booking_page_title',
@@ -105,7 +105,7 @@ class RoomsBookingUIController extends EntityDefaultUIController {
     );
     return $items;
   }
-  
+
   
   /**
    * Create the markup for the add Booking Entities page within the class
@@ -118,11 +118,11 @@ class RoomsBookingUIController extends EntityDefaultUIController {
     if (count($content) == 1) {
       $item = array_shift($content);
       drupal_goto($item['href']);
-    }    
-        
+    }
+
     return theme('rooms_booking_add_list', array('content' => $content));
   }
-  
+
 }
 
 
@@ -332,7 +332,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     foreach ($room_types as $type) {
       $types[$type->type] = $type->label;
     }
-    
+
     // Figure out which is the current unit and mark that as selected
     $selected = '';
     if (isset($form_state['values']['unit_type'])) {
@@ -363,11 +363,11 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       '#suffix' => '</div>',
     );
 
-    
+
     $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
       '#markup' => t('Choose a unit from the list of available rooms below - we only show units with availability for the dates selected.'),
     );
-    
+
     // If the user has selected a unit type or we already have a unit assigned
     // show all the available units of that type (including the already assign unit)
     if (isset($form_state['values']['unit_type']) || isset($booking->unit_type)) {
@@ -470,6 +470,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
               '#required' => TRUE,
             );
 
+            // Apply price modifiers and replace unit price
             $price_calendar = new UnitPricingCalendar($unit_id, $price_modifiers);
 
             $start_date = new DateTime($form_state['values']['rooms_start_date']);
@@ -805,11 +806,11 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
     $sd = new DateTime($start_date);
     $ed = new DateTime($end_date);
     $ed->sub(new DateInterval('P1D'));
-    
+
     // Create an event
     $be = new BookingEvent($unit, $id, $sd, $ed);
-    
-    // Create UnitCalednar
+
+    // Create UnitCalendar
     $rc = new UnitCalendar($unit);
     $responses = $rc->updateCalendar(array($be));
 

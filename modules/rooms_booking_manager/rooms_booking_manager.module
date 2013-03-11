@@ -174,15 +174,15 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $boo
   if ($valid_dates && is_array($booking_parameters)) {
 
     $content['booking_results'] = 1;
-    
+
     // Get all the units - note: we instantiate the Availability Agent using the date format set by the user
     $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
     $agent = new AvailabilityAgent($start_date->format($date_format), $end_date->format($date_format), $booking_parameters, $booking_units);
     $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS)));
 
     $units_per_type = $agent->checkAvailability();
-    
-    // If we don't have any useful result to show just display a failure message and the search form    
+
+    // If we don't have any useful result to show just display a failure message and the search form
     if (($units_per_type == ROOMS_NO_ROOMS) || ($units_per_type == ROOMS_SIZE_FAILURE)) {
       $content['booking_results'] = 0;
 
@@ -588,7 +588,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     );
 
     $form = rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, $form);
-    
+
     drupal_add_js(drupal_get_path('module', 'rooms_booking_manager') . '/js/rooms_booking_manager_button_scroll.js');
 
     drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/button_float.css');
@@ -1037,7 +1037,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
             if (!empty($line_item)) {
               $line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
             }
-            
+
             // If we are doing a straight forward enquiry form add some form elements and rebuild form
             // this allows us to preserve state across page loads and avoid repeating code 
           }
@@ -1744,7 +1744,7 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
     );
 
     //Commenting out configurations that will we are still experimenting with
-    
+
     /*$form['rooms_payment_options'] = array(
       '#type' => 'item',
       '#title' => t('Payment options'),

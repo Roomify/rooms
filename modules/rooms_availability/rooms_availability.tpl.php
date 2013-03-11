@@ -15,7 +15,7 @@
         <?php print $backward_link ?>
     </td>
     <td style="width:33%;text-align:center">
-        <?php print $current_link ?>      
+        <?php print $current_link ?>
     </td>
     <td style="width:33%;text-align:right">
       <?php print $forward_link ?>

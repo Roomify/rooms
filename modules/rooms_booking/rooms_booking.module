@@ -366,7 +366,7 @@ function rooms_booking_ids($conditions = array()) {
  * Sets up content to show an individual booking
  * @todo - get rid of drupal_set_title();
  */
-function rooms_booking_page_view($booking, $view_mode = 'full') {    
+function rooms_booking_page_view($booking, $view_mode = 'full') {
   $controller = entity_get_controller('rooms_booking');  
   $content = $controller->view(array($booking->booking_id => $booking));
   drupal_set_title($booking->name);
@@ -549,7 +549,7 @@ class RoomsBookingController extends EntityAPIController {
       'changed' => '',
       'data' => array(),
     );
-    
+
     $booking = parent::create($values);
     return $booking;
   }
@@ -559,7 +559,7 @@ class RoomsBookingController extends EntityAPIController {
    */
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
     $content = parent::buildContent($entity, $view_mode, $langcode, $content);
-    
+
 //    $content['rooms_booking_extra_data'] =  array(
 //      '#markup' => theme('rooms_booking_extra_data', array('rooms_booking_extra_data' => check_plain($entity->data['extra_data']), 'rooms_booking' => $entity)),
 //    );

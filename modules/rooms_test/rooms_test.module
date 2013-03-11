@@ -6,7 +6,7 @@
  */
 function rooms_test_menu() {
   $items = array();
-  
+
   $items['admin/rooms/test/availabilitysizefilter'] = array(
     'title' => t('AvailabilityAgentSizeFilter Test'),
     'page callback' => 'rooms_test_availabilitysizefilter',
@@ -30,7 +30,7 @@ function rooms_test_menu() {
     'access arguments' => array('configure room settings'),
     'type' => MENU_LOCAL_TASK,
   );
-  
+
   return $items;
 }
 
@@ -50,7 +50,7 @@ function rooms_test_availabilitysizefilter() {
   $unit = new stdClass();
   $unit->unit_id = 2;
   $unit->type = 'deluxe_unit';
-  
+
   $av_sizefilter = new AvailabilityAgentSizeFilter(array('rooms_unit' => array($unit)), array('group_size' => 2));
   $units = $av_sizefilter->applyFilter();
 

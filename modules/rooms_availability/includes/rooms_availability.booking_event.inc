@@ -1,51 +1,51 @@
 <?php
 
 class BookingEvent {
-  
+
   // The booking unit the event is relevant to
   public $unit_id;
-  
+
   // The start date for the event
   public $start_date;
-  
+
   // The end date for the event
   public $end_date;
-  
+
   // The type of event
   public $id;
-  
-  
+
+
   public function __construct($unit_id, $event_id, $start_date, $end_date) {
     $this->unit_id = $unit_id;
     $this->id = $event_id;
     $this->start_date = $start_date;
     $this->end_date = $end_date;
   }
-  
+
   public function startDay($format = 'j') {
     return $this->start_date->format($format);
   }
-  
+
   public function startMonth($format = 'n') {
     return $this->start_date->format($format);
   }
-  
+
   public function startYear($format = 'Y') {
     return $this->start_date->format($format);
   }
-  
+
   public function endDay($format = 'j') {
     return $this->end_date->format($format);
   }
-  
+
   public function endMonth($format = 'n') {
     return $this->end_date->format($format);
   }
-  
+
   public function endYear($format = 'Y') {
     return $this->end_date->format($format);
   }
-  
+
   /**
    * Returns the months involved in the events
    */
@@ -56,27 +56,27 @@ class BookingEvent {
     $interval = $this->start_date->diff($this->end_date);
     return $interval;
   }
-  
+
   public function sameMonth() {
     if (($this->startMonth() == $this->endMonth()) && ($this->startYear() == $this->endYear())) {
       return TRUE;
     }
     return FALSE;
   }
-  
+
   public function sameYear() {
-    
+
     if ($this->startYear() == $this->endYear()) {
       return TRUE;
     }
     return FALSE;
   }
-  
+
   /**
    * Lock event - updates the rooms_booking_locks table to indicate that this event
    * is locked
    */
-  public function lock() {  
+  public function lock() {
     // Check that the event is not already locked
     $query = db_select('rooms_booking_locks', 'l');
     $query->addField('l', 'unit_id');
@@ -86,7 +86,7 @@ class BookingEvent {
     $query->condition('l.state', $this->id);
     $query->condition('l.locked', 1);
     $result = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
-    
+
     if (count($result) == 1) {
       return FALSE;
     }
@@ -101,17 +101,16 @@ class BookingEvent {
     }
     return TRUE;
   }
-  
+
   public function unlock() {
     db_delete('rooms_booking_locks')
     ->condition(db_or()->condition('state', $this->id)->condition('state', -($this->id)))
     ->execute();
   }
-  
-  
+
+
   /**
-   * Takes an event that spans several years and transforms it to
-   * yearly events
+   * Takes an event that spans several years and transforms it to yearly events
    */
   public function transformToYearlyEvents() {
     // If same year return the event
@@ -123,7 +122,7 @@ class BookingEvent {
       $be = new BookingEvent($this->unit_id, $this->id, $sd, $ed);
       return array($be);
     }
-    
+
     // Else split into years
     $events = array();
     for ($i = $this->startYear(); $i <= $this->endYear(); $i++) {
@@ -145,10 +144,10 @@ class BookingEvent {
         $events[$i] = new BookingEvent($this->unit_id, $this->id, $sd, $ed);
       }
     }
-    
+
     return $events;
   }
-  
+
   /**
    * Takes a single event that spans several months and transforms it to
    * monthly events - this assumes that the event is contained within a year
@@ -190,8 +189,8 @@ class BookingEvent {
     }
     return $events;
   }
-  
-    
+
+
   /**
    * Return event in a format amenable to FullCalendar display or generally
    * sensible json
@@ -220,12 +219,12 @@ class BookingEvent {
         }
       }
       elseif ($style == ROOMS_AVAILABILITY_GENERIC_STYLE) {
-        $this->id = ROOMS_NOT_AVAILABLE;  
+        $this->id = ROOMS_NOT_AVAILABLE;
       }
     }
 
     $view_unit_name = array_filter(variable_get('rooms_view_unit_name', array('')));
-    
+
     //set the color
     switch ($this->id) {
       case ROOMS_NOT_AVAILABLE:
@@ -262,8 +261,8 @@ class BookingEvent {
     if (!empty($view_unit_name) && $style == ROOMS_AVAILABILITY_GENERIC_STYLE) {
       $event['title'] = $unit_name;
     }
-    
+
     return $event;
   }
-  
+
 }

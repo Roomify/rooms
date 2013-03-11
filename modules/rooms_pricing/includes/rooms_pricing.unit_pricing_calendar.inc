@@ -28,7 +28,7 @@ class UnitPricingCalendar {
     $this->unit = rooms_unit_load($unit_id);
     $this->default_state = $this->unit->default_state;
     $this->default_price = $this->unit->base_price;
-    
+
     $this->price_modifiers = $price_modifiers;
   }
   
@@ -140,7 +140,7 @@ class UnitPricingCalendar {
 
     $start_day = $start_date->format('j');
     $end_day = $end_date->format('j');
-    
+
     // Get the raw day results
     $results = $this->getRawDayData($start_date, $end_date);
     $events = array();
@@ -161,7 +161,7 @@ class UnitPricingCalendar {
                                     $sd,
                                     $ed);
           $events[] = $event;
-        }    
+        }
       }
     }
     return $events;
@@ -187,11 +187,11 @@ class UnitPricingCalendar {
     // Create a dummy PricingEvent to represent the range we are searching over
     // This gives us access to handy functions that PricingEvents have
     $s = new PricingEvent($this->unit_id, 0, $start_date, $end_date);
-    
+
     $results = array();
-    
+
     // Start by doing a query to the db to get any info stored there
-    
+
     // If search across the same year do a single query
     if ($s->sameYear()) {
       $query = db_select('rooms_pricing', 'a');
@@ -241,8 +241,8 @@ class UnitPricingCalendar {
         }
       }
     }
-    
-    
+
+
     // With the results from the db in place fill in any missing months
     // with the default state for the unit
     for ($j = $s->startYear(); $j <= $s->endYear(); $j++) {
@@ -269,7 +269,7 @@ class UnitPricingCalendar {
         $sm = 1;
         $em = 12;
       }
-      
+
       // We then check to see if the months we have already fit our expectations
       $actual_months =  isset($result[$this->unit_id][$j]) ? count($results[$id][$j]) : 0;
       if ($expected_months>$actual_months) {
@@ -287,7 +287,7 @@ class UnitPricingCalendar {
             ksort($results[$this->unit_id][$j]);
           }
         }
-      }        
+      }
     }
 
     // With all the months in place we now need to clean results to set the right start and end date
@@ -327,7 +327,7 @@ class UnitPricingCalendar {
 
       }
     }
-        
+
     // With the results in place we do a states array with the start and
     // end dates of each event
     foreach ($results[$this->unit_id] as $year => $months) {
@@ -341,7 +341,7 @@ class UnitPricingCalendar {
         $unique_states = array();
         $old_state = $days['days']['d' . $i];
         $state = $days['days']['d' . $i];
-        while ($j <= count($days['days'])) {          
+        while ($j <= count($days['days'])) {
           $state = $days['days']['d' . $i];
           if ($state != $old_state) {
             $unique_states[] = array('state' => $old_state,
@@ -361,7 +361,7 @@ class UnitPricingCalendar {
         $results[$this->unit_id][$year][$mid]['states'] = $unique_states;
       }
     }
-    
+
     return $results;
   }
   
@@ -371,7 +371,7 @@ class UnitPricingCalendar {
    * events that are relevant to the Unit this calendar refers to
    */
   public function updateCalendar(array $events) {
-    
+
     foreach ($events as $event) {
       // Make sure event refers to the unit for this calendar
       if ($event->unit_id == $this->unit_id) {
@@ -379,11 +379,11 @@ class UnitPricingCalendar {
         // Get all the pricing events that fit within this event
         $affected_events = $this->getEvents($event->start_date, $event->end_date);
         $monthly_events = array();
-        
+
         foreach ($affected_events as $a_event) {
           //Apply the operation
           $a_event->applyOperation($event->amount, $event->operation);
-          
+
           // If the event is in the same month span just queue to be added
           if ($a_event->sameMonth()) {
             $monthly_events[] = $a_event;
@@ -406,7 +406,7 @@ class UnitPricingCalendar {
             }
           }
         }
-        
+
         foreach ($monthly_events as $event) {
             $this->addMonthEvent($event);
         }
@@ -443,23 +443,23 @@ class UnitPricingCalendar {
       $month_row = array(
         'unit_id' => $this->unit_id,
         'year' => $event->startYear(),
-        'month' => $event->startMonth(),        
+        'month' => $event->startMonth(),
       );
       $month_row = array_merge($month_row, $days);
-      
+
       $insert = db_insert('rooms_pricing')->fields($month_row);
       $insert->execute();
     }
   }
-    
-  
+
+
   /**
    * Given an event it prepares the entire month array for it
    * assuming no other events in the month and days where there
    * is no event get set to the default state;
    */
   protected function prepareFullMonthArray($event) {
-        
+
     $days = array();
     $eod = rooms_end_of_month_dates($event->startYear());
     $last_day = $eod[$event->startMonth()];
