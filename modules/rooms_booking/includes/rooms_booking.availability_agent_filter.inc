@@ -117,6 +117,7 @@ class AvailabilityAgentDateFilter extends AvailabilityAgentCommonFilter {
     // Check parameters
     $start_date = isset($this->parameters['start_date']) ? $this->parameters['start_date'] : NULL;
     $end_date = isset($this->parameters['end_date']) ? $this->parameters['end_date'] : NULL;
+    $confirmed = isset($this->parameters['confirmed']) ? $this->parameters['confirmed'] : FALSE;
 
     // Stard date and end date parameters must be set
     if ($start_date == NULL || $end_date == NULL) return $this->units;
@@ -140,7 +141,7 @@ class AvailabilityAgentDateFilter extends AvailabilityAgentCommonFilter {
 
       // Rather than using $rc->stateAvailability we will get the states check directly
       // as different states will impact on what products we create.
-      $states = $rc->getStates($start_date, $end_date);
+      $states = $rc->getStates($start_date, $end_date, $confirmed);
       $state_diff = array_diff($states, $valid_states);
 
       if (count($state_diff) != 0) {

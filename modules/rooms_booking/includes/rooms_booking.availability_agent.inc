@@ -103,7 +103,7 @@ class AvailabilityAgent {
    * If valid units exist an array keyed by valid unit ids containing unit and the states it holds during
    * the requested period or a message as to what caused the failure.
    */
-  public function checkAvailability() {
+  public function checkAvailability($confirmed = FALSE) {
 
     global $user;
 
@@ -136,7 +136,7 @@ class AvailabilityAgent {
           $children = $parameter['children'];
         }
 
-        $this->rooms_results[$key] = $this->applyAvailabilityFilter(array(), $adults, $children);
+        $this->rooms_results[$key] = $this->applyAvailabilityFilter(array(), $adults, $children, $confirmed);
       }
 
       if (!empty($this->rooms_results)) {
@@ -194,7 +194,7 @@ class AvailabilityAgent {
   }
 
 
-  function applyAvailabilityFilter($units = array(), $adults = 0, $children = 0) {
+  function applyAvailabilityFilter($units = array(), $adults = 0, $children = 0, $confirmed = FALSE) {
     // Apply AvailabilityAgentSizeFilter
     $av_sizefilter = new AvailabilityAgentSizeFilter($units, array('group_size' => $adults, 'group_size_children' => $children, 'unit_types' => $this->unit_types));
     $units = $av_sizefilter->applyFilter();
@@ -202,7 +202,7 @@ class AvailabilityAgent {
     if ($units == ROOMS_SIZE_FAILURE) return array();
 
     // Apply AvailabilityAgentDateFilter
-    $av_datefilter = new AvailabilityAgentDateFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date, 'valid_states' => $this->valid_states));
+    $av_datefilter = new AvailabilityAgentDateFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date, 'valid_states' => $this->valid_states, 'confirmed' => $confirmed));
     $units = $av_datefilter->applyFilter();
 
     // Apply AvailabilityAgentCommerceFilter

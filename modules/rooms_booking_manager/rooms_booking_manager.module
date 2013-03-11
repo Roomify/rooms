@@ -1212,6 +1212,14 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
         $booking->customer_id = $order->commerce_customer_billing[LANGUAGE_NONE][0]['profile_id'];
         $booking->name = $profile->commerce_customer_address[LANGUAGE_NONE][0]['name_line'];
 
+        foreach ($line_item->rooms_booking_options['und'] as $option) {
+          $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
+
+          $booking->data[$option_name] = 1;
+        }
+
+        $booking->price = $line_item->rooms_booked_price['und'][0]['value'];
+
         $booking->booking_status = 1;
         $booking->save();
 
