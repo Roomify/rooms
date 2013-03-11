@@ -451,8 +451,8 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
             foreach ($unit->field_options[LANGUAGE_NONE] as $option) {
               $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
 
-              if (isset($form_state['values'][$option_name]) || isset($booking->data[$option_name])) {
-                if ($form_state['values'][$option_name] == 1 || isset($booking->data[$option_name])) {
+              if (isset($form_state['values'][$option_name])) {
+                if ($form_state['values'][$option_name] == 1) {
                   $price_modifiers[$option_name] = array(
                     '#type' => ROOMS_DYNAMIC_MODIFIER,
                     '#op_type' => $operation_list[$option['operation']],
@@ -478,11 +478,11 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
             $new_price = $price_calendar->calculatePrice($start_date, $end_date);
             $new_price = $new_price['full_price'];
 
-            if ($form_state['triggering_element']['#value'] == 'Re-assign Unit') {
+            if ($form_state['triggering_element']['#value'] == 'Re-assign Unit' && $form_state['triggering_element']['#name'] == 'op') {
               $form['availability_fieldset']['unit_fieldset']['options_fieldset']['price']['#value'] = number_format($booking->price / 100, 2, '.', '');
             }
             else {
-              $form['availability_fieldset']['unit_fieldset']['options_fieldset']['price']['#value'] = $new_price;
+              $form['availability_fieldset']['unit_fieldset']['options_fieldset']['price']['#value'] = number_format($new_price, 2, '.', '');
             }
           }
         }
@@ -590,15 +590,15 @@ function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date =
   // The current unit for this booking should also return as available
   $current_booking_state = isset($current_booking->booking_id) ? rooms_availability_assign_id($current_booking->booking_id, $current_booking->booking_status) : '';
 
-  $valid_states = variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST));
+  $valid_states = array_keys(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST)));
 
   $booking_parameters = array(array('adults' => $group_size, 'children' => $group_size_children));
 
   if (isset($current_booking->booking_id)) {
-    $ac = new AvailabilityAgent($start_date, $end_date, $booking_parameters, 1, array($valid_states[ROOMS_AVAILABLE], $valid_states[ROOMS_ON_REQUEST], $valid_states[ROOMS_UNCONFIRMED_BOOKINGS], rooms_availability_assign_id($current_booking->booking_id), rooms_availability_assign_id($current_booking->booking_id, '0')), $unit_types);
+    $ac = new AvailabilityAgent($start_date, $end_date, $booking_parameters, 1, array_merge($valid_states, array(rooms_availability_assign_id($current_booking->booking_id, '0'), rooms_availability_assign_id($current_booking->booking_id))), $unit_types);
   }
   else {
-    $ac = new AvailabilityAgent($start_date, $end_date, $booking_parameters, 1, array($valid_states[ROOMS_AVAILABLE], $valid_states[ROOMS_ON_REQUEST], $valid_states[ROOMS_UNCONFIRMED_BOOKINGS], $current_booking_state), $unit_types);
+    $ac = new AvailabilityAgent($start_date, $end_date, $booking_parameters, 1, array_merge($valid_states, array($current_booking_state)), $unit_types);
   }
   $available_units = $ac->checkAvailability(TRUE);
 
