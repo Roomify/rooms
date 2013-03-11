@@ -428,9 +428,47 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
                 $form['availability_fieldset']['unit_fieldset']['options_fieldset'][strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
                   '#type' => 'checkbox',
                   '#title' => $option['name'],
+                  '#ajax' => array(
+                    'callback' => 'rooms_booking_select_unit_callback',
+                    'wrapper' => 'options-wrapper',
+                  ),
                 );
               }
             }
+
+            // Convert Price options in Price modifiers
+            $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
+
+            $price_modifiers = array();
+            foreach ($unit->field_options[LANGUAGE_NONE] as $option) {
+              if (isset($form_state['values'][strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
+                if ($form_state['values'][strtolower(str_replace(array(':', ' '), '_', $option['name']))] == 1) {
+                  $price_modifiers[strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
+                    '#type' => ROOMS_DYNAMIC_MODIFIER,
+                    '#op_type' => $operation_list[$option['operation']],
+                    '#amount' => $option['value'],
+                  );
+                }
+              }
+            }
+
+            $form['availability_fieldset']['unit_fieldset']['options_fieldset']['price'] = array(
+              '#type' => 'textfield',
+              '#title' => t('Price'),
+              '#default_value' => '',
+              '#size' => '10',
+              '#required' => TRUE,
+            );
+
+            $price_calendar = new UnitPricingCalendar($form_state['values']['unit_id'], $price_modifiers);
+
+            $start_date = new DateTime($form_state['values']['rooms_start_date']);
+            $end_date = new DateTime($form_state['values']['rooms_end_date']);
+            $end_date->sub(new DateInterval('P1D'));
+            $new_price = $price_calendar->calculatePrice($start_date, $end_date);
+            $new_price = $new_price['full_price'];
+
+            $form['availability_fieldset']['unit_fieldset']['options_fieldset']['price']['#value'] = $new_price;
           }
         }
       }
@@ -712,7 +750,7 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
     $booking->changed = time();
   }
   else {
-    $booking =  $form_state['rooms_booking'];
+    $booking = $form_state['rooms_booking'];
 
     // We are going to be updating the event - so the first step is to remove the
     // old event.
@@ -736,6 +774,8 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
     // of how unit ids are assigned
     $unit = $booking->unit_id;
   }
+
+  $booking->price = $form_state['values']['price'];
 
   $booking->save();
 

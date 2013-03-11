@@ -101,6 +101,12 @@ function rooms_booking_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'price' => array(
+        'description' => 'The total price for the booking.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'booking_status' => array(
         'description' => 'The booking status (1 published, 0 unpublished).',
         'type' => 'int',
@@ -233,7 +239,6 @@ function rooms_booking_update_7001() {
   db_add_field('rooms_bookings', 'booking_status', $booking_status);
   
   return t('Add field booking_status in Rooms Booking table.');
-
 }
 
 
@@ -268,4 +273,22 @@ function rooms_booking_update_7002() {
   );
 
   db_create_table('rooms_customers', $schema['rooms_customers']);
+}
+
+
+/**
+ * Create price field in rooms_booking table
+ */
+function rooms_booking_update_7003() {
+  $price = array(
+    'description' => 'The total price for the booking.',
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+    'initial' => 0,
+  );
+    
+  db_add_field('rooms_bookings', 'price', $price);
+  
+  return t('Add field price in Rooms Booking table.');
 }
