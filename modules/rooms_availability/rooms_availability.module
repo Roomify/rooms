@@ -283,9 +283,11 @@ function rooms_availability_bulk_pricing_management($year = '', $month = '', $ty
   drupal_add_js(array('roomsUnitManagement' => array('currentMonth' => $month)), 'setting');
   drupal_add_js(array('roomsUnitManagement' => array('currentYear' => $year)), 'setting');
 
-  $output = render(drupal_get_form('rooms_availability_filter_month_form', $month, $year));
+  $filter_month_form = drupal_get_form('rooms_availability_filter_month_form', $month, $year);
+  $output = render($filter_month_form);
 
-  $output .= render(drupal_get_form('rooms_availability_pricing_update_form', $month, $year, $type, $rooms_units));
+  $pricing_update_form = drupal_get_form('rooms_availability_pricing_update_form', $month, $year, $type, $rooms_units);
+  $output .= render($pricing_update_form);
 
   $rooms_id = array();
   foreach ($rooms_units as $value) {
