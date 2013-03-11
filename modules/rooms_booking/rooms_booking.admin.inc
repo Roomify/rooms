@@ -276,12 +276,26 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     ),
   );
 
+  $options_list = '';
+
   // If a unit is assigned get the unit type label
   if (isset($booking->unit_id)) {
     $type_obj = rooms_unit_type_load($booking->unit_type);
     $unit = rooms_unit_load($booking->unit_id);
+
+    if (isset($unit->field_options[LANGUAGE_NONE])) {
+      foreach ($unit->field_options[LANGUAGE_NONE] as $option) {
+        if (isset($booking->data[strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
+          $options_list .= $option['name'] . ', ';
+        }
+      }
+    }
   }
   $unit_selected = isset($booking->unit_id) ? t('Currently assigned unit: @unit_name / @type', array('@type' => $type_obj->label, '@unit_name' => $unit->name)) : t('No Unit assigned.');
+
+  if ($options_list != '') {
+    $unit_selected .= ' (Options: ' . substr($options_list, 0, strlen($options_list) - 2) . ')';
+  }
 
   $form['availability_fieldset'] = array(
     '#type' => 'fieldset',
@@ -332,7 +346,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       '#ajax' => array(
         'callback' => 'rooms_booking_edit_form_unit_type_callback',
         'wrapper' => 'unit-wrapper',
-      ),  
+      ),
     );
 
     // This is where the available untis will pop up
@@ -394,7 +408,30 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
             '#options' => $options,
             '#validated' => TRUE,
             '#default_value' => isset($booking->unit_id) ? $booking->unit_id : '',
+            '#ajax' => array(
+              'callback' => 'rooms_booking_select_unit_callback',
+              'wrapper' => 'options-wrapper',
+            ),
           );
+
+          $form['availability_fieldset']['unit_fieldset']['options_fieldset'] = array(
+            '#type' => 'fieldset',
+            '#title' => t('Options'),
+            '#prefix' => '<div id="options-wrapper">',
+            '#suffix' => '</div>',
+          );
+
+          if (isset($form_state['values']['unit_id'])) {
+            $unit = rooms_unit_load($form_state['values']['unit_id']);
+            if (isset($unit->field_options[LANGUAGE_NONE])) {
+              foreach ($unit->field_options[LANGUAGE_NONE] as $option) {
+                $form['availability_fieldset']['unit_fieldset']['options_fieldset'][strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
+                  '#type' => 'checkbox',
+                  '#title' => $option['name'],
+                );
+              }
+            }
+          }
         }
       }
     }
@@ -466,11 +503,14 @@ function rooms_booking_edit_form_availability_submit($form, &$form_state) {
 
 
 /**
- * Simply returns the placeholder for all the relevant unit assignment
- * functionality.
+ * Simply returns the placeholder for all the relevant unit assignment functionality.
  */
 function rooms_booking_edit_form_availability_callback(&$form, $form_state) {
   return $form['availability_fieldset'];
+}
+
+function rooms_booking_select_unit_callback(&$form, $form_state) {
+  return $form['availability_fieldset']['unit_fieldset']['options_fieldset'];
 }
 
 
@@ -654,7 +694,17 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
     $form_state['rooms_booking'] = $booking;
 
     $booking = entity_ui_controller('rooms_booking')->entityFormSubmitBuildEntity($form, $form_state);
-    
+
+    $unit_object = rooms_unit_load($unit);
+
+    if (isset($unit_object->field_options[LANGUAGE_NONE])) {
+      foreach ($unit_object->field_options[LANGUAGE_NONE] as $option) {
+        if ($form_state['values'][strtolower(str_replace(array(':', ' '), '_', $option['name']))] == '1') {
+          $booking->data[strtolower(str_replace(array(':', ' '), '_', $option['name']))] = $form_state['values'][strtolower(str_replace(array(':', ' '), '_', $option['name']))];
+        }
+      }
+    }
+
     // Add in created and changed times.
     if ($booking->is_new = isset($booking->is_new) ? $booking->is_new : 0) {
       $booking->created = time();
@@ -681,14 +731,14 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
 
     $booking = entity_ui_controller('rooms_booking')->entityFormSubmitBuildEntity($form, $form_state);
     $booking->changed = time();
-    
+
     // Get the unit id from the booking to be used further down as it is not in the form_values because
     // of how unit ids are assigned
     $unit = $booking->unit_id;
   }
-  
+
   $booking->save();
-  
+
   // We have a unit defined so lets block availability there
   if ($unit != 0) {
     // Set the event_id
