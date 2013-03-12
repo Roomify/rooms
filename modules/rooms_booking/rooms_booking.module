@@ -263,7 +263,7 @@ function rooms_booking_load_multiple($booking_ids = array(), $conditions = array
  * Deletes a booking
  *
  * @param RoomsBooking $booking
- * The RoomsBooking object that represents the booking to delete
+ *   The RoomsBooking object that represents the booking to delete
  *
  * @todo Deleting a booking shoule fire a hook and or rule event
  */

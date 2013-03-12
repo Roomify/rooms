@@ -133,7 +133,7 @@ class UnitPricingCalendar {
    * @param $end_date
    * The end date of our range
    *
-   * @returns
+   * @return
    * An array of PricingEvent objects
    */
   public function getEvents(DateTime $start_date, DateTime $end_date) {

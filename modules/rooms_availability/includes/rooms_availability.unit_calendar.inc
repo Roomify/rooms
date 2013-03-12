@@ -88,7 +88,7 @@ class UnitCalendar {
    * @param $end_date
    * The end date of our range
    *
-   * @returns
+   * @return
    * An array of BookingEvent objects
    */
   public function getEvents(DateTime $start_date, DateTime $end_date) {
@@ -133,7 +133,7 @@ class UnitCalendar {
    * @param $end_date
    * The end date of our range
    *
-   * @returns
+   * @return
    * An array of states within that range
    */
   public function getStates(DateTime $start_date, DateTime $end_date, $confirmed = FALSE) {
@@ -369,7 +369,7 @@ class UnitCalendar {
    *
    * @param int $new_state - The state we want to move to
    *
-   * @returns boolean TRUE if not blocked
+   * @return boolean TRUE if not blocked
    */
   public function eventBlocked($existing_state, $new_state) {
 

@@ -7,7 +7,7 @@
  */
 
 
-function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent, $booking_size, $price_modifiers) {
+function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent, $booking_size, $price_modifiers = array()) {
     $date_format = variable_get('rooms_date_format', 'd-m-Y');
 
     $unit_id = $unit_to_book['unit']->unit_id;

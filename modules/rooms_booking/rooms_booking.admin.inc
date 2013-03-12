@@ -196,7 +196,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
     // The Client value needs the id as well (to take us back to the Customer Profile in Commerce)
     $client = $booking->name . ':' . $booking->customer_id;
-   }
+  }
 
   $form['client'] = array(
     '#type' => 'textfield',
@@ -424,6 +424,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
             '#suffix' => '</div>',
           );
 
+          // If a unit is selected
           if (isset($form_state['values']['unit_id']) || isset($booking->unit_id)) {
             $unit_id = (isset($form_state['values']['unit_id'])) ? $form_state['values']['unit_id'] : $booking->unit_id;
             $unit = rooms_unit_load($unit_id);
@@ -479,6 +480,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
             $new_price = $price_calendar->calculatePrice($start_date, $end_date);
             $new_price = $new_price['full_price'];
 
+            // When user press 'Re-assign Unit' button we don't replace price
             if ($form_state['triggering_element']['#value'] == 'Re-assign Unit' && $form_state['triggering_element']['#name'] == 'op') {
               $form['availability_fieldset']['unit_fieldset']['options_fieldset']['price']['#value'] = number_format($booking->price / 100, 2, '.', '');
             }
@@ -929,7 +931,6 @@ function theme_rooms_booking_add_list($variables) {
 
 
 
-
 /**
  * Sets the breadcrumb for administrative rooms pages.
  */
@@ -943,6 +944,3 @@ function rooms_booking_set_breadcrumb() {
 
   drupal_set_breadcrumb($breadcrumb);
 }
-
-
-
