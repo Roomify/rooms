@@ -334,6 +334,29 @@ function rooms_booking_page_title(RoomsBooking $booking) {
 }
 
 
+/**
+ * Implements hook_commerce_order_delete().
+ *
+ * Delete bookings associated with an order when deleting the order.
+ */
+function rooms_booking_commerce_order_delete($order) {
+
+  // Load the bookings associated with this order.
+  $query = new EntityFieldQuery();
+
+  $query->entityCondition('entity_type', 'rooms_booking')
+    ->propertyCondition('order_id', $order->order_id);
+  $bookings = $query->execute();
+
+  // Delete all bookings associated with this order.
+  if (isset($bookings['rooms_booking']) && count($bookings['rooms_booking'])) {
+    foreach ($bookings['rooms_booking'] as $result) {
+      $booking = rooms_booking_load($result->booking_id);
+      rooms_booking_delete($booking);
+      drupal_set_message(t('Deleted booking with id: %id', array('%id' => $result->booking_id)));
+    }
+  }
+}
 
 /**
  * Get a list of Booking keyed by id and name in value
