@@ -182,6 +182,9 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $boo
 
     $units_per_type = $agent->checkAvailability();
 
+    // Give other modules a chance to change the search results
+    drupal_alter('rooms_booking_results', $units_per_type, $start_date, $end_date, $booking_parameters);
+
     // If we don't have any useful result to show just display a failure message and the search form
     if (($units_per_type == ROOMS_NO_ROOMS) || ($units_per_type == ROOMS_SIZE_FAILURE)) {
       $content['booking_results'] = 0;

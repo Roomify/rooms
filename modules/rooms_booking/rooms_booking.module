@@ -156,8 +156,8 @@ function rooms_booking_permission() {
  * @param $op
  *   The operation being performed. One of 'view', 'update', 'create', 'delete'
  *   or just 'edit' (being the same as 'create' or 'update').
- * @param $room
- *   Optionally a booking or a booking to check access for. If nothing is
+ * @param $booking
+ *   Optionally a booking to check access for. If nothing is
  *   given, access for all bookings is determined.
  * @param $account
  *   The user to check for. Leave it to NULL to check for the global user.
@@ -264,8 +264,6 @@ function rooms_booking_load_multiple($booking_ids = array(), $conditions = array
  *
  * @param RoomsBooking $booking
  *   The RoomsBooking object that represents the booking to delete
- *
- * @todo Deleting a booking shoule fire a hook and or rule event
  */
 function rooms_booking_delete(RoomsBooking $booking) {
   $booking->delete();

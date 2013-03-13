@@ -50,10 +50,6 @@ function rooms_booking_availability_search_form($form, $form_state) {
       '6' => '6',
     ),
     '#default_value' =>  $rooms_number,
-    '#ajax' => array(
-      'callback' => 'rooms_booking_availability_search_form_callback',
-      'wrapper' => 'rooms-wrapper',
-    ),
   );
 
   $form['rooms_fieldset'] = array(
@@ -62,6 +58,11 @@ function rooms_booking_availability_search_form($form, $form_state) {
   );
 
   if (variable_get('rooms_presentation_style', ROOMS_PER_TYPE) == ROOMS_PER_TYPE) {
+    $form['conditions']['rooms']['#ajax'] = array(
+      'callback' => 'rooms_booking_availability_search_form_callback',
+      'wrapper' => 'rooms-wrapper',
+    );
+
     $form['rooms_fieldset']['table_header'] = array(
       '#prefix' => '<table><thead>',
       '#markup' => '<th></th><th>' . t('Group size') . '</th>',
