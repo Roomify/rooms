@@ -223,14 +223,14 @@ function rooms_booking_availability_search_form_validate(&$form, &$form_state) {
 
   // Ensure start date is appropriate based on the rooms_booking_start_date variable
   $now = new DateTime();
-  $diff1 = $now->diff($date1);
+  $diff1 = $now->setTime(0, 0, 0)->diff($date1);
   $rooms_booking_start_date = variable_get('rooms_booking_start_date', 1);
 
   // Check the difference in number of days
   if ($diff1->days < $rooms_booking_start_date) {
     form_set_error('rooms_date_range', t('Bookings need to be at least ' . $rooms_booking_start_date . ' day(s) in the future'));
   }
-  
+
   // Make sure that 
   if ($diff1->invert) {
     form_set_error('rooms_date_range', t('Start date must be current or in the future'));

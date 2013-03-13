@@ -96,13 +96,27 @@ function rooms_date_range_fields($date_range_fields = array()) {
     '#date_increment' => 1,
     '#date_year_range' => '-1:+3',
     '#required' => TRUE,
+    '#attached' => array(
+      'js' => array(
+        drupal_get_path('module', 'rooms') . '/js/rooms_date_popup.js',
+        array(
+         'data' => array(
+            'rooms' => array(
+              'roomsBookingStartDay' => variable_get('rooms_booking_start_date', 1),
+              'roomsDateFormat' => rooms_dateFormatTojQueryUIDatePickerFormat($date_format),
+            ),
+          ),
+          'type' => 'setting',
+        ),
+      ),
+    ),
   );
 
-  drupal_add_js(array('rooms' => array(
+  /*drupal_add_js(array('rooms' => array(
       'roomsBookingStartDay' => variable_get('rooms_booking_start_date', 1),
       'roomsDateFormat' => rooms_dateFormatTojQueryUIDatePickerFormat($date_format),
     )), 'setting');
-  drupal_add_js(drupal_get_path('module', 'rooms') . '/js/rooms_date_popup.js');
+  drupal_add_js(drupal_get_path('module', 'rooms') . '/js/rooms_date_popup.js');*/
 
 
   return $date_range_fields;

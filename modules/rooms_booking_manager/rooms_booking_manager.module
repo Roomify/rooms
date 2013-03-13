@@ -282,7 +282,7 @@ function rooms_booking_manager_check_dates($start_date, $end_date) {
     $now = new DateTime();
 
     // Ensure start date is after today
-    $diff1 = $now->diff($start_date);
+    $diff1 = $now->setTime(0, 0, 0)->diff($start_date);
     if ($diff1->invert) {
       $datesok = FALSE;
     }
