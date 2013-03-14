@@ -106,11 +106,11 @@ class RoomsBookingUIController extends EntityDefaultUIController {
     return $items;
   }
 
-  
+
   /**
    * Create the markup for the add Booking Entities page within the class
    * so it can easily be extended/overriden.
-   */ 
+   */
   public function addPage() {
     $item = menu_get_item();
     $content = system_admin_menu_block($item);
@@ -396,8 +396,8 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     // Set the unit types - everytme a different type is chosen the available
     // units for that type pop-up.
     $form['availability_fieldset']['unit_type'] = array(
-      '#type' => 'select', 
-      '#title' => t('Unit Type'), 
+      '#type' => 'select',
+      '#title' => t('Unit Type'),
       '#options' => $types,
       '#default_value' => $selected,
       '#ajax' => array(
@@ -447,8 +447,8 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
             '#type' => 'fieldset',
             '#title' => t($type_obj->label),
           );
-  
-          $options = array(); 
+
+          $options = array();
           // Create elements based on type/price categorisation
           foreach ($units_per_price as $price => $units) {
             foreach ($units as $unit) {
@@ -583,7 +583,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#value' => t('Save Booking'),
     '#submit' => $submit + array('rooms_booking_edit_form_submit'),
   );
-  
+
   if (!empty($booking->name)) {
     $form['actions']['delete'] = array(
       '#type' => 'submit',
@@ -691,7 +691,7 @@ function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date =
  * Form API validate callback for the room form
  */
 function rooms_booking_edit_form_validate(&$form, &$form_state) {
-  
+
   $booking = $form_state['rooms_booking'];
 
   if ($form_state['values']['rooms_start_date']['date'] != '' && $form_state['values']['rooms_end_date']['date'] != '') {
@@ -703,7 +703,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
       form_set_error('date_range', t('End date must be after start date'));
     }
   }
-  
+
   if (!isset($form_state['values']['unit_id']) && (!isset($booking->unit_id))) {
     form_set_error('availability_fieldset', t('A unit has not been assigned for this booking'));
   }
@@ -714,7 +714,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
     if (isset($form_state['values']['unit_id'])) {
       $new_unit_id = $form_state['values']['unit_id'];
     }
-  
+
     if ($new_unit_id == $booking->unit_id) {
       // We are going to be updating the event - so the first step is to remove the old event.
       if (($booking->unit_id != 0) && ($form_state['values']['rooms_start_date'] != '') && ($form_state['values']['rooms_end_date'] != '')) {
@@ -764,7 +764,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
 
 /**
  * Form API submit callback for the Booking form.
- * 
+ *
  * @todo remove hard-coded link
  */
 function rooms_booking_edit_form_submit(&$form, &$form_state) {
@@ -806,7 +806,7 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
   // Put them back in $form_state so the entity controller builds the entity
   $form_state['values']['name'] = $client_name;
   $form_state['values']['customer_id'] = $client_id;
-  
+
   // We also need appropriate named variables for start and end date
   // It's simpler to do this than change all the other code for now
   $form_state['values']['start_date'] = $form_state['values']['rooms_start_date'];
@@ -814,7 +814,7 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
 
   $start_date = $form_state['values']['rooms_start_date'];
   $end_date = $form_state['values']['rooms_end_date'];
-  
+
   $unit = 0;
   if (isset($form_state['values']['unit_id'])) {
     $unit = $form_state['values']['unit_id'];
@@ -822,7 +822,7 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
 
   // If we are dealing with a new booking
   if ($form_state['rooms_booking']->booking_id == '') {
-  
+
     $booking = rooms_booking_create(array('type' => $form_state['rooms_booking']->type));
     $form_state['rooms_booking'] = $booking;
 
@@ -902,13 +902,13 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
       drupal_set_message(t('Room Availability could not be updated'), 'error');
     }
   }
-  
+
   $form_state['redirect'] = 'admin/rooms/bookings';
 }
 
 /**
  * Form API submit callback for the delete button.
- * 
+ *
  * @todo Remove hard-coded path
  */
 function rooms_booking_form_submit_delete(&$form, &$form_state) {
@@ -937,7 +937,7 @@ function rooms_booking_delete_form($form, &$form_state, $booking) {
     t('Cancel'),
     'confirm'
   );
-  
+
   return $form;
 }
 

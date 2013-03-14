@@ -27,7 +27,7 @@ function rooms_pricing_permission() {
  */
 function rooms_pricing_menu() {
   $items  =  array();
-  
+
   $items['admin/rooms/units/unit/%pricing_unit/pricing'] = array(
     'title' => 'Manage Pricing',
     'page callback' =>  'rooms_pricing_page',
@@ -38,7 +38,7 @@ function rooms_pricing_menu() {
     'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
     'weight' => '30',
   );
-  
+
   $items['admin/rooms/units/unit/%pricing_unit/pricing/json/%/%'] = array(
     'title' =>  'Pricing Info',
     'page callback' => 'rooms_pricing_json',
@@ -58,7 +58,7 @@ function rooms_pricing_menu() {
     'file path' => drupal_get_path('module', 'system'),
     'file' => 'system.admin.inc',
   );
-  
+
   return $items;
 }
 
@@ -75,7 +75,7 @@ function pricing_unit_load($unit_id) {
 
 /**
  * Room pricing access callback
- */ 
+ */
 function rooms_pricing_access($rooms_unit) {
   if (user_access('manage booking unit pricing')) {
     return TRUE;
@@ -87,22 +87,22 @@ function rooms_pricing_access($rooms_unit) {
 /**
  * Callback for admin/rooms/units/unit/%pricing_unit/pricing - builds pricing
  * page by adding calendar and pulling events from pricing table.
- * 
+ *
  */
 function rooms_pricing_page(RoomsUnit $rooms_unit, $year='', $month='') {
-  
+
   // Basic check to avoid any uggliness
   $year = check_plain($year);
   $month = check_plain($month);
-  
+
   // If year is not set then give it the current date
   $year = ($year == '') ? date('Y', time()) : $year;
   $month = ($month == '') ? date('n', time()) : $month;
 
-  // Add all the stuff we will need to show the FullCalendar  
+  // Add all the stuff we will need to show the FullCalendar
   drupal_add_library('rooms_availability', 'rooms_fullcalendar');
   drupal_add_js(drupal_get_path('module', 'rooms_pricing') . '/js/rooms_pricing.js');
-  
+
   // Inject settings in javascript that we will use
   drupal_add_js(array('roomsPricing' => array('roomID' => $rooms_unit->unit_id)), 'setting');
   drupal_add_js(array('roomsPricing' => array('currentMonth' => $month)), 'setting');
@@ -121,7 +121,7 @@ function rooms_pricing_page(RoomsUnit $rooms_unit, $year='', $month='') {
   $backward = $date2->sub(new DateInterval('P3M'));
   $backward_path = 'admin/rooms/units/unit/' . $rooms_unit->unit_id . '/pricing/' . $backward->format('Y') . '/' . $backward->format('n');
   $backward_link = l(t('Back'), $backward_path);
-  
+
   $current_path = 'admin/rooms/units/unit/' . $rooms_unit->unit_id . '/pricing/' . $date_current->format('Y') . '/' . $date_current->format('n');
   $current_link = l(t('Current'), $current_path);
 
@@ -135,8 +135,8 @@ function rooms_pricing_page(RoomsUnit $rooms_unit, $year='', $month='') {
                                               'backward_link' => $backward_link,
                                               'current_link' => $current_link)
                  );
-  
-  return $output;  
+
+  return $output;
 }
 
 
@@ -152,31 +152,31 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
     '#collapsed' => TRUE,
     '#description' => t('Careful this will overwrite any existing pricing info.'),
   );
-  
+
   $form['rooms_update_pricing']['unit_id'] = array(
     '#type' => 'hidden',
     '#value' => $unit_id,
   );
-  
+
   $form['rooms_update_pricing']['rooms_date_range'] = array(
     '#title' => t('Date Range'),
     '#type' => 'fieldset',
-    '#collapsible' => TRUE, 
+    '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );
-  
+
   $form['rooms_update_pricing']['rooms_date_range'] += rooms_date_range_fields();
   // Unset a js setting that is not relevant for pricing
   drupal_add_js(array('rooms' => array('roomsBookingStartDay' => 0)), 'setting');
-  
-  
+
+
   $form['rooms_update_pricing']['op'] = array(
     '#title' => t('Operation'),
     '#type' => 'fieldset',
-    '#collapsible' => TRUE, 
+    '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );
-  
+
   $form['rooms_update_pricing']['op']['operation'] = array(
     '#type' => 'select',
     '#title' => t('Operation'),
@@ -189,7 +189,7 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
     ),
     '#default_value' =>  'replace',
   );
-  
+
   $form['rooms_update_pricing']['op']['amount'] = array(
     '#type' => 'textfield',
     '#title' => t('Amount'),
@@ -199,14 +199,14 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
     '#maxlength' => 10,
     '#required' => TRUE,
   );
-  
-  
+
+
   $form['rooms_update_pricing']['actions'] = array(
     '#type' => 'container',
     '#attributes' => array('class' => array('form-actions')),
     '#weight' => 400,
   );
-  
+
   // We add the form's #submit array to this button along with the actual submit
   // handler to preserve any submit handlers added by a form callback_wrapper.
   $submit = array();
@@ -214,18 +214,18 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
   if (!empty($form['rooms_update_pricing']['#submit'])) {
     $submit += $form['rooms_update_pricing']['#submit'];
   }
-  
+
   $form['rooms_update_pricing']['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Update Room Pricing'),
     '#submit' => $submit + array('update_unit_pricing_form_submit'),
   );
-  
+
   // We append the validate handler to #validate in case a form callback_wrapper
   // is used to add validate handlers earlier.
   $form['#validate'][] = 'update_unit_pricing_form_validate';
-  
-  
+
+
   return $form;
 }
 
@@ -239,7 +239,7 @@ function update_unit_pricing_form_validate(&$form, &$form_state) {
   if ($diff->invert) {
     form_set_error('date_range', t('End date must be after start date'));
   }
-  
+
   // Make sure amount entered is numeric
   if (!empty($form_state['values']['amount']) && !is_numeric($form_state['values']['amount'])) {
     form_set_error('amount', t('%name: you must enter a numeric value for the price.', array('%name' => 'Amount')));
@@ -248,26 +248,26 @@ function update_unit_pricing_form_validate(&$form, &$form_state) {
 
 
 function update_unit_pricing_form_submit(&$form, &$form_state) {
-  
+
   $start_date = new DateTime($form_state['values']['rooms_start_date']);
   $end_date = new DateTime($form_state['values']['rooms_end_date']);
   $operation = $form_state['values']['operation'];
   $amount = $form_state['values']['amount'];
-  
+
   $unit_id = $form_state['values']['unit_id'];
-  
+
   // Get all the pricing events for the date range
   $rc = new UnitPricingCalendar($unit_id);
   $pe = new PricingEvent($unit_id, $amount, $start_date, $end_date, $operation);
   $events = array($pe);
-  
+
   $rc->updateCalendar($events);
 
 }
 
 
 
-/** 
+/**
  * Creates the necessary json for the date range provided - needs at least start year and month at which point it will
  * return the entire month.
  */
@@ -276,11 +276,11 @@ function rooms_pricing_json($unit, $start_year = '', $start_month = '', $start_d
   $start_year = (int)$start_year;
   $start_month = (int)$start_month;
   $start_day = (int)$start_day;
-  
+
   $end_year = (int)$end_year;
   $end_month = (int)$end_month;
   $end_day = (int)$end_day;
-  
+
   $eom = rooms_end_of_month_dates($start_year);
 
   if (($start_year == 0) || ($start_month == 0)) {
@@ -310,16 +310,16 @@ function rooms_pricing_json($unit, $start_year = '', $start_month = '', $start_d
 
   $events = $rc->getEvents($start_date, $end_date);
   $json_events  = array();
-  
+
   foreach ($events as $event) {
     $json_events[] = $event->formatJson();
   }
- 
+
   echo drupal_json_encode($json_events);
-  
+
 }
 
- 
+
 
 /**
  * Implement rooms_pricing_theme().

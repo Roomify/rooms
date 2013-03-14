@@ -9,7 +9,7 @@
 /**
  * Implements hook_views_data()
  */
-function rooms_booking_views_data_alter(&$data) { 
+function rooms_booking_views_data_alter(&$data) {
   $data['rooms_bookings']['link_booking'] = array(
     'field' => array(
       'title' => t('Link'),

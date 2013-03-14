@@ -198,7 +198,7 @@ function rooms_availability_reference_field_validate($entity_type, $entity, $fie
         );
       }
     }
-  } 
+  }
 }
 
 

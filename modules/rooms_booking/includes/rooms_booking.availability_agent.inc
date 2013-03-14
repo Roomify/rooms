@@ -63,7 +63,7 @@ class AvailabilityAgent {
 
   /**
    * This function is used to recursively iterate over sets of rooms identifying
-   * whether there is a solution across the sets that has at least one option in 
+   * whether there is a solution across the sets that has at least one option in
    * each set.
    */
   private function searchForAvailability($rooms_results) {
