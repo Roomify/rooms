@@ -163,3 +163,82 @@ function rooms_booking_manager_update_7003() {
 
   field_create_instance($instance);
 }
+
+
+/**
+ * Add "Booking Reference" field to the rooms_booking_manager_line_item
+ */
+function rooms_booking_manager_update_7004() {
+  $field = array(
+    'field_name' => 'rooms_booking_reference',
+    'label' => t('Booking Reference'),
+    'cardinality' => 1,
+    'required' => 0,
+    'type' => 'entityreference',
+    'module' => 'entityreference',
+    'settings' => array(
+      'handler' => 'base',
+      'handler_settings' => array(
+        'behaviors' => array(
+          'views-select-list' => array(
+            'status' => 0,
+          ),
+        ),
+        'sort' => array(
+          'type' => 'none',
+        ),
+        'target_bundles' => array(),
+      ),
+      'target_type' => 'rooms_booking',
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => '60',
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => '9',
+    ),
+  );
+
+  field_create_field($field);
+
+  $instance = array(
+    'field_name' => 'rooms_booking_reference',
+    'label' => t('Booking Reference'),
+    'entity_type' => 'commerce_line_item',
+    'bundle' => 'rooms_booking',
+    'default_value' => NULL,
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 13,
+      ),
+    ),
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => '60',
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => '9',
+    ),
+  );
+
+  field_create_instance($instance);
+}
