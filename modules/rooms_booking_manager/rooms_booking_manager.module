@@ -1191,6 +1191,11 @@ function rooms_booking_manager_theme() {
  */
 function rooms_booking_manager_commerce_checkout_complete($order) {
   $profile = commerce_customer_profile_load($order->commerce_customer_billing[LANGUAGE_NONE][0]['profile_id']);
+
+  // Create an array to store our booking events in case we need to cancel
+  // them.
+  $booking_events = array();
+
   // Cycle through orders looking for booking products
   foreach ($order->commerce_line_items as $lang => $item) {
     foreach ($item as $item_id) {
@@ -1250,17 +1255,31 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
         // Create a booking event
         $be = new BookingEvent($booking->unit_id, $id, $sd, $ed);
 
-        // Call up the UnitCalednar for this booking unit and add the booking event to it
+        // Call up the UnitCalendar for this booking unit and add the booking event to it.
         $rc = new UnitCalendar($booking->unit_id);
         $responses = $rc->updateCalendar(array($be));
 
-        // If the event addition was succesful lock the event
+        // If the event addition was successful, lock the event.
         if ($responses[$id] == ROOMS_UPDATED) {
           $be->lock();
+          // Save the booking event in case we need to roll back.
+          $booking_events[] = $be;
           drupal_set_message(t('Room Availability Updated'));
         }
         else {
-          drupal_set_message(t('Room Availability could not be updated'));
+
+          // We couldn't lock the availability for this room.
+          // Now remove any created bookings from the calendar.
+          $booking_events[] = $be;
+          foreach ($booking_events as $booking_event) {
+            $rc = new UnitCalendar($booking_event->unit_id);
+            $rc->removeEvents(array($booking_event));
+          }
+
+          // Now cancel checkout.
+          drupal_set_message(t('Unfortunately, we were not able to save your booking. If this error occurs again, you may need to re-start your availability search.'), 'error');
+          commerce_order_status_update($order, 'cart', FALSE);
+          drupal_goto('bookings');
         }
       }
     }
