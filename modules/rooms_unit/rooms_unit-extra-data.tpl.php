@@ -6,7 +6,7 @@
  *
  * Available variables:
  * - $status: The variable to theme (while only show if you tick status)
- * 
+ *
  * Helper variables:
  * - $rooms_room: The Room object the variables are derived from
  */

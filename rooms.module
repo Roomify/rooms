@@ -67,7 +67,7 @@ function rooms_end_of_month_dates($year) {
  * in mind that any key values that are set in the function will be overidden.
  *
  * @return array The array holding the field definitions
- */ 
+ */
 function rooms_date_range_fields($date_range_fields = array()) {
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
 
@@ -118,15 +118,15 @@ function rooms_date_range_fields($date_range_fields = array()) {
 /**
  * Transfom from PHP conventions to jQueryUI conventions for dates
  */
-function rooms_dateFormatTojQueryUIDatePickerFormat($date_format) { 
-  $chars = array( 
+function rooms_dateFormatTojQueryUIDatePickerFormat($date_format) {
+  $chars = array(
     // Day
     'd' => 'dd', 'j' => 'd', 'l' => 'DD', 'D' => 'D',
-    // Month 
-    'm' => 'mm', 'n' => 'm', 'F' => 'MM', 'M' => 'M', 
-    // Year 
-    'Y' => 'yy', 'y' => 'y', 
-  ); 
+    // Month
+    'm' => 'mm', 'n' => 'm', 'F' => 'MM', 'M' => 'M',
+    // Year
+    'Y' => 'yy', 'y' => 'y',
+  );
 
-  return strtr((string)$date_format, $chars); 
-} 
+  return strtr((string)$date_format, $chars);
+}

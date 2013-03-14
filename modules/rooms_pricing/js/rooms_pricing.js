@@ -13,7 +13,7 @@ Drupal.behaviors.rooms_availability = {
     year1 = currentyear;
 
     // Second month is the next one obviously unless it is 11 in
-    // which case we need to move a year ahead 
+    // which case we need to move a year ahead
     if (currentmonth == 11) {
       month2 = 0;
       year2 = year1 + 1;
