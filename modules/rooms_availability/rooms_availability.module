@@ -1168,11 +1168,20 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
   $ed->setTimezone(new DateTimeZone('UTC'))->setTimestamp($end_date);
 
   if (!$booked) {
-    $content['event_title'] = array(
-      '#prefix' => '<h2>',
-      '#markup' => t('@room is @status', array('@room' => $unit->name, '@status' => $state_options[$event_id])),
-      '#suffix' => '</h2>'
-    );
+    if ($event_id == -2) {
+      $content['event_title'] = array(
+        '#prefix' => '<h2>',
+        '#markup' => t('@room', array('@room' => $unit->name)),
+        '#suffix' => '</h2>'
+      );
+    }
+    else {
+      $content['event_title'] = array(
+        '#prefix' => '<h2>',
+        '#markup' => t('@room is @status', array('@room' => $unit->name, '@status' => $state_options[$event_id])),
+        '#suffix' => '</h2>'
+      );
+    }
   }
   else {
     $booking_id = rooms_availability_return_id($event_id);
@@ -1259,6 +1268,11 @@ function rooms_availability_event_manager_form($form, $form_state, $unit_id, $ev
      ),
   );
 
+  $form['order']['order_link'] = array(
+    '#type' => 'markup',
+    '#markup' => t('<a href="@url">Create booking</a>', array('@url' => url('admin/rooms/bookings/add/standard_booking', array('query' => array('startdate' => $start_date, 'enddate' => $end_date, 'unitid' => $unit_id))))),
+  );
+
   // This entire form element will be replaced whenever 'changethis' is updated.
   $form['form_wrapper_bottom'] = array(
     '#type' => 'item',
@@ -1274,7 +1288,7 @@ function rooms_availability_event_manager_form($form, $form_state, $unit_id, $ev
  * The callback for the change_event_status widget of the event manager form
  */
 function rooms_availability_ajax_event_status_change($form, $form_state) {
-  
+
   $unit_id = $form_state['values']['unit_id'];
   $event_id = $form_state['values']['event_id'];
   $start_time = $form_state['values']['start_date'];
