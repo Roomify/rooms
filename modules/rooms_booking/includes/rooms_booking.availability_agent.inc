@@ -207,9 +207,19 @@ class AvailabilityAgent {
 
     // Apply AvailabilityAgentCommerceFilter
     $av_commercefilter = new AvailabilityAgentCommerceFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date));
-    $results = $av_commercefilter->applyFilter();
+    $units = $av_commercefilter->applyFilter();
 
-    return $results;
+    ctools_include('plugins');
+    $filters = ctools_get_plugins('rooms_booking', 'availabilityagent_filter');
+
+    foreach ($filters as $filter) {
+      $class = ctools_plugin_get_class($filter, 'handler');
+      $object_filter = new $class($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date, 'group_size' => $adults, 'group_size_children' => $children, 'unit_types' => $this->unit_types, 'valid_states' => $this->valid_states, 'confirmed' => $confirmed));
+
+      $units = $object_filter->applyFilter();
+    }
+
+    return $units;
   }
 
 
