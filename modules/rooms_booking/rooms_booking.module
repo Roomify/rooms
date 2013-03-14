@@ -151,6 +151,18 @@ function rooms_booking_permission() {
 
 
 /**
+ * Implements hook_ctools_plugin_type().
+ */
+function rooms_booking_ctools_plugin_type() {
+  return array(
+    'availabilityagent_filter' => array(
+      'use hooks' => TRUE,
+    ),
+  );
+}
+
+
+/**
  * Determines whether the given user has access to a booking.
  *
  * @param $op
