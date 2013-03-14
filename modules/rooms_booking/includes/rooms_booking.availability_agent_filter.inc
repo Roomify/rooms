@@ -235,6 +235,10 @@ class AvailabilityAgentCommerceFilter extends AvailabilityAgentCommonFilter {
 
   // Check if search interval overlaps line_item interval
   private function check_in_range($line_item_start_date, $line_item_end_date, $start_date, $end_date) {
+
+    // Set time to midnight so that our comparisons work correctly.
+    $start_date->setTime(0, 0, 0);
+    $end_date->setTime(0, 0, 0);
     if (!(($line_item_start_date < $start_date && $line_item_end_date < $start_date) ||
           ($line_item_start_date > $end_date && $line_item_end_date > $end_date))) {
 
