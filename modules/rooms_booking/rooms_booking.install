@@ -21,7 +21,7 @@ function rooms_booking_install() {
  */
 function rooms_booking_schema() {
   $schema = array();
-  
+
   $schema['rooms_bookings'] = array(
     'description' => 'The base table for Bookings.',
     'fields' => array(
@@ -84,14 +84,14 @@ function rooms_booking_schema() {
         'default' => 0,
       ),
       'start_date' => array(
-        'type' => 'varchar', 
-        'length' => 20, 
+        'type' => 'varchar',
+        'length' => 20,
         'not null' => FALSE,
         'description' => 'The start date for the booking.',
       ),
       'end_date' => array(
-        'type' => 'varchar', 
-        'length' => 20, 
+        'type' => 'varchar',
+        'length' => 20,
         'not null' => FALSE,
         'description' => 'The end date for the booking.',
       ),
@@ -185,7 +185,7 @@ function rooms_booking_schema() {
     ),
   );
 
-  
+
   // Stores the customer name and potentially relates it to a Commerce
   // customer profile.
   $schema['rooms_customers'] = array(
@@ -289,6 +289,6 @@ function rooms_booking_update_7003() {
   );
 
   db_add_field('rooms_bookings', 'price', $price);
-  
+
   return t('Add field price in Rooms Booking table.');
 }

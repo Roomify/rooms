@@ -15,7 +15,7 @@ and unpack in sites/all/libraries so that you end up with sites/all/libraries/fu
 We use FullCalendar to display room availability and prices by date in an easily comprehensible manner.
 
 Please do not use the download from the FullCalendar website, as we had to fork the actual FullCalendar library
-to add an extra view and provide some simple enhancements that made sense for this application. 
+to add an extra view and provide some simple enhancements that made sense for this application.
 
 *It is not necessary to install a Drupal module called fullcalendar.*
 

@@ -199,14 +199,14 @@ class BookingEvent {
     $event = array(
       'id' => $this->id,
       'start' => $this->startYear() . '-' . $this->startMonth('m') . '-' . $this->startDay('d') . 'T13:00:00Z',
-      'end' => $this->endYear() . '-' . $this->endMonth('m') . '-' . $this->endDay('d') . 'T13:00:00Z', 
+      'end' => $this->endYear() . '-' . $this->endMonth('m') . '-' . $this->endDay('d') . 'T13:00:00Z',
       'title' => $this->id,
     );
 
     // Check if we are dealing with a booking
     if ($this->id > 10 || $this->id < -10) {
       // Get the actual booking id
-      $booking_id = rooms_availability_return_id($this->id); 
+      $booking_id = rooms_availability_return_id($this->id);
       $booking = rooms_booking_load($booking_id);
       if ($style == ROOMS_AVAILABILITY_ADMIN_STYLE) {
         $name = $booking->name;

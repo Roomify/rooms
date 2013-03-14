@@ -6,22 +6,22 @@
  */
 class UnitPricingCalendar {
 
-  // The bookable unit the Calendar is relevant to  
+  // The bookable unit the Calendar is relevant to
   protected $unit_id;
-  
+
   // The actual unit relevant to this Calendar
   protected $unit;
-  
+
   // The default state for the room if it has no specific booking
   protected $default_state;
-  
+
   // The default price for the room
   protected $default_price;
-  
+
   // Price modfiers - an array of operations to be performed to the price. Operations
   // are performed in the sequence they are found in the array
   protected $price_modifiers;
-  
+
   public function __construct($unit_id, $price_modifiers = array()) {
     $this->unit_id = $unit_id;
     // Load the booking unit
@@ -31,8 +31,8 @@ class UnitPricingCalendar {
 
     $this->price_modifiers = $price_modifiers;
   }
-  
-  
+
+
   /**
    * Given an array of events removes events from the calendar
    *
@@ -43,8 +43,8 @@ class UnitPricingCalendar {
    *   The array of ids of events that were found and removed
    */
   public function removeEvents($events) {}
-  
-  
+
+
   /**
    * Given a date range determine the cost of the room over that period
    *
@@ -53,7 +53,7 @@ class UnitPricingCalendar {
    *
    * @param $end_date
    * The end date for the search
-   *  
+   *
    * @return
    * The array holding full price and booking price of the room for that period
    */
@@ -83,7 +83,7 @@ class UnitPricingCalendar {
 
     return array('full_price' => $price, 'booking_price' => $booking_price);
   }
-  
+
   /**
    * Apply price modifiers to base price
    * @param $price
@@ -122,7 +122,7 @@ class UnitPricingCalendar {
     return $price;
   }
 
-  
+
   /**
    * Given a date range returns an array of PricingEvents. The heavy lifting really takes place in
    * the getRawDayData function - here we are simply acting as a factory for price event objects
@@ -150,7 +150,7 @@ class UnitPricingCalendar {
         // The event array gives us the start days for each event within a month
         $start_days = array_keys($month['states']);
         foreach ($month['states'] as $state) {
-          // Create a booking event 
+          // Create a booking event
           $start = $state['start_day'];
           $end= $state['end_day'];
           $sd = new DateTime("$year-$mid-$start");
@@ -171,7 +171,7 @@ class UnitPricingCalendar {
   /**
    * Given a date range it returns all data within that range including the start and
    * end dates of states. The MySQL queries are kept simple and then the data is cleared up
-   * 
+   *
    * @param $start_date
    * The starting date
    *
@@ -279,7 +279,7 @@ class UnitPricingCalendar {
             $last_day = $eod[$i];
             $month = $this->prepareFullMonthArray(new PricingEvent($this->unit_id,
                                                                    $this->default_price,
-                                                                   new DateTime("$j-$i-1"), 
+                                                                   new DateTime("$j-$i-1"),
                                                                    new DateTime("$j-$i-$last_day")));
             // Add the month in its rightful position
             $results[$this->unit_id][$j][$i]['days'] = $month;
@@ -364,8 +364,8 @@ class UnitPricingCalendar {
 
     return $results;
   }
-  
-  
+
+
   /**
    * Given an array of PricingEvents the calendar is updated with regards to the
    * events that are relevant to the Unit this calendar refers to
@@ -414,12 +414,12 @@ class UnitPricingCalendar {
     }
   }
 
-  
+
   /**
    * Adds an event to the calendar
    *
    * @param $event
-   *   An an event of type BookingEvent 
+   *   An an event of type BookingEvent
    *
    * @return
    *   TRUE if events added, FALSE if some event failed
@@ -474,8 +474,8 @@ class UnitPricingCalendar {
     }
     return $days;
   }
-  
-  
+
+
   /**
    * Given an event it prepares a partial array covering just the days
    * for which the event is involved
@@ -487,7 +487,7 @@ class UnitPricingCalendar {
     }
     return $days;
   }
-  
+
   /**
    * Check if a month exists
    *
@@ -504,7 +504,7 @@ class UnitPricingCalendar {
     $result = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
     if (count($result) > 0) {
       return TRUE;
-    } 
+    }
     return FALSE;
   }
 
@@ -516,7 +516,7 @@ class UnitPricingCalendar {
   public function calculatePricingEvents($unit_id, $amount, $start_date, $end_date, $operation, $days) {
     $s_timestamp = $start_date->getTimestamp();
     $e_timestamp = $end_date->getTimestamp();
- 
+
     $events = array();
 
     do {
@@ -534,6 +534,6 @@ class UnitPricingCalendar {
 
     return $events;
   }
-  
-  
+
+
 }

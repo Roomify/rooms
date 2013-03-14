@@ -112,7 +112,7 @@ class RoomsUnitUIController extends EntityDefaultUIController {
   /**
    * Create the markup for the add Bookable Unit Entities page within the class
    * so it can easily be extended/overriden.
-   */ 
+   */
   public function addPage() {
     $item = menu_get_item();
     $content = system_admin_menu_block($item);
@@ -123,7 +123,7 @@ class RoomsUnitUIController extends EntityDefaultUIController {
     }
     return theme('rooms_unit_add_list', array('content' => $content));
   }
-  
+
 }
 
 
@@ -190,7 +190,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#required' => TRUE,
     '#weight' => -5,
   );
-  
+
   $form['base_price'] = array(
     '#type' => 'textfield',
     '#title' => t('Unit Base Price'),
@@ -254,7 +254,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#default_value' => isset($unit->data['bed_arrangement']['doubles']) ? $unit->data['bed_arrangement']['doubles'] : '',
     '#title' => t('Double Beds'),
   );
-  
+
   // If we are creating a new booking unit
   if ($unit->unit_id == '') {
     $form['multi'] = array(
@@ -264,7 +264,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
                           required units that all have the same configutation - you can still personalise
                           each later on.'),
     );
-  
+
     $form['multi']['multiple'] = array(
       '#type' => 'textfield',
       '#size' => 5,
@@ -272,7 +272,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
       '#title' => t('How many booking units like this should we create'),
     );
   }
-  
+
   // Add the field related form elements.
   $form_state['rooms_unit'] = $unit;
   field_attach_form('rooms_unit', $unit, $form, $form_state);
@@ -296,7 +296,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#value' => t('Save Unit'),
     '#submit' => $submit + array('rooms_unit_edit_form_submit'),
   );
-  
+
   if (!empty($unit->name)) {
     $form['actions']['delete'] = array(
       '#type' => 'submit',
@@ -322,12 +322,12 @@ function rooms_unit_edit_form_validate(&$form, &$form_state) {
 
   // Notify field widgets to validate their data.
   field_attach_form_validate('rooms_unit', $unit, $form, $form_state);
-  
+
   // Validate price field
   if (!empty($form_state['values']['base_price']) && !is_numeric($form_state['values']['base_price'])) {
     form_set_error('Base price error', t('%name: you must enter a numeric value for the price.', array('%name' => 'Base Price')));
   }
-  
+
   if (!empty($form_state['values']['multiple']) && !is_numeric($form_state['values']['multiple'])) {
     form_set_error('Multiple Rooms Error', t('%name: you must enter at least 1 as the number of multiple rooms.', array('%name' => 'Multiple Rooms')));
   }
@@ -336,7 +336,7 @@ function rooms_unit_edit_form_validate(&$form, &$form_state) {
 
 /**
  * Form API submit callback for the Unit form.
- * 
+ *
  * @todo remove hard-coded link
  */
 function rooms_unit_edit_form_submit(&$form, &$form_state) {
@@ -379,7 +379,7 @@ function rooms_unit_edit_form_submit(&$form, &$form_state) {
 
 /**
  * Form API submit callback for the delete button.
- * 
+ *
  * @todo Remove hard-coded path
  */
 function rooms_unit_form_submit_delete(&$form, &$form_state) {
@@ -408,7 +408,7 @@ function rooms_unit_delete_form($form, &$form_state, $unit) {
     t('Cancel'),
     'confirm'
   );
-  
+
   return $form;
 }
 

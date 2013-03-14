@@ -11,7 +11,7 @@ Drupal.behaviors.rooms_availability = {
     month1 = currentmonth;
     year1 = currentyear;
 
-    // Second month is the next one obviously unless it is 11 in which case we need to move a year ahead 
+    // Second month is the next one obviously unless it is 11 in which case we need to move a year ahead
     if (currentmonth == 11) {
       month2 = 0;
       year2 = year1 + 1;
@@ -64,8 +64,8 @@ Drupal.behaviors.rooms_availability = {
           var sd = Math.round(Date.parse(calEvent.start)/1000);
           var ed = Math.round(Date.parse(calEvent.end)/1000);
           // This fires up Colobox to display info relevant to event from Drupal
-          if ($.colorbox) {  
-            var url = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/' + calEvent.id + '/' + sd + '/' + ed; 
+          if ($.colorbox) {
+            var url = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/' + calEvent.id + '/' + sd + '/' + ed;
             $.colorbox({
               href: url,
               opacity: 0.7,
@@ -81,8 +81,8 @@ Drupal.behaviors.rooms_availability = {
           var sd = Math.round(Date.parse(start)/1000);
           var ed = Math.round(Date.parse(end)/1000);
           // This fires up Colobox to display info relevant to event from Drupal
-          if ($.colorbox) {  
-            var url = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/-2/' + sd + '/' + ed; 
+          if ($.colorbox) {
+            var url = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/-2/' + sd + '/' + ed;
             $.colorbox({
               href: url,
               opacity: 0.7,

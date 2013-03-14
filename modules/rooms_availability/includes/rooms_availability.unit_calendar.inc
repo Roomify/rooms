@@ -19,10 +19,10 @@ class UnitCalendar {
     $unit = rooms_unit_load($unit_id);
     $this->default_state = $unit->default_state;
   }
-  
-  
+
+
   /**
-   * Given an array of events removes events from the calendar setting the value to the default 
+   * Given an array of events removes events from the calendar setting the value to the default
    *
    * @param $events
    *    The events to remove from the database - an array of Booking Events
@@ -105,7 +105,7 @@ class UnitCalendar {
         // The event array gives us the start days for each event within a month
         $start_days = array_keys($month['states']);
         foreach ($month['states'] as $state) {
-          // Create a booking event 
+          // Create a booking event
           $start = $state['start_day'];
           $end= $state['end_day'];
           $sd = new DateTime("$year-$mid-$start");
@@ -129,7 +129,7 @@ class UnitCalendar {
    *
    * @param $start_date
    * The start day of the range
-   * 
+   *
    * @param $end_date
    * The end date of our range
    *
@@ -150,7 +150,7 @@ class UnitCalendar {
           else {
             $states[] = $state['state'];
           }
-        } 
+        }
       }
     }
     $states = array_unique($states);
@@ -161,7 +161,7 @@ class UnitCalendar {
   /**
    * Given a date range it returns all data within that range including the start and
    * end dates of states. The MySQL queries are kept simple and then the data is cleared up
-   * 
+   *
    * @param $start_date
    * The starting date
    *
@@ -269,7 +269,7 @@ class UnitCalendar {
             $last_day = $eod[$i];
             $month = $this->prepareFullMonthArray(new BookingEvent($this->unit_id,
                                                                    $this->default_state,
-                                                                   new DateTime("$j-$i-1"), 
+                                                                   new DateTime("$j-$i-1"),
                                                                    new DateTime("$j-$i-$last_day")));
             // Add the month in its rightful position
             $results[$this->unit_id][$j][$i]['days'] = $month;
@@ -357,9 +357,9 @@ class UnitCalendar {
 
     return $results;
   }
-  
-  
-  
+
+
+
   /**
    * Checks if an event is blocked, i.e. cannot be updated. This happens
    * when the event id is in the rooms_booking_locks table and the new event_id
@@ -390,8 +390,8 @@ class UnitCalendar {
     }
     return $blocked;
   }
-  
-  
+
+
   /**
    * Given an array of BookingEvents the calendar is updated with regards to the
    * events that are relevant to the Unit this calendar refers to
@@ -460,12 +460,12 @@ class UnitCalendar {
     return $response;
   }
 
-  
+
   /**
    * Adds an event to the calendar
    *
    * @param $event
-   *   An an event of type BookingEvent 
+   *   An an event of type BookingEvent
    *
    * @return
    *   TRUE if events added, FALSE if some event failed
@@ -531,14 +531,14 @@ class UnitCalendar {
     }
     return $days;
   }
-  
+
   /**
    * Returns the default state
    */
   public function getDefaultState() {
     return $this->default_state;
   }
-  
+
   /**
    * Check if a month exists
    *
@@ -555,9 +555,9 @@ class UnitCalendar {
     $result = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
     if (count($result) > 0) {
       return TRUE;
-    } 
+    }
     return FALSE;
   }
-  
-  
+
+
 }

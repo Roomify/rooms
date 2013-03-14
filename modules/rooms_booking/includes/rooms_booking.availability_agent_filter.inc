@@ -49,16 +49,16 @@ abstract class AvailabilityAgentCommonFilter implements AvailabilityAgentFilter 
  * Filter by group_size and group_size_children.
  */
 class AvailabilityAgentSizeFilter extends AvailabilityAgentCommonFilter {
-  
+
   protected $units;
-  
+
   protected $parameters;
-  
+
   public function __construct($units, $parameters) {
     $this->units = $units;
     $this->parameters = $parameters;
   }
-  
+
   public function applyFilter() {
 
     // Check parameters
@@ -94,7 +94,7 @@ class AvailabilityAgentSizeFilter extends AvailabilityAgentCommonFilter {
     }
 
   }
-  
+
 }
 
 
@@ -102,16 +102,16 @@ class AvailabilityAgentSizeFilter extends AvailabilityAgentCommonFilter {
  * Filter by start_date, end_date, valid_states.
  */
 class AvailabilityAgentDateFilter extends AvailabilityAgentCommonFilter {
-  
+
   protected $units;
-  
+
   protected $parameters;
-  
+
   public function __construct($units, $parameters) {
     $this->units = $units;
     $this->parameters = $parameters;
   }
-  
+
   public function applyFilter() {
 
     // Check parameters
@@ -158,7 +158,7 @@ class AvailabilityAgentDateFilter extends AvailabilityAgentCommonFilter {
     }
 
   }
-  
+
 }
 
 
@@ -166,16 +166,16 @@ class AvailabilityAgentDateFilter extends AvailabilityAgentCommonFilter {
  * Filter units if is in the commerce cart.
  */
 class AvailabilityAgentCommerceFilter extends AvailabilityAgentCommonFilter {
-  
+
   protected $units;
-  
+
   protected $parameters;
-  
+
   public function __construct($units, $parameters) {
     $this->units = $units;
     $this->parameters = $parameters;
   }
-  
+
   public function applyFilter() {
 
     global $user;
