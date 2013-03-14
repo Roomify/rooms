@@ -327,14 +327,19 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
   if ($booking->booking_id != '') {
     if ($booking->order_id != '') {
-      $form['order'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Order'),
-      );
-      $form['order']['order_link'] = array(
-        '#type' => 'markup',
-        '#markup' => t('Edit your') . ' ' . l(t('order'), 'admin/commerce/orders/' . $booking->order_id . '/edit'),
-      );
+      $order = commerce_order_load($booking->order_id);
+      $order_states = commerce_order_states();
+
+      if ($order !== FALSE) {
+        $form['order'] = array(
+          '#type' => 'fieldset',
+          '#title' => t('Order'),
+        );
+        $form['order']['order_link'] = array(
+          '#type' => 'markup',
+          '#markup' => t('Order Status: @order_status', array('@order_status' => $order_states[$order->status]['title'])) . '<br>' . t('Edit <a href="@url">order</a> associated to this booking', array('@url' => url('admin/commerce/orders/' . $booking->order_id . '/edit'))),
+        );
+      }
     }
   }
 
