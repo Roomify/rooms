@@ -267,11 +267,23 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   $form['rooms_date_range']['rooms_start_date']['#default_value'] = isset($booking->start_date) ? $booking->start_date : '';
   $form['rooms_date_range']['rooms_end_date']['#default_value'] = isset($booking->end_date) ? $booking->end_date : '';
 
+  // Check startdate and enddate to avoid damage from dirty input
+  $startdate = '';
   if (isset($_GET['startdate'])) {
-    $form['rooms_date_range']['rooms_start_date']['#default_value'] = date('Y-m-d', $_GET['startdate']);
+    $startdate = (is_numeric(check_plain($_GET['startdate']))) ? check_plain($_GET['startdate']) : '';
+    if ($startdate != '') $form['rooms_date_range']['rooms_start_date']['#default_value'] = date('Y-m-d', $startdate);
   }
+  $enddate = '';
   if (isset($_GET['enddate'])) {
-    $form['rooms_date_range']['rooms_end_date']['#default_value'] = date('Y-m-d', $_GET['enddate']);
+    $enddate = (is_numeric(check_plain($_GET['enddate']))) ? check_plain($_GET['enddate']) : '';
+    if ($enddate != '') $form['rooms_date_range']['rooms_end_date']['#default_value'] = date('Y-m-d', $enddate);
+  }
+
+  $unitid = '';
+  if (isset($_GET['unitid'])) {
+    $unitid = (is_numeric(check_plain($_GET['unitid']))) ? check_plain($_GET['unitid']) : '';
+
+    if (rooms_unit_load($unitid) == NULL || $startdate == '' || $enddate == '') $unitid = '';
   }
 
   // Access to availability information
@@ -351,7 +363,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   }
 
   // If submit above pressed and we have dates we can process to assign a unit
-  if (isset($form_state['show_availability_options']) || isset($_GET['unitid'])) {
+  if (isset($form_state['show_availability_options']) || $unitid != '') {
     $room_types = rooms_unit_get_types();
     $types = array('notype' => 'Choose Room Type');
     foreach ($room_types as $type) {
@@ -366,17 +378,17 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     elseif (isset($booking->unit_type)) {
       $selected = $booking->unit_type;
     }
-    elseif (isset($_GET['unitid'])) {
-      $unit = rooms_unit_load($_GET['unitid']);
+    elseif (isset($unitid)) {
+      $unit = rooms_unit_load($unitid);
       $selected = $unit->type;
 
       $form_state['values']['unit_type'] = $selected;
       $form_state['input']['data']['group_size'] = 2;
       $form_state['input']['data']['group_size_children'] = 0;
-      $form_state['input']['rooms_start_date']['date'] = date('d/m/Y', $_GET['startdate']);
-      $form_state['input']['rooms_end_date']['date'] = date('d/m/Y', $_GET['enddate']);
-      $form_state['values']['rooms_start_date'] = date('Y-m-d', $_GET['startdate']);
-      $form_state['values']['rooms_end_date'] = date('Y-m-d', $_GET['enddate']);
+      $form_state['input']['rooms_start_date']['date'] = date('d/m/Y', $startdate);
+      $form_state['input']['rooms_end_date']['date'] = date('d/m/Y', $enddate);
+      $form_state['values']['rooms_start_date'] = date('Y-m-d', $startdate);
+      $form_state['values']['rooms_end_date'] = date('Y-m-d', $enddate);
 
       $form_state['show_availability_options'] = TRUE;
     }
@@ -456,8 +468,8 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
             ),
           );
 
-          if (isset($_GET['unitid'])) {
-            $form['availability_fieldset']['unit_fieldset']['type']['unit_id']['#default_value'] = $_GET['unitid'];
+          if (isset($unitid)) {
+            $form['availability_fieldset']['unit_fieldset']['type']['unit_id']['#default_value'] = $unitid;
           }
 
           $form['availability_fieldset']['unit_fieldset']['options_fieldset'] = array(
@@ -468,9 +480,9 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
           );
 
           // If a unit is selected
-          if (isset($form_state['values']['unit_id']) || isset($booking->unit_id) || isset($_GET['unitid'])) {
-            if (isset($_GET['unitid'])) {
-              $unit_id = $_GET['unitid'];
+          if (isset($form_state['values']['unit_id']) || isset($booking->unit_id) || isset($unitid)) {
+            if (isset($unitid)) {
+              $unit_id = $unitid;
             }
             else {
               $unit_id = (isset($form_state['values']['unit_id'])) ? $form_state['values']['unit_id'] : $booking->unit_id;
