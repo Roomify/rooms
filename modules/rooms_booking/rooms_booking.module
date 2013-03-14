@@ -265,8 +265,38 @@ function rooms_booking_load_multiple($booking_ids = array(), $conditions = array
  * @param RoomsBooking $booking
  *   The RoomsBooking object that represents the booking to delete
  */
-function rooms_booking_delete(RoomsBooking $booking) {
+function rooms_booking_delete(RoomsBooking $booking, $delete_line_item = TRUE) {
+  if ($booking->order_id != '' && $delete_line_item) {
+    $order = commerce_order_load($booking->order_id);
+
+    if (isset($order->commerce_line_items['und'])) {
+      foreach ($order->commerce_line_items['und'] as $value) {
+        $line_item = commerce_line_item_load($value['line_item_id']);
+
+        if ($line_item->rooms_booking_reference['und'][0]['target_id'] == $booking->booking_id) {
+          commerce_line_item_delete($line_item->line_item_id);
+          if (count($order->commerce_line_items) == 0) {
+            commerce_order_delete($order->order_number);
+          }
+
+          break;
+        }
+      }
+    }
+  }
+
   $booking->delete();
+}
+
+
+/**
+ * Implements hook_commerce_line_item_delete().
+ */
+function rooms_booking_commerce_line_item_delete($line_item) {
+  if (isset($line_item->rooms_booking_reference['und'][0]['target_id'])) {
+    $booking = rooms_booking_load($line_item->rooms_booking_reference['und'][0]['target_id']);
+    rooms_booking_delete($booking, FALSE);
+  }
 }
 
 

@@ -325,6 +325,19 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#default_value' =>  isset($booking->booking_status) ? $booking->booking_status : '0',
   );
 
+  if ($booking->booking_id != '') {
+    if ($booking->order_id != '') {
+      $form['order'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Order'),
+      );
+      $form['order']['order_link'] = array(
+        '#type' => 'markup',
+        '#markup' => t('Edit your') . ' ' . l(t('order'), 'admin/commerce/orders/' . $booking->order_id . '/edit'),
+      );
+    }
+  }
+
   // If submit above pressed and we have dates we can process to assign a unit
   if (isset($form_state['show_availability_options'])) {
     $room_types = rooms_unit_get_types();
