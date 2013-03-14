@@ -664,7 +664,7 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
     ROOMS_ANON_BOOKED => t('Anonymous Booking'),
   );
   
-  $form['rooms_availability_update']['change_event_status'] = array(
+  $form['rooms_availability_update']['change_event_status2'] = array(
     '#title' => t("Bookable Unit State"),
     '#type' => 'select',
     '#options' => $state_options,
@@ -729,7 +729,7 @@ function rooms_availability_update_status_form_validate(&$form, &$form_state) {
     return;
   }
 
-  if ($form_state['values']['change_event_status'] == -1) {
+  if ($form_state['values']['change_event_status2'] == -1) {
     form_set_error('change_event_status', t('Select a valid status'));
   }
 
@@ -767,7 +767,7 @@ function rooms_availability_update_status_form_submit(&$form, &$form_state) {
   $start_date = new DateTime($form_state['values']['rooms_start_date']);
   $end_date = new DateTime($form_state['values']['rooms_end_date']);
   $type = $form_state['values']['curr_type'];
-  $event_id = $form_state['values']['change_event_status'];
+  $event_id = $form_state['values']['change_event_status2'];
 
   if (variable_get('ROOMS_SELECT_ALL_PAGES_AV') == 'true') {
     $query = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
