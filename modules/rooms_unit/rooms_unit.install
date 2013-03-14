@@ -6,7 +6,7 @@
  * the entity types.
  */
 
- 
+
 /**
  * Implements hook_install
  */
@@ -197,11 +197,11 @@ function rooms_description_content_type_install() {
   }
 
   $content_type = node_type_set_defaults($unit_description);
-  
+
   foreach (_rooms_description_installed_fields() as $field) {
     field_create_field($field);
   }
-  
+
   foreach (_rooms_description_installed_instances() as $instance) {
     $instance['entity_type'] = 'node';
     $instance['bundle'] = $unit_description['type'];
@@ -222,13 +222,13 @@ function _rooms_description_installed_fields() {
     'unit_description_description' => array(
       'field_name' => 'unit_description_description',
       'type'        => 'text',
-      'label' => $t('Room type description'), 
+      'label' => $t('Room type description'),
     ),
     'unit_description_image' => array(
       'field_name' => 'unit_description_image',
       'type'       => 'image',
       'cardinality' => 1,
-      'label' => 'Image', 
+      'label' => 'Image',
     ),
   );
 }
@@ -272,7 +272,7 @@ function _rooms_description_installed_instances() {
 /*
  * Remove content type Unit Description
  */
- 
+
 function rooms_description_content_type_uninstall() {
 
   $sql = 'SELECT nid FROM {node} n WHERE n.type = :type';
@@ -314,7 +314,7 @@ function rooms_unit_update_7001() {
   );
 
   db_change_field('rooms_units', 'base_price', 'base_price', $base_price_field_spec);
-  
+
   return t('Schema for the commerce_order and commerce_order_revision tables has been updated.');
 
 }
@@ -324,7 +324,7 @@ function rooms_unit_update_7001() {
  * Create rooms_description content type
  */
 function rooms_unit_update_7002() {
-  rooms_description_content_type_install();  
+  rooms_description_content_type_install();
 }
 
 

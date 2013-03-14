@@ -7,22 +7,22 @@
  */
 
 class PricingEvent {
-  
+
   // The room the event is relevant to
   public $unit_id;
-  
+
   // The start date for the event
   public $start_date;
-  
+
   // The end date for the event
   public $end_date;
-  
+
   // The amount for this period
   public $amount;
-  
+
   // The operation to perform
   public $operation;
-  
+
   public function __construct($unit_id, $amount, $start_date, $end_date, $operation = '') {
     $this->unit_id = $unit_id;
     $this->amount = $amount;
@@ -30,31 +30,31 @@ class PricingEvent {
     $this->end_date = $end_date;
     $this->operation = $operation;
   }
-  
+
   public function startDay($format = 'j') {
     return $this->start_date->format($format);
   }
-  
+
   public function startMonth($format = 'n') {
     return $this->start_date->format($format);
   }
-  
+
   public function startYear($format = 'Y') {
     return $this->start_date->format($format);
   }
-  
+
   public function endDay($format = 'j') {
     return $this->end_date->format($format);
   }
-  
+
   public function endMonth($format = 'n') {
     return $this->end_date->format($format);
   }
-  
+
   public function endYear($format = 'Y') {
     return $this->end_date->format($format);
   }
-  
+
   /**
    * Returns the months involved in the events
    */
@@ -65,22 +65,22 @@ class PricingEvent {
     $interval = $this->start_date->diff($this->end_date);
     return $interval;
   }
-  
+
   public function sameMonth() {
     if (($this->startMonth() == $this->endMonth()) && ($this->startYear() == $this->endYear())) {
       return TRUE;
     }
     return FALSE;
   }
-  
-  public function sameYear() { 
+
+  public function sameYear() {
     if ($this->startYear() == $this->endYear()) {
       return TRUE;
     }
     return FALSE;
   }
-  
-  
+
+
   public function applyOperation($amount, $operation) {
     switch ($operation) {
       case ROOMS_REPLACE:
@@ -103,7 +103,7 @@ class PricingEvent {
     }
 
   }
-  
+
   /**
    * Takes a single event that spans several years and transforms it to
    * yearly events
@@ -143,7 +143,7 @@ class PricingEvent {
 
     return $events;
   }
-  
+
   /**
    * Takes a single event that spans several months and transforms it to
    * monthly events - this assumes that the event is contained within a year
@@ -185,8 +185,8 @@ class PricingEvent {
     }
     return $events;
   }
-  
-  
+
+
   /**
    * Return event in a format amenable to FullCalendar display or generally
    * sensible json
@@ -207,12 +207,12 @@ class PricingEvent {
       $event['color']  = "orange";
       $event['title'] = "$this->amount";
     }
-    elseif ($this->amount >= 100) { 
+    elseif ($this->amount >= 100) {
       $event['color'] = "green";
       $event['title'] = "$amount";
     }
 
     return $event;
   }
-  
+
 }

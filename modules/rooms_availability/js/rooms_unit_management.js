@@ -82,8 +82,8 @@ Drupal.behaviors.rooms_availability = {
           var sd = Math.round(Date.parse(start)/1000);
           var ed = Math.round(Date.parse(end)/1000);
           // This fires up Colobox to display info relevant to event from Drupal
-          if ($.colorbox) {  
-            var url = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + unit_id + '/event/-2/' + sd + '/' + ed; 
+          if ($.colorbox) {
+            var url = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + unit_id + '/event/-2/' + sd + '/' + ed;
             $.colorbox({
               href: url,
               opacity: 0.7,

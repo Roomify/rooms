@@ -4,7 +4,7 @@ function rooms_booking_manager_search_availability() {
 
   // Add css to align date boxes
   drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
- 
+
   $output = drupal_get_form('rooms_booking_availability_search_form');
   return $output;
 }
@@ -13,7 +13,7 @@ function rooms_booking_manager_search_availability() {
 function rooms_booking_availability_search_form($form, $form_state) {
 
   $rooms_number = 1;
- 
+
   if (isset($form_state['values']['rooms'])) {
     $rooms_number = $form_state['values']['rooms'];
   }
@@ -27,7 +27,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
 
 
   $form['rooms_date_range'] = rooms_date_range_fields();
-  
+
   if (isset($_GET['rooms_start_date'])) {
     $start_date = check_plain($_GET['rooms_start_date']);
     if ($start_date != '') $form['rooms_date_range']['rooms_start_date']['#default_value'] = $start_date;
@@ -36,8 +36,8 @@ function rooms_booking_availability_search_form($form, $form_state) {
     $end_date = check_plain($_GET['rooms_end_date']);
     if ($end_date != '') $form['rooms_date_range']['rooms_end_date']['#default_value'] = $end_date;
   }
-  
-  
+
+
   $form['conditions']['rooms'] = array(
     '#type' => 'select',
     '#title' => t('Rooms'),
@@ -72,18 +72,18 @@ function rooms_booking_availability_search_form($form, $form_state) {
     if (variable_get('rooms_display_children', ROOMS_DISPLAY_CHILDREN_NO) == ROOMS_DISPLAY_CHILDREN) {
       $form['rooms_fieldset']['table_header']['#markup'] .= '<th>' . t('Children') . '</th>';
     }
-   
+
     $form['rooms_fieldset']['table_body'] = array(
       '#markup' => '<tbody>',
     );
-   
+
     for ($i = 1; $i <= $rooms_number; $i++) {
       $form['rooms_fieldset']['rooms_label:' . $i] = array(
         '#prefix' => '<tr><td>',
         '#markup' => ($rooms_number > 1) ? t('Room') . ' ' . $i . ':' : '',
         '#suffix' => '</td>',
       );
-   
+
       $form['rooms_fieldset']['group_size_adults:' . $i] = array(
         '#type' => 'select',
         '#options' => array(
@@ -100,7 +100,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
         '#prefix' => '<td>',
         '#suffix' => '</td>',
       );
-   
+
       if (variable_get('rooms_display_children', ROOMS_DISPLAY_CHILDREN_NO) == ROOMS_DISPLAY_CHILDREN_NO) {
         $form['rooms_fieldset']['group_size_children:' . $i] = array(
         '#type' => 'hidden',
@@ -121,7 +121,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
           '#suffix' => '</td>',
         );
       }
-   
+
       $form['rooms_fieldset']['table_row:' . $i] = array(
         '#markup' => '</tr>',
       );
@@ -231,7 +231,7 @@ function rooms_booking_availability_search_form_validate(&$form, &$form_state) {
     form_set_error('rooms_date_range', t('Bookings need to be at least ' . $rooms_booking_start_date . ' day(s) in the future'));
   }
 
-  // Make sure that 
+  // Make sure that
   if ($diff1->invert) {
     form_set_error('rooms_date_range', t('Start date must be current or in the future'));
   }
@@ -257,9 +257,9 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
   $end_date = new DateTime($form_state['values']['rooms_end_date']);
 
   $units = $form_state['values']['rooms'];
- 
+
   $rooms_parameters = array();
-  
+
   // Collect the values for booking parameters
   foreach ($form_state['values'] as $key => $value) {
     $keys = explode(':', $key);
