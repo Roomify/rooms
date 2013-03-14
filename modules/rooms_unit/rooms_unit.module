@@ -585,6 +585,33 @@ function rooms_unit_field_widget_form(&$form, &$form_state, $field, $instance, $
 
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Prevent a unit type with associated units from being deleted.
+ */
+function rooms_unit_form_rooms_unit_type_operation_form_alter(&$form, &$form_state, $form_id) {
+  // Check if units of a unit type exist before allowing deletion.
+  $unit_type = $form_state['rooms_unit_type'];
+
+  // Load the units associated with this type.
+  $query = new EntityFieldQuery();
+
+  $query->entityCondition('entity_type', 'rooms_unit')
+        ->propertyCondition('type', $unit_type->type);
+  $units = $query->execute();
+  if (isset($units['rooms_unit']) && count($units['rooms_unit'])) {
+
+    // This type has associated units, don't allow deletion.
+    form_set_error('confirm', t('This unit type has associated units. Please delete all units before attempting to delete this unit type.'));
+
+    unset($form['description']);
+    unset($form['actions']);
+    unset($form['confirm']);
+  }
+}
+
+
+/**
  * The class used for room entities
  */
 class RoomsUnit extends Entity {
