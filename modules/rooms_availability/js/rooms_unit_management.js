@@ -62,9 +62,13 @@ Drupal.behaviors.rooms_availability = {
       // phpmonth is what we send via the url and need to add one since php handles
       // months starting from 1 not zero
       phpmonth = value[1]+1;
+
+      var unit_id = Drupal.settings.roomsUnitManagement.roomsId[c];
+
       $(value[0]).once().fullCalendar({
         ignoreTimezone:false,
         editable:false,
+        selectable: true,
         defaultView:'singleRowMonth',
         month:value[1],
         year:value[2],
@@ -74,7 +78,25 @@ Drupal.behaviors.rooms_availability = {
           right: ''
         },
         events: Drupal.settings.basePath + '?q=rooms/units/unit/' + Drupal.settings.roomsUnitManagement.roomsId[c] + '/availability/json/' + value[2] + '/' + phpmonth,
+        select: function(start, end, allDay) {
+          var sd = Math.round(Date.parse(start)/1000);
+          var ed = Math.round(Date.parse(end)/1000);
+          // This fires up Colobox to display info relevant to event from Drupal
+          if ($.colorbox) {  
+            var url = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + unit_id + '/event/-2/' + sd + '/' + ed; 
+            $.colorbox({
+              href: url,
+              opacity: 0.7,
+              width: 400,
+              height: 400,
+              onClosed:function(){
+                $(value[0]).fullCalendar('refetchEvents');
+              }
+            });
+          }
 
+          $(value[0]).fullCalendar('unselect');
+        }
 
       });
 
