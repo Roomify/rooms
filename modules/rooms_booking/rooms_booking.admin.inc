@@ -605,7 +605,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
  * Validate function for the assign unit functionality
  */
 function rooms_booking_edit_form_availability_validate(&$form, &$form_state) {
-  $date_format = rooms_format_date_day();
+  $date_format = rooms_date_format_day();
   $start_date = DateTime::createFromFormat($date_format, $form_state['input']['rooms_start_date']['date']);
   $end_date = DateTime::createFromFormat($date_format, $form_state['input']['rooms_end_date']['date']);
 
