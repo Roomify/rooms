@@ -1197,7 +1197,8 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
       $line_item = commerce_line_item_load($item_id['line_item_id']);
       if ($line_item->type == 'rooms_booking') {
         // Create a booking
-        $booking = rooms_booking_create(array('type' => 'standard_booking'));
+        $booking_type = variable_get('rooms_booking_type', 'standard_booking');
+        $booking = rooms_booking_create(array('type' => $booking_type));
         $booking->created = time();
         $booking->start_date = $line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value'];
 
@@ -1797,6 +1798,21 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
         ROOMS_COMMERCE_CHECKOUT => t('Commerce checkout'),
       ),
       '#default_value' => variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT),
+    );
+
+    $booking_types = rooms_booking_get_types();
+
+    $options = array();
+    foreach ($booking_types as $type) {
+      $options[$type->type] = $type->label;
+    }
+
+    $form['rooms_booking_type'] = array(
+      '#type' => 'select',
+      '#title' => t('Active Booking type'),
+      '#options' => $options,
+      '#description' => t('Booking type created by commerce'),
+      '#default_value' => variable_get('rooms_booking_type', 'standard_booking'),
     );
 
     $form['rooms_display_children'] = array(
