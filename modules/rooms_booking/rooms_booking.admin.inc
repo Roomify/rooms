@@ -414,7 +414,6 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       '#suffix' => '</div>',
     );
 
-
     $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
       '#markup' => t('Choose a unit from the list of available rooms below - we only show units with availability for the dates selected.'),
     );
@@ -564,6 +563,18 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   $form_state['rooms_booking'] = $booking;
   field_attach_form('rooms_booking', $booking, $form, $form_state);
 
+  // set an #ajax callback for start/end date elements for edited bookings
+  if (is_numeric($booking->booking_id)) {
+    $form['rooms_date_range']['rooms_start_date']['#ajax'] = array(
+      'callback' => 'rooms_booking_date_ajax_callback',
+      'event' => 'blur',
+    );
+    $form['rooms_date_range']['rooms_end_date']['#ajax'] = array(
+      'callback' => 'rooms_booking_date_ajax_callback',
+      'event' => 'blur',
+    );
+  }
+
   $form['actions'] = array(
     '#type' => 'container',
     '#attributes' => array('class' => array('form-actions')),
@@ -577,6 +588,12 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   if (!empty($form['#submit'])) {
     $submit += $form['#submit'];
   }
+
+  // Wrapper to show validation messages where the assigned dates are changed
+  // and the price is not re-assigned.
+  $form['availability_fieldset']['assigned_dates_msg'] = array(
+    '#markup' => '<div id="assigned-dates-msg"></div>',
+  );
 
   $form['actions']['submit'] = array(
     '#type' => 'submit',
@@ -600,6 +617,15 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   return $form;
 }
 
+/**
+ * AJAX callback for the end date admin form element to trigger automatically the
+ * re-assign submit button and help the user to don't forget re-assign price.
+ */
+function rooms_booking_date_ajax_callback($form, &$form_state) {
+  $commands[] = ajax_command_invoke('#edit-get-availability', 'trigger', array('mousedown'));
+  print ajax_render($commands);
+  exit();
+}
 
 /**
  * Validate function for the assign unit functionality
@@ -702,6 +728,17 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
     if ($diff->invert) {
       form_set_error('date_range', t('End date must be after start date'));
     }
+
+    // convert input format to the same used in the stored dates.
+    $input_start_date = $date1->format('Y-m-d');
+    $input_end_date = $date2->format('Y-m-d');
+
+    // if the stored dates differ from input dates check that price was re-assigned.
+    if ($input_start_date != $booking->start_date || $input_end_date != $booking->end_date) {
+      if (!isset($form_state['values']['unit_id']) || !is_numeric($form_state['values']['unit_id'])) {
+        form_set_error('availability_fieldset', t('A unit must be re-assigned for this booking'));
+      }
+    }
   }
 
   if (!isset($form_state['values']['unit_id']) && (!isset($booking->unit_id))) {
@@ -754,7 +791,6 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
       }
     }
   }
-
 
   //Notify field widgets to validate their data.
   field_attach_form_validate('rooms_booking', $booking, $form, $form_state);
