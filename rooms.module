@@ -69,7 +69,7 @@ function rooms_end_of_month_dates($year) {
  * @return array The array holding the field definitions
  */
 function rooms_date_range_fields($date_range_fields = array()) {
-  $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
+  $date_format = rooms_date_format_day();
 
   $date_range_fields['rooms_start_date'] = array(
     '#prefix' => '<div class="start-date">',
@@ -116,7 +116,7 @@ function rooms_date_range_fields($date_range_fields = array()) {
 
 
 /**
- * Transfom from PHP conventions to jQueryUI conventions for dates
+ * Transform from PHP conventions to jQueryUI conventions for dates.
  */
 function rooms_dateFormatTojQueryUIDatePickerFormat($date_format) {
   $chars = array(
@@ -129,4 +129,15 @@ function rooms_dateFormatTojQueryUIDatePickerFormat($date_format) {
   );
 
   return strtr((string)$date_format, $chars);
+}
+
+/**
+ * Utility function - get the user-selected date format and modify it to our
+ * preferred format with a time of 00:00:00.
+ */
+function rooms_date_format_day() {
+
+  // Appending | to the date resets the time - see:
+  // http://php.net/manual/en/datetime.createfromformat.php
+  return str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y')) . '|';
 }

@@ -176,7 +176,7 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $boo
     $content['booking_results'] = 1;
 
     // Get all the units - note: we instantiate the Availability Agent using the date format set by the user
-    $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
+    $date_format = rooms_date_format_day();
     $agent = new AvailabilityAgent($start_date->format($date_format), $end_date->format($date_format), $booking_parameters, $booking_units);
     $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS)));
 
@@ -504,7 +504,7 @@ function book_unit_form_submit(&$form, &$form_state) {
   $ed = end_date_load($end_date);
 
   // Let us get the available rooms again and match the order against actual rooms
-  $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
+  $date_format = rooms_date_format_day();
   $agent = new AvailabilityAgent($sd->format($date_format), $ed->format($date_format), $group_size);
   $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
 
@@ -993,7 +993,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
   $ed = end_date_load($end_date);
 
   // Let us get the available rooms again and match the order against actual rooms
-  $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
+  $date_format = rooms_date_format_day();
 
   $agent = new AvailabilityAgent($sd->format($date_format), $ed->format($date_format), $booking_parameters, $b_units, array());
   $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
