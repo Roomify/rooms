@@ -184,7 +184,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
 
   $form['actions']['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Search for Availability'),
+    '#value' => t('Search for Availabiliy'),
     '#submit' => $submit + array('rooms_booking_availability_search_form_submit'),
   );
 

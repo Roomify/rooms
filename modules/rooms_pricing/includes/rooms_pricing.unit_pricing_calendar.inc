@@ -66,7 +66,7 @@ class UnitPricingCalendar {
       $price = $price + ($days * $event->amount);
     }
 
-    $price = $this->applyPriceModifiers($price);
+    $price = $this->applyPriceModifiers($price, $start_date, $end_date);
 
     $payment_option = variable_get('rooms_payment_options', FULL_PAYMENT);
     switch ($payment_option) {
@@ -92,39 +92,46 @@ class UnitPricingCalendar {
    * @return
    * The modified price
    */
-  public function applyPriceModifiers($price) {
+  public function applyPriceModifiers($price, DateTime $start_date, DateTime $end_date) {
     if (!empty($this->price_modifiers)) {
-      foreach ($this->price_modifiers as $modifiers) {
-        if ($modifiers['#type'] == ROOMS_PRICE_SINGLE_OCCUPANCY) {
-          $price -= $price * $this->unit->data['singlediscount'] / 100;
-        }
-        elseif ($modifiers['#type'] == ROOMS_DYNAMIC_MODIFIER) {
-          switch ($modifiers['#op_type']) {
-            case ROOMS_ADD:
-              $price += $modifiers['#amount'];
-              break;
-            case ROOMS_SUB:
-              $price -= $modifiers['#amount'];
-              break;
-            case ROOMS_REPLACE:
-              $price = $modifiers['#amount'];
-              break;
-            case ROOMS_INCREASE:
-              $price += $price * $modifiers['#amount'] / 100;
-              break;
-            case ROOMS_DECREASE:
-              $price -= $price * $modifiers['#amount'] / 100;
-              break;
+      $stay = $this->getEvents($start_date, $end_date);
+        foreach ($stay as $event) {
+          $days = $event->diff()->d + 1;
+          }
+        foreach ($this->price_modifiers as $modifiers) {
+          if ($modifiers['#type'] == ROOMS_PRICE_SINGLE_OCCUPANCY) {
+            $price -= $price * $this->unit->data['singlediscount'] / 100;
+          }
+          elseif ($modifiers['#type'] == ROOMS_DYNAMIC_MODIFIER) {
+            switch ($modifiers['#op_type']) {
+              case ROOMS_ADD:
+                $price += $modifiers['#amount'];
+                break;
+              case ROOMS_SUB:
+                $price -= $modifiers['#amount'];
+                break;
+              case ROOMS_PERNIGHT:
+                $price += $modifiers['#amount'] * $days;
+                break;
+              case ROOMS_REPLACE:
+                $price = $modifiers['#amount'];
+                break;
+              case ROOMS_INCREASE:
+                $price += $price * $modifiers['#amount'] / 100;
+                break;
+              case ROOMS_DECREASE:
+                $price -= $price * $modifiers['#amount'] / 100;
+                break;
+            }
           }
         }
       }
+      return $price;
     }
-    return $price;
-  }
 
 
   /**
-   * Given a date range returns an array of PricingEvents. The heavy lifting really takes place in
+   *ß Given a date range returns an array of PricingEvents. The heavy lifting really takes place in
    * the getRawDayData function - here we are simply acting as a factory for price event objects
    *
    * @param $start_date
@@ -382,7 +389,7 @@ class UnitPricingCalendar {
 
         foreach ($affected_events as $a_event) {
           //Apply the operation
-          $a_event->applyOperation($event->amount, $event->operation);
+          $a_event->applyOperation($event->amount, $event->operation, $event->start_date, $event->end_date);
 
           // If the event is in the same month span just queue to be added
           if ($a_event->sameMonth()) {

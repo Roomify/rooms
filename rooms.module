@@ -11,6 +11,7 @@ define('ROOMS_CHILDREN_FEATURES', 'children_features');
 
 define('ROOMS_ADD', 'add');
 define('ROOMS_SUB', 'sub');
+define('ROOMS_PERNIGHT', 'pernight');
 define('ROOMS_REPLACE', 'replace');
 define('ROOMS_INCREASE', 'increase');
 define('ROOMS_DECREASE', 'decrease');

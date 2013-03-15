@@ -81,7 +81,7 @@ class PricingEvent {
   }
 
 
-  public function applyOperation($amount, $operation) {
+  public function applyOperation($amount, $operation, $start_date, $end_date) {
     switch ($operation) {
       case ROOMS_REPLACE:
         $this->amount = $amount;
@@ -91,6 +91,13 @@ class PricingEvent {
         break;
       case ROOMS_SUB:
         $this->amount = $this->amount - $amount;
+        break;
+      case ROOMS_PERNIGHT:
+        $stay = $this->getEvents($start_date, $end_date);
+          foreach ($stay as $event) {
+          $days = $event->diff()->d + 1;
+          }
+        $this->amount = $this->amount + ($amount * $days);
         break;
       case ROOMS_INCREASE:
         $this->amount = $this->amount + (($this->amount) * ($amount/100));

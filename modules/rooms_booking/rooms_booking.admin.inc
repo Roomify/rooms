@@ -506,7 +506,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
             }
 
             // Convert Price options in Price modifiers
-            $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
+            $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_PERNIGHT, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
 
             $price_modifiers = array();
             if (isset($unit->field_options[LANGUAGE_NONE])) {

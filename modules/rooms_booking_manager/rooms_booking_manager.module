@@ -741,7 +741,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             );
 
             // Convert Price options in Price modifiers
-            $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
+            $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_PERNIGHT, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
 
             $price_modifiers = array();
             foreach ($units[$units_keys[$c - 1]]['unit']->field_options[LANGUAGE_NONE] as $option) {
@@ -1016,7 +1016,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
             $group_size = array('adults' => $unit['unit']->sleeps, 'children' => $unit['unit']->children);
 
             // Convert Price options in Price modifiers
-            $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
+            $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_PERNIGHT, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
 
             $price_modifiers = array();
             if (isset($unit['unit']->field_options[LANGUAGE_NONE])) {
@@ -1975,7 +1975,7 @@ function rooms_booking_manager_price_apply($line_item, $name) {
     $price_options = isset($line_item->rooms_booking_options[LANGUAGE_NONE]) ? $line_item->rooms_booking_options[LANGUAGE_NONE] : array();
 
     // Convert Price options in Price modifiers
-    $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
+    $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_PERNIGHT, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
     foreach ($price_options as $option) {
       $price_modifiers[strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
         '#name' => $option['name'],
