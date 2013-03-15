@@ -94,10 +94,6 @@ class UnitPricingCalendar {
    */
   public function applyPriceModifiers($price, DateTime $start_date, DateTime $end_date) {
     if (!empty($this->price_modifiers)) {
-      $stay = $this->getEvents($start_date, $end_date);
-        foreach ($stay as $event) {
-          $days = $event->diff()->d + 1;
-          }
         foreach ($this->price_modifiers as $modifiers) {
           if ($modifiers['#type'] == ROOMS_PRICE_SINGLE_OCCUPANCY) {
             $price -= $price * $this->unit->data['singlediscount'] / 100;
@@ -111,8 +107,12 @@ class UnitPricingCalendar {
                 $price -= $modifiers['#amount'];
                 break;
               case ROOMS_PERNIGHT:
-                $price += $modifiers['#amount'] * $days;
-                break;
+                $stay = $this->getEvents($start_date, $end_date);
+                foreach ($stay as $event) {
+                  $days = $event->diff()->d + 1;
+                }
+                  $price += $modifiers['#amount'] * $days;
+                  break;
               case ROOMS_REPLACE:
                 $price = $modifiers['#amount'];
                 break;
