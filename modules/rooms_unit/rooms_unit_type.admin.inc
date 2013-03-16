@@ -78,7 +78,7 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
   $form['data']['children_sleeps'] = array(
     '#type' => 'textfield',
     '#title' => t('Children sleeps'),
-    '#default_value' => isset($unit->data['children_sleeps']) ? $unit->data['children_sleeps'] : '',
+    '#default_value' => isset($unit_type->data['children_sleeps']) ? $unit_type->data['children_sleeps'] : '',
     '#size' => '5',
     '#maxlength' => 2,
   );

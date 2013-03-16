@@ -217,7 +217,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
   $form['children'] = array(
     '#type' => 'textfield',
     '#size' => 5,
-    '#default_value' => isset($unit->children) ? $unit->children : 0,
+    '#default_value' => isset($unit->children_sleeps) ? $unit->children_sleeps : 0,
     '#title' => t('Children sleeps'),
   );
 
