@@ -1903,6 +1903,13 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
 
     $form['#submit'][] = 'rooms_booking_manager_settings_form_submit';
   }
+
+  // Remove the option to add a booking line item on the administrative "add
+  // order" page. (/admin/commerce/orders/add)
+  if ($form_id == 'commerce_order_ui_order_form') {
+    $language = $form['commerce_line_items']['#language'];
+    unset($form['commerce_line_items'][$language]['actions']['line_item_type']['#options']['rooms_booking']);
+  }
 }
 
 
