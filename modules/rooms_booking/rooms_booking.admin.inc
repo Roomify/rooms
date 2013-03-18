@@ -414,7 +414,6 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       '#suffix' => '</div>',
     );
 
-
     $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
       '#markup' => t('Choose a unit from the list of available rooms below - we only show units with availability for the dates selected.'),
     );
@@ -564,6 +563,18 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   $form_state['rooms_booking'] = $booking;
   field_attach_form('rooms_booking', $booking, $form, $form_state);
 
+  // set an #ajax callback for start/end date elements for edited bookings
+  if (is_numeric($booking->booking_id)) {
+    $form['rooms_date_range']['rooms_start_date']['#ajax'] = array(
+      'callback' => 'rooms_booking_date_ajax_callback',
+      'event' => 'blur',
+    );
+    $form['rooms_date_range']['rooms_end_date']['#ajax'] = array(
+      'callback' => 'rooms_booking_date_ajax_callback',
+      'event' => 'blur',
+    );
+  }
+
   $form['actions'] = array(
     '#type' => 'container',
     '#attributes' => array('class' => array('form-actions')),
@@ -577,6 +588,12 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   if (!empty($form['#submit'])) {
     $submit += $form['#submit'];
   }
+
+  // Wrapper to show validation messages where the assigned dates are changed
+  // and the price is not re-assigned.
+  $form['availability_fieldset']['assigned_dates_msg'] = array(
+    '#markup' => '<div id="assigned-dates-msg"></div>',
+  );
 
   $form['actions']['submit'] = array(
     '#type' => 'submit',
@@ -600,6 +617,15 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   return $form;
 }
 
+/**
+ * AJAX callback for the end date admin form element to trigger automatically the
+ * re-assign submit button and help the user to don't forget re-assign price.
+ */
+function rooms_booking_date_ajax_callback($form, &$form_state) {
+  $commands[] = ajax_command_invoke('#edit-get-availability', 'trigger', array('mousedown'));
+  print ajax_render($commands);
+  exit();
+}
 
 /**
  * Validate function for the assign unit functionality
@@ -702,6 +728,17 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
     if ($diff->invert) {
       form_set_error('date_range', t('End date must be after start date'));
     }
+
+    // convert input format to the same used in the stored dates.
+    $input_start_date = $date1->format('Y-m-d');
+    $input_end_date = $date2->format('Y-m-d');
+
+    // if the stored dates differ from input dates check that price was re-assigned.
+    if ($input_start_date != $booking->start_date || $input_end_date != $booking->end_date) {
+      if (!isset($form_state['values']['unit_id']) || !is_numeric($form_state['values']['unit_id'])) {
+        form_set_error('availability_fieldset', t('A unit must be re-assigned for this booking'));
+      }
+    }
   }
 
   if (!isset($form_state['values']['unit_id']) && (!isset($booking->unit_id))) {
@@ -754,7 +791,6 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
       }
     }
   }
-
 
   //Notify field widgets to validate their data.
   field_attach_form_validate('rooms_booking', $booking, $form, $form_state);
@@ -879,6 +915,16 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
 
   $booking->save();
 
+  if ($booking->order_id == '') {
+    if (variable_get('rooms_manually_booking_create_order', '1') == '1') {
+      $order = rooms_booking_create_order($form_state, $unit_object, $booking);
+
+      $booking->order_id = $order->order_number;
+
+      $booking->save();
+    }
+  }
+
   // We have a unit defined so lets block availability there
   if ($unit != 0) {
     // Set the event_id
@@ -913,6 +959,55 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
  */
 function rooms_booking_form_submit_delete(&$form, &$form_state) {
   $form_state['redirect'] = 'admin/rooms/bookings/booking/' . $form_state['rooms_booking']->booking_id . '/delete';
+}
+
+
+function rooms_booking_create_order($form_state, $unit_object, $booking) {
+  global $user;
+
+  module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.commerce');
+
+  $order = commerce_order_new($user->uid, 'pending');
+  commerce_order_save($order);
+
+  // This is very inefficient right now but we need to create date objects
+  // reconvert them back to strings to only recreate them in the Availability Agent
+  $sd = start_date_load($form_state['values']['start_date']);
+  $ed = end_date_load($form_state['values']['end_date']);
+
+  // Let us get the available rooms again and match the order against actual rooms
+  $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
+
+  $price_modifiers = array();
+
+  $booking_parameters = array('adults' => $form_state['values']['data']['group_size'], 'children' => $form_state['values']['data']['group_size_children']);
+
+  $agent = new AvailabilityAgent($sd->format($date_format), $ed->format($date_format), $booking_parameters, 1, array());
+  $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
+
+  // Create line item
+  $line_item = rooms_create_line_item(array('unit' => $unit_object), $agent, $booking_parameters, $price_modifiers);
+
+  $line_item->rooms_booking_reference['und'][0]['target_id'] = $booking->booking_id;
+
+  $line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
+
+  $line_item_wrapper->commerce_unit_price->amount = $booking->price;
+  $data = $line_item_wrapper->commerce_unit_price->data->value();
+  $data['components'][0]['price']['amount'] = $booking->price;
+
+  $line_item_wrapper->commerce_unit_price->data = $data;
+
+  commerce_line_item_save($line_item);
+
+  // Add the line item to the order
+  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+  $order_wrapper->commerce_line_items[] = $line_item;
+
+  // Save the order again to update its line item reference field
+  commerce_order_save($order);
+
+  return $order;
 }
 
 
