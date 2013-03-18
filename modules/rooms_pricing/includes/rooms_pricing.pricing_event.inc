@@ -92,13 +92,19 @@ class PricingEvent {
       case ROOMS_SUB:
         $this->amount = $this->amount - $amount;
         break;
+/**
+ * Price with a pernight option uses the start and end date of the current booking
+ * event to calculate the duration, in days, of the stay being quoted. The options
+ * price per night is multiplied by the calculated duration in days. The modified
+ * price is then displayed in the booking events array returned by the unit calendar.
+ */
       case ROOMS_PERNIGHT:
         $stay = $this->getEvents($start_date, $end_date);
           foreach ($stay as $event) {
-          $days = $event->diff()->d + 1;
+            $days = $event->diff()->d + 1;
           }
-        $this->amount = $this->amount + ($amount * $days);
-        break;
+              $this->amount = $this->amount + ($amount * $days);
+              break;
       case ROOMS_INCREASE:
         $this->amount = $this->amount + (($this->amount) * ($amount/100));
         break;

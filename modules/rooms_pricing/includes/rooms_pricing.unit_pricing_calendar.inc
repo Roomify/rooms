@@ -111,8 +111,8 @@ class UnitPricingCalendar {
                 foreach ($stay as $event) {
                   $days = $event->diff()->d + 1;
                 }
-                  $price += $modifiers['#amount'] * $days;
-                  break;
+                    $price += $modifiers['#amount'] * $days;
+                    break;
               case ROOMS_REPLACE:
                 $price = $modifiers['#amount'];
                 break;
