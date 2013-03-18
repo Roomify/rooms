@@ -1815,6 +1815,17 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
       '#default_value' => variable_get('rooms_booking_type', 'standard_booking'),
     );
 
+    $form['rooms_manually_booking_create_order'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Create orders for manually generated bookings'),
+      '#options' => array(
+        '0' => '0',
+        '1' => '1',
+      ),
+      '#description' => t('This will create a Commerce order for bookings created via the admin interface of Rooms.'),
+      '#default_value' => variable_get('rooms_manually_booking_create_order', '1'),
+    );
+
     $form['rooms_display_children'] = array(
       '#type' => 'checkbox',
       '#title' => t('Display children choice in availability search'),

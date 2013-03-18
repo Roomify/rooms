@@ -307,6 +307,18 @@ function rooms_booking_delete(RoomsBooking $booking, $delete_line_item = TRUE) {
 function rooms_booking_commerce_line_item_delete($line_item) {
   if (isset($line_item->rooms_booking_reference['und'][0]['target_id'])) {
     $booking = rooms_booking_load($line_item->rooms_booking_reference['und'][0]['target_id']);
+
+    //Check if the booking had a unit associated with it and if so update the availability calendar
+    if (isset($booking->unit_id) && isset($booking->start_date) && isset($booking->end_date)) {
+        $uc = new UnitCalendar($booking->unit_id);
+        // Create an event representing the event to remove
+        $be = new BookingEvent($booking->unit_id,
+                               rooms_availability_assign_id($booking->booking_id),
+                               new DateTime($booking->start_date),
+                               new DateTime($booking->end_date));
+        $uc->removeEvents(array($be));
+    }
+
     rooms_booking_delete($booking, FALSE);
   }
 }

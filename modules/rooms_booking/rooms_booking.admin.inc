@@ -915,6 +915,16 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
 
   $booking->save();
 
+  if ($booking->order_id == '') {
+    if (variable_get('rooms_manually_booking_create_order', '1') == '1') {
+      $order = rooms_booking_create_order($form_state, $unit_object, $booking);
+
+      $booking->order_id = $order->order_number;
+
+      $booking->save();
+    }
+  }
+
   // We have a unit defined so lets block availability there
   if ($unit != 0) {
     // Set the event_id
@@ -949,6 +959,55 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
  */
 function rooms_booking_form_submit_delete(&$form, &$form_state) {
   $form_state['redirect'] = 'admin/rooms/bookings/booking/' . $form_state['rooms_booking']->booking_id . '/delete';
+}
+
+
+function rooms_booking_create_order($form_state, $unit_object, $booking) {
+  global $user;
+
+  module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.commerce');
+
+  $order = commerce_order_new($user->uid, 'pending');
+  commerce_order_save($order);
+
+  // This is very inefficient right now but we need to create date objects
+  // reconvert them back to strings to only recreate them in the Availability Agent
+  $sd = start_date_load($form_state['values']['start_date']);
+  $ed = end_date_load($form_state['values']['end_date']);
+
+  // Let us get the available rooms again and match the order against actual rooms
+  $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
+
+  $price_modifiers = array();
+
+  $booking_parameters = array('adults' => $form_state['values']['data']['group_size'], 'children' => $form_state['values']['data']['group_size_children']);
+
+  $agent = new AvailabilityAgent($sd->format($date_format), $ed->format($date_format), $booking_parameters, 1, array());
+  $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
+
+  // Create line item
+  $line_item = rooms_create_line_item(array('unit' => $unit_object), $agent, $booking_parameters, $price_modifiers);
+
+  $line_item->rooms_booking_reference['und'][0]['target_id'] = $booking->booking_id;
+
+  $line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
+
+  $line_item_wrapper->commerce_unit_price->amount = $booking->price;
+  $data = $line_item_wrapper->commerce_unit_price->data->value();
+  $data['components'][0]['price']['amount'] = $booking->price;
+
+  $line_item_wrapper->commerce_unit_price->data = $data;
+
+  commerce_line_item_save($line_item);
+
+  // Add the line item to the order
+  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+  $order_wrapper->commerce_line_items[] = $line_item;
+
+  // Save the order again to update its line item reference field
+  commerce_order_save($order);
+
+  return $order;
 }
 
 
