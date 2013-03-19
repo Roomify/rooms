@@ -205,6 +205,8 @@ class AvailabilityAgent {
     $av_datefilter = new AvailabilityAgentDateFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date, 'valid_states' => $this->valid_states, 'confirmed' => $confirmed));
     $units = $av_datefilter->applyFilter();
 
+    if (empty($units)) return array();
+
     // Apply AvailabilityAgentCommerceFilter
     $av_commercefilter = new AvailabilityAgentCommerceFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date));
     $units = $av_commercefilter->applyFilter();
