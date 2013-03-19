@@ -118,13 +118,13 @@ function rooms_booking_manager_update_7003() {
     'cardinality' => -1,
     'required' => 0,
     'type' => 'rooms_options',
-    'module' => 'rooms_unit',
+    'module' => 'rooms',
     'settings' => array(
       'user_register_form' => FALSE,
     ),
     'widget' => array(
       'active' => 0,
-      'module' => 'rooms_unit',
+      'module' => 'rooms',
       'settings' => array(),
       'type' => 'rooms_options_combined',
       'weight' => '0',

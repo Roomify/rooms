@@ -1411,7 +1411,7 @@ function _rooms_booking_manager_line_item_type_fields() {
         'cardinality' => -1,
         'required' => 0,
         'type' => 'rooms_options',
-        'module' => 'rooms_unit',
+        'module' => 'rooms',
         'settings' => array(
           'user_register_form' => FALSE,
         ),
@@ -1677,7 +1677,7 @@ function _rooms_booking_manager_line_item_type_fields() {
           'user_register_form' => FALSE,
         ),
         'widget' => array(
-          'module' => 'rooms_unit',
+          'module' => 'rooms',
           'type' => 'rooms_options_combined',
         ),
       ),
