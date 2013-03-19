@@ -40,8 +40,10 @@ class AvailabilityAgent {
   public function __construct($start_date, $end_date, $booking_parameters = array(), $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS), $unit_types = array()) {
     $this->valid_states = $valid_states;
 
-    $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
-    $this->start_date = DateTime::createFromFormat($date_format, str_replace('-', '/', $start_date));
+    $date_format = rooms_date_format_day();
+
+    // Add '|' to date format for start date to reset the time to 00:00:00.
+    $this->start_date = DateTime::createFromFormat($date_format . '|', str_replace('-', '/', $start_date));
     $checkout_date = DateTime::createFromFormat($date_format, str_replace('-', '/', $end_date));
 
     // For availability purposes the end date is a day earlier than the checkout date

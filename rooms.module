@@ -69,7 +69,7 @@ function rooms_end_of_month_dates($year) {
  * @return array The array holding the field definitions
  */
 function rooms_date_range_fields($date_range_fields = array()) {
-  $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
+  $date_format = rooms_date_format_day();
 
   $date_range_fields['rooms_start_date'] = array(
     '#prefix' => '<div class="start-date">',
@@ -102,7 +102,7 @@ function rooms_date_range_fields($date_range_fields = array()) {
          'data' => array(
             'rooms' => array(
               'roomsBookingStartDay' => variable_get('rooms_booking_start_date', 1),
-              'roomsDateFormat' => rooms_dateFormatTojQueryUIDatePickerFormat($date_format),
+              'roomsDateFormat' => rooms_dateFormatTojQueryUIDatePickerFormat(str_replace('|', '', $date_format)),
             ),
           ),
           'type' => 'setting',
@@ -116,7 +116,7 @@ function rooms_date_range_fields($date_range_fields = array()) {
 
 
 /**
- * Transfom from PHP conventions to jQueryUI conventions for dates
+ * Transform from PHP conventions to jQueryUI conventions for dates.
  */
 function rooms_dateFormatTojQueryUIDatePickerFormat($date_format) {
   $chars = array(
@@ -129,4 +129,29 @@ function rooms_dateFormatTojQueryUIDatePickerFormat($date_format) {
   );
 
   return strtr((string)$date_format, $chars);
+}
+
+/**
+ * Utility function - get the user-selected date format and modify it to our
+ * preferred format.
+ */
+function rooms_date_format_day() {
+  return str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
+}
+
+/**
+ * Utility function - check if the range of the first two dates overlaps the
+ * range of the second two.
+ *
+ * @param $start_date_check: PHP DateTime
+ * @param $end_date_check: PHP DateTime
+ * @param $start_date: PHP DateTime
+ * @param $end_date: PHP DateTime
+ */
+function rooms_check_dates_in_range($start_date_check, $end_date_check, $start_date, $end_date) {
+  if (!(($start_date_check < $start_date && $end_date_check < $start_date) ||
+        ($start_date_check > $end_date && $end_date_check > $end_date))) {
+    return TRUE;
+  }
+  return FALSE;
 }

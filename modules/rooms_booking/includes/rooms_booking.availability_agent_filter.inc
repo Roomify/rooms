@@ -214,7 +214,7 @@ class AvailabilityAgentCommerceFilter extends AvailabilityAgentCommonFilter {
             $e_date = new DateTime($line_item_values->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
 
             // If current line_item date interval overlap parameters interval remove unit from results
-            if ( $this->check_in_range($s_date, $e_date, $start_date, $end_date) ) {
+            if (rooms_check_dates_in_range($s_date, $e_date, $start_date, $end_date)) {
               if (isset($results['rooms_unit'][$line_item_values->rooms_booked_unit_id[LANGUAGE_NONE][0]['value']])) {
                 unset($results['rooms_unit'][$line_item_values->rooms_booked_unit_id[LANGUAGE_NONE][0]['value']]);
               }
@@ -230,21 +230,6 @@ class AvailabilityAgentCommerceFilter extends AvailabilityAgentCommonFilter {
     else {
       // Computes the intersection of units and results
       return $this->array_units_intersect($this->units, $results);
-    }
-  }
-
-  // Check if search interval overlaps line_item interval
-  private function check_in_range($line_item_start_date, $line_item_end_date, $start_date, $end_date) {
-    if (!(($line_item_start_date < $start_date && $line_item_end_date < $start_date) ||
-          ($line_item_start_date > $end_date && $line_item_end_date > $end_date))) {
-
-      return TRUE;
-
-    }
-    else {
-
-      return FALSE;
-
     }
   }
 
