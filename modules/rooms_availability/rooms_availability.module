@@ -449,7 +449,6 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
     '#options' => array(
       ROOMS_ADD => t('Add to price'),
       ROOMS_SUB => t('Subtract from price'),
-      ROOMS_PERNIGHT => t('Add to price per night'),
       ROOMS_REPLACE => t('Replace price'),
       ROOMS_INCREASE => t('Increase price by % amount'),
       ROOMS_DECREASE => t('Decrease price by % amount'),

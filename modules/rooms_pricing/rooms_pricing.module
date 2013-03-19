@@ -183,7 +183,6 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
     '#options' => array(
       ROOMS_ADD => 'Add to price',
       ROOMS_SUB => 'Subtract from price',
-      ROOMS_PERNIGHT => 'Add to price per night',
       ROOMS_REPLACE => 'Replace price',
       ROOMS_INCREASE => 'Increase price by % amount',
       ROOMS_DECREASE => 'Decrease price by % amount',

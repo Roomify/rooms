@@ -106,11 +106,17 @@ class UnitPricingCalendar {
               case ROOMS_SUB:
                 $price -= $modifiers['#amount'];
                 break;
+
+// Get start and end dates for this event to calculate duration of stay.
               case ROOMS_PERNIGHT:
                 $stay = $this->getEvents($start_date, $end_date);
                 foreach ($stay as $event) {
+
+// Calculate length of event, in days. Diff will be short by one day, so add 1.
                   $days = $event->diff()->d + 1;
                 }
+
+// Add option amount to existing room amount.
                     $price += $modifiers['#amount'] * $days;
                     break;
               case ROOMS_REPLACE:
