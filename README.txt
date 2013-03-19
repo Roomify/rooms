@@ -72,3 +72,6 @@ If you are upgrading from Beta 4 make sure that your Rooms Product in Commerce h
 actually used to calculate the cost of the room but we need a price in order for Commerce to properly add the product
 to the cart and do tax calculations.
 
+UNINSTALLATION
+-------------------------------------
+If you wish to uninstall Rooms, you must disable and uninstall the modules it provides in reverse order of dependencies. After disabling each module that is available to be disabled, visit the 'uninstall' tab and uninstall it.
