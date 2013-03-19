@@ -792,9 +792,34 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
     }
   }
 
+  // For new bookings check if the owner has an oustanding order, don't run on AJAX
+  // requests due this could cause message duplication
+  if (!isset($booking->customer_id) && strpos(request_uri(), 'system/ajax') === FALSE) {
+    $customer_name = $form_state['input']['client'];
+    $commerce_customer_id = rooms_booking_find_customer_by_name($customer_name);
+    // the statuses that are considered a complete order we could use
+    // commerce_payment_order_balance($order); but that adds the dependency
+    // of commerce_payment module and all the orders must have a transaction
+    // history to have a reliable balance.
+    $complete_statuses = array('complete', 'rooms_unit_confirmed');
+    // determine the commerce order statuses that identify an oustanding order
+    $incomplete_statuses = array_diff(array_keys(commerce_order_statuses()), $complete_statuses);
+    $orders = commerce_order_load_multiple(array(), array('uid' => $commerce_customer_id, 'status' => $incomplete_statuses));
+    // in case of pending orders alert the admin
+    if ($orders) {
+      foreach ($orders as $order) {
+        $order_links[] = l("Order #{$order->order_id}", "admin/commerce/orders/{$order->order_id}/edit");
+      }
+      $message_params = array(
+        '!customer_name' => $customer_name,
+        '!order_links' => theme('item_list', array('items' => $order_links)),
+      );
+      drupal_set_message(t('The customer !customer_name has an oustanding order: !order_links', $message_params), 'warning');
+    }
+  }
+
   //Notify field widgets to validate their data.
   field_attach_form_validate('rooms_booking', $booking, $form, $form_state);
-
 }
 
 
@@ -807,16 +832,7 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
   // Get the client name and client id
   $client = explode(':', $form_state['values']['client']);
   $client_name = $client[0];
-
-  $commerce_customer_id = FALSE;
-  if (module_exists('commerce_customer')) {
-    $commerce_customer_id = db_select('field_data_commerce_customer_address')
-          ->fields('field_data_commerce_customer_address', array('entity_id'))
-          ->condition('commerce_customer_address_name_line', $client_name, '=')
-          ->condition('entity_type', 'commerce_customer_profile')
-          ->condition('bundle', 'billing')
-          ->execute()->fetchField();
-  }
+  $commerce_customer_id = rooms_booking_find_customer_by_name($client_name);
 
   if ($commerce_customer_id === FALSE) {
     db_merge('rooms_customers')
