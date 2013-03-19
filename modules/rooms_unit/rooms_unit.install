@@ -19,6 +19,11 @@ function rooms_unit_install() {
  */
 function rooms_unit_uninstall() {
   rooms_description_content_type_uninstall();
+
+  // Delete options field.
+  field_delete_field('field_options');
+  $limit = variable_get('field_purge_batch_size', 10);
+  field_purge_batch($limit);
 }
 
 

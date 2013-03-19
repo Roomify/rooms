@@ -21,6 +21,11 @@ function rooms_booking_manager_uninstall() {
 
   variable_del('rooms_date_format');
   variable_del('rooms_booking_manager_booking_product_id');
+
+  // Delete booking option field.
+  field_delete_field('rooms_booking_options');
+  $limit = variable_get('field_purge_batch_size', 10);
+  field_purge_batch($limit);
 }
 
 
