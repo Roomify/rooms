@@ -25,7 +25,7 @@ function rooms_unit_uninstall() {
 
   // Delete other rooms fields.
   foreach (_rooms_description_installed_fields() as $field) {
-    field_delete_field($field);
+    field_delete_field($field['field_name']);
   }
   $limit = variable_get('field_purge_batch_size', 10);
   field_purge_batch($limit);
