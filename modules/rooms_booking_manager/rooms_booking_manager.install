@@ -29,6 +29,7 @@ function rooms_booking_manager_uninstall() {
   field_delete_field('rooms_booking_reference');
 
   // Delete line item fields.
+  module_load_include('inc', 'rooms_booking_manager', 'includes/rooms_booking_manager.fields');
   $field_data = _rooms_booking_manager_line_item_type_fields();
   foreach ($field_data['fields'] as $field_name => $field_info) {
     field_delete_field($field_data['fields'][$field_name]);
