@@ -91,7 +91,7 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent, $bookin
       );
 
       // Convert Price modifiers in Price options
-      $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
+      $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_PERNIGHT, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
 
       $price_options = array();
       foreach ($price_modifiers as $mod) {

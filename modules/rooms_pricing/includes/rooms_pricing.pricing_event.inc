@@ -81,7 +81,7 @@ class PricingEvent {
   }
 
 
-  public function applyOperation($amount, $operation) {
+  public function applyOperation($amount, $operation, $start_date, $end_date) {
     switch ($operation) {
       case ROOMS_REPLACE:
         $this->amount = $amount;
