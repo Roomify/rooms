@@ -67,7 +67,10 @@ class AvailabilityAgent {
    * each set.
    */
   private function searchForAvailability($rooms_results) {
-    $el_key = array_shift(array_keys($rooms_results));
+
+// Array_shift() want to be passed a variable, not the result of a function.
+    $rooms_results_keys = array_keys($rooms_results);
+    $el_key = array_shift($rooms_results_keys);
 
     if (!isset($rooms_results[$el_key]['rooms_unit'])) return 0;
 

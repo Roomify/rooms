@@ -634,7 +634,10 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               $node = node_load($node_id);
 
               if ($node !== FALSE) {
-                $node_html = render(node_view($node, 'rooms_list'));
+
+// Node_view() is defined as node_view($node, etc) not as &node_view($node, etc).
+                $node_html = node_view($node, 'rooms_list');
+                render($node_html);
 
                 $form[$type . ':' . $price][$type . ':' . $price . ':description'] = array(
                   '#prefix' => '<tr><td class="room_description">',
