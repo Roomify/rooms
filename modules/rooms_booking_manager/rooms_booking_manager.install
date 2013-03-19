@@ -107,6 +107,11 @@ function rooms_booking_manager_update_7002() {
  * Add "Booking Options" field to the rooms_booking_manager_line_item
  */
 function rooms_booking_manager_update_7003() {
+
+  // Clear the field cache so that the rooms_options field type will be
+  // available.
+  field_cache_clear();
+
   $field = array(
     'field_name' => 'rooms_booking_options',
     'label' => t('Booking Options'),
@@ -169,6 +174,11 @@ function rooms_booking_manager_update_7003() {
  * Add "Booking Reference" field to the rooms_booking_manager_line_item
  */
 function rooms_booking_manager_update_7004() {
+
+  // We need to first ensure that the entityreference module is enabled.
+  module_enable(array('entityreference'));
+  field_cache_clear();
+
   $field = array(
     'field_name' => 'rooms_booking_reference',
     'label' => t('Booking Reference'),
