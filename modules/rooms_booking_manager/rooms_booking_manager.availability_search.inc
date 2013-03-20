@@ -208,7 +208,7 @@ function rooms_booking_availability_search_form_validate(&$form, &$form_state) {
   $date2 = $form_state['values']['rooms_end_date'];
 
   // First check that the dates are set as we would expect them
-  if ($date1['date'] == '' || $date2['date'] == '') {
+  if ($date1 == '' || $date2 == '') {
     form_set_error('rooms_date_range', t('Please choose dates.'));
     return TRUE;
   }
