@@ -734,9 +734,11 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
     $input_end_date = $date2->format('Y-m-d');
 
     // if the stored dates differ from input dates check that price was re-assigned.
-    if ($input_start_date != $booking->start_date || $input_end_date != $booking->end_date) {
-      if (!isset($form_state['values']['unit_id']) || !is_numeric($form_state['values']['unit_id'])) {
-        form_set_error('availability_fieldset', t('A unit must be re-assigned for this booking'));
+    if (isset($booking->start_date) && isset($booking->end_date)) {
+      if ($input_start_date != $booking->start_date || $input_end_date != $booking->end_date) {
+        if (!isset($form_state['values']['unit_id']) || !is_numeric($form_state['values']['unit_id'])) {
+          form_set_error('availability_fieldset', t('A unit must be re-assigned for this booking'));
+        }
       }
     }
   }
@@ -917,7 +919,9 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
 
   if ($booking->order_id == '') {
     if (variable_get('rooms_manually_booking_create_order', '1') == '1') {
-      $order = rooms_booking_create_order($form_state, $unit_object, $booking);
+      $booking_parameters = array('adults' => $form_state['values']['data']['group_size'], 'children' => $form_state['values']['data']['group_size_children']);
+
+      $order = rooms_booking_create_order(start_date_load($start_date), end_date_load($end_date),$booking_parameters, $unit_object, $booking);
 
       $booking->order_id = $order->order_number;
 
@@ -962,7 +966,7 @@ function rooms_booking_form_submit_delete(&$form, &$form_state) {
 }
 
 
-function rooms_booking_create_order($form_state, $unit_object, $booking) {
+function rooms_booking_create_order($start_date, $end_date, $booking_parameters, $unit_object, $booking) {
   global $user;
 
   module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.commerce');
@@ -970,23 +974,16 @@ function rooms_booking_create_order($form_state, $unit_object, $booking) {
   $order = commerce_order_new($user->uid, 'pending');
   commerce_order_save($order);
 
-  // This is very inefficient right now but we need to create date objects
-  // reconvert them back to strings to only recreate them in the Availability Agent
-  $sd = start_date_load($form_state['values']['start_date']);
-  $ed = end_date_load($form_state['values']['end_date']);
-
   // Let us get the available rooms again and match the order against actual rooms
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
 
   $price_modifiers = array();
 
-  $booking_parameters = array('adults' => $form_state['values']['data']['group_size'], 'children' => $form_state['values']['data']['group_size_children']);
-
-  $agent = new AvailabilityAgent($sd->format($date_format), $ed->format($date_format), $booking_parameters, 1, array());
+  $agent = new AvailabilityAgent($start_date->format($date_format), $end_date->format($date_format), $booking_parameters, 1, array());
   $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
 
   // Create line item
-  $line_item = rooms_create_line_item(array('unit' => $unit_object), $agent, $booking_parameters, $price_modifiers);
+  $line_item = rooms_create_line_item(array('unit' => $unit_object, 'state' => ROOMS_AVAILABLE), $agent, $booking_parameters, $price_modifiers);
 
   $line_item->rooms_booking_reference['und'][0]['target_id'] = $booking->booking_id;
 
