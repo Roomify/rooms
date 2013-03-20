@@ -186,8 +186,10 @@ class AvailabilityAgent {
     // Load the unit
     $unit = rooms_unit_load($unit_id);
 
-//Array_pop expects an array variable by reference.
+    // Array_pop expects an array variable by reference.
     $units = $this->getUnitsByPriceType(array('rooms_unit' => array($unit_id => $unit)), $price_modifiers);
+
+    // Array_pop has to be run twice to get the booking price and the unit id.
     $units = array_pop($units);
     $units = array_pop($units);
 

@@ -635,7 +635,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
               if ($node !== FALSE) {
 
-// Node_view() is defined as node_view($node, etc) not as &node_view($node, etc).
+                // Node_view() is defined as node_view($node, etc).
                 $node_html = node_view($node, 'rooms_list');
                 render($node_html);
 
