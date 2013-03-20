@@ -186,7 +186,10 @@ class AvailabilityAgent {
     // Load the unit
     $unit = rooms_unit_load($unit_id);
 
-    $units = array_pop(array_pop($this->getUnitsByPriceType(array('rooms_unit' => array($unit_id => $unit)), $price_modifiers)));
+//Array_pop expects an array variable by reference.
+    $units = $this->getUnitsByPriceType(array('rooms_unit' => array($unit_id => $unit)), $price_modifiers);
+    $units = array_pop($units);
+    $units = array_pop($units);
 
     if (count($units) == 0) {
       return ROOMS_NO_ROOMS;
