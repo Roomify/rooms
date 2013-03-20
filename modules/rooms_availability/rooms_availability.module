@@ -517,10 +517,10 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
 
 function rooms_availability_pricing_update_form_validate(&$form, &$form_state) {
   // Check date validity
-  if ($form_state['values']['rooms_start_date']['date'] == '') {
+  if ($form_state['values']['rooms_start_date'] == '') {
     return;
   }
-  if ($form_state['values']['rooms_end_date']['date'] == '') {
+  if ($form_state['values']['rooms_end_date'] == '') {
     return;
   }
 
@@ -722,10 +722,10 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
 
 function rooms_availability_update_status_form_validate(&$form, &$form_state) {
   // Check date validity
-  if ($form_state['values']['rooms_start_date']['date'] == '') {
+  if ($form_state['values']['rooms_start_date'] == '') {
     return;
   }
-  if ($form_state['values']['rooms_end_date']['date'] == '') {
+  if ($form_state['values']['rooms_end_date'] == '') {
     return;
   }
 
@@ -1012,10 +1012,10 @@ function update_availability_calendar_form($form, &$form_state, $unit_id, $year,
 
 function update_availability_calendar_form_validate(&$form, &$form_state) {
   // Check date validity
-  if ($form_state['values']['rooms_start_date']['date'] == '') {
+  if ($form_state['values']['rooms_start_date'] == '') {
     return;
   }
-  if ($form_state['values']['rooms_end_date']['date'] == '') {
+  if ($form_state['values']['rooms_end_date'] == '') {
     return;
   }
   $date1 = new DateTime($form_state['values']['rooms_start_date']);
