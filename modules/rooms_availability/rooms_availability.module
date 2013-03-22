@@ -880,6 +880,8 @@ function rooms_bulk_pricing_access() {
  *
  */
 function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
+  ctools_include('modal');
+  ctools_modal_add_js();
 
   // Basic check to avoid any uggliness
   $year = check_plain($year);

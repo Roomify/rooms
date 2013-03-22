@@ -1,4 +1,7 @@
 (function ($) {
+// define object
+Drupal.RoomsAvailability = Drupal.RoomsAvailability || {};
+Drupal.RoomsAvailability.Modal = Drupal.RoomsAvailability.Modal || {};
 
 Drupal.behaviors.rooms_availability = {
   attach: function(context) {
@@ -63,37 +66,14 @@ Drupal.behaviors.rooms_availability = {
           date = $.fullCalendar.parseDate(calEvent.start)
           var sd = Math.round(Date.parse(calEvent.start)/1000);
           var ed = Math.round(Date.parse(calEvent.end)/1000);
-          // This fires up Colobox to display info relevant to event from Drupal
-          if ($.colorbox) {
-            var url = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/' + calEvent.id + '/' + sd + '/' + ed;
-            $.colorbox({
-              href: url,
-              opacity: 0.7,
-              width: 400,
-              height: 400,
-              onClosed:function(){
-                $(value[0]).fullCalendar('refetchEvents');
-              }
-            });
-          }
+          // Open the modal for edit
+          Drupal.RoomsAvailability.Modal(this, sd, ed);
         },
         select: function(start, end, allDay) {
           var sd = Math.round(Date.parse(start)/1000);
           var ed = Math.round(Date.parse(end)/1000);
-          // This fires up Colobox to display info relevant to event from Drupal
-          if ($.colorbox) {
-            var url = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/-2/' + sd + '/' + ed;
-            $.colorbox({
-              href: url,
-              opacity: 0.7,
-              width: 400,
-              height: 400,
-              onClosed:function(){
-                $(value[0]).fullCalendar('refetchEvents');
-              }
-            });
-          }
-
+          // Open the modal for edit
+          Drupal.RoomsAvailability.Modal(this, sd, ed);
           $(value[0]).fullCalendar('unselect');
         }
       });
@@ -104,4 +84,20 @@ Drupal.behaviors.rooms_availability = {
 
   }
 };
+
+/**
+* Initialize the modal box.
+*/
+Drupal.RoomsAvailability.Modal = function(element, sd, ed) {
+  // prepare the modal show with the rooms-availability settings.
+  Drupal.CTools.Modal.show('rooms-availability');
+  // Create a drupal ajax object that points to the rooms availability form.
+  var element_settings = {};
+  var base = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/-2/' + sd + '/' + ed;
+  element_settings.url = base;
+  element_settings.event = 'click';
+  element_settings.progress = { type: 'throbber' };
+  Drupal.ajax[base] = new Drupal.ajax(base, element, element_settings);
+};
+
 })(jQuery);
