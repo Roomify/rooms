@@ -84,10 +84,6 @@ Drupal.behaviors.rooms_availability = {
         }
       });
     });
-
-    // Resize takes care of some quirks on occasion
-    $(window).resize();
-
   }
 };
 
