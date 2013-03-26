@@ -105,9 +105,12 @@ Drupal.RoomsAvailability.Modal = function(element, eid, sd, ed) {
     event : 'getResponse',
     progress : { type: 'throbber' },
   };
+  // To made all calendars trigger correctly the getResponse event we need to
+  // initialize the ajax instance with the global calendar table element.
+  var calendars_table = $(element.element).closest('table');
   // create new instance only once if exists just override the url
   if (Drupal.ajax[base] === undefined) {
-    Drupal.ajax[base] = new Drupal.ajax(element_settings.url, element.element, element_settings);
+    Drupal.ajax[base] = new Drupal.ajax(element_settings.url, calendars_table, element_settings);
   }
   else {
     Drupal.ajax[base].element_settings.url = element_settings.url;
@@ -115,7 +118,7 @@ Drupal.RoomsAvailability.Modal = function(element, eid, sd, ed) {
   }
   // We need to trigger manually the AJAX getResponse due fullcalendar select
   // event is not recognized by Drupal AJAX
-  $(element.element).trigger('getResponse');
+  $(calendars_table).trigger('getResponse');
 };
 
 })(jQuery);
