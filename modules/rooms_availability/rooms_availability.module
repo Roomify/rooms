@@ -880,8 +880,8 @@ function rooms_bulk_pricing_access() {
  *
  */
 function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
-  ctools_include('modal');
-  ctools_modal_add_js();
+  // modal includes and style
+  rooms_availability_modal_style();
 
   // Basic check to avoid any uggliness
   $year = check_plain($year);
@@ -1140,7 +1140,7 @@ function rooms_availability_event($units, $start_year = '', $start_month = '', $
  * that event.
  */
 function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_date = 0, $end_date = 0) {
-  ctools_include('ajax');
+  // include modal library
   ctools_include('modal');
 
   // If any info missing we cannot load the event
@@ -1218,6 +1218,36 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
   return ctools_modal_render('Event Management', $output);
 }
 
+/**
+ * Define modal JS style and dependencies
+ */
+function rooms_availability_modal_style() {
+  // include libraries
+  ctools_include('modal');
+  ctools_include('ajax');
+  ctools_modal_add_js();
+
+  // styles to use for the modal
+  $modal_style = array(
+    'rooms-modal-style' => array(
+      'modalSize' => array(
+        'type' => 'fixed',
+        'width' => 800,
+        'height' => 400,
+        'addWidth' => 0,
+        'addHeight' => 0,
+      ),
+      'modalOptions' => array(
+        'opacity' => .0,
+        'background-color' => '#000',
+      ),
+      'animation' => 'fadeIn',
+    ),
+  );
+
+  // add the ctool modal configuration to settings
+  drupal_add_js($modal_style, 'setting');
+}
 
 /**
  * The Event Manager Form - will eventually change based on the type of event we are manipulating

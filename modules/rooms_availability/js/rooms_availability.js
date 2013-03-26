@@ -92,7 +92,7 @@ Drupal.behaviors.rooms_availability = {
 */
 Drupal.RoomsAvailability.Modal = function(element, eid, sd, ed) {
   // prepare the modal show with the rooms-availability settings.
-  Drupal.CTools.Modal.show('rooms-availability');
+  Drupal.CTools.Modal.show('rooms-modal-style');
   // base url the part that never change is used to identify our ajax instance
   var base = Drupal.settings.basePath + '?q=admin/rooms/units/unit/';
   // Create a drupal ajax object that points to the rooms availability form.
