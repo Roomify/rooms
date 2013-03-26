@@ -40,6 +40,12 @@ Drupal.behaviors.rooms_availability = {
     calendars[1] = new Array('#calendar1', month2, year2);
     calendars[2] = new Array('#calendar2', month3, year3);
 
+    // refresh the events once the modal is closed
+    $("#modalContent a.close").once().bind('click', function(e) {
+      $.each(calendars, function(key, value) {
+        $(value[0]).fullCalendar('refetchEvents');
+      });
+    });
 
     $.each(calendars, function(key, value) {
       // phpmonth is what we send via the url and need to add one since php handles
@@ -67,7 +73,7 @@ Drupal.behaviors.rooms_availability = {
           var sd = Math.round(Date.parse(calEvent.start)/1000);
           var ed = Math.round(Date.parse(calEvent.end)/1000);
           // Open the modal for edit
-          Drupal.RoomsAvailability.Modal(this, calEvent.id, sd, ed);
+          Drupal.RoomsAvailability.Modal(view, calEvent.id, sd, ed);
         },
         select: function(start, end, allDay) {
           var sd = Math.round(Date.parse(start)/1000);
