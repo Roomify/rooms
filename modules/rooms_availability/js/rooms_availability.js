@@ -67,13 +67,13 @@ Drupal.behaviors.rooms_availability = {
           var sd = Math.round(Date.parse(calEvent.start)/1000);
           var ed = Math.round(Date.parse(calEvent.end)/1000);
           // Open the modal for edit
-          Drupal.RoomsAvailability.Modal(this, sd, ed);
+          Drupal.RoomsAvailability.Modal(this, calEvent.id, sd, ed);
         },
         select: function(start, end, allDay) {
           var sd = Math.round(Date.parse(start)/1000);
           var ed = Math.round(Date.parse(end)/1000);
           // Open the modal for edit
-          Drupal.RoomsAvailability.Modal(this, sd, ed);
+          Drupal.RoomsAvailability.Modal(this, -2, sd, ed);
           $(value[0]).fullCalendar('unselect');
         }
       });
@@ -88,16 +88,17 @@ Drupal.behaviors.rooms_availability = {
 /**
 * Initialize the modal box.
 */
-Drupal.RoomsAvailability.Modal = function(element, sd, ed) {
+Drupal.RoomsAvailability.Modal = function(element, eid, sd, ed) {
   // prepare the modal show with the rooms-availability settings.
   Drupal.CTools.Modal.show('rooms-availability');
   // Create a drupal ajax object that points to the rooms availability form.
   var element_settings = {};
-  var base = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/-2/' + sd + '/' + ed;
+  var base = Drupal.settings.basePath;
   element_settings.url = base;
-  element_settings.event = 'click';
+  element_settings.event = 'getResponse';
   element_settings.progress = { type: 'throbber' };
   Drupal.ajax[base] = new Drupal.ajax(base, element, element_settings);
+  $(element).trigger('getResponse');
 };
 
 })(jQuery);
