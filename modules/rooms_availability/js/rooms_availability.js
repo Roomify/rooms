@@ -91,14 +91,25 @@ Drupal.behaviors.rooms_availability = {
 Drupal.RoomsAvailability.Modal = function(element, eid, sd, ed) {
   // prepare the modal show with the rooms-availability settings.
   Drupal.CTools.Modal.show('rooms-availability');
+  // base url the part that never change is used to identify our ajax instance
+  var base = Drupal.settings.basePath + '?q=admin/rooms/units/unit/';
   // Create a drupal ajax object that points to the rooms availability form.
-  var element_settings = {};
-  var base = Drupal.settings.basePath;
-  element_settings.url = base;
-  element_settings.event = 'getResponse';
-  element_settings.progress = { type: 'throbber' };
-  Drupal.ajax[base] = new Drupal.ajax(base, element, element_settings);
-  $(element).trigger('getResponse');
+  var element_settings = {
+    url : base + Drupal.settings.roomsAvailability.roomID + '/event/' + eid + '/' + sd + '/' + ed,
+    event : 'getResponse',
+    progress : { type: 'throbber' },
+  };
+  // create new instance only once if exists just override the url
+  if (Drupal.ajax[base] === undefined) {
+    Drupal.ajax[base] = new Drupal.ajax(element_settings.url, element.element, element_settings);
+  }
+  else {
+    Drupal.ajax[base].element_settings.url = element_settings.url;
+    Drupal.ajax[base].options.url = element_settings.url;
+  }
+  // We need to trigger manually the AJAX getResponse due fullcalendar select
+  // event is not recognized by Drupal AJAX
+  $(element.element).trigger('getResponse');
 };
 
 })(jQuery);
