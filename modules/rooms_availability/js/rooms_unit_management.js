@@ -1,4 +1,7 @@
 (function ($) {
+// define object
+Drupal.RoomsAvailability = Drupal.RoomsAvailability || {};
+Drupal.RoomsAvailability.Modal = Drupal.RoomsAvailability.Modal || {};
 
 $(document).ready(function()
 {
@@ -57,6 +60,13 @@ Drupal.behaviors.rooms_availability = {
       calendars[i] = new Array('#calendar' + i, month1, year1);
     }
 
+    // refresh the events once the modal is closed
+    $("#modalContent a.close").once().bind('click', function(e) {
+      $.each(calendars, function(key, value) {
+        $(value[0]).fullCalendar('refetchEvents');
+      });
+    });
+
     var c = 0;
     $.each(calendars, function(key, value) {
       // phpmonth is what we send via the url and need to add one since php handles
@@ -78,23 +88,23 @@ Drupal.behaviors.rooms_availability = {
           right: ''
         },
         events: Drupal.settings.basePath + '?q=rooms/units/unit/' + Drupal.settings.roomsUnitManagement.roomsId[c] + '/availability/json/' + value[2] + '/' + phpmonth,
+        eventClick: function(calEvent, jsEvent, view) {
+          // Getting the Unix timestamp - JS will only give us milliseconds
+          if (calEvent.end == null) {
+            //We are probably dealing with a single day event
+            calEvent.end = calEvent.start;
+          }
+          date = $.fullCalendar.parseDate(calEvent.start)
+          var sd = Math.round(Date.parse(calEvent.start)/1000);
+          var ed = Math.round(Date.parse(calEvent.end)/1000);
+          // Open the modal for edit
+          Drupal.RoomsAvailability.Modal(view, unit_id, calEvent.id, sd, ed);
+        },
         select: function(start, end, allDay) {
           var sd = Math.round(Date.parse(start)/1000);
           var ed = Math.round(Date.parse(end)/1000);
-          // This fires up Colobox to display info relevant to event from Drupal
-          if ($.colorbox) {
-            var url = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + unit_id + '/event/-2/' + sd + '/' + ed;
-            $.colorbox({
-              href: url,
-              opacity: 0.7,
-              width: 400,
-              height: 400,
-              onClosed:function(){
-                $(value[0]).fullCalendar('refetchEvents');
-              }
-            });
-          }
-
+          // Open the modal for edit
+          Drupal.RoomsAvailability.Modal(this, unit_id, -2, sd, ed);
           $(value[0]).fullCalendar('unselect');
         }
 
@@ -108,4 +118,35 @@ Drupal.behaviors.rooms_availability = {
 
   }
 };
+
+/**
+* Initialize the modal box.
+*/
+Drupal.RoomsAvailability.Modal = function(element, unit_id, eid, sd, ed) {
+  // prepare the modal show with the rooms-availability settings.
+  Drupal.CTools.Modal.show('rooms-modal-style');
+  // base url the part that never change is used to identify our ajax instance
+  var base = Drupal.settings.basePath + '?q=admin/rooms/units/unit/';
+  // Create a drupal ajax object that points to the rooms availability form.
+  var element_settings = {
+    url : base + unit_id + '/event/' + eid + '/' + sd + '/' + ed,
+    event : 'getResponse',
+    progress : { type: 'throbber' },
+  };
+  // To made all calendars trigger correctly the getResponse event we need to
+  // initialize the ajax instance with the global calendar table element.
+  var calendars_table = $(element.element).closest('table');
+  // create new instance only once if exists just override the url
+  if (Drupal.ajax[base] === undefined) {
+    Drupal.ajax[base] = new Drupal.ajax(element_settings.url, calendars_table, element_settings);
+  }
+  else {
+    Drupal.ajax[base].element_settings.url = element_settings.url;
+    Drupal.ajax[base].options.url = element_settings.url;
+  }
+  // We need to trigger manually the AJAX getResponse due fullcalendar select
+  // event is not recognized by Drupal AJAX
+  $(calendars_table).trigger('getResponse');
+};
+
 })(jQuery);
