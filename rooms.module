@@ -233,3 +233,22 @@ function rooms_dateFormatTojQueryUIDatePickerFormat($date_format) {
 
   return strtr((string)$date_format, $chars);
 }
+
+/**
+ * Create a Date object from form_state input date.
+ *
+ * @param array $form_state
+ *   The form_state of the submitted form.
+ * @param string $field_name
+ *   Date field name used to locate the date.
+ *
+ * @return
+ *   Date object for the corresponding input date, FALSE otherwise.
+ */
+function rooms_form_input_date_object($form_state, $field_name) {
+  $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
+  if (isset($form_state['input'][$field_name]['date'])) {
+    return DateTime::createFromFormat($date_format, $form_state['input'][$field_name]['date']);
+  }
+  return FALSE;
+}
