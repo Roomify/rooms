@@ -153,7 +153,6 @@ function rooms_availability_menu() {
   return $items;
 }
 
-
 function rooms_availability_av_ajax_callback() {
   if ($_POST['select-all'] == '1') {
     variable_set('ROOMS_SELECT_ALL_PAGES_AV', 'true');
@@ -1191,18 +1190,28 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
   else {
     $booking_id = rooms_availability_return_id($event_id);
     $booking = rooms_booking_load($booking_id);
-    $output = t('@room is booked for @client', array('@room' => $unit->name, '@client' => $booking->name));
-    $output .= '<br/>';
-    $booking_path = 'admin/rooms/bookings/booking/' . $booking->booking_id . '/edit';
-    $booking_link = l(t('Edit Booking'), $booking_path);
-    $output .= $booking_link;
-
-    $content['event_title'] = array(
-      '#prefix' => '<h2>',
-      '#markup' => $output,
-      '#suffix' => '</h2>'
+    // for existing bookings allow to edit in the modal
+    module_load_include('inc', 'rooms_booking', 'rooms_booking.admin');
+    $form_state = array(
+      'title' => t('Edit booking'),
+      'ajax' => TRUE,
+      'build_info' => array(
+        'args' => array($booking),
+        'files' => array(
+          'rooms_booking_admin' => array(
+            'module' => 'rooms_booking',
+            'name' => 'rooms_booking.admin',
+            'type' => 'inc',
+          ),
+        ),
+      ),
     );
+    // wrap the form via ctools modal
+    $output = ctools_modal_form_wrapper('rooms_booking_edit_form', $form_state);
+    print ajax_render($output);
+    exit();
   }
+
   $date_format = variable_get('rooms_date_format', 'd-m-Y');
   $content['event_details'] = array(
     '#prefix' => '<div class="event-details">',
