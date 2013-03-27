@@ -153,7 +153,6 @@ function rooms_availability_menu() {
   return $items;
 }
 
-
 function rooms_availability_av_ajax_callback() {
   if ($_POST['select-all'] == '1') {
     variable_set('ROOMS_SELECT_ALL_PAGES_AV', 'true');
@@ -174,6 +173,9 @@ function rooms_availability_pr_ajax_callback() {
 
 
 function rooms_availability_bulk_unit_management($year = '', $month = '', $type = 'all', $action = '', $start = '', $end = '') {
+
+  // modal includes and style
+  rooms_availability_modal_style();
 
   // If year is not set then give it the current date
   $year = ($year != '' && is_numeric($year)) ? $year : date('Y', time());
@@ -880,6 +882,8 @@ function rooms_bulk_pricing_access() {
  *
  */
 function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
+  // modal includes and style
+  rooms_availability_modal_style();
 
   // Basic check to avoid any uggliness
   $year = check_plain($year);
@@ -1138,10 +1142,13 @@ function rooms_availability_event($units, $start_year = '', $start_month = '', $
  * that event.
  */
 function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_date = 0, $end_date = 0) {
+  // include modal library
+  ctools_include('modal');
 
   // If any info missing we cannot load the event
   if ($event_id == NULL || $start_date == 0 || $end_date == 0) {
-    return 'Unable to load event';
+    $output[] = ctools_modal_command_dismiss();
+    drupal_set_message('Unable to load event', 'error');
   }
 
   $state_options = array(
@@ -1186,18 +1193,28 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
   else {
     $booking_id = rooms_availability_return_id($event_id);
     $booking = rooms_booking_load($booking_id);
-    $output = t('@room is booked for @client', array('@room' => $unit->name, '@client' => $booking->name));
-    $output .= '<br/>';
-    $booking_path = 'admin/rooms/bookings/booking/' . $booking->booking_id . '/edit';
-    $booking_link = l(t('Edit Booking'), $booking_path);
-    $output .= $booking_link;
-
-    $content['event_title'] = array(
-      '#prefix' => '<h2>',
-      '#markup' => $output,
-      '#suffix' => '</h2>'
+    // for existing bookings allow to edit in the modal
+    module_load_include('inc', 'rooms_booking', 'rooms_booking.admin');
+    $form_state = array(
+      'title' => t('Edit booking'),
+      'ajax' => TRUE,
+      'build_info' => array(
+        'args' => array($booking),
+        'files' => array(
+          'rooms_booking_admin' => array(
+            'module' => 'rooms_booking',
+            'name' => 'rooms_booking.admin',
+            'type' => 'inc',
+          ),
+        ),
+      ),
     );
+    // wrap the form via ctools modal
+    $output = ctools_modal_form_wrapper('rooms_booking_edit_form', $form_state);
+    print ajax_render($output);
+    exit();
   }
+
   $date_format = variable_get('rooms_date_format', 'd-m-Y');
   $content['event_details'] = array(
     '#prefix' => '<div class="event-details">',
@@ -1210,10 +1227,39 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
   }
 
   $output = theme('rooms_event', $content);
-
-  return $output;
+  return ctools_modal_render('Event Management', $output);
 }
 
+/**
+ * Define modal JS style and dependencies
+ */
+function rooms_availability_modal_style() {
+  // include libraries
+  ctools_include('modal');
+  ctools_include('ajax');
+  ctools_modal_add_js();
+
+  // styles to use for the modal
+  $modal_style = array(
+    'rooms-modal-style' => array(
+      'modalSize' => array(
+        'type' => 'fixed',
+        'width' => 400,
+        'height' => 400,
+        'addWidth' => 0,
+        'addHeight' => 0,
+      ),
+      'modalOptions' => array(
+        'opacity' => .0,
+        'background-color' => '#000',
+      ),
+      'animation' => 'fadeIn',
+    ),
+  );
+
+  // add the ctool modal configuration to settings
+  drupal_add_js($modal_style, 'setting');
+}
 
 /**
  * The Event Manager Form - will eventually change based on the type of event we are manipulating

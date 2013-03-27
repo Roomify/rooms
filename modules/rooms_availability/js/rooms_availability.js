@@ -1,4 +1,7 @@
 (function ($) {
+// define object
+Drupal.RoomsAvailability = Drupal.RoomsAvailability || {};
+Drupal.RoomsAvailability.Modal = Drupal.RoomsAvailability.Modal || {};
 
 Drupal.behaviors.rooms_availability = {
   attach: function(context) {
@@ -37,6 +40,12 @@ Drupal.behaviors.rooms_availability = {
     calendars[1] = new Array('#calendar1', month2, year2);
     calendars[2] = new Array('#calendar2', month3, year3);
 
+    // refresh the events once the modal is closed
+    $("#modalContent a.close").once().bind('click', function(e) {
+      $.each(calendars, function(key, value) {
+        $(value[0]).fullCalendar('refetchEvents');
+      });
+    });
 
     $.each(calendars, function(key, value) {
       // phpmonth is what we send via the url and need to add one since php handles
@@ -63,45 +72,49 @@ Drupal.behaviors.rooms_availability = {
           date = $.fullCalendar.parseDate(calEvent.start)
           var sd = Math.round(Date.parse(calEvent.start)/1000);
           var ed = Math.round(Date.parse(calEvent.end)/1000);
-          // This fires up Colobox to display info relevant to event from Drupal
-          if ($.colorbox) {
-            var url = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/' + calEvent.id + '/' + sd + '/' + ed;
-            $.colorbox({
-              href: url,
-              opacity: 0.7,
-              width: 400,
-              height: 400,
-              onClosed:function(){
-                $(value[0]).fullCalendar('refetchEvents');
-              }
-            });
-          }
+          // Open the modal for edit
+          Drupal.RoomsAvailability.Modal(view, calEvent.id, sd, ed);
         },
         select: function(start, end, allDay) {
           var sd = Math.round(Date.parse(start)/1000);
           var ed = Math.round(Date.parse(end)/1000);
-          // This fires up Colobox to display info relevant to event from Drupal
-          if ($.colorbox) {
-            var url = Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/event/-2/' + sd + '/' + ed;
-            $.colorbox({
-              href: url,
-              opacity: 0.7,
-              width: 400,
-              height: 400,
-              onClosed:function(){
-                $(value[0]).fullCalendar('refetchEvents');
-              }
-            });
-          }
-
+          // Open the modal for edit
+          Drupal.RoomsAvailability.Modal(this, -2, sd, ed);
           $(value[0]).fullCalendar('unselect');
         }
       });
     });
-
-    // Resize takes care of some quirks on occasion
-    $(window).resize();
-
   }
 };
+
+/**
+* Initialize the modal box.
+*/
+Drupal.RoomsAvailability.Modal = function(element, eid, sd, ed) {
+  // prepare the modal show with the rooms-availability settings.
+  Drupal.CTools.Modal.show('rooms-modal-style');
+  // base url the part that never change is used to identify our ajax instance
+  var base = Drupal.settings.basePath + '?q=admin/rooms/units/unit/';
+  // Create a drupal ajax object that points to the rooms availability form.
+  var element_settings = {
+    url : base + Drupal.settings.roomsAvailability.roomID + '/event/' + eid + '/' + sd + '/' + ed,
+    event : 'getResponse',
+    progress : { type: 'throbber' },
+  };
+  // To made all calendars trigger correctly the getResponse event we need to
+  // initialize the ajax instance with the global calendar table element.
+  var calendars_table = $(element.element).closest('table');
+  // create new instance only once if exists just override the url
+  if (Drupal.ajax[base] === undefined) {
+    Drupal.ajax[base] = new Drupal.ajax(element_settings.url, calendars_table, element_settings);
+  }
+  else {
+    Drupal.ajax[base].element_settings.url = element_settings.url;
+    Drupal.ajax[base].options.url = element_settings.url;
+  }
+  // We need to trigger manually the AJAX getResponse due fullcalendar select
+  // event is not recognized by Drupal AJAX
+  $(calendars_table).trigger('getResponse');
+};
+
 })(jQuery);

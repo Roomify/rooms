@@ -19,14 +19,7 @@ to add an extra view and provide some simple enhancements that made sense for th
 
 *It is not necessary to install a Drupal module called fullcalendar.*
 
-2. Install the colorbox module - http://drupal.org/project/colorbox
-
-2a. Follow the colorbox module instructions to install the module and colorbox library.
-2b. Go to admin/config/media/colorbox and enable Colorbox load (under extra settings).
-2c. In Advanced settings remove "admin/*" from the list of pages that should not load the colorbox script.
-2d. Save the colorbox settings.
-
-3. Activate all the Rooms modules and their dependencies. Dependencies will be automatically downloaded if
+2. Activate all the Rooms modules and their dependencies. Dependencies will be automatically downloaded if
 using drush to enable the Rooms modules. Alternatively please make sure you download all dependencies (which can be seen
 in the modules page).
 
