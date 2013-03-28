@@ -15,6 +15,18 @@ class BookingEvent {
   public $id;
 
 
+  /**
+   * Init a BookingEvent instance.
+   *
+   * @param int $unit_id
+   *   The bookable unit.
+   * @param int $event_id
+   *   The event ID.
+   * @param DateTime $start_date
+   *   The start date of the event.
+   * @param DateTime $end_date
+   *   The end date of the event.
+   */
   public function __construct($unit_id, $event_id, $start_date, $end_date) {
     $this->unit_id = $unit_id;
     $this->id = $event_id;

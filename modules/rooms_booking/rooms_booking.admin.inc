@@ -534,9 +534,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
             // Apply price modifiers and replace unit price
             $price_calendar = new UnitPricingCalendar($unit_id, $price_modifiers);
-
-            $start_date = new DateTime($form_state['values']['rooms_start_date']);
-            $end_date = new DateTime($form_state['values']['rooms_end_date']);
+            list($start_date, $end_date) = rooms_form_values_get_start_end_dates($form_state);
             $end_date->sub(new DateInterval('P1D'));
             $new_price = $price_calendar->calculatePrice($start_date, $end_date);
             $new_price = $new_price['full_price'];
@@ -854,9 +852,7 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
   // It's simpler to do this than change all the other code for now
   $form_state['values']['start_date'] = $form_state['values']['rooms_start_date'];
   $form_state['values']['end_date'] = $form_state['values']['rooms_end_date'];
-
-  $start_date = $form_state['values']['rooms_start_date'];
-  $end_date = $form_state['values']['rooms_end_date'];
+  list($start_date, $end_date) = rooms_form_values_get_start_end_dates($form_state);
 
   $unit = 0;
   if (isset($form_state['values']['unit_id'])) {
@@ -938,12 +934,9 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
   if ($unit != 0) {
     // Set the event_id
     $id = rooms_availability_assign_id($booking->booking_id, $booking->booking_status);
-    $sd = new DateTime($start_date);
-    $ed = new DateTime($end_date);
-    $ed->sub(new DateInterval('P1D'));
-
+    $corrected_end_date = $end_date->sub(new DateInterval('P1D'));
     // Create an event
-    $be = new BookingEvent($unit, $id, $sd, $ed);
+    $be = new BookingEvent($unit, $id, $start_date, $corrected_end_date);
 
     // Create UnitCalendar
     $rc = new UnitCalendar($unit);

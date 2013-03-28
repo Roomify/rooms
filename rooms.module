@@ -254,12 +254,25 @@ function rooms_form_input_date_object($form_state, $field_name) {
 }
 
 /**
- * Given a form_state locate the start/end dates and instantiate and return
- * DateTime objects.
+ * Given a form_state locate the start/end dates in the input array and
+ * instantiate and return DateTime objects.
  */
 function rooms_form_input_get_start_end_dates($form_state) {
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
   $start = DateTime::createFromFormat($date_format, $form_state['input']['rooms_start_date']['date']);
   $end = DateTime::createFromFormat($date_format, $form_state['input']['rooms_end_date']['date']);
+  return array($start, $end);
+}
+
+/**
+ * Given a form_state locate the start/end dates in the values array and
+ * instantiate and return DateTime objects.
+ */
+function rooms_form_values_get_start_end_dates($form_state) {
+  // As values dates has a format of year-month-day that is one of the default
+  // expected formats there is no need to explicit define format.
+  // http://www.php.net/manual/en/datetime.formats.date.php
+  $start = new DateTime($form_state['values']['rooms_start_date']);
+  $end = new DateTime($form_state['values']['rooms_end_date']);
   return array($start, $end);
 }
