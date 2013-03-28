@@ -108,3 +108,8 @@
   float: left;
   margin-right: 20px;
 }
+
+div.ctools-modal-content .form-item label {
+  float: none;
+  width: 100%;
+}
