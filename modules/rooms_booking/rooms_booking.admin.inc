@@ -431,8 +431,8 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       }
 
       $group_size_children = (isset($form_state['input']['data']['group_size_children'])) ? $form_state['input']['data']['group_size_children'] : 0;
-
-      $available_units = rooms_booking_edit_form_get_rooms($search_unit_type, $form_state['input']['rooms_start_date']['date'], $form_state['input']['rooms_end_date']['date'], $form_state['input']['data']['group_size'], $group_size_children, $booking);
+      list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
+      $available_units = rooms_booking_edit_form_get_rooms($search_unit_type, $start_date, $end_date, $form_state['input']['data']['group_size'], $group_size_children, $booking);
       if ($available_units == 2) {
         $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
           '#markup' => t('No @search_unit_type are available', array('@search_unit_type' => $search_unit_type)),
@@ -683,6 +683,13 @@ function rooms_booking_edit_form_unit_type_callback(&$form, $form_state) {
  *
  * It makes special provisions for the currently selected unit - to consider that
  * as "available" as well.
+ *
+ * @param string $select
+ *   The unit type.
+ * @param object $start_date
+ *   DateTime object for the start date.
+ * @param object $end_date
+ *   DateTime object for the start date.
  */
 function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date = 0, $group_size, $group_size_children, $current_booking) {
   // Set the unit types,
@@ -963,7 +970,16 @@ function rooms_booking_form_submit_delete(&$form, &$form_state) {
   $form_state['redirect'] = 'admin/rooms/bookings/booking/' . $form_state['rooms_booking']->booking_id . '/delete';
 }
 
-
+/**
+ * Create a Commerce Order for a booking.
+ *
+ * @param object $start_date
+ *   DateTime object for the start date.
+ * @param object $end_date
+ *   DateTime object for the start date.
+ * @param array $booking_parameters
+ *   Specify the people we are looking to accommodate.
+ */
 function rooms_booking_create_order($start_date, $end_date, $booking_parameters, $unit_object, $booking) {
   global $user;
 
@@ -972,12 +988,9 @@ function rooms_booking_create_order($start_date, $end_date, $booking_parameters,
   $order = commerce_order_new($user->uid, 'pending');
   commerce_order_save($order);
 
-  // Let us get the available rooms again and match the order against actual rooms
-  $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
-
   $price_modifiers = array();
 
-  $agent = new AvailabilityAgent($start_date->format($date_format), $end_date->format($date_format), $booking_parameters, 1, array());
+  $agent = new AvailabilityAgent($start_date, $end_date, $booking_parameters, 1, array());
   $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
 
   // Create line item

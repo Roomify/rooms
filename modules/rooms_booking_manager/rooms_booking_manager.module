@@ -149,11 +149,11 @@ function rooms_booking_manager_enquiry_page_form_submit(&$form, &$form_state) {
 /**
  * Constructs the booking results page following an availability search
  *
- * @param $start_date
- * The start date for the search
+ * @param object $start_date
+ * DateTime object for the start date for the search
  *
- * @param $end_date
- * The end date for the search
+ * @param object $end_date
+ * DateTime object for the end date for the search
  *
  * @param $booking_units
  * In how many units are we to accommodate them
@@ -176,8 +176,7 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $boo
     $content['booking_results'] = 1;
 
     // Get all the units - note: we instantiate the Availability Agent using the date format set by the user
-    $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
-    $agent = new AvailabilityAgent($start_date->format($date_format), $end_date->format($date_format), $booking_parameters, $booking_units);
+    $agent = new AvailabilityAgent($start_date, $end_date, $booking_parameters, $booking_units);
     $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS)));
 
     $units_per_type = $agent->checkAvailability();
@@ -505,7 +504,7 @@ function book_unit_form_submit(&$form, &$form_state) {
 
   // Let us get the available rooms again and match the order against actual rooms
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
-  $agent = new AvailabilityAgent($sd->format($date_format), $ed->format($date_format), $group_size);
+  $agent = new AvailabilityAgent($sd, $ed, $group_size);
   $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
 
   // Let us make sure our bookable unit is still available
@@ -995,7 +994,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
   // Let us get the available rooms again and match the order against actual rooms
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
 
-  $agent = new AvailabilityAgent($sd->format($date_format), $ed->format($date_format), $booking_parameters, $b_units, array());
+  $agent = new AvailabilityAgent($sd, $ed, $booking_parameters, $b_units, array());
   $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
 
   $units_per_type = $agent->checkAvailability();
