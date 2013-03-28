@@ -720,22 +720,18 @@ function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date =
  * Form API validate callback for the room form
  */
 function rooms_booking_edit_form_validate(&$form, &$form_state) {
-
   $booking = $form_state['rooms_booking'];
+  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
 
-  if ($form_state['values']['rooms_start_date']['date'] != '' && $form_state['values']['rooms_end_date']['date'] != '') {
-    $date1 = new DateTime($form_state['values']['rooms_start_date']);
-    $date2 = new DateTime($form_state['values']['rooms_end_date']);
-    $diff = $date1->diff($date2);
-    // If date1 > date2
-    if ($diff->invert) {
+  if ($start_date && $end_date) {
+    // Ensure start date is minor than end date.
+    if ($end_date <= $start_date) {
       form_set_error('date_range', t('End date must be after start date'));
     }
 
     // convert input format to the same used in the stored dates.
-    $input_start_date = $date1->format('Y-m-d');
-    $input_end_date = $date2->format('Y-m-d');
-
+    $input_start_date = $start_date->format('Y-m-d');
+    $input_end_date = $end_date->format('Y-m-d');
     // if the stored dates differ from input dates check that price was re-assigned.
     if (isset($booking->start_date) && isset($booking->end_date)) {
       if ($input_start_date != $booking->start_date || $input_end_date != $booking->end_date) {
@@ -759,18 +755,16 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
 
     if ($new_unit_id == $booking->unit_id) {
       // We are going to be updating the event - so the first step is to remove the old event.
-      if (($booking->unit_id != 0) && ($form_state['values']['rooms_start_date'] != '') && ($form_state['values']['rooms_end_date'] != '')) {
+      if (($booking->unit_id != 0) && $start_date && $end_date) {
         // Create a calendar
         $uc = new UnitCalendar($booking->unit_id);
 
         // Create an event representing the event to remove
-        $be = new BookingEvent($booking->unit_id,
-            rooms_availability_assign_id($booking->booking_id, $booking->booking_status),
-            new DateTime($form_state['values']['rooms_start_date']),
-            new DateTime($form_state['values']['rooms_end_date']));
+        $event_id = rooms_availability_assign_id($booking->booking_id, $booking->booking_status);
+        $be = new BookingEvent($booking->unit_id, $event_id, $start_date, $end_date);
 
         // Check if a locked event is blocking the update
-        $states_confirmed = $uc->getStates(new DateTime($form_state['values']['rooms_start_date']), new DateTime($form_state['values']['rooms_end_date']));
+        $states_confirmed = $uc->getStates($start_date, $end_date);
 
         $state_diff_confirmed = array_diff($states_confirmed, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS, $be->id));
 
@@ -785,7 +779,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
         }
 
         // Check if this booking overlap with an uncofirmed booking
-        $states_unconfirmed = $uc->getStates(new DateTime($form_state['values']['rooms_start_date']), new DateTime($form_state['values']['rooms_end_date']), TRUE);
+        $states_unconfirmed = $uc->getStates($start_date, $end_date, TRUE);
 
         $state_diff_unconfirmed = array_diff($states_unconfirmed, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, $be->id));
 
@@ -799,7 +793,6 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
 
   //Notify field widgets to validate their data.
   field_attach_form_validate('rooms_booking', $booking, $form, $form_state);
-
 }
 
 
