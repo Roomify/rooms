@@ -684,10 +684,10 @@ function rooms_booking_edit_form_unit_type_callback(&$form, $form_state) {
  *
  * @param string $select
  *   The unit type.
- * @param object $start_date
- *   DateTime object for the start date.
- * @param object $end_date
- *   DateTime object for the start date.
+ * @param DateTime $start_date
+ *   start date.
+ * @param DateTime $end_date
+ *   end date.
  */
 function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date = 0, $group_size, $group_size_children, $current_booking) {
   // Set the unit types,
@@ -874,13 +874,9 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
     if (($booking->unit_id != 0) && ($booking->start_date != '') && ($booking->end_date != '')) {
       // Create a calendar
       $uc = new UnitCalendar($booking->unit_id);
-
+      $event_id = rooms_availability_assign_id($booking->booking_id, $booking->booking_status);
       // Create an event representing the event to remove
-      $be = new BookingEvent($booking->unit_id,
-                             rooms_availability_assign_id($booking->booking_id, $booking->booking_status),
-                             new DateTime($booking->start_date),
-                             new DateTime($booking->end_date));
-
+      $be = new BookingEvent($booking->unit_id, $event_id, $booking->start_date_object, $booking->end_date_object);
       $uc->removeEvents(array($be));
     }
 
@@ -926,16 +922,16 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
   // We have a unit defined so lets block availability there
   if ($unit != 0) {
     // Set the event_id
-    $id = rooms_availability_assign_id($booking->booking_id, $booking->booking_status);
+    $event_id = rooms_availability_assign_id($booking->booking_id, $booking->booking_status);
     $corrected_end_date = $end_date->sub(new DateInterval('P1D'));
     // Create an event
-    $be = new BookingEvent($unit, $id, $start_date, $corrected_end_date);
+    $be = new BookingEvent($unit, $event_id, $start_date, $corrected_end_date);
 
     // Create UnitCalendar
     $rc = new UnitCalendar($unit);
     $responses = $rc->updateCalendar(array($be));
 
-    if ($responses[$id] == ROOMS_UPDATED) {
+    if ($responses[$event_id] == ROOMS_UPDATED) {
       drupal_set_message(t('Room Availability Updated'));
       $be->lock();
     }
@@ -959,10 +955,10 @@ function rooms_booking_form_submit_delete(&$form, &$form_state) {
 /**
  * Create a Commerce Order for a booking.
  *
- * @param object $start_date
- *   DateTime object for the start date.
- * @param object $end_date
- *   DateTime object for the start date.
+ * @param DateTime $start_date
+ *   start date.
+ * @param DateTime $end_date
+ *   end date.
  * @param array $booking_parameters
  *   Specify the people we are looking to accommodate.
  */
@@ -1039,11 +1035,9 @@ function rooms_booking_delete_form_submit($form, &$form_state) {
   //Check if the booking had a unit associated with it and if so update the availability calendar
   if (isset($booking->unit_id) && isset($booking->start_date) && isset($booking->end_date)) {
       $uc = new UnitCalendar($booking->unit_id);
+      $event_id = rooms_availability_assign_id($booking->booking_id);
       // Create an event representing the event to remove
-      $be = new BookingEvent($booking->unit_id,
-                             rooms_availability_assign_id($booking->booking_id),
-                             new DateTime($booking->start_date),
-                             new DateTime($booking->end_date));
+      $be = new BookingEvent($booking->unit_id, $event_id, $booking->start_date_object, $booking->end_date_object);
       $uc->removeEvents(array($be));
   }
 
