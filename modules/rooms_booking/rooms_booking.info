@@ -1,10 +1,9 @@
 name = Rooms Booking
 description = Create bookings
 core = 7.x
+version = 1.x-dev
 
 package = Rooms
-
-version = 1.x-dev
 
 dependencies[] = rooms_unit
 dependencies[] = rooms_availability
@@ -14,8 +13,7 @@ dependencies[] = commerce
 dependencies[] = commerce_ui
 dependencies[] = commerce_customer
 dependencies[] = commerce_customer_ui
-
-
+dependencies[] = commerce_cart
 
 files[] = rooms_booking.admin.inc
 files[] = rooms_booking_type.admin.inc
