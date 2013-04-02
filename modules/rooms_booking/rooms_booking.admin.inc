@@ -631,10 +631,8 @@ function rooms_booking_date_ajax_callback($form, &$form_state) {
  * Validate function for the assign unit functionality
  */
 function rooms_booking_edit_form_availability_validate(&$form, &$form_state) {
-  $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
-  $start_date = DateTime::createFromFormat($date_format, $form_state['input']['rooms_start_date']['date']);
-  $end_date = DateTime::createFromFormat($date_format, $form_state['input']['rooms_end_date']['date']);
-
+  $start_date = rooms_form_input_date_object($form_state, 'rooms_start_date');
+  $end_date = rooms_form_input_date_object($form_state, 'rooms_end_date');
   if ($end_date <= $start_date) {
     form_set_error('rooms_start_date', t('End date must have after start date'));
   }
