@@ -18,7 +18,7 @@
 
 #rooms-booking-availability-search-form--2 #rooms-wrapper,
 #rooms-booking-availability-search-form #rooms-wrapper {
-	float: left;
+  float: left;
 }
 
 #rooms-booking-availability-search-form--2 #edit-actions,
@@ -32,5 +32,5 @@
 #rooms-booking-availability-search-form--2 .form-item-children,
 #book-units-per-type-form .form-item-adults,
 #book-units-per-type-form .form-item-children {
-	padding-left: 25px;
+  padding-left: 25px;
 }
