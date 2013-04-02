@@ -272,7 +272,18 @@ function rooms_form_values_get_start_end_dates($form_state) {
   // As values dates has a format of year-month-day that is one of the default
   // expected formats there is no need to explicit define format.
   // http://www.php.net/manual/en/datetime.formats.date.php
-  $start = new DateTime($form_state['values']['rooms_start_date']);
-  $end = new DateTime($form_state['values']['rooms_end_date']);
+  $start_date = $form_state['values']['rooms_start_date'];
+  $end_date = $form_state['values']['rooms_end_date'];
+
+  // if the input format is numeric we assume that is a unixtime seconds format.
+  if (is_numeric($start_date) && is_numeric($end_date)) {
+    // the @ indicate DateTime that the format is unixtime
+    $start_date = '@' . $start_date;
+    $end_date = '@' . $end_date;
+  }
+
+  $start = new DateTime($start_date);
+  $end = new DateTime($end_date);
+
   return array($start, $end);
 }
