@@ -287,3 +287,50 @@ function rooms_form_values_get_start_end_dates($form_state) {
 
   return array($start, $end);
 }
+
+/**
+ * Validation callback that could be reused in all the forms that need to validate
+ * dates. End date must be greater thatn start date.
+ */
+function rooms_form_start_end_dates_validate($form, &$form_state) {
+  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
+  // Check date validity
+  if (empty($start_date) || empty($end_date)) {
+    return;
+  }
+
+  if ($errors = rooms_check_dates_validity($start_date, $end_date)) {
+    foreach ($errors as $error) {
+      form_set_error('date_range', $error);
+    }
+  }
+}
+
+/**
+ * Checks the logical validity of date values.
+ * @param DateTime $start_date
+ *   The start date
+ * @param DateTime $end_date
+ *   The end date
+ * @param bool $today_greater
+ *   TRUE in case to enable the validation that start_date must be greater than today.
+ *
+ * @return
+ *   An array with error messages.
+ */
+function rooms_check_dates_validity(DateTime $start_date, DateTime $end_date, $today_greater = FALSE) {
+  $errors = array();
+  // end date must be greater than start date.
+  if ($end_date <= $start_date) {
+    $errors[] = t('End date must be after start date');
+  }
+  // in case the date should be grater than today
+  if ($today_greater) {
+    $now = new DateTime();
+    $diff1 = $now->setTime(0, 0, 0)->diff($start_date);
+    if ($diff1->invert) {
+      $errors[] = t('The start date must be greater than today.');
+    }
+  }
+  return $errors;
+}

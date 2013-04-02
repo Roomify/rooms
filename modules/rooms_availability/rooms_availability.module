@@ -401,7 +401,11 @@ function rooms_availability_filter_month_form_submit(&$form, &$form_state) {
   drupal_goto($address);
 }
 
-
+/**
+ * Form to manage the room units pricing.
+ *
+ * @see rooms_availability_bulk_pricing_management()
+ */
 function rooms_availability_pricing_update_form($form, &$form_state, $month, $year, $type, $rooms_units) {
     $form['rooms_pricing_update'] = array(
     '#type' => 'fieldset',
@@ -483,6 +487,7 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
   );
 
   $form['#validate'][] = 'rooms_availability_pricing_update_form_validate';
+  $form['#validate'][] = 'rooms_form_start_end_dates_validate';
 
   $form['rooms_data'] = array(
     '#prefix' => '<table>',
@@ -533,11 +538,6 @@ function rooms_availability_pricing_update_form_validate(&$form, &$form_state) {
   // Make sure amount entered is numeric
   if (!empty($form_state['values']['amount']) && !is_numeric($form_state['values']['amount'])) {
     form_set_error('amount', t('%name: you must enter a numeric value for the price.', array('%name' => 'Amount')));
-  }
-
-  // Start date must be minor than end date.
-  if ($end_date <= $start_date) {
-    form_set_error('date_range', t('End date must be after start date'));
   }
 
   $curr_month = $form_state['values']['curr_month'];
@@ -691,6 +691,7 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
   );
 
   $form['#validate'][] = 'rooms_availability_update_status_form_validate';
+  $form['#validate'][] = 'rooms_form_start_end_dates_validate';
 
   $form['rooms_data'] = array(
     '#prefix' => '<table>',
@@ -727,7 +728,9 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
   return $form;
 }
 
-
+/**
+ * Validate callback for rooms_availability_update_status_form form.
+ */
 function rooms_availability_update_status_form_validate(&$form, &$form_state) {
   list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
   // Check date validity
@@ -737,10 +740,6 @@ function rooms_availability_update_status_form_validate(&$form, &$form_state) {
 
   if ($form_state['values']['change_event_status2'] == -1) {
     form_set_error('change_event_status', t('Select a valid status'));
-  }
-
-  if ($end_date <= $start_date) {
-    form_set_error('date_range', t('End date must be after start date'));
   }
 
   $curr_month = $form_state['values']['curr_month'];
@@ -1006,26 +1005,10 @@ function update_availability_calendar_form($form, &$form_state, $unit_id, $year,
 
   // We append the validate handler to #validate in case a form callback_wrapper
   // is used to add validate handlers earlier.
-  $form['#validate'][] = 'update_availability_calendar_form_validate';
-
+  $form['#validate'][] = 'rooms_form_start_end_dates_validate';
 
   return $form;
 }
-
-/**
- * Validate callback for update_availability_calendar_form form.
- */
-function update_availability_calendar_form_validate(&$form, &$form_state) {
-  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
-  // Check date validity
-  if (empty($start_date) || empty($end_date)) {
-    return;
-  }
-  if ($end_date <= $start_date) {
-    form_set_error('date_range', t('End date must be after start date'));
-  }
-}
-
 
 /**
  *@todo Need to figure out what to do when we cancel an existing booking

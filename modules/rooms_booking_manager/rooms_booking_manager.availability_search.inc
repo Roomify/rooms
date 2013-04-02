@@ -190,6 +190,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
 
   // We append the validate handler to #validate in case a form callback_wrapper
   // is used to add validate handlers earlier.
+  $form['#validate'][] = 'rooms_form_start_end_dates_validate';
   $form['#validate'][] = 'rooms_booking_availability_search_form_validate';
 
   return $form;
@@ -238,12 +239,6 @@ function rooms_booking_availability_search_form_validate(&$form, &$form_state) {
 
   // Ensure end date is after start date
   $diff2 = $date1->diff($date2);
-
-  // If date1 > date2
-  if ($diff2->invert) {
-    form_set_error('rooms_date_range', t('End date must be after start date'));
-  }
-
   // Ensure end date and start date are not equal
   if ($diff2->days == 0) {
     form_set_error('rooms_date_range', t('Start and end date cannot be on the same day'));

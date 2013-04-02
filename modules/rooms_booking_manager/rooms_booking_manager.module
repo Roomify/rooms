@@ -149,21 +149,17 @@ function rooms_booking_manager_enquiry_page_form_submit(&$form, &$form_state) {
 /**
  * Constructs the booking results page following an availability search
  *
- * @param object $start_date
- * DateTime object for the start date for the search
- *
- * @param object $end_date
- * DateTime object for the end date for the search
+ * @param DateTime $start_date
+ *   Start date for the search
+ * @param DateTime $end_date
+ *   End date for the search
  *
  * @param $booking_units
- * In how many units are we to accommodate them
+ *   In how many units are we to accommodate them
  */
-function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $booking_units = 1) {
-
-  // Check validity of date range - this is repeating what we do in rooms_booking_manager_availability_search_form_validate
-  // but if we want to cater for both direct links and query coming through form need to accommodate both.
-  $valid_dates = rooms_booking_manager_check_dates($start_date, $end_date);
-
+function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_date, $booking_units = 1) {
+  // validate the dates
+  $errors = rooms_check_dates_validity($start_date, $end_date, TRUE);
   // Check validity of the rest of the booking paramenters that are stored in _GET. Again this is to ensure that
   // any direct links were structured appropriately.
   $booking_parameters = rooms_booking_manager_retrieve_booking_parameters($booking_units, $_GET);
@@ -171,7 +167,7 @@ function rooms_booking_manager_results_page($start_date = 0, $end_date = 0, $boo
   // The array of content to render
   $content = array();
 
-  if ($valid_dates && is_array($booking_parameters)) {
+  if (empty($errors) && is_array($booking_parameters)) {
 
     $content['booking_results'] = 1;
 
@@ -261,42 +257,6 @@ function rooms_booking_manager_change_search_form($form, &$form_state, $start_da
 
   return $form;
 }
-
-
-/**
- * Checks the logical validity of date values coming through URL
- * @param $start_date
- * The start date for the search
- *
- * @param $end_date
- * The end date for the search
- */
-function rooms_booking_manager_check_dates($start_date, $end_date) {
-  $datesok = TRUE;
-
-  if ((gettype($start_date) == 'integer') || (gettype($end_date) == 'integer')) {
-    return FALSE;
-  } else {
-
-    $now = new DateTime();
-
-    // Ensure start date is after today
-    $diff1 = $now->setTime(0, 0, 0)->diff($start_date);
-    if ($diff1->invert) {
-      $datesok = FALSE;
-    }
-
-    // Ensure end date is after start date
-    $diff2 = $start_date->diff($end_date);
-    // If date1 > date2
-    if ($diff2->invert) {
-      $datesok = FALSE;
-    }
-  }
-
-  return $datesok;
-}
-
 
 /**
  * Checks that the booking parameters given are valid. This is mainly used to

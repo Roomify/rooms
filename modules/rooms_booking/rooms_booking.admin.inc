@@ -291,7 +291,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#type' => 'submit',
     '#value' => isset($booking->unit_id) ? t('Re-assign Unit') : t('Assign Room'),
     '#submit' => array('rooms_booking_edit_form_availability_submit'),
-    '#validate' => array('rooms_booking_edit_form_availability_validate'),
+    '#validate' => array('rooms_form_start_end_dates_validate'),
     '#ajax' => array(
       'callback' => 'rooms_booking_edit_form_availability_callback',
       'wrapper' => 'availability-wrapper',
@@ -611,6 +611,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
   // We append the validate handler to #validate in case a form callback_wrapper
   // is used to add validate handlers earlier.
+  $form['#validate'][] = 'rooms_form_start_end_dates_validate';
   $form['#validate'][] = 'rooms_booking_edit_form_validate';
   return $form;
 }
@@ -624,18 +625,6 @@ function rooms_booking_date_ajax_callback($form, &$form_state) {
   print ajax_render($commands);
   exit();
 }
-
-/**
- * Validate function for the assign unit functionality
- */
-function rooms_booking_edit_form_availability_validate(&$form, &$form_state) {
-  $start_date = rooms_form_input_date_object($form_state, 'rooms_start_date');
-  $end_date = rooms_form_input_date_object($form_state, 'rooms_end_date');
-  if ($end_date <= $start_date) {
-    form_set_error('rooms_start_date', t('End date must have after start date'));
-  }
-}
-
 
 /**
  * When the user presses the assign unit button we rebuild the form and
@@ -724,11 +713,6 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
   list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
 
   if ($start_date && $end_date) {
-    // Ensure start date is minor than end date.
-    if ($end_date <= $start_date) {
-      form_set_error('date_range', t('End date must be after start date'));
-    }
-
     // convert input format to the same used in the stored dates.
     $input_start_date = $start_date->format('Y-m-d');
     $input_end_date = $end_date->format('Y-m-d');
