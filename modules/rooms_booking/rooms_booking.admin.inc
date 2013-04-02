@@ -378,7 +378,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     elseif (isset($booking->unit_type)) {
       $selected = $booking->unit_type;
     }
-    elseif (isset($unitid)) {
+    elseif ($unitid != '') {
       $unit = rooms_unit_load($unitid);
       $selected = $unit->type;
 
@@ -479,7 +479,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
           );
 
           // If a unit is selected
-          if (isset($form_state['values']['unit_id']) || isset($booking->unit_id) || isset($unitid)) {
+          if (isset($form_state['values']['unit_id']) || isset($booking->unit_id) || $unitid != '') {
             if ($unitid != '') {
               $unit_id = $unitid;
             }
