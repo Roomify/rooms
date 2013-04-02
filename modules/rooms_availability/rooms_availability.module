@@ -528,23 +528,9 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
  * Validate callback for rooms_availability_pricing_update_form form.
  */
 function rooms_availability_pricing_update_form_validate(&$form, &$form_state) {
-  // get start/end date date objects
-  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
-  // Check date validity
-  if (empty($start_date) || empty($end_date)) {
-    return;
-  }
-
   // Make sure amount entered is numeric
   if (!empty($form_state['values']['amount']) && !is_numeric($form_state['values']['amount'])) {
     form_set_error('amount', t('%name: you must enter a numeric value for the price.', array('%name' => 'Amount')));
-  }
-
-  $curr_month = $form_state['values']['curr_month'];
-  $curr_year = $form_state['values']['curr_year'];
-  if ($start_date->format('n') != $curr_month || $end_date->format('n') != $curr_month
-      || $start_date->format('Y') != $curr_year || $end_date->format('Y') != $curr_year) {
-    form_set_error('date_range', t('End date and start date are out of current month'));
   }
 
   $select_rooms = FALSE;
@@ -690,8 +676,8 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
     '#value' => t('Update Room Availability'),
   );
 
-  $form['#validate'][] = 'rooms_availability_update_status_form_validate';
   $form['#validate'][] = 'rooms_form_start_end_dates_validate';
+  $form['#validate'][] = 'rooms_availability_update_status_form_validate';
 
   $form['rooms_data'] = array(
     '#prefix' => '<table>',
@@ -732,21 +718,8 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
  * Validate callback for rooms_availability_update_status_form form.
  */
 function rooms_availability_update_status_form_validate(&$form, &$form_state) {
-  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
-  // Check date validity
-  if (empty($start_date) || empty($end_date)) {
-    return;
-  }
-
   if ($form_state['values']['change_event_status2'] == -1) {
     form_set_error('change_event_status', t('Select a valid status'));
-  }
-
-  $curr_month = $form_state['values']['curr_month'];
-  $curr_year = $form_state['values']['curr_year'];
-  if ($start_date->format('n') != $curr_month || $end_date->format('n') != $curr_month
-      || $start_date->format('Y') != $curr_year || $end_date->format('Y') != $curr_year) {
-    form_set_error('date_range', t('End date and start date are out of current month'));
   }
 
   $select_rooms = FALSE;

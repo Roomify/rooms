@@ -293,16 +293,33 @@ function rooms_form_values_get_start_end_dates($form_state) {
  * dates. End date must be greater thatn start date.
  */
 function rooms_form_start_end_dates_validate($form, &$form_state) {
+  $errors = array();
   list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
-  // Check date validity
+  // skip if no dates are provided
   if (empty($start_date) || empty($end_date)) {
     return;
   }
 
-  if ($errors = rooms_check_dates_validity($start_date, $end_date)) {
-    foreach ($errors as $error) {
-      form_set_error('date_range', $error);
-    }
+  // Check date validity
+  $errors = rooms_check_dates_validity($start_date, $end_date);
+
+  // For some forms as rooms_availability_pricing_update_form and
+  // rooms_availability_update_status_form we need to validate that the seleced
+  // date match with current values.
+  if (isset($form_state['values']['curr_month']) && isset($form_state['values']['curr_year'])) {
+    $curr_month = $form_state['values']['curr_month'];
+    $curr_year = $form_state['values']['curr_year'];
+    if ($start_date->format('n') != $curr_month || $end_date->format('n') != $curr_month
+      || $start_date->format('Y') != $curr_year || $end_date->format('Y') != $curr_year) {
+        $errors[] = t('End date and start date are out of current month');
+      }
+  }
+
+  // When there are multiples errors for the same form element Drupal only
+  // display the first. Here we concatenate to display all at once.
+  if ($errors) {
+    $error_msg = implode(' ', $errors);
+    form_set_error('date_range', $error_msg);
   }
 }
 
@@ -322,7 +339,7 @@ function rooms_check_dates_validity(DateTime $start_date, DateTime $end_date, $t
   $errors = array();
   // end date must be greater than start date.
   if ($end_date <= $start_date) {
-    $errors[] = t('End date must be after start date');
+    $errors[] = t('End date must be after start date.');
   }
   // in case the date should be grater than today
   if ($today_greater) {
