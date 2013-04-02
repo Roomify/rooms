@@ -94,15 +94,16 @@ Drupal.behaviors.rooms_availability = {
             //We are probably dealing with a single day event
             calEvent.end = calEvent.start;
           }
-          date = $.fullCalendar.parseDate(calEvent.start)
-          var sd = Math.round(Date.parse(calEvent.start)/1000);
-          var ed = Math.round(Date.parse(calEvent.end)/1000);
+          var localOffset = (-1) * calEvent.start.getTimezoneOffset() * 60000;
+          var sd = Math.round((calEvent.start.getTime()+localOffset)/1000);
+          var ed = Math.round((calEvent.end.getTime()+localOffset)/1000);
           // Open the modal for edit
           Drupal.RoomsAvailability.Modal(view, unit_id, calEvent.id, sd, ed);
         },
         select: function(start, end, allDay) {
-          var sd = Math.round(Date.parse(start)/1000);
-          var ed = Math.round(Date.parse(end)/1000);
+          var localOffset = (-1) * start.getTimezoneOffset() * 60000;
+          var sd = Math.round((start.getTime()+localOffset)/1000);
+          var ed = Math.round((end.getTime()+localOffset)/1000);
           // Open the modal for edit
           Drupal.RoomsAvailability.Modal(this, unit_id, -2, sd, ed);
           $(value[0]).fullCalendar('unselect');

@@ -535,6 +535,26 @@ function rooms_booking_get_client_profiles($string = '') {
   drupal_json_output($matches);
 }
 
+/**
+ * Find a customer_id in the commerce customer tables looking by customer name.
+ *
+ * @params string $customer_name
+ *   The customer name to lookup.
+ *
+ * @return
+ *   ID of the customer or FALSE if not found.
+ */
+function rooms_booking_find_customer_by_name($customer_name) {
+  if (module_exists('commerce_customer')) {
+    return db_select('field_data_commerce_customer_address')
+      ->fields('field_data_commerce_customer_address', array('entity_id'))
+      ->condition('commerce_customer_address_name_line', $customer_name, '=')
+      ->condition('entity_type', 'commerce_customer_profile')
+      ->condition('bundle', 'billing')
+      ->execute()->fetchField();
+  }
+  return FALSE;
+}
 
 function rooms_booking_get_room_types($string = '') {
   $matches = array();

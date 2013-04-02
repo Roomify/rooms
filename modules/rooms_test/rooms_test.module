@@ -36,7 +36,7 @@ function rooms_test_menu() {
 
 
 function rooms_test_availabilitysizefilter() {
-	$av_sizefilter = new AvailabilityAgentSizeFilter(array(), array());
+  $av_sizefilter = new AvailabilityAgentSizeFilter(array(), array());
   $units = $av_sizefilter->applyFilter();
 
   $output = 'All size: ' . serialize($units) . '<br><br>';
@@ -61,7 +61,7 @@ function rooms_test_availabilitysizefilter() {
 
 
 function rooms_test_availabilitydatefilter() {
-	$av_datefilter = new AvailabilityAgentDateFilter(array(), array('start_date' => new DateTime('20-02-2013'), 'end_date' => new DateTime('27-02-2013')));
+  $av_datefilter = new AvailabilityAgentDateFilter(array(), array('start_date' => new DateTime('20-02-2013'), 'end_date' => new DateTime('27-02-2013')));
   $units = $av_datefilter->applyFilter();
 
   return serialize($units);
