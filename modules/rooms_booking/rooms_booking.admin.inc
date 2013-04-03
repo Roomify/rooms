@@ -927,7 +927,7 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
     if (variable_get('rooms_manually_booking_create_order', '1') == '1') {
       $booking_parameters = array('adults' => $form_state['values']['data']['group_size'], 'children' => $form_state['values']['data']['group_size_children']);
 
-      $order = rooms_booking_create_order(start_date_load($start_date), end_date_load($end_date),$booking_parameters, $unit_object, $booking);
+      $order = rooms_booking_create_order($start_date, $end_date, $booking_parameters, $unit_object, $booking);
 
       $booking->order_id = $order->order_number;
 
