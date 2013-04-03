@@ -1554,8 +1554,15 @@ function rooms_booking_manager_price_apply($line_item, $name) {
       );
     }
 
+    $booking_info = array(
+      'start_date' => $start_date,
+      'end_date' => $end_date,
+      'unit' => $unit,
+      'booking_parameters' => array()
+    );
+
     // Give other modules a chance to change the price modifiers
-    drupal_alter('rooms_price_modifier', $price_modifiers);
+    drupal_alter('rooms_price_modifier', $price_modifiers, $booking_info);
 
     $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
     $price = $price_calendar->calculatePrice($start_date, $end_date);
