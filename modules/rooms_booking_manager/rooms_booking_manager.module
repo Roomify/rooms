@@ -218,6 +218,7 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
   }
 
 
+  $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
   $content['legend'] = rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, array());
 
   $change_search_form = drupal_get_form('rooms_booking_manager_change_search_form', $start_date, $end_date, $booking_parameters, $booking_units);

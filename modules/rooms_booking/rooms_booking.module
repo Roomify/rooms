@@ -584,8 +584,8 @@ class RoomsBooking extends Entity {
 
   public function __construct($values = array()) {
     parent::__construct($values, 'rooms_booking');
-    $this->start_date_object = new DateTime($this->start_date);
-    $this->end_date_object = new DateTime($this->end_date);
+    if (isset($this->start_date)) $this->start_date_object = new DateTime($this->start_date);
+    if (isset($this->end_date)) $this->end_date_object = new DateTime($this->end_date);
   }
 
   protected function defaultLabel() {
@@ -595,7 +595,6 @@ class RoomsBooking extends Entity {
   protected function defaultUri() {
     return array('path' => 'booking/' . $this->booking_id);
   }
-
 
 }
 
@@ -620,11 +619,9 @@ class RoomsBookingType extends Entity {
  */
 class RoomsBookingController extends EntityAPIController {
 
-
   public function __construct($entityType) {
     parent::__construct($entityType);
   }
-
 
   /**
    * Create a booking - we first set up the values that are specific
@@ -660,10 +657,6 @@ class RoomsBookingController extends EntityAPIController {
    */
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
     $content = parent::buildContent($entity, $view_mode, $langcode, $content);
-
-//    $content['rooms_booking_extra_data'] =  array(
-//      '#markup' => theme('rooms_booking_extra_data', array('rooms_booking_extra_data' => check_plain($entity->data['extra_data']), 'rooms_booking' => $entity)),
-//    );
 
     return $content;
   }
