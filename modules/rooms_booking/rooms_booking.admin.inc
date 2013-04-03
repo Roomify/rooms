@@ -532,9 +532,24 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
               '#required' => TRUE,
             );
 
+            $start_date = new DateTime($form_state['values']['rooms_start_date']);
+            $end_date = new DateTime($form_state['values']['rooms_end_date']);
+
+            list($start_date, $end_date) = rooms_form_values_get_start_end_dates($form_state);
+
+            $booking_info = array(
+              'start_date' => $start_date,
+              'end_date' => $end_date,
+              'unit' => $unit,
+              'booking_parameters' => array()
+            );
+
+            // Give other modules a chance to change the price modifiers
+            drupal_alter('rooms_price_modifier', $price_modifiers, $booking_info);
+
             // Apply price modifiers and replace unit price
             $price_calendar = new UnitPricingCalendar($unit_id, $price_modifiers);
-            list($start_date, $end_date) = rooms_form_values_get_start_end_dates($form_state);
+
             $end_date->sub(new DateInterval('P1D'));
             $new_price = $price_calendar->calculatePrice($start_date, $end_date);
             $new_price = $new_price['full_price'];
