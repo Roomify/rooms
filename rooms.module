@@ -295,13 +295,20 @@ function rooms_form_values_get_start_end_dates($form_state) {
 function rooms_form_start_end_dates_validate($form, &$form_state) {
   $errors = array();
   list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
+  $today_greater = FALSE;
   // skip if no dates are provided
   if (empty($start_date) || empty($end_date)) {
+    form_set_error('date_range', t('Please choose dates.'));
     return;
   }
 
+  // in case that this value is set trigger the today greater validation
+  if (isset($form_state['today_greater_validation'])) {
+    $today_greater = TRUE;
+  }
+
   // Check date validity
-  $errors = rooms_check_dates_validity($start_date, $end_date);
+  $errors = rooms_check_dates_validity($start_date, $end_date, $today_greater);
 
   // For some forms as rooms_availability_pricing_update_form and
   // rooms_availability_update_status_form we need to validate that the seleced
@@ -346,7 +353,7 @@ function rooms_check_dates_validity(DateTime $start_date, DateTime $end_date, $t
     $now = new DateTime();
     $diff1 = $now->setTime(0, 0, 0)->diff($start_date);
     if ($diff1->invert) {
-      $errors[] = t('The start date must be greater than today.');
+      $errors[] = t('Start date must be current or in the future.');
     }
   }
   return $errors;

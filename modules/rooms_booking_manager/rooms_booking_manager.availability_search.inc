@@ -190,8 +190,8 @@ function rooms_booking_availability_search_form($form, $form_state) {
 
   // We append the validate handler to #validate in case a form callback_wrapper
   // is used to add validate handlers earlier.
-  $form['#validate'][] = 'rooms_form_start_end_dates_validate';
   $form['#validate'][] = 'rooms_booking_availability_search_form_validate';
+  $form['#validate'][] = 'rooms_form_start_end_dates_validate';
 
   return $form;
 
@@ -202,49 +202,26 @@ function rooms_booking_availability_search_form_callback(&$form, $form_state) {
   return $form['rooms_fieldset'];
 }
 
-
+/**
+ * Validate callback form rooms_booking_availability_search_form form.
+ */
 function rooms_booking_availability_search_form_validate(&$form, &$form_state) {
-
-  $date1 = $form_state['values']['rooms_start_date'];
-  $date2 = $form_state['values']['rooms_end_date'];
-
-  // First check that the dates are set as we would expect them
-  if ($date1 == '' || $date2 == '') {
-    form_set_error('rooms_date_range', t('Please choose dates.'));
-    return TRUE;
+  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
+  if (empty($start_date)) {
+    return;
   }
-
-  // Dates should be coming through with some value so lets try and load them
-  $date1 = start_date_load($form_state['values']['rooms_start_date']);
-  $date2 = end_date_load($form_state['values']['rooms_end_date']);
-  if (!is_object($date1) || !is_object($date2)){
-    form_set_error('rooms_date_range', t('Please choose dates.'));
-    return TRUE;
-  }
-
+  // this indicate to the rooms_form_start_end_dates_validate handler to
+  // enable today greater validation.
+  $form_state['today_greater_validation'] = TRUE;
   // Ensure start date is appropriate based on the rooms_booking_start_date variable
   $now = new DateTime();
-  $diff1 = $now->setTime(0, 0, 0)->diff($date1);
+  $diff1 = $now->setTime(0, 0, 0)->diff($start_date);
   $rooms_booking_start_date = variable_get('rooms_booking_start_date', 1);
-
   // Check the difference in number of days
   if ($diff1->days < $rooms_booking_start_date) {
     form_set_error('rooms_date_range', t('Bookings need to be at least ' . $rooms_booking_start_date . ' day(s) in the future'));
   }
-
-  // Make sure that
-  if ($diff1->invert) {
-    form_set_error('rooms_date_range', t('Start date must be current or in the future'));
-  }
-
-  // Ensure end date is after start date
-  $diff2 = $date1->diff($date2);
-  // Ensure end date and start date are not equal
-  if ($diff2->days == 0) {
-    form_set_error('rooms_date_range', t('Start and end date cannot be on the same day'));
-  }
 }
-
 
 function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
 
