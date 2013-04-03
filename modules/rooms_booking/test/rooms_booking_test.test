@@ -125,10 +125,10 @@ class RoomsBookingTestSingleOccupancy extends DrupalWebTestCase {
           'base_price' => '100',
           'bookable' => 1,
           'default_state' => 1,
-          /*'field_options[und][0][name]' => 'Single discount',
+          'field_options[und][0][name]' => 'Single discount',
           'field_options[und][0][quantity]' => '1',
           'field_options[und][0][operation]' => '4',
-          'field_options[und][0][value]' => '10',*/
+          'field_options[und][0][value]' => '10',
         ),
       t('Save Unit'));
 
@@ -157,6 +157,29 @@ class RoomsBookingTestSingleOccupancy extends DrupalWebTestCase {
 
     $this->assertText('Room 100 - Cost: 700 $');
 
+    $this->drupalPostAJAX(NULL,
+      array(
+        'client' => 'user1',
+        'rooms_start_date[date]' => '01/08/2012',
+        'rooms_end_date[date]' => '08/08/2012',
+        'data[group_size]' => 1,
+        'unit_type' => 'single_rooms',
+        'unit_id' => 1,
+      ),
+      'unit_id');
+
+    $this->drupalPostAJAX(NULL,
+      array(
+        'client' => 'user1',
+        'rooms_start_date[date]' => '01/08/2012',
+        'rooms_end_date[date]' => '08/08/2012',
+        'data[group_size]' => 1,
+        'unit_type' => 'single_rooms',
+        'unit_id' => 1,
+        'single_discount' => 1,
+      ),
+      'single_discount');
+
     $this->drupalPost(NULL,
         array(
           'client' => 'user1',
@@ -165,6 +188,7 @@ class RoomsBookingTestSingleOccupancy extends DrupalWebTestCase {
           'data[group_size]' => 1,
           'unit_type' => 'single_rooms',
           'unit_id' => 1,
+          'single_discount' => 1,
         ),
       t('Save Booking'));
 
@@ -175,6 +199,11 @@ class RoomsBookingTestSingleOccupancy extends DrupalWebTestCase {
     $this->assertText('Room 100');
     $this->assertText('Standard Booking');
     $this->assertText('Delete');
+
+    $this->drupalGet('admin/rooms/bookings/booking/1/edits');
+
+    $this->assertText('Currently assigned unit: Room 100 / Single Rooms (Options: Single discount)');
+    $this->assertText('Price: 630.00 $');
   }
 }
 

@@ -1,0 +1,74 @@
+<?php
+
+/**
+ * @file
+ */
+
+
+class RoomsBookingManagerTestMain extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Rooms Booking Manager Test Main',
+      'description' => t('Rooms Booking Manager Test Main'),
+      'group' => 'Rooms',
+    );
+  }
+
+  public function setUp() {
+    // Enable module Rooms Unit
+    parent::setUp(array('rooms_booking', 'rooms_booking_manager'));
+
+    // Create a new user with permissions of Configure rooms settings
+    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view anonymous availability information', 'view named availability information', 'administer bookable units', 'manage booking unit pricing', 'administer booking types', 'administer bookings', 'book units'));
+    $this->drupalLogin($admin);
+  }
+
+  public function testRoomsBookingManager() {
+    $this->drupalPost('admin/rooms/units/unit-types/add',
+        array(
+          'label' => 'Single Rooms',
+          'type' => 'single_rooms',
+          'data[base_price]' => '100',
+          'data[sleeps]' => '2',
+        ),
+      t('Save unit type'));
+
+    $this->drupalPost('admin/rooms/units/add/single_rooms',
+        array(
+          'name' => 'Room 100',
+          'sleeps' => '2',
+          'base_price' => '100',
+          'bookable' => 1,
+          'default_state' => 1,
+        ),
+      t('Save Unit'));
+
+    $this->drupalPost('booking',
+        array(
+          'rooms_start_date[date]' => '21/04/2014',
+          'rooms_end_date[date]' => '25/04/2014',
+        ),
+      t('Search for Availability'));
+
+    $this->assertText('Arrival Date: 21-04-2014');
+    $this->assertText('Departure Date: 25-04-2014');
+    $this->assertText('Nights: 4');
+    $this->assertText('Base Cost: 400 $');
+
+    $this->drupalPostAJAX(NULL,
+      array(
+        'single_rooms:400:quantity' => 1,
+      ),
+      'single_rooms:400:quantity');
+
+    $this->drupalPost(NULL,
+        array(
+          'single_rooms:400:quantity' => 1,
+        ),
+      t('Place Booking'));
+
+    $this->assertText('Booking cart');
+    $this->assertText('Booking for Single Rooms (4 Nights; Arrival: 21-04-2014 Departure: 25-04-2014)');
+    $this->assertText('$400.00');
+  }
+}
