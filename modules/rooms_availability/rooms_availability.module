@@ -532,20 +532,8 @@ function rooms_availability_pricing_update_form_validate(&$form, &$form_state) {
   if (!empty($form_state['values']['amount']) && !is_numeric($form_state['values']['amount'])) {
     form_set_error('amount', t('%name: you must enter a numeric value for the price.', array('%name' => 'Amount')));
   }
-
-  $select_rooms = FALSE;
-  if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'false') {
-    foreach ($form_state['values'] as $key => $value) {
-      if (strpos($key, 'rooms-') === 0 && $value == '1') {
-        $select_rooms = TRUE;
-      }
-    }
-  }
-  else {
-    $select_rooms = TRUE;
-  }
-
-  if (!$select_rooms) form_set_error('select-all', t('Select at least one room'));
+  // validate that a rooms is selected
+  _rooms_availability_select_rooms_validation($form_state);
 }
 
 /**
@@ -721,21 +709,9 @@ function rooms_availability_update_status_form_validate(&$form, &$form_state) {
   if ($form_state['values']['change_event_status2'] == -1) {
     form_set_error('change_event_status', t('Select a valid status'));
   }
-
-  $select_rooms = FALSE;
-  if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'false') {
-    foreach ($form_state['values'] as $key => $value) {
-      if (strpos($key, 'rooms-') === 0 && $value == '1') {
-        $select_rooms = TRUE;
-      }
-    }
-  }
-  else {
-    $select_rooms = TRUE;
-  }
-  if (!$select_rooms) form_set_error('select-all', t('Select at least one room'));
+  // validate that a rooms is selected
+  _rooms_availability_select_rooms_validation($form_state);
 }
-
 
 function rooms_availability_update_status_form_submit(&$form, &$form_state) {
   list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
@@ -1575,4 +1551,25 @@ function rooms_availability_date_range_fields($year, $month) {
   drupal_add_js(drupal_get_path('module', 'rooms_availability') . '/js/rooms_availability_date_popup.js');
 
   return $date_range_fields;
+}
+
+/**
+ * Helper validate function to ensure that at least one room is selected.
+ */
+function _rooms_availability_select_rooms_validation($form_state) {
+  $select_rooms = FALSE;
+  if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'false') {
+    foreach ($form_state['values'] as $key => $value) {
+      if (strpos($key, 'rooms-') === 0 && $value == '1') {
+        $select_rooms = TRUE;
+      }
+    }
+  }
+  else {
+    $select_rooms = TRUE;
+  }
+
+  if (!$select_rooms) {
+    form_set_error('select-all', t('Select at least one room'));
+  }
 }
