@@ -37,16 +37,19 @@ class AvailabilityAgent {
   public $valid_rooms_combination = array();
 
 
+  /**
+   * Construct the AvailabilityAgent instance.
+   *
+   * @param object $start_date
+   *   The DateTime object for start date.
+   * @param object $end_date
+   *   The DateTime object for end date.
+   */
   public function __construct($start_date, $end_date, $booking_parameters = array(), $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS), $unit_types = array()) {
     $this->valid_states = $valid_states;
-
-    $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
-    $this->start_date = DateTime::createFromFormat($date_format, str_replace('-', '/', $start_date));
-    $checkout_date = DateTime::createFromFormat($date_format, str_replace('-', '/', $end_date));
-
+    $this->start_date = $start_date;
     // For availability purposes the end date is a day earlier than the checkout date
-    $this->end_date = $checkout_date->sub(new DateInterval('P1D'));
-
+    $this->end_date = $end_date->sub(new DateInterval('P1D'));
     $this->booking_parameters = $booking_parameters;
     $this->booking_units = $booking_units;
     $this->unit_types = $unit_types;

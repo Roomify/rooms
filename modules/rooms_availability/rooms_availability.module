@@ -171,7 +171,10 @@ function rooms_availability_pr_ajax_callback() {
   }
 }
 
-
+/**
+ * Form for the Bulk Availability Management. Could receive date params for the
+ * interested interval to edit.
+ */
 function rooms_availability_bulk_unit_management($year = '', $month = '', $type = 'all', $action = '', $start = '', $end = '') {
 
   // modal includes and style
@@ -398,7 +401,11 @@ function rooms_availability_filter_month_form_submit(&$form, &$form_state) {
   drupal_goto($address);
 }
 
-
+/**
+ * Form to manage the room units pricing.
+ *
+ * @see rooms_availability_bulk_pricing_management()
+ */
 function rooms_availability_pricing_update_form($form, &$form_state, $month, $year, $type, $rooms_units) {
     $form['rooms_pricing_update'] = array(
     '#type' => 'fieldset',
@@ -480,6 +487,7 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
   );
 
   $form['#validate'][] = 'rooms_availability_pricing_update_form_validate';
+  $form['#validate'][] = 'rooms_form_start_end_dates_validate';
 
   $form['rooms_data'] = array(
     '#prefix' => '<table>',
@@ -516,58 +524,26 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
   return $form;
 }
 
-
+/**
+ * Validate callback for rooms_availability_pricing_update_form form.
+ */
 function rooms_availability_pricing_update_form_validate(&$form, &$form_state) {
-  // Check date validity
-  if ($form_state['values']['rooms_start_date'] == '') {
-    return;
-  }
-  if ($form_state['values']['rooms_end_date'] == '') {
-    return;
-  }
-
   // Make sure amount entered is numeric
   if (!empty($form_state['values']['amount']) && !is_numeric($form_state['values']['amount'])) {
     form_set_error('amount', t('%name: you must enter a numeric value for the price.', array('%name' => 'Amount')));
   }
-
-  $date1 = new DateTime($form_state['values']['rooms_start_date']);
-  $date2 = new DateTime($form_state['values']['rooms_end_date']);
-  $diff = $date1->diff($date2);
-  // If date1 > date2
-  if ($diff->invert) {
-    form_set_error('date_range', t('End date must be after start date'));
-  }
-  $curr_month = $form_state['values']['curr_month'];
-  $curr_year = $form_state['values']['curr_year'];
-  if ($date1->format('n') != $curr_month || $date2->format('n') != $curr_month
-      || $date1->format('Y') != $curr_year || $date2->format('Y') != $curr_year) {
-    form_set_error('date_range', t('End date and start date are out of current month'));
-  }
-
-  $select_rooms = FALSE;
-  if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'false') {
-    foreach ($form_state['values'] as $key => $value) {
-      if (strpos($key, 'rooms-') === 0 && $value == '1') {
-        $select_rooms = TRUE;
-      }
-    }
-  }
-  else {
-    $select_rooms = TRUE;
-  }
-
-  if (!$select_rooms) form_set_error('select-all', t('Select at least one room'));
+  // validate that a rooms is selected
+  _rooms_availability_select_rooms_validation($form_state);
 }
 
-
+/**
+ * Submit callback for rooms_availability_pricing_update_form form.
+ */
 function rooms_availability_pricing_update_form_submit(&$form, &$form_state) {
-  $start_date = new DateTime($form_state['values']['rooms_start_date']);
-  $end_date = new DateTime($form_state['values']['rooms_end_date']);
+  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
   $type = $form_state['values']['curr_type'];
   $operation = $form_state['values']['operation'];
   $amount = $form_state['values']['amount'];
-
   $days = array_filter($form_state['values']['day_options']);
 
   if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'true') {
@@ -632,7 +608,11 @@ function rooms_availability_pricing_update_form_submit(&$form, &$form_state) {
   variable_set('ROOMS_SELECT_ALL_PAGES_PR', 'false');
 }
 
-
+/**
+ * Form to manage the availability for specific month.
+ *
+ * @see rooms_availability_bulk_unit_management()
+ */
 function rooms_availability_update_status_form($form, &$form_state, $month, $year, $type, $rooms_units) {
   $form['rooms_availability_update'] = array(
     '#type' => 'fieldset',
@@ -684,6 +664,7 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
     '#value' => t('Update Room Availability'),
   );
 
+  $form['#validate'][] = 'rooms_form_start_end_dates_validate';
   $form['#validate'][] = 'rooms_availability_update_status_form_validate';
 
   $form['rooms_data'] = array(
@@ -721,53 +702,19 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
   return $form;
 }
 
-
+/**
+ * Validate callback for rooms_availability_update_status_form form.
+ */
 function rooms_availability_update_status_form_validate(&$form, &$form_state) {
-  // Check date validity
-  if ($form_state['values']['rooms_start_date'] == '') {
-    return;
-  }
-  if ($form_state['values']['rooms_end_date'] == '') {
-    return;
-  }
-
   if ($form_state['values']['change_event_status2'] == -1) {
     form_set_error('change_event_status', t('Select a valid status'));
   }
-
-  $date1 = new DateTime($form_state['values']['rooms_start_date']);
-  $date2 = new DateTime($form_state['values']['rooms_end_date']);
-  $diff = $date1->diff($date2);
-  // If date1 > date2
-  if ($diff->invert) {
-    form_set_error('date_range', t('End date must be after start date'));
-  }
-
-  $curr_month = $form_state['values']['curr_month'];
-  $curr_year = $form_state['values']['curr_year'];
-  if ($date1->format('n') != $curr_month || $date2->format('n') != $curr_month
-      || $date1->format('Y') != $curr_year || $date2->format('Y') != $curr_year) {
-    form_set_error('date_range', t('End date and start date are out of current month'));
-  }
-
-  $select_rooms = FALSE;
-  if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'false') {
-    foreach ($form_state['values'] as $key => $value) {
-      if (strpos($key, 'rooms-') === 0 && $value == '1') {
-        $select_rooms = TRUE;
-      }
-    }
-  }
-  else {
-    $select_rooms = TRUE;
-  }
-  if (!$select_rooms) form_set_error('select-all', t('Select at least one room'));
+  // validate that a rooms is selected
+  _rooms_availability_select_rooms_validation($form_state);
 }
 
-
 function rooms_availability_update_status_form_submit(&$form, &$form_state) {
-  $start_date = new DateTime($form_state['values']['rooms_start_date']);
-  $end_date = new DateTime($form_state['values']['rooms_end_date']);
+  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
   $type = $form_state['values']['curr_type'];
   $event_id = $form_state['values']['change_event_status2'];
 
@@ -1007,41 +954,17 @@ function update_availability_calendar_form($form, &$form_state, $unit_id, $year,
 
   // We append the validate handler to #validate in case a form callback_wrapper
   // is used to add validate handlers earlier.
-  $form['#validate'][] = 'update_availability_calendar_form_validate';
-
+  $form['#validate'][] = 'rooms_form_start_end_dates_validate';
 
   return $form;
 }
 
-
-function update_availability_calendar_form_validate(&$form, &$form_state) {
-  // Check date validity
-  if ($form_state['values']['rooms_start_date'] == '') {
-    return;
-  }
-  if ($form_state['values']['rooms_end_date'] == '') {
-    return;
-  }
-  $date1 = new DateTime($form_state['values']['rooms_start_date']);
-  $date2 = new DateTime($form_state['values']['rooms_end_date']);
-  $diff = $date1->diff($date2);
-  // If date1 > date2
-  if ($diff->invert) {
-    form_set_error('date_range', t('End date must be after start date'));
-  }
-}
-
-
 /**
  *@todo Need to figure out what to do when we cancel an existing booking
  */
-
 function update_availability_calendar_form_submit(&$form, &$form_state) {
-
-  $start_date = new DateTime($form_state['values']['rooms_start_date']);
-  $end_date = new DateTime($form_state['values']['rooms_end_date']);
+  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
   $event_id = $form_state['values']['unit_state'];
-
   $unit_id = $form_state['values']['unit_id'];
 
   // Create a new Booking Event
@@ -1283,12 +1206,12 @@ function rooms_availability_event_manager_form($form, $form_state, $unit_id, $ev
     '#value' => $event_id,
   );
 
-  $form['start_date'] = array(
+  $form['rooms_start_date'] = array(
     '#type' => 'hidden',
     '#value' => $start_date,
   );
 
-  $form['end_date'] = array(
+  $form['rooms_end_date'] = array(
     '#type' => 'hidden',
     '#value' => $end_date,
   );
@@ -1341,23 +1264,13 @@ function rooms_availability_event_manager_form($form, $form_state, $unit_id, $ev
  * The callback for the change_event_status widget of the event manager form
  */
 function rooms_availability_ajax_event_status_change($form, $form_state) {
-
+  list($start_date, $end_date) = rooms_form_values_get_start_end_dates($form_state);
   $unit_id = $form_state['values']['unit_id'];
   $event_id = $form_state['values']['event_id'];
-  $start_time = $form_state['values']['start_date'];
-  $end_time = $form_state['values']['end_date'];
-
   $new_event_id = $form_state['values']['change_event_status'];
 
   // If we have a new event id go ahead and update event
   if (($event_id != $new_event_id) && $new_event_id != -1) {
-
-    $start_date = new DateTime();
-    $start_date->setTimestamp($start_time);
-
-    $end_date = new DateTime();
-    $end_date->setTimestamp($end_time);
-
     $event = new BookingEvent($unit_id, $new_event_id, $start_date, $end_date);
     $uc = new UnitCalendar($unit_id);
     $responses = $uc->updateCalendar(array($event));
@@ -1638,4 +1551,25 @@ function rooms_availability_date_range_fields($year, $month) {
   drupal_add_js(drupal_get_path('module', 'rooms_availability') . '/js/rooms_availability_date_popup.js');
 
   return $date_range_fields;
+}
+
+/**
+ * Helper validate function to ensure that at least one room is selected.
+ */
+function _rooms_availability_select_rooms_validation($form_state) {
+  $select_rooms = FALSE;
+  if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'false') {
+    foreach ($form_state['values'] as $key => $value) {
+      if (strpos($key, 'rooms-') === 0 && $value == '1') {
+        $select_rooms = TRUE;
+      }
+    }
+  }
+  else {
+    $select_rooms = TRUE;
+  }
+
+  if (!$select_rooms) {
+    form_set_error('select-all', t('Select at least one room'));
+  }
 }

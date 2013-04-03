@@ -577,9 +577,15 @@ function rooms_booking_get_room_types($string = '') {
  * The class used for room entities
  */
 class RoomsBooking extends Entity {
+  // DateTime object calculated from start date
+  public $start_date_object;
+  // DateTime object calculated from end date
+  public $end_date_object;
 
   public function __construct($values = array()) {
     parent::__construct($values, 'rooms_booking');
+    $this->start_date_object = new DateTime($this->start_date);
+    $this->end_date_object = new DateTime($this->end_date);
   }
 
   protected function defaultLabel() {

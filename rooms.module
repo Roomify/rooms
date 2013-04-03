@@ -252,3 +252,109 @@ function rooms_form_input_date_object($form_state, $field_name) {
   }
   return FALSE;
 }
+
+/**
+ * Given a form_state locate the start/end dates in the input array and
+ * instantiate and return DateTime objects.
+ */
+function rooms_form_input_get_start_end_dates($form_state) {
+  $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
+  $start = DateTime::createFromFormat($date_format, $form_state['input']['rooms_start_date']['date']);
+  $end = DateTime::createFromFormat($date_format, $form_state['input']['rooms_end_date']['date']);
+  return array($start, $end);
+}
+
+/**
+ * Given a form_state locate the start/end dates in the values array and
+ * instantiate and return DateTime objects.
+ */
+function rooms_form_values_get_start_end_dates($form_state) {
+  // As values dates has a format of year-month-day that is one of the default
+  // expected formats there is no need to explicit define format.
+  // http://www.php.net/manual/en/datetime.formats.date.php
+  $start_date = $form_state['values']['rooms_start_date'];
+  $end_date = $form_state['values']['rooms_end_date'];
+
+  // if the input format is numeric we assume that is a unixtime seconds format.
+  if (is_numeric($start_date) && is_numeric($end_date)) {
+    // the @ indicate DateTime that the format is unixtime
+    $start_date = '@' . $start_date;
+    $end_date = '@' . $end_date;
+  }
+
+  $start = new DateTime($start_date);
+  $end = new DateTime($end_date);
+
+  return array($start, $end);
+}
+
+/**
+ * Validation callback that could be reused in all the forms that need to validate
+ * dates. End date must be greater thatn start date.
+ */
+function rooms_form_start_end_dates_validate($form, &$form_state) {
+  $errors = array();
+  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
+  $today_greater = FALSE;
+  // skip if no dates are provided
+  if (empty($start_date) || empty($end_date)) {
+    form_set_error('date_range', t('Please choose dates.'));
+    return;
+  }
+
+  // in case that this value is set trigger the today greater validation
+  if (isset($form_state['today_greater_validation'])) {
+    $today_greater = TRUE;
+  }
+
+  // Check date validity
+  $errors = rooms_check_dates_validity($start_date, $end_date, $today_greater);
+
+  // For some forms as rooms_availability_pricing_update_form and
+  // rooms_availability_update_status_form we need to validate that the seleced
+  // date match with current values.
+  if (isset($form_state['values']['curr_month']) && isset($form_state['values']['curr_year'])) {
+    $curr_month = $form_state['values']['curr_month'];
+    $curr_year = $form_state['values']['curr_year'];
+    if ($start_date->format('n') != $curr_month || $end_date->format('n') != $curr_month
+      || $start_date->format('Y') != $curr_year || $end_date->format('Y') != $curr_year) {
+        $errors[] = t('End date and start date are out of current month');
+      }
+  }
+
+  // When there are multiples errors for the same form element Drupal only
+  // display the first. Here we concatenate to display all at once.
+  if ($errors) {
+    $error_msg = implode(' ', $errors);
+    form_set_error('date_range', $error_msg);
+  }
+}
+
+/**
+ * Checks the logical validity of date values.
+ * @param DateTime $start_date
+ *   The start date
+ * @param DateTime $end_date
+ *   The end date
+ * @param bool $today_greater
+ *   TRUE in case to enable the validation that start_date must be greater than today.
+ *
+ * @return
+ *   An array with error messages.
+ */
+function rooms_check_dates_validity(DateTime $start_date, DateTime $end_date, $today_greater = FALSE) {
+  $errors = array();
+  // end date must be greater than start date.
+  if ($end_date <= $start_date) {
+    $errors[] = t('End date must be after start date.');
+  }
+  // in case the date should be grater than today
+  if ($today_greater) {
+    $now = new DateTime();
+    $diff1 = $now->setTime(0, 0, 0)->diff($start_date);
+    if ($diff1->invert) {
+      $errors[] = t('Start date must be current or in the future.');
+    }
+  }
+  return $errors;
+}
