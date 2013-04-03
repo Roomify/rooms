@@ -48,10 +48,10 @@ class UnitPricingCalendar {
   /**
    * Given a date range determine the cost of the room over that period
    *
-   * @param $start_date
+   * @param DateTime $start_date
    * The starting date for the search
    *
-   * @param $end_date
+   * @param DateTime $end_date
    * The end date for the search
    *
    * @return

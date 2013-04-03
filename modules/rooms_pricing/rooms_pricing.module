@@ -223,37 +223,30 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
 
   // We append the validate handler to #validate in case a form callback_wrapper
   // is used to add validate handlers earlier.
+  $form['#validate'][] = 'rooms_form_start_end_dates_validate';
   $form['#validate'][] = 'update_unit_pricing_form_validate';
 
 
   return $form;
 }
 
-
+/**
+ * Validate callback form update_unit_pricing_form form.
+ */
 function update_unit_pricing_form_validate(&$form, &$form_state) {
-  // Check date validity
-  $date1 = new DateTime($form_state['values']['rooms_start_date']);
-  $date2 = new DateTime($form_state['values']['rooms_end_date']);
-  $diff = $date1->diff($date2);
-  // If date1 > date2
-  if ($diff->invert) {
-    form_set_error('date_range', t('End date must be after start date'));
-  }
-
   // Make sure amount entered is numeric
   if (!empty($form_state['values']['amount']) && !is_numeric($form_state['values']['amount'])) {
     form_set_error('amount', t('%name: you must enter a numeric value for the price.', array('%name' => 'Amount')));
   }
 }
 
-
+/**
+ * Submit callback form update_unit_pricing_form form.
+ */
 function update_unit_pricing_form_submit(&$form, &$form_state) {
-
-  $start_date = new DateTime($form_state['values']['rooms_start_date']);
-  $end_date = new DateTime($form_state['values']['rooms_end_date']);
+  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
   $operation = $form_state['values']['operation'];
   $amount = $form_state['values']['amount'];
-
   $unit_id = $form_state['values']['unit_id'];
 
   // Get all the pricing events for the date range
@@ -262,7 +255,6 @@ function update_unit_pricing_form_submit(&$form, &$form_state) {
   $events = array($pe);
 
   $rc->updateCalendar($events);
-
 }
 
 
