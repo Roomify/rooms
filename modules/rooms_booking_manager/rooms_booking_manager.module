@@ -1761,6 +1761,7 @@ function rooms_booking_manager_views_api() {
  */
 function rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, $form) {
 
+  $end_date->add(new DateInterval('P1D'));
   $nights = $end_date->diff($start_date);
 
   $form_tmp['info_arrival_date'] = array(
