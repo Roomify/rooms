@@ -462,6 +462,7 @@ function book_unit_form_submit(&$form, &$form_state) {
   // reconvert them back to strings to only recreate them in the Availability Agent
   $sd = start_date_load($start_date);
   $ed = end_date_load($end_date);
+  $ed->add(new DateInterval('P1D'));
 
   // Let us get the available rooms again and match the order against actual rooms
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
@@ -562,10 +563,12 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     $index = 0;
 
     foreach ($units_per_type as $type => $units_per_price) {
-      // Load the type obj and set a title
+      $form[$type] = array();
+      $form[$type]['#tree'] = TRUE;
 
+      // Load the type obj and set a title
       $type_obj = rooms_unit_type_load($type);
-      $form[$type]['title'][$type . ':title'] = array(
+      $form[$type]['title'] = array(
         '#prefix' => '<h2>',
         '#markup' => t($type_obj->label),
         '#suffix' => '</h2>',
@@ -573,7 +576,9 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
       foreach ($units_per_price as $price => $units) {
 
-        $form[$type . ':' . $price][$type . ':' . $price . ':open-markup'] = array(
+        $form[$type][$price] = array();
+
+        $form[$type][$price]['open-markup'] = array(
           '#markup' => '<table>',
         );
 
@@ -596,7 +601,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               if ($node !== FALSE) {
                 $node_html = render(node_view($node, 'rooms_list'));
 
-                $form[$type . ':' . $price][$type . ':' . $price . ':description'] = array(
+                $form[$type][$price]['description'] = array(
                   '#prefix' => '<tr><td class="room_description">',
                   '#markup' => $node_html,
                   '#suffix' => '</td><td></td><td></td></tr>',
@@ -607,14 +612,14 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         }
 
         // Element to display price
-        $form[$type . ':' . $price][$type . ':' . $price . ':price'] = array(
+        $form[$type][$price]['price'] = array(
           '#prefix' => '<tr><td><div class="unit_price" style="font-weight:bold">',
           '#markup' =>  t('Base Cost:') . ' ' . $price . ' ' . $currency_symbol,
           '#suffix' => '</div>'
         );
 
         // Element to hold price
-        $form[$type . ':' . $price][$type . ':' . $price . ':price_value'] = array(
+        $form[$type][$price]['price_value'] = array(
           '#type' => 'hidden',
           '#value' => $price,
           '#suffix' => '</td>',
@@ -627,7 +632,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         }
         // ajax wrapper id
         $id = 'rooms_' . $type . '_' . $price;
-        $form[$type . ':' . $price][$type . ':' . $price . ':quantity'] = array(
+        $form[$type][$price]['quantity'] = array(
           '#prefix' => '<td style="width:15%;" class="room_units">',
           '#title' => t('Units'),
           '#type' => 'select',
@@ -645,7 +650,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
         // Show button 'Place Booking' only on the first row
         if ($index == 0) {
-          $form[$type . ':' . $price]['submit'] = array(
+          $form[$type][$price]['submit'] = array(
             '#prefix' => '<td style="width:15%;" class="room_placebooking"><div id="rooms_booking_button">',
             '#type' => 'submit',
             '#value' => t('Place Booking'),
@@ -656,34 +661,33 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
           $index++;
         }
         else {
-          $form[$type . ':' . $price]['submit'] = array(
+          $form[$type][$price]['submit'] = array(
             '#prefix' => '<td style="width:15%;" class="room_placebooking">',
             '#suffix' => '</td></tr>',
           );
         }
 
         // Display price options
-        $form[$type . ':' . $price][$type . ':' . $price . ':field_start'] = array(
+        $form[$type][$price]['field_start'] = array(
          '#markup' => '<tr style="display:none;" id="rooms_' . $type . '_' . $price . '"><td>',
         );
 
-        $form[$type . ':' . $price][$type . ':' . $price . ':fieldset'] = array(
+        $form[$type][$price]['fieldset'] = array(
          '#prefix' => '<div id="' . $type . '_' . $price . '_container">',
          '#type' => 'fieldset',
          '#suffix' => '</div>'
         );
 
-        if (isset($form_state['values'][$type . ':' . $price . ':quantity'])) {
+        if (isset($form_state['values'][$type][$price]['quantity'])) {
           $units_keys = array_keys($units);
 
-          for ($c = 1; $c <= $form_state['values'][$type . ':' . $price . ':quantity']; $c++) {
-            $form[$type . ':' . $price][$type . ':' . $price . ':fieldset']['label:' . $c]['#markup'] = $type_obj->label . ' ' . $c;
+          for ($c = 1; $c <= $form_state['values'][$type][$price]['quantity']; $c++) {
+            $form[$type][$price]['fieldset']['label'][$c]['#markup'] = $type_obj->label . ' ' . $c;
 
             // Add options checkboxes
             if (isset($units[$units_keys[$c - 1]]['unit']->field_options[LANGUAGE_NONE])) {
               foreach ($units[$units_keys[$c - 1]]['unit']->field_options[LANGUAGE_NONE] as $option) {
-                $form[$type . ':' . $price][$type . ':' . $price . ':fieldset'][$type . ':' . $price . ':' . $c . ':' .
-                        strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
+                $form[$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
                   '#type' => 'checkbox',
                   '#title' => $option['name'],
                   '#ajax' => array(
@@ -694,7 +698,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               }
             }
 
-            $form[$type . ':' . $price][$type . ':' . $price . ':fieldset'][$type . ':' . $price . ':' . $c . ':price'] = array(
+            $form[$type][$price]['fieldset'][$c]['price'] = array(
               '#prefix' => '<div id="' . $type . '_' . $price . '_' . $c . '_price">',
               '#markup' => $price . ' ' . $currency_symbol,
               '#suffix' => '</div>',
@@ -706,8 +710,8 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             $price_modifiers = array();
             if (isset($units[$units_keys[$c - 1]]['unit']->field_options[LANGUAGE_NONE])) {
               foreach ($units[$units_keys[$c - 1]]['unit']->field_options[LANGUAGE_NONE] as $option) {
-                if (isset($form_state['values'][$type . ':' . $price . ':' . $c . ':' . strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
-                  if ($form_state['values'][$type . ':' . $price . ':' . $c . ':' . strtolower(str_replace(array(':', ' '), '_', $option['name']))] == 1) {
+                if (isset($form_state['values'][$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
+                  if ($form_state['values'][$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name']))] == 1) {
                     $price_modifiers[strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
                       '#type' => ROOMS_DYNAMIC_MODIFIER,
                       '#op_type' => $operation_list[$option['operation']],
@@ -727,13 +731,13 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               $new_price = $price_calendar->calculatePrice($start_date, $temp_end_date);
               $new_price = $new_price['full_price'];
 
-              $form[$type . ':' . $price][$type . ':' . $price . ':fieldset'][$type . ':' . $price . ':' . $c . ':price']['#markup'] = $new_price . ' ' . $currency_symbol;
+              $form[$type][$price]['fieldset'][$c]['price']['#markup'] = $new_price . ' ' . $currency_symbol;
             }
           }
         }
 
-        $form[$type . ':' . $price][$type . ':' . $price . ':close-markup'] = array(
-        '#markup' => '</td></tr></table>',
+        $form[$type][$price]['close-markup'] = array(
+          '#markup' => '</td></tr></table>',
         );
       }
 
@@ -764,9 +768,9 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
  * Ajax callback on booking search results page when quantity change
  */
 function rooms_booking_manager_quantity_change_callback(&$form, $form_state) {
-  list($type, $price) = explode(':', $form_state['triggering_element']['#name']);
+  list($type, $price) = preg_split('/[\[(.)\]]/', $form_state['triggering_element']['#name']);
 
-  return $form[$type . ':' . $price][$type . ':' . $price . ':' . 'fieldset'];
+  return $form[$type][$price]['fieldset'];
 }
 
 
@@ -774,9 +778,9 @@ function rooms_booking_manager_quantity_change_callback(&$form, $form_state) {
  * Ajax callback on booking search results page when an Options state change
  */
 function rooms_booking_manager_options_change_callback(&$form, $form_state) {
-  list($type, $price, $index) = explode(':', $form_state['triggering_element']['#name']);
+  list($type, $price, $null, $fieldset, $null, $index) = preg_split('/[\[(.)\]]/', $form_state['triggering_element']['#name']);
 
-  return $form[$type . ':' . $price][$type . ':' . $price . ':fieldset'][$type . ':' . $price . ':' . $index . ':price'];
+  return $form[$type][$price][$fieldset][$index]['price'];
 }
 
 
@@ -850,11 +854,13 @@ function book_units_per_type_form_validate(&$form, &$form_state) {
   if (isset($form_state['complete form']['comments'])) return;
   if ($form_state['triggering_element']['#value'] == t('Change search')) return;
 
-  foreach ($form_state['complete form'] as $key => $value) {
-    if (isset($value['submit'])) {
-      if (isset($value[$key . ':quantity']) && is_array($value)) {
-        if ($value[$key . ':quantity']['#value'] != 0) {
-          return;
+  foreach ($form_state['values'] as $type) {
+    if (is_array($type)) {
+      foreach ($type as $price_level) {
+        if (isset($price_level['quantity'])) {
+          if ($price_level['quantity'] != 0) {
+            return;
+          }
         }
       }
     }
@@ -941,11 +947,13 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
 
   // Create an "order" based on the form submitted
   $order = array();
-  foreach ($form_state['values'] as $value_key => $value) {
-    $values = explode(':', $value_key);
-    if (count($values) == 3) {
-      list($type, $price_level, $value_type) = $values;
-      $order[$type][$price_level][$value_type] = $value;
+  foreach ($form_state['values'] as $type => $value) {
+    if (is_array($value)) {
+      foreach ($value as $value2) {
+        if (isset($value2['quantity'])) {
+          $order[$type] = $value;
+        }
+      }
     }
   }
 
@@ -953,6 +961,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
   // reconvert them back to strings to only recreate them in the Availability Agent
   $sd = start_date_load($start_date);
   $ed = end_date_load($end_date);
+  $ed->add(new DateInterval('P1D'));
 
   // Let us get the available rooms again and match the order against actual rooms
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
@@ -983,8 +992,8 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
             $price_modifiers = array();
             if (isset($unit['unit']->field_options[LANGUAGE_NONE])) {
               foreach ($unit['unit']->field_options[LANGUAGE_NONE] as $option) {
-                if (isset($form_state['values'][$type . ':' . $price_level . ':' . $i . ':' . strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
-                  if ($form_state['values'][$type . ':' . $price_level . ':' . $i . ':' . strtolower(str_replace(array(':', ' '), '_', $option['name']))] == 1) {
+                if (isset($form_state['values'][$type][$price_level]['fieldset'][$i][strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
+                  if ($form_state['values'][$type][$price_level]['fieldset'][$i][strtolower(str_replace(array(':', ' '), '_', $option['name']))] == 1) {
                     $price_modifiers[strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
                       '#name' => $option['name'],
                       '#type' => ROOMS_DYNAMIC_MODIFIER,
@@ -1768,8 +1777,9 @@ function rooms_booking_manager_views_api() {
  */
 function rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, $form) {
 
-  $end_date->add(new DateInterval('P1D'));
-  $nights = $end_date->diff($start_date);
+  $temp_end_date = clone($end_date);
+  $temp_end_date->add(new DateInterval('P1D'));
+  $nights = $end_date->diff($start_date)->days + 1;
 
   $form_tmp['info_arrival_date'] = array(
     '#type' => 'item',
@@ -1777,11 +1787,11 @@ function rooms_booking_manager_form_info_snippet($date_format, $start_date, $end
   );
   $form_tmp['info_departure_Date'] = array(
     '#type' => 'item',
-    '#markup' => t('Departure Date') . ': ' . $end_date->format($date_format),
+    '#markup' => t('Departure Date') . ': ' . $temp_end_date->format($date_format),
   );
   $form_tmp['info_nights'] = array(
     '#type' => 'item',
-    '#markup' => t('Nights') . ': ' . $nights->days,
+    '#markup' => t('Nights') . ': ' . $nights,
   );
 
   $form = array_merge($form_tmp, $form);
