@@ -347,7 +347,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   if ($booking->booking_id != '') {
     if ($booking->order_id != '') {
       $order = commerce_order_load($booking->order_id);
-      $order_states = commerce_order_states();
+      $order_states = commerce_order_statuses();
 
       if ($order !== FALSE) {
         $form['order'] = array(
