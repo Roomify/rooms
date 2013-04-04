@@ -152,6 +152,14 @@ function rooms_booking_entity_info_alter(&$entity_info) {
 
 
 /**
+ * Implements hook_entity_property_info_alter().
+ */
+function rooms_booking_entity_property_info_alter(&$info) {
+  $info['rooms_booking']['properties']['booking_status']['setter callback'] = 'entity_property_verbatim_set';
+}
+
+
+/**
  * Implements hook_permission().
  */
 function rooms_booking_permission() {
