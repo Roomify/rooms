@@ -209,7 +209,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   );
 
   if (module_exists('commerce_customer')) {
-    $form['client']['#description'] = t('A customer profile must already exist under Customer Profiles in the <a href="@store-profile">store</a>.', array('@store-profile' => url('admin/commerce/customer-profiles')));
+    $form['client']['#description'] = t('A customer profile must already exist under Customer Profiles in the <a href="@store-profile">store</a>. (<a href="@profile-create" class="ctools-use-modal">Create new profile</a>)', array('@store-profile' => url('admin/commerce/customer-profiles'), '@profile-create' => url('admin/rooms/add_customers')));
   }
 
   $form['data']['#tree'] = TRUE;
@@ -803,9 +803,15 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
     // determine the commerce order statuses that identify an oustanding order
     $incomplete_statuses = array_diff(array_keys(commerce_order_statuses()), $complete_statuses);
     $orders = commerce_order_load_multiple(array(), array('uid' => $commerce_customer_id, 'status' => $incomplete_statuses));
+
+    $query = new EntityFieldQuery();
+    $orders = $query->entityCondition('entity_type', 'commerce_order')
+                    ->fieldCondition('commerce_customer_billing', 'profile_id', $commerce_customer_id)
+                    ->execute();
+
     // in case of pending orders alert the admin
     if ($orders) {
-      foreach ($orders as $order) {
+      foreach ($orders['commerce_order'] as $order) {
         $order_links[] = l("Order #{$order->order_id}", "admin/commerce/orders/{$order->order_id}/edit");
       }
       $message_params = array(
@@ -814,6 +820,13 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
       );
       drupal_set_message(t('The customer !customer_name has an oustanding order: !order_links', $message_params), 'warning');
     }
+  }
+
+  $client = explode(':', $form_state['values']['client']);
+  $client_name = $client[0];
+  $commerce_customer_id = rooms_booking_find_customer_by_name($client_name);
+  if ($commerce_customer_id === FALSE) {
+    form_set_error('client', t('Enter a valid customer!'));
   }
 
   //Notify field widgets to validate their data.
@@ -832,21 +845,13 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
   $client_name = $client[0];
   $commerce_customer_id = rooms_booking_find_customer_by_name($client_name);
 
-  if ($commerce_customer_id === FALSE) {
-    db_merge('rooms_customers')
-      ->key(array('name' => $client_name))
-      ->fields(array('name' => $client_name))
-      ->execute();
-  }
-  else {
-    db_merge('rooms_customers')
-      ->key(array('name' => $client_name))
-      ->fields(array(
-        'name' => $client_name,
-        'commerce_customer_id' => $commerce_customer_id,
-      ))
-      ->execute();
-  }
+  db_merge('rooms_customers')
+    ->key(array('name' => $client_name))
+    ->fields(array(
+      'name' => $client_name,
+      'commerce_customer_id' => $commerce_customer_id,
+    ))
+    ->execute();
 
   $client_id = db_select('rooms_customers')
     ->fields('rooms_customers', array('id'))

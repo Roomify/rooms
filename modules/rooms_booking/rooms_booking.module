@@ -27,7 +27,41 @@ function rooms_booking_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  $items['admin/rooms/add_customers'] = array(
+    'title' => t('Add customer profile'),
+    'page callback' => 'rooms_booking_add_customer_profile',
+    'access arguments' => array('administer bookings'),
+    'type' => MENU_CALLBACK,
+  );
+
   return $items;
+}
+
+
+function rooms_booking_add_customer_profile() {
+  module_load_include('inc', 'commerce_customer', 'includes/commerce_customer_profile.forms');
+  $form_state = array(
+    'title' => t('Add customer'),
+    'ajax' => TRUE,
+    'build_info' => array(
+      'args' => array(commerce_customer_profile_new('billing', 1)),
+      'files' => array(
+        'commmerce_customer' => array(
+          'module' => 'commmerce_customer',
+          'name' => 'includes/commerce_customer_profile.forms',
+          'type' => 'inc',
+        ),
+      ),
+    ),
+  );
+
+  // wrap the form via ctools modal
+  $output = ctools_modal_form_wrapper('commerce_customer_customer_profile_form', $form_state);
+  if ($form_state['executed']) {
+    $output = array(ctools_modal_command_dismiss());
+  }
+  print ajax_render($output);
+  exit();
 }
 
 
