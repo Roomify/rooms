@@ -209,7 +209,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   );
 
   if (module_exists('commerce_customer')) {
-    $form['client']['#description'] = t('A customer profile must already exist under Customer Profiles in the <a href="@store-profile">store</a>. (<a href="@profile-create" class="ctools-use-modal">Create new profile</a>)', array('@store-profile' => url('admin/commerce/customer-profiles'), '@profile-create' => url('admin/rooms/add_customers')));
+    $form['client']['#description'] = t('Customer profiles are saved in the <a href="@store-profile">store</a>. Search for an existing one by typing the customer name or <a href="@profile-create" class="ctools-use-modal">create a new profile</a>.', array('@store-profile' => url('admin/commerce/customer-profiles'), '@profile-create' => url('admin/rooms/add_customers')));
   }
 
   $form['data']['#tree'] = TRUE;
@@ -890,17 +890,6 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
   else {
     $booking = $form_state['rooms_booking'];
 
-    // We are going to be updating the event - so the first step is to remove the
-    // old event.
-    if (($booking->unit_id != 0) && ($booking->start_date != '') && ($booking->end_date != '')) {
-      // Create a calendar
-      $uc = new UnitCalendar($booking->unit_id);
-      $event_id = rooms_availability_assign_id($booking->booking_id, $booking->booking_status);
-      // Create an event representing the event to remove
-      $be = new BookingEvent($booking->unit_id, $event_id, $booking->start_date_object, $booking->end_date_object);
-      $uc->removeEvents(array($be));
-    }
-
     $booking = entity_ui_controller('rooms_booking')->entityFormSubmitBuildEntity($form, $form_state);
     $booking->changed = time();
 
@@ -926,8 +915,6 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
     }
   }
 
-  $booking->save();
-
   if ($booking->order_id == '') {
     if (variable_get('rooms_manually_booking_create_order', '1') == '1') {
       $booking_parameters = array('adults' => $form_state['values']['data']['group_size'], 'children' => $form_state['values']['data']['group_size_children']);
@@ -935,26 +922,15 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
       $order = rooms_booking_create_order($start_date, $end_date, $booking_parameters, $unit_object, $booking);
 
       $booking->order_id = $order->order_number;
-
-      $booking->save();
     }
   }
 
+  $booking->save();
+
   // We have a unit defined so lets block availability there
   if ($unit != 0) {
-    // Set the event_id
-    $event_id = rooms_availability_assign_id($booking->booking_id, $booking->booking_status);
-    $corrected_end_date = $end_date->sub(new DateInterval('P1D'));
-    // Create an event
-    $be = new BookingEvent($unit, $event_id, $start_date, $corrected_end_date);
-
-    // Create UnitCalendar
-    $rc = new UnitCalendar($unit);
-    $responses = $rc->updateCalendar(array($be));
-
-    if ($responses[$event_id] == ROOMS_UPDATED) {
+    if ($booking->rooms_av_update == ROOMS_UPDATED) {
       drupal_set_message(t('Room Availability Updated'));
-      $be->lock();
     }
     else {
       drupal_set_message(t('Room Availability could not be updated'), 'error');
