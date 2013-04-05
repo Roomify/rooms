@@ -70,7 +70,10 @@ class AvailabilityAgent {
    * each set.
    */
   private function searchForAvailability($rooms_results) {
-    $el_key = array_shift(array_keys($rooms_results));
+
+// Array_shift() want to be passed a variable, not the result of a function.
+    $rooms_results_keys = array_keys($rooms_results);
+    $el_key = array_shift($rooms_results_keys);
 
     if (!isset($rooms_results[$el_key]['rooms_unit'])) return 0;
 
@@ -186,7 +189,12 @@ class AvailabilityAgent {
     // Load the unit
     $unit = rooms_unit_load($unit_id);
 
-    $units = array_pop(array_pop($this->getUnitsByPriceType(array('rooms_unit' => array($unit_id => $unit)), $price_modifiers)));
+    // Array_pop expects an array variable by reference.
+    $units = $this->getUnitsByPriceType(array('rooms_unit' => array($unit_id => $unit)), $price_modifiers);
+
+    // Array_pop has to be run twice to get the booking price and the unit id.
+    $units = array_pop($units);
+    $units = array_pop($units);
 
     if (count($units) == 0) {
       return ROOMS_NO_ROOMS;
