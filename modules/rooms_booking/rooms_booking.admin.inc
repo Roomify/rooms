@@ -915,6 +915,8 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
     }
   }
 
+  $booking->save();
+
   if ($booking->order_id == '') {
     if (variable_get('rooms_manually_booking_create_order', '1') == '1') {
       $booking_parameters = array('adults' => $form_state['values']['data']['group_size'], 'children' => $form_state['values']['data']['group_size_children']);
@@ -922,10 +924,10 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
       $order = rooms_booking_create_order($start_date, $end_date, $booking_parameters, $unit_object, $booking);
 
       $booking->order_id = $order->order_number;
+
+      $booking->save();
     }
   }
-
-  $booking->save();
 
   // We have a unit defined so lets block availability there
   if ($unit != 0) {
