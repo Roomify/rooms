@@ -19,7 +19,7 @@ class RoomsBookingTestMain extends DrupalWebTestCase {
     parent::setUp(array('rooms_booking', 'rooms_booking_manager'));
 
     // Create a new user with permissions of Configure rooms settings
-    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view anonymous availability information', 'view named availability information', 'administer bookable units', 'manage booking unit pricing', 'administer booking types', 'administer bookings'));
+    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view anonymous availability information', 'view named availability information', 'administer bookable units', 'manage booking unit pricing', 'administer booking types', 'administer bookings', 'create commerce_customer_profile entities'));
     $this->drupalLogin($admin);
   }
 
@@ -42,6 +42,14 @@ class RoomsBookingTestMain extends DrupalWebTestCase {
           'default_state' => 1,
         ),
       t('Save Unit'));
+
+    $this->drupalPost('admin/commerce/customer-profiles/add/billing',
+        array(
+          'commerce_customer_address[und][0][name_line]' => 'user1',
+          'commerce_customer_address[und][0][thoroughfare]' => 'test',
+          'commerce_customer_address[und][0][locality]' => 'test',
+        ),
+      t('Save profile'));
 
     $this->drupalGet('admin/rooms/bookings');
 
@@ -104,7 +112,7 @@ class RoomsBookingTestSingleOccupancy extends DrupalWebTestCase {
     parent::setUp(array('rooms_booking', 'rooms_booking_manager'));
 
     // Create a new user with permissions of Configure rooms settings
-    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view anonymous availability information', 'view named availability information', 'administer bookable units', 'manage booking unit pricing', 'administer booking types', 'administer bookings'));
+    $admin = $this->drupalCreateUser(array('access administration pages', 'administer bookable unit types', 'manage booking unit availability', 'view anonymous availability information', 'view named availability information', 'administer bookable units', 'manage booking unit pricing', 'administer booking types', 'administer bookings', 'create commerce_customer_profile entities'));
     $this->drupalLogin($admin);
   }
 
@@ -131,6 +139,14 @@ class RoomsBookingTestSingleOccupancy extends DrupalWebTestCase {
           'field_options[und][0][value]' => '10',
         ),
       t('Save Unit'));
+
+    $this->drupalPost('admin/commerce/customer-profiles/add/billing',
+        array(
+          'commerce_customer_address[und][0][name_line]' => 'user1',
+          'commerce_customer_address[und][0][thoroughfare]' => 'test',
+          'commerce_customer_address[und][0][locality]' => 'test',
+        ),
+      t('Save profile'));
 
     $this->drupalGet('admin/rooms/bookings');
 
@@ -336,7 +352,7 @@ class RoomsBookingFilterTestCase extends DrupalWebTestCase {
 
     $this->drupalPost('booking/2015-02-24/2015-02-28/1',
         array(
-          'standard_unit:400:quantity' => 1,
+          'standard_unit[400][quantity]' => 1,
         ),
       t('Place Booking'),
       array('query' => array('rooms_group_size1' => 2, 'rooms_children1' => 0)));

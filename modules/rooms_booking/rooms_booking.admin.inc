@@ -845,6 +845,7 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
   $client_name = $client[0];
   $commerce_customer_id = rooms_booking_find_customer_by_name($client_name);
 
+  // Save customer in rooms_customers table
   db_merge('rooms_customers')
     ->key(array('name' => $client_name))
     ->fields(array(
@@ -853,6 +854,7 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
     ))
     ->execute();
 
+  // Get customer id from rooms_customers table
   $client_id = db_select('rooms_customers')
     ->fields('rooms_customers', array('id'))
     ->condition('name', $client_name, '=')
@@ -904,6 +906,7 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
 
   $unit_object = rooms_unit_load($unit);
 
+  // Store selected unit options
   if (isset($unit_object->field_options[LANGUAGE_NONE])) {
     foreach ($unit_object->field_options[LANGUAGE_NONE] as $option) {
       $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
@@ -915,6 +918,7 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
     }
   }
 
+  // Save booking
   $booking->save();
 
   if ($booking->order_id == '') {
@@ -925,6 +929,7 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
 
       $booking->order_id = $order->order_number;
 
+      // Resave booking to store order reference
       $booking->save();
     }
   }

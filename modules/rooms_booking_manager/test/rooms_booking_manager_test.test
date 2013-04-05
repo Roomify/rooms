@@ -57,13 +57,13 @@ class RoomsBookingManagerTestMain extends DrupalWebTestCase {
 
     $this->drupalPostAJAX(NULL,
       array(
-        'single_rooms:400:quantity' => 1,
+        'single_rooms[400][quantity]' => 1,
       ),
-      'single_rooms:400:quantity');
+      'single_rooms[400][quantity]');
 
     $this->drupalPost(NULL,
         array(
-          'single_rooms:400:quantity' => 1,
+          'single_rooms[400][quantity]' => 1,
         ),
       t('Place Booking'));
 
