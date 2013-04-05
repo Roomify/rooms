@@ -682,7 +682,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
           $units_keys = array_keys($units);
 
           for ($c = 1; $c <= $form_state['values'][$type][$price]['quantity']; $c++) {
-            $form[$type][$price]['fieldset']['label'][$c]['#markup'] = $type_obj->label . ' ' . $c;
+            $form[$type][$price]['fieldset'][$c]['label']['#markup'] = $type_obj->label . ' ' . $c;
 
             // Add options checkboxes
             if (isset($units[$units_keys[$c - 1]]['unit']->field_options[LANGUAGE_NONE])) {
@@ -695,6 +695,17 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                     'wrapper' => $type . '_' . $price . '_' . $c . '_price',
                   ),
                 );
+                if (is_numeric($option['quantity'])) {
+                  $form[$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] = array(
+                    '#type' => 'select',
+                    '#title' => t('Quantity'),
+                    '#options' => range(1, $option['quantity']),
+                    '#ajax' => array(
+                      'callback' => 'rooms_booking_manager_options_change_callback',
+                      'wrapper' => $type . '_' . $price . '_' . $c . '_price',
+                    ),
+                  );
+                }
               }
             }
 
@@ -711,11 +722,17 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             if (isset($units[$units_keys[$c - 1]]['unit']->field_options[LANGUAGE_NONE])) {
               foreach ($units[$units_keys[$c - 1]]['unit']->field_options[LANGUAGE_NONE] as $option) {
                 if (isset($form_state['values'][$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
+
+                  $quantity = 1;
+                  if (isset($form_state['values'][$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity']) && $operation_list[$option['operation']] != ROOMS_REPLACE) {
+                    $quantity = $form_state['values'][$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] + 1;
+                  }
+
                   if ($form_state['values'][$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name']))] == 1) {
                     $price_modifiers[strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
                       '#type' => ROOMS_DYNAMIC_MODIFIER,
                       '#op_type' => $operation_list[$option['operation']],
-                      '#amount' => $option['value'],
+                      '#amount' => $option['value'] * $quantity,
                     );
                   }
                 }
@@ -726,9 +743,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             if (!empty($price_modifiers)) {
               $price_calendar = new UnitPricingCalendar($units[$units_keys[$c - 1]]['unit']->unit_id, $price_modifiers);
 
-              $temp_end_date = clone($end_date);
-              $temp_end_date->sub(new DateInterval('P1D'));
-              $new_price = $price_calendar->calculatePrice($start_date, $temp_end_date);
+              $new_price = $price_calendar->calculatePrice($start_date, $end_date);
               $new_price = $new_price['full_price'];
 
               $form[$type][$price]['fieldset'][$c]['price']['#markup'] = $new_price . ' ' . $currency_symbol;
