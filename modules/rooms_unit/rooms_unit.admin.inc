@@ -207,18 +207,34 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#default_value' => isset($unit->bookable) ? $unit->bookable : 1,
   );
 
-  $form['sleeps'] = array(
+  $form['min_sleeps'] = array(
     '#type' => 'textfield',
     '#size' => 5,
-    '#default_value' => isset($unit->sleeps) ? $unit->sleeps : 1,
+    '#default_value' => isset($unit->min_sleeps) ? $unit->min_sleeps : 1,
+    '#field_prefix' => 'Min: ',
     '#title' => t('Adults sleeps'),
   );
 
-  $form['children'] = array(
+  $form['max_sleeps'] = array(
     '#type' => 'textfield',
     '#size' => 5,
-    '#default_value' => isset($unit->children_sleeps) ? $unit->children_sleeps : 0,
+    '#default_value' => isset($unit->max_sleeps) ? $unit->max_sleeps : 1,
+    '#field_prefix' => 'Max: ',
+  );
+
+  $form['min_children'] = array(
+    '#type' => 'textfield',
+    '#size' => 5,
+    '#default_value' => isset($unit->min_children_sleeps) ? $unit->min_children_sleeps : 0,
+    '#field_prefix' => 'Min: ',
     '#title' => t('Children sleeps'),
+  );
+
+  $form['max_children'] = array(
+    '#type' => 'textfield',
+    '#size' => 5,
+    '#default_value' => isset($unit->max_children_sleeps) ? $unit->max_children_sleeps : 0,
+    '#field_prefix' => 'Max: ',
   );
 
   $form['default_state'] = array(

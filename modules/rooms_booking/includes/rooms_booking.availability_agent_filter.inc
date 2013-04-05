@@ -68,9 +68,9 @@ class AvailabilityAgentSizeFilter extends AvailabilityAgentCommonFilter {
 
     $query = new EntityFieldQuery();
     $query->entityCondition('entity_type', 'rooms_unit')
-          ->propertyOrderBy('sleeps', 'ASC')
-          ->propertyCondition('sleeps', $group_size, '>=')
-          ->propertyCondition('children', $group_size_children, '>=')
+          ->propertyOrderBy('max_sleeps', 'ASC')
+          ->propertyCondition('max_sleeps', $group_size, '>=')
+          ->propertyCondition('max_children', $group_size_children, '>=')
           ->propertyCondition('bookable', 1);
 
     // Add a unit type condition if this has been defined
@@ -126,7 +126,7 @@ class AvailabilityAgentDateFilter extends AvailabilityAgentCommonFilter {
 
     $query = new EntityFieldQuery();
     $query->entityCondition('entity_type', 'rooms_unit')
-            ->propertyOrderBy('sleeps', 'ASC')
+            ->propertyOrderBy('max_sleeps', 'ASC')
             ->propertyCondition('bookable', 1);
 
     // Execute the query and collect the results
@@ -187,7 +187,7 @@ class AvailabilityAgentCommerceFilter extends AvailabilityAgentCommonFilter {
     if (empty($this->units)) {
       $query = new EntityFieldQuery();
       $query->entityCondition('entity_type', 'rooms_unit')
-            ->propertyOrderBy('sleeps', 'ASC')
+            ->propertyOrderBy('max_sleeps', 'ASC')
             ->propertyCondition('bookable', 1);
 
       // Execute the query and collect the results

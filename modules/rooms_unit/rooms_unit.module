@@ -603,7 +603,7 @@ class RoomsUnitController extends EntityAPIController {
     );
 
     $content[t('sleeps')] =  array(
-      '#markup' => t('Sleeps:') . $entity->sleeps . '<br/>',
+      '#markup' => t('Sleeps:') . $entity->max_sleeps . '<br/>',
     );
 
     if (isset($entity->data['bed_arrangement'])) {

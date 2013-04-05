@@ -101,19 +101,33 @@ function rooms_unit_schema() {
         'size' => 'tiny',
         'description' => 'Whether the unit is available for booking or not.',
       ),
-      'sleeps' => array(
+      'min_sleeps' => array(
         'type' => 'int',
         'not null' => TRUE,
         'default' => 1,
         'size' => 'tiny',
-        'description' => 'How many people can sleep in a unit',
+        'description' => 'How many people can sleep in a unit (MIN)',
       ),
-      'children' => array(
+      'max_sleeps' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+        'size' => 'tiny',
+        'description' => 'How many people can sleep in a unit (MAX)',
+      ),
+      'min_children' => array(
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
         'size' => 'tiny',
-        'description' => 'How many children can sleep in a unit',
+        'description' => 'How many children can sleep in a unit (MIN)',
+      ),
+      'max_children' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => 'How many children can sleep in a unit (MAX)',
       ),
       'data' => array(
         'type' => 'blob',
@@ -371,4 +385,55 @@ function rooms_unit_update_7003() {
  */
 function rooms_unit_update_7004() {
   db_drop_field('rooms_units', 'cot_surcharge');
+}
+
+
+/**
+ * Add max and min sleeps, add max and min children
+ */
+function rooms_unit_update_7005() {
+  $max_sleeps = array(
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 1,
+    'size' => 'tiny',
+    'description' => 'How many people can sleep in a unit (MAX)',
+  );
+
+  db_change_field('rooms_units', 'sleeps', 'max_sleeps', $max_sleeps);
+
+  $max_children = array(
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+    'size' => 'tiny',
+    'description' => 'How many children can sleep in a unit (MAX)',
+  );
+
+  db_change_field('rooms_units', 'children', 'max_children', $max_children);
+
+
+  $min_sleeps = array(
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 1,
+    'size' => 'tiny',
+    'description' => 'How many people can sleep in a unit (MIN)',
+  );
+
+  db_add_field('rooms_units', 'min_sleeps', $min_sleeps);
+
+  $min_children = array(
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+    'size' => 'tiny',
+    'description' => 'How many children can sleep in a unit (MIN)',
+  );
+
+  db_add_field('rooms_units', 'min_children', $min_children);
+
+
+  db_update('rooms_units')->expression('min_sleeps', 'max_sleeps')->execute();
+  db_update('rooms_units')->expression('min_children', 'max_children')->execute();
 }
