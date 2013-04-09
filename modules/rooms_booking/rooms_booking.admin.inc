@@ -252,7 +252,9 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#description' => t('The number of children staying in this room.'),
   );
 
+  // If price calculation is setted to 'Price per person per night'
   if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
+    // Show fields for enter children ages
     $form['data']['group_size_children']['#ajax'] = array(
       'callback' => 'rooms_booking_children_change_callback',
       'wrapper' => 'rooms_booking_childrensage',
@@ -684,7 +686,8 @@ function rooms_booking_date_ajax_callback($form, &$form_state) {
 }
 
 /**
- *
+ * AJAX callback for the children ages form element to trigger automatically the
+ * re-assign submit button and help the user to don't forget re-assign price.
  */
 function rooms_booking_childrens_age_ajax_callback($form, &$form_state) {
   if (isset($form_state['values']['unit_id'])) {
@@ -696,7 +699,7 @@ function rooms_booking_childrens_age_ajax_callback($form, &$form_state) {
 }
 
 /**
- *
+ * AJAX callback for the children form selector to show textfields for ages
  */
 function rooms_booking_children_change_callback($form, &$form_state) {
   return $form['data']['childrens_age'];
@@ -719,6 +722,9 @@ function rooms_booking_edit_form_availability_callback(&$form, $form_state) {
   return $form['availability_fieldset'];
 }
 
+/**
+ * Simply returns the placeholder for all the relevant unit assignment functionality.
+ */
 function rooms_booking_select_unit_callback(&$form, $form_state) {
   return $form['availability_fieldset']['unit_fieldset']['options_fieldset'];
 }
@@ -979,6 +985,7 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
     }
   }
 
+  // Store children ages in booking's data field
   if (isset($form_state['values']['data']['childrens_age'])) {
     $booking->data['childrens_age'] = $form_state['values']['data']['childrens_age'];
   }

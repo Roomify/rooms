@@ -34,7 +34,133 @@ function rooms_booking_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  $items['admin/rooms/config/children'] = array(
+    'title' => t('Children Discount Settings'),
+    'description' => t('Configure settings.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('rooms_booking_children_discount'),
+    'access arguments' => array('configure room settings'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
   return $items;
+}
+
+
+function rooms_booking_manager_children_discount($form, &$form_state) {
+  $form['#tree'] = TRUE;
+
+  if (empty($form_state['num_options'])) {
+    $options = variable_get('rooms_children_discount_options', array());
+
+    if (empty($options)) {
+      $form_state['num_options'] = 1;
+    }
+    else {
+      $form_state['num_options'] = count($options);
+    }
+  }
+
+  for ($i = 1; $i <= $form_state['num_options']; $i++) {
+    $form['option'][$i] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Option #@num', array('@num' => $i)),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+      '#attributes' => array('class' => array('container-inline')),
+    );
+
+    $form['option'][$i]['start'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Start:'),
+      '#size' => 5,
+      '#maxlength' => 5,
+      '#required' => TRUE,
+      '#suffix' => '+ days',
+      '#default_value' => isset($options[$i]['start']) ? $options[$i]['start'] : '',
+    );
+    $form['option'][$i]['end'] = array(
+      '#type' => 'textfield',
+      '#title' => t('End:'),
+      '#size' => 5,
+      '#maxlength' => 5,
+      '#required' => TRUE,
+      '#suffix' => '- days',
+      '#default_value' => isset($options[$i]['end']) ? $options[$i]['end'] : '',
+    );
+    $form['option'][$i]['discount'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Discount:'),
+      '#size' => 10,
+      '#maxlength' => 10,
+      '#required' => TRUE,
+      '#suffix' => '%',
+      '#default_value' => isset($options[$i]['end']) ? $options[$i]['discount'] : '',
+    );
+  }
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+  );
+
+  $form['add_option'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add another option'),
+    '#submit' => array('rooms_booking_manager_children_discount_add_option'),
+  );
+
+  if ($form_state['num_options'] > 1) {
+    $form['remove_option'] = array(
+      '#type' => 'submit',
+      '#value' => t('Remove latest option'),
+      '#submit' => array('rooms_booking_manager_children_discount_remove_option'),
+      '#limit_validation_errors' => array(),
+    );
+  }
+
+  return $form;
+}
+
+
+function rooms_booking_manager_children_discount_validate($form, &$form_state) {
+  foreach ($form_state['values']['option'] as $key => $value) {
+    if ($value['start'] != '' || $value['end'] != '' || $value['discount'] != '') {
+      if (!is_numeric($value['start'])) form_set_error('option]['.$key.'][start', t('This is not a valid integer.'));
+      if (!is_numeric($value['end'])) form_set_error('option]['.$key.'][end', t('This is not a valid integer.'));
+      if (!is_numeric($value['discount'])) form_set_error('option]['.$key.'][discount', t('This is not a valid discount.'));
+    }
+  }
+}
+
+
+function rooms_booking_manager_children_discount_submit($form, &$form_state) {
+  $options = array();
+
+  for ($i = 1; $i <= $form_state['num_options']; $i++) {
+    $options[$i] = array(
+      'start' => $form_state['values']['option'][$i]['start'],
+      'end' => $form_state['values']['option'][$i]['end'],
+      'discount' => $form_state['values']['option'][$i]['discount'],
+    );
+  }
+
+  variable_set('rooms_children_discount_options', $options);
+}
+
+
+function rooms_booking_manager_children_discount_add_option($form, &$form_state) {
+  $form_state['num_options']++;
+
+  $form_state['rebuild'] = TRUE;
+}
+
+
+function rooms_booking_manager_children_discount_remove_option($form, &$form_state) {
+  if ($form_state['num_options'] > 1) {
+    $form_state['num_options']--;
+  }
+
+  $form_state['rebuild'] = TRUE;
 }
 
 

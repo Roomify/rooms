@@ -55,13 +55,13 @@ class UnitPricingCalendar {
    * The end date for the search
    *
    * @param $persons
-   * todo description
+   * The number of persons staying in this room
    *
    * @param $children
-   * todo description
+   * The number of children staying in this room
    *
    * @param $children_ages
-   * todo description
+   * Children ages
    *
    * @return
    * The array holding full price and booking price of the room for that period

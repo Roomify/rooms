@@ -86,133 +86,7 @@ function rooms_booking_manager_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  $items['admin/rooms/config/children'] = array(
-    'title' => t('Children Discount Settings'),
-    'description' => t('Configure settings.'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('rooms_booking_manager_children_discount'),
-    'access arguments' => array('configure room settings'),
-    'type' => MENU_NORMAL_ITEM,
-  );
-
   return $items;
-}
-
-
-function rooms_booking_manager_children_discount($form, &$form_state) {
-  $form['#tree'] = TRUE;
-
-  if (empty($form_state['num_options'])) {
-    $options = variable_get('rooms_children_discount_options', array());
-
-    if (empty($options)) {
-      $form_state['num_options'] = 1;
-    }
-    else {
-      $form_state['num_options'] = count($options);
-    }
-  }
-
-  for ($i = 1; $i <= $form_state['num_options']; $i++) {
-    $form['option'][$i] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Option #@num', array('@num' => $i)),
-      '#collapsible' => TRUE,
-      '#collapsed' => FALSE,
-      '#attributes' => array('class' => array('container-inline')),
-    );
-
-    $form['option'][$i]['start'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Start:'),
-      '#size' => 5,
-      '#maxlength' => 5,
-      '#required' => TRUE,
-      '#suffix' => '+ days',
-      '#default_value' => isset($options[$i]['start']) ? $options[$i]['start'] : '',
-    );
-    $form['option'][$i]['end'] = array(
-      '#type' => 'textfield',
-      '#title' => t('End:'),
-      '#size' => 5,
-      '#maxlength' => 5,
-      '#required' => TRUE,
-      '#suffix' => '- days',
-      '#default_value' => isset($options[$i]['end']) ? $options[$i]['end'] : '',
-    );
-    $form['option'][$i]['discount'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Discount:'),
-      '#size' => 10,
-      '#maxlength' => 10,
-      '#required' => TRUE,
-      '#suffix' => '%',
-      '#default_value' => isset($options[$i]['end']) ? $options[$i]['discount'] : '',
-    );
-  }
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save'),
-  );
-
-  $form['add_option'] = array(
-    '#type' => 'submit',
-    '#value' => t('Add another option'),
-    '#submit' => array('rooms_booking_manager_children_discount_add_option'),
-  );
-
-  if ($form_state['num_options'] > 1) {
-    $form['remove_option'] = array(
-      '#type' => 'submit',
-      '#value' => t('Remove latest option'),
-      '#submit' => array('rooms_booking_manager_children_discount_remove_option'),
-      '#limit_validation_errors' => array(),
-    );
-  }
-
-  return $form;
-}
-
-
-function rooms_booking_manager_children_discount_validate($form, &$form_state) {
-  foreach ($form_state['values']['option'] as $key => $value) {
-    if ($value['start'] != '' || $value['end'] != '' || $value['discount'] != '') {
-      if (!is_numeric($value['start'])) form_set_error('option]['.$key.'][start', t('This is not a valid integer.'));
-      if (!is_numeric($value['end'])) form_set_error('option]['.$key.'][end', t('This is not a valid integer.'));
-      if (!is_numeric($value['discount'])) form_set_error('option]['.$key.'][discount', t('This is not a valid discount.'));
-    }
-  }
-}
-
-
-function rooms_booking_manager_children_discount_submit($form, &$form_state) {
-  $options = array();
-
-  for ($i = 1; $i <= $form_state['num_options']; $i++) {
-    $options[$i] = array(
-      'start' => $form_state['values']['option'][$i]['start'],
-      'end' => $form_state['values']['option'][$i]['end'],
-      'discount' => $form_state['values']['option'][$i]['discount'],
-    );
-  }
-
-  variable_set('rooms_children_discount_options', $options);
-}
-
-
-function rooms_booking_manager_children_discount_add_option($form, &$form_state) {
-  $form_state['num_options']++;
-
-  $form_state['rebuild'] = TRUE;
-}
-
-
-function rooms_booking_manager_children_discount_remove_option($form, &$form_state) {
-  if ($form_state['num_options'] > 1) {
-    $form_state['num_options']--;
-  }
-
-  $form_state['rebuild'] = TRUE;
 }
 
 
@@ -824,6 +698,8 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                     'wrapper' => $type . '_' . $price . '_' . $c . '_price',
                   ),
                 );
+
+                // Show quantity field selector if in option quantity is setted
                 if (is_numeric($option['quantity'])) {
                   if (isset($form_state['values'][$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
                     if ($form_state['values'][$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name']))] == 1) {
@@ -856,6 +732,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               }
             }
 
+            // Show Persons and Children selectors if price calculation is setted to 'Price per person per night' 
             if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
               $tmp_unit = $units[$units_keys[$c - 1]]['unit'];
 
@@ -937,6 +814,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             // Apply price modifiers and replace unit price
             $price_calendar = new UnitPricingCalendar($units[$units_keys[$c - 1]]['unit']->unit_id, $price_modifiers);
 
+            // Price is calculated as 'Price per person per night'
             if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
               if (isset($form_state['values'][$type][$price]['fieldset'][$c]['persons'])) {
                 $childrens_age = array();
@@ -953,11 +831,13 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                 $new_price = $price_calendar->calculatePrice($start_date, $end_date, $tmp_unit->max_sleeps);
               }
             }
+            // Price is calculated as 'Price per room per night'
             else {
               $new_price = $price_calendar->calculatePrice($start_date, $end_date);
             }
             $new_price = $new_price['full_price'];
 
+            // Replace old price with the new calculated value
             $form[$type][$price]['fieldset'][$c]['price']['#markup'] = $new_price . ' ' . $currency_symbol;
           }
         }
@@ -1014,6 +894,9 @@ function rooms_booking_manager_options_change_callback(&$form, $form_state) {
 }
 
 
+/**
+ * Ajax callback on booking search results page when Children selector change
+ */
 function rooms_booking_manager_children_change_callback(&$form, $form_state) {
   list($type, $price, $tmp, $fieldset, $tmp, $index) = preg_split('/[\[(.)\]]/', $form_state['triggering_element']['#name']);
 
@@ -1230,14 +1113,14 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
                 $childrens_age[] = $form_state['values'][$type][$price_level]['fieldset'][$i]['childrens_age'][$t];
               }
             }
-            $adults = isset($form_state['values'][$type][$price_level]['fieldset'][$i]['persons']) ?
+            $persons = isset($form_state['values'][$type][$price_level]['fieldset'][$i]['persons']) ?
                       $form_state['values'][$type][$price_level]['fieldset'][$i]['persons'] + $unit['unit']->min_sleeps :
                       $unit['unit']->max_sleeps;
             $children = isset($form_state['values'][$type][$price_level]['fieldset'][$i]['children']) ?
                       $form_state['values'][$type][$price_level]['fieldset'][$i]['children'] + $unit['unit']->min_children : 0;
 
             // Fill group_size with unit size
-            $group_size = array('adults' => $adults, 'children' => $children, 'childrens_age' => $childrens_age);
+            $group_size = array('adults' => $persons, 'children' => $children, 'childrens_age' => $childrens_age);
 
             // Convert Price options in Price modifiers
             $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
