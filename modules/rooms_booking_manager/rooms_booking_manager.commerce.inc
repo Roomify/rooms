@@ -90,6 +90,13 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent, $bookin
         ),
       );
 
+      $childrens_age = array(LANGUAGE_NONE => array());
+      if (isset($booking_size['childrens_age'])) {
+        foreach ($booking_size['childrens_age'] as $age) {
+          $childrens_age[LANGUAGE_NONE][]['value'] = $age;
+        }
+      }
+
       // Convert Price modifiers in Price options
       $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
 
@@ -103,6 +110,7 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent, $bookin
         );
       }
 
+      $line_item->rooms_booking_children_ages = $childrens_age;
       $line_item->rooms_booking_number_people = $group_size;
       $line_item->rooms_booking_dates = $commerce_dates;
       $line_item->rooms_booked_unit_id = $commerce_unit;

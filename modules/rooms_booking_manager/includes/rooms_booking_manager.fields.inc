@@ -118,6 +118,20 @@ function _rooms_booking_manager_line_item_type_fields() {
           'weight' => '0',
         ),
       ),
+      'rooms_booking_children_ages' => array(
+        'field_name' => 'rooms_booking_children_ages',
+        'label' => t('Booking Children Ages'),
+        'cardinality' => -1,
+        'type' => 'number_integer',
+        'module' => 'number',
+        'active' => 1,
+        'locked' => 1,
+        'settings' => array(
+          'size' => 8,
+          'max_length' => 10,
+          'text_processing' => 0,
+        ),
+      ),
       'rooms_booking_reference' => array(
         'field_name' => 'rooms_booking_reference',
         'label' => t('Booking Reference'),
@@ -376,6 +390,41 @@ function _rooms_booking_manager_line_item_type_fields() {
           'type' => 'rooms_options_combined',
         ),
       ),
+      'rooms_booking_children_ages' => array(
+        'field_name' => 'rooms_booking_children_ages',
+        'label' => t('Booking Children Ages'),
+        'entity_type' => 'commerce_line_item',
+        'bundle' => 'rooms_booking',
+        'required' => FALSE,
+        'settings' => array(
+          'size' => 8,
+          'max_length' => 10,
+          'text_processing' => 0,
+        ),
+        'widget' => array(
+          'type' => 'text_textfield',
+        ),
+        'display' => array(
+          'default' => array(
+            'label' => 'above',
+            'module' => 'number',
+            'settings' => array(
+              'decimal_separator' => '.',
+              'prefix_suffix' => TRUE,
+              'scale' => 0,
+              'thousand_separator' => ' ',
+            ),
+            'type' => 'number_integer',
+            'weight' => 13,
+          ),
+          'teaser' => array(
+            'label' => 'above',
+            'settings' => array(),
+            'type' => 'hidden',
+            'weight' => 0,
+          ),
+        ),
+      ),
       'rooms_booking_reference' => array(
         'field_name' => 'rooms_booking_reference',
         'label' => t('Booking Reference'),
@@ -390,7 +439,7 @@ function _rooms_booking_manager_line_item_type_fields() {
               'link' => FALSE,
             ),
             'type' => 'entityreference_label',
-            'weight' => 13,
+            'weight' => 14,
           ),
         ),
         'required' => 0,

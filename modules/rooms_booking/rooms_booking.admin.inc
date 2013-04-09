@@ -215,7 +215,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   $form['data']['#tree'] = TRUE;
   $form['data']['group_size'] = array(
     '#type' => 'select',
-    '#title' => 'Adults',
+    '#title' => 'Persons',
     '#options' => array(
       '1' => '1',
       '2' => '2',
@@ -229,7 +229,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       '10' => '10',
     ),
     '#default_value' =>  isset($booking->data['group_size']) ? $booking->data['group_size'] : '2',
-    '#description' => t('The number of adults staying in this room.'),
+    '#description' => t('The number of persons staying in this room.'),
   );
 
   $form['data']['group_size_children'] = array(
@@ -251,6 +251,48 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#default_value' =>  isset($booking->data['group_size_children']) ? $booking->data['group_size_children'] : '0',
     '#description' => t('The number of children staying in this room.'),
   );
+
+  if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
+    $form['data']['group_size_children']['#ajax'] = array(
+      'callback' => 'rooms_booking_children_change_callback',
+      'wrapper' => 'rooms_booking_childrensage',
+    );
+
+    $form['data']['childrens_age'] = array(
+      '#prefix' => '<div id="rooms_booking_childrensage" class="container-inline">',
+      '#suffix' => '</div>',
+    );
+
+    if (isset($form_state['values']['data']['group_size_children'])) {
+      for ($t = 1; $t <= $form_state['values']['data']['group_size_children']; $t++) {
+        $form['data']['childrens_age'][$t] = array(
+          '#type' => 'textfield',
+          '#title' => t('Age #' . $t),
+          '#size' => 5,
+          '#maxlength' => 5,
+          '#ajax' => array(
+            'callback' => 'rooms_booking_childrens_age_ajax_callback',
+            'event' => 'blur',
+          ),
+        );
+      }
+    }
+    elseif (!empty($booking->data['childrens_age'])) {
+      foreach ($booking->data['childrens_age'] as $key => $age) {
+        $form['data']['childrens_age'][$key] = array(
+          '#type' => 'textfield',
+          '#title' => t('Age #' . $key),
+          '#size' => 5,
+          '#maxlength' => 5,
+          '#default_value' => $age,
+          '#ajax' => array(
+            'callback' => 'rooms_booking_childrens_age_ajax_callback',
+            'event' => 'blur',
+          ),
+        );
+      }
+    }
+  }
 
   // A fieldset to hold the date range fields
   $form['rooms_date_range'] = array(
@@ -551,7 +593,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
             $price_calendar = new UnitPricingCalendar($unit_id, $price_modifiers);
 
             $end_date->sub(new DateInterval('P1D'));
-            $new_price = $price_calendar->calculatePrice($start_date, $end_date);
+            $new_price = $price_calendar->calculatePrice($start_date, $end_date, $form_state['values']['data']['group_size'], $form_state['values']['data']['group_size_children'], $form_state['values']['data']['childrens_age']);
             $new_price = $new_price['full_price'];
 
             // When user press 'Re-assign Unit' button we don't replace price
@@ -639,6 +681,25 @@ function rooms_booking_date_ajax_callback($form, &$form_state) {
   $commands[] = ajax_command_invoke('#edit-get-availability', 'trigger', array('mousedown'));
   print ajax_render($commands);
   exit();
+}
+
+/**
+ *
+ */
+function rooms_booking_childrens_age_ajax_callback($form, &$form_state) {
+  if (isset($form_state['values']['unit_id'])) {
+    $commands[] = ajax_command_invoke('#edit-get-availability', 'trigger', array('mousedown'));
+    print ajax_render($commands);
+  }
+
+  exit();
+}
+
+/**
+ *
+ */
+function rooms_booking_children_change_callback($form, &$form_state) {
+  return $form['data']['childrens_age'];
 }
 
 /**
@@ -918,6 +979,10 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
     }
   }
 
+  if (isset($form_state['values']['data']['childrens_age'])) {
+    $booking->data['childrens_age'] = $form_state['values']['data']['childrens_age'];
+  }
+
   // Save booking
   $booking->save();
 
@@ -1036,7 +1101,7 @@ function rooms_booking_delete_form($form, &$form_state, $booking) {
 function rooms_booking_delete_form_submit($form, &$form_state) {
   $booking = $form_state['rooms_booking'];
 
-  //Check if the booking had a unit associated with it and if so update the availability calendar
+  // Check if the booking had a unit associated with it and if so update the availability calendar
   if (isset($booking->unit_id) && isset($booking->start_date) && isset($booking->end_date)) {
       $uc = new UnitCalendar($booking->unit_id);
       $event_id = rooms_availability_assign_id($booking->booking_id);

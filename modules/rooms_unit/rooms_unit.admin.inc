@@ -212,7 +212,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#size' => 5,
     '#default_value' => isset($unit->min_sleeps) ? $unit->min_sleeps : 1,
     '#field_prefix' => 'Min: ',
-    '#title' => t('Adults sleeps'),
+    '#title' => t('Person sleeps'),
   );
 
   $form['max_sleeps'] = array(

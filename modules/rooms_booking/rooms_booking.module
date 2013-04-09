@@ -695,6 +695,8 @@ class RoomsBookingController extends EntityAPIController {
   }
 
   public function save($entity) {
+    parent::save($entity);
+
     // We are going to be updating the event - so the first step is to remove the old event.
     if ((!isset($entity->is_new)) && ($entity->unit_id != 0) && ($entity->start_date != '') && ($entity->end_date != '')) {
       // Create a calendar
@@ -722,8 +724,6 @@ class RoomsBookingController extends EntityAPIController {
 
       if ($responses[$event_id] == ROOMS_UPDATED) $be->lock();
     }
-
-    parent::save($entity);
   }
 
   /**

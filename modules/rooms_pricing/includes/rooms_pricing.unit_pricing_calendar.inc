@@ -54,16 +54,47 @@ class UnitPricingCalendar {
    * @param DateTime $end_date
    * The end date for the search
    *
+   * @param $persons
+   * todo description
+   *
+   * @param $children
+   * todo description
+   *
+   * @param $children_ages
+   * todo description
+   *
    * @return
    * The array holding full price and booking price of the room for that period
    */
-  public function calculatePrice(DateTime $start_date, DateTime $end_date) {
+  public function calculatePrice(DateTime $start_date, DateTime $end_date, $persons = 0, $children = 0, $children_ages = array()) {
+
+   if ($persons == 0) $persons = $this->unit->max_sleeps;
 
     $price = 0;
     $pricing_events = $this->getEvents($start_date, $end_date);
     foreach ($pricing_events as $event) {
       $days = $event->diff()->d + 1;
-      $price = $price + ($days * $event->amount);
+      if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
+        $children_discount_options = variable_get('rooms_children_discount_options', array());
+
+        $price = $price + ($days * $event->amount * ($persons - $children));
+
+        foreach ($children_ages as $age) {
+          if (is_array($age)) $age = $age['value'];
+          $discount = 0;
+          foreach ($children_discount_options as $option) {
+            if ($age >= $option['start'] && $age <= $option['end']) {
+              $discount = $option['discount'];
+              break;
+            }
+          }
+
+          $price = $price + ($days * $event->amount * (100 - $discount) / 100);
+        }
+      }
+      else {
+        $price = $price + ($days * $event->amount);
+      }
     }
 
     $price = $this->applyPriceModifiers($price);
