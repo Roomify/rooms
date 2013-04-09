@@ -47,7 +47,7 @@ function rooms_booking_menu() {
 }
 
 
-function rooms_booking_manager_children_discount($form, &$form_state) {
+function rooms_booking_children_discount($form, &$form_state) {
   $form['#tree'] = TRUE;
 
   if (empty($form_state['num_options'])) {
@@ -106,14 +106,14 @@ function rooms_booking_manager_children_discount($form, &$form_state) {
   $form['add_option'] = array(
     '#type' => 'submit',
     '#value' => t('Add another option'),
-    '#submit' => array('rooms_booking_manager_children_discount_add_option'),
+    '#submit' => array('rooms_booking_children_discount_add_option'),
   );
 
   if ($form_state['num_options'] > 1) {
     $form['remove_option'] = array(
       '#type' => 'submit',
       '#value' => t('Remove latest option'),
-      '#submit' => array('rooms_booking_manager_children_discount_remove_option'),
+      '#submit' => array('rooms_booking_children_discount_remove_option'),
       '#limit_validation_errors' => array(),
     );
   }
@@ -122,7 +122,7 @@ function rooms_booking_manager_children_discount($form, &$form_state) {
 }
 
 
-function rooms_booking_manager_children_discount_validate($form, &$form_state) {
+function rooms_booking_children_discount_validate($form, &$form_state) {
   foreach ($form_state['values']['option'] as $key => $value) {
     if ($value['start'] != '' || $value['end'] != '' || $value['discount'] != '') {
       if (!is_numeric($value['start'])) form_set_error('option]['.$key.'][start', t('This is not a valid integer.'));
@@ -133,7 +133,7 @@ function rooms_booking_manager_children_discount_validate($form, &$form_state) {
 }
 
 
-function rooms_booking_manager_children_discount_submit($form, &$form_state) {
+function rooms_booking_children_discount_submit($form, &$form_state) {
   $options = array();
 
   for ($i = 1; $i <= $form_state['num_options']; $i++) {
@@ -148,14 +148,14 @@ function rooms_booking_manager_children_discount_submit($form, &$form_state) {
 }
 
 
-function rooms_booking_manager_children_discount_add_option($form, &$form_state) {
+function rooms_booking_children_discount_add_option($form, &$form_state) {
   $form_state['num_options']++;
 
   $form_state['rebuild'] = TRUE;
 }
 
 
-function rooms_booking_manager_children_discount_remove_option($form, &$form_state) {
+function rooms_booking_children_discount_remove_option($form, &$form_state) {
   if ($form_state['num_options'] > 1) {
     $form_state['num_options']--;
   }
