@@ -168,6 +168,13 @@ function rooms_booking_availability_search_form($form, $form_state) {
     }
   }
 
+  $form['unit_type'] = array(
+    '#title' => t('Select an accommodation'),
+    '#type' => 'select',
+    '#options' => array('' => '') + rooms_unit_types_ids(),
+    '#default_value' => 0,
+  );
+
   $form['actions'] = array(
     '#type' => 'container',
     '#attributes' => array('class' => array('form-actions')),
@@ -231,6 +238,10 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
   $units = $form_state['values']['rooms'];
 
   $rooms_parameters = array();
+
+  if ($form_state['values']['unit_type'] != '') {
+    $rooms_parameters['type'] = $form_state['values']['unit_type'];
+  }
 
   // Collect the values for booking parameters
   foreach ($form_state['values'] as $key => $value) {

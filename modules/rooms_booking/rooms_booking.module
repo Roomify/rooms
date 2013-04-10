@@ -446,6 +446,15 @@ function rooms_booking_load_multiple($booking_ids = array(), $conditions = array
  *   The RoomsBooking object that represents the booking to delete
  */
 function rooms_booking_delete(RoomsBooking $booking, $delete_line_item = TRUE) {
+  // Check if the booking had a unit associated with it and if so update the availability calendar
+  if (isset($booking->unit_id) && isset($booking->start_date) && isset($booking->end_date)) {
+      $uc = new UnitCalendar($booking->unit_id);
+      $event_id = rooms_availability_assign_id($booking->booking_id);
+      // Create an event representing the event to remove
+      $be = new BookingEvent($booking->unit_id, $event_id, $booking->start_date_object, $booking->end_date_object);
+      $uc->removeEvents(array($be));
+  }
+
   if ($booking->order_id != '' && $delete_line_item) {
     $order = commerce_order_load($booking->order_id);
 

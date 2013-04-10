@@ -23,8 +23,10 @@
 
 #rooms-booking-availability-search-form--2 #edit-actions,
 #rooms-booking-availability-search-form--2 .form-item-rooms,
+#rooms-booking-availability-search-form--2 .form-item-unit-type,
 #rooms-booking-availability-search-form #edit-actions,
-#rooms-booking-availability-search-form .form-item-rooms {
+#rooms-booking-availability-search-form .form-item-rooms,
+#rooms-booking-availability-search-form .form-item-unit-type {
   clear:both;
 }
 

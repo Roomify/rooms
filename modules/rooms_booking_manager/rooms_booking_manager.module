@@ -174,9 +174,17 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
 
     $content['booking_results'] = 1;
 
+    $unit_types = array();
+    if (isset($_GET['type'])) {
+      $type = check_plain($_GET['type']);
+
+      if (rooms_unit_type_load($type) !== FALSE) {
+        $unit_types[] = $type;
+      }
+    }
+
     // Get all the units - note: we instantiate the Availability Agent using the date format set by the user
-    $agent = new AvailabilityAgent($start_date, $end_date, $booking_parameters, $booking_units);
-    $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS)));
+    $agent = new AvailabilityAgent($start_date, $end_date, $booking_parameters, $booking_units, variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS)), $unit_types);
 
     $units_per_type = $agent->checkAvailability();
 
@@ -350,7 +358,7 @@ function rooms_booking_manager_present_types($units_per_type, $content, $start_d
 
 
 /**
- * Implementation of hook_forms()
+ * Implements hook_forms()
  *
  * We use this to be able to present a different purchase button for each choice
  */
@@ -742,21 +750,32 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                 '#options' => range($tmp_unit->min_sleeps, $tmp_unit->max_sleeps),
                 '#default_value' => $tmp_unit->max_sleeps - $tmp_unit->min_sleeps,
                 '#ajax' => array(
-                  'callback' => 'rooms_booking_manager_options_change_callback',
-                  'wrapper' => $type . '_' . $price . '_' . $c . '_price',
+                  'callback' => 'rooms_booking_manager_quantity_change_callback',
+                  'wrapper' => $type . '_' . $price . '_container',
                 ),
               );
 
-              $form[$type][$price]['fieldset'][$c]['children'] = array(
-                '#type' => 'select',
-                '#title' => t('Children'),
-                '#options' => range($tmp_unit->min_children, $tmp_unit->max_children),
-                '#default_value' => 0,
-                '#ajax' => array(
-                  'callback' => 'rooms_booking_manager_children_change_callback',
-                  'wrapper' => $type . '_' . $price . '_' . $c . '_childrensage',
-                ),
-              );
+              $max_children = $tmp_unit->max_children;
+              if (isset($form_state['values'][$type][$price]['fieldset'][$c]['persons'])) {
+                $persons = $form_state['values'][$type][$price]['fieldset'][$c]['persons'] + $tmp_unit->min_sleeps;
+
+                if ($persons < $tmp_unit->max_children) {
+                  $max_children = $persons;
+                }
+              }
+
+              if ($max_children > $tmp_unit->min_children) {
+                $form[$type][$price]['fieldset'][$c]['children'] = array(
+                  '#type' => 'select',
+                  '#title' => t('Children'),
+                  '#options' => range($tmp_unit->min_children, $max_children),
+                  '#default_value' => 0,
+                  '#ajax' => array(
+                    'callback' => 'rooms_booking_manager_children_change_callback',
+                    'wrapper' => $type . '_' . $price . '_' . $c . '_childrensage',
+                  ),
+                );
+              }
 
               $form[$type][$price]['fieldset'][$c]['childrens_age'] = array(
                 '#prefix' => '<div id="' . $type . '_' . $price . '_' . $c . '_childrensage">',
@@ -811,11 +830,37 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               }
             }
 
-            // Apply price modifiers and replace unit price
-            $price_calendar = new UnitPricingCalendar($units[$units_keys[$c - 1]]['unit']->unit_id, $price_modifiers);
-
             // Price is calculated as 'Price per person per night'
             if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
+              $temp_end_date = clone($end_date);
+              $temp_end_date->add(new DateInterval('P1D'));
+
+              if (isset($form_state['values'][$type][$price]['fieldset'][$c]['persons'])) {
+                $group_size = $form_state['values'][$type][$price]['fieldset'][$c]['persons'] + $tmp_unit->min_sleeps;
+              }
+              else {
+                $group_size = $tmp_unit->max_sleeps;
+              }
+
+              $group_size_children = $form_state['values'][$type][$price]['fieldset'][$c]['children'] + $tmp_unit->min_children;
+
+              $booking_info = array(
+                'start_date' => clone($start_date),
+                'end_date' => $temp_end_date,
+                'unit' => $units[$units_keys[$c - 1]]['unit'],
+                'booking_parameters' => array(
+                  'group_size' => $group_size,
+                  'group_size_children' => $group_size_children,
+                  'childrens_age' => $childrens_age,
+                )
+              );
+
+              // Give other modules a chance to change the price modifiers
+              drupal_alter('rooms_price_modifier', $price_modifiers, $booking_info);
+
+              // Apply price modifiers and replace unit price
+              $price_calendar = new UnitPricingCalendar($units[$units_keys[$c - 1]]['unit']->unit_id, $price_modifiers);
+
               if (isset($form_state['values'][$type][$price]['fieldset'][$c]['persons'])) {
                 $childrens_age = array();
                 for ($t = 1; $t <= $form_state['values'][$type][$price]['fieldset'][$c]['children']; $t++) {
@@ -828,6 +873,9 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                                 $childrens_age);
               }
               else {
+                // Apply price modifiers and replace unit price
+                $price_calendar = new UnitPricingCalendar($units[$units_keys[$c - 1]]['unit']->unit_id, $price_modifiers);
+
                 $new_price = $price_calendar->calculatePrice($start_date, $end_date, $tmp_unit->max_sleeps);
               }
             }
@@ -1424,7 +1472,7 @@ function rooms_booking_manager_commerce_order_status_info() {
 
 
 /**
- * Implementation of hook_form_alter()
+ * Implements hook_form_alter().
  */
 function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
 
@@ -1648,7 +1696,9 @@ function rooms_booking_manager_settings_form_submit($form, &$form_state) {
 
 
 /**
- * Implements Rules to set Order Status
+ * Implements hook_rules_action_info()
+ *
+ * Rules to set Order Status
  */
 function rooms_booking_manager_rules_action_info() {
   $actions = array();
@@ -1714,22 +1764,26 @@ function rooms_booking_manager_price_apply($line_item, $name) {
       );
     }
 
+    $adults = $line_item->rooms_booking_number_people[LANGUAGE_NONE][0]['value'];
+    $children = $line_item->rooms_booking_number_people[LANGUAGE_NONE][1]['value'];
+    $childrens_age = (isset($line_item->rooms_booking_children_ages[LANGUAGE_NONE])) ?
+                      $line_item->rooms_booking_children_ages[LANGUAGE_NONE] : array();
+
     $booking_info = array(
       'start_date' => $start_date,
       'end_date' => $end_date,
       'unit' => $unit,
-      'booking_parameters' => array()
+      'booking_parameters' => array(
+        'group_size' => $adults,
+        'group_size_children' => $children,
+        'childrens_age' => $childrens_age,
+      )
     );
 
     // Give other modules a chance to change the price modifiers
     drupal_alter('rooms_price_modifier', $price_modifiers, $booking_info);
 
     $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
-
-    $adults = $line_item->rooms_booking_number_people[LANGUAGE_NONE][0]['value'];
-    $children = $line_item->rooms_booking_number_people[LANGUAGE_NONE][1]['value'];
-    $childrens_age = (isset($line_item->rooms_booking_children_ages[LANGUAGE_NONE])) ?
-                      $line_item->rooms_booking_children_ages[LANGUAGE_NONE] : array();
 
     $price = $price_calendar->calculatePrice($start_date, $end_date, $adults, $children, $childrens_age);
 
