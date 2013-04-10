@@ -437,3 +437,24 @@ function rooms_unit_update_7005() {
   db_update('rooms_units')->expression('min_sleeps', 'max_sleeps')->execute();
   db_update('rooms_units')->expression('min_children', 'max_children')->execute();
 }
+
+
+/**
+ * Add max and min sleeps for Bookable Unit Types
+ */
+function rooms_unit_update_7006() {
+  foreach (rooms_unit_types_ids() as $type => $label) {
+    $unit_type = rooms_unit_type_load($type);
+
+    $unit_type->data = array(
+      'base_price' => $unit_type->data['base_price'],
+      'min_sleeps' => $unit_type->data['sleeps'],
+      'max_sleeps' => $unit_type->data['sleeps'],
+      'min_children_sleeps' => $unit_type->data['children_sleeps'],
+      'max_children_sleeps' => $unit_type->data['children_sleeps'],
+      'rooms_description_source' => $unit_type->data['$unit_type->data'],
+    );
+
+    rooms_unit_type_save($unit_type);
+  }
+}

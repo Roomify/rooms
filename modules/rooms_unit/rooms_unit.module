@@ -550,7 +550,6 @@ class RoomsUnitType extends Entity {
  */
 class RoomsUnitController extends EntityAPIController {
 
-
   public function __construct($entityType) {
     parent::__construct($entityType);
   }
@@ -622,6 +621,7 @@ class RoomsUnitController extends EntityAPIController {
  * The Controller for Room entities
  */
 class RoomsUnitTypeController extends EntityAPIControllerExportable {
+
   public function __construct($entityType) {
     parent::__construct($entityType);
   }
