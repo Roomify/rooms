@@ -8,14 +8,14 @@
 
 
 /**
- * Implements hook_install
+ * Implements hook_install().
  */
 function rooms_unit_install() {
   rooms_description_content_type_install();
 }
 
 /**
- * Implements hook_uninstall
+ * Implements hook_uninstall().
  */
 function rooms_unit_uninstall() {
   rooms_description_content_type_uninstall();

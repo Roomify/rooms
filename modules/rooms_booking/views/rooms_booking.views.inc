@@ -7,7 +7,7 @@
 
 
 /**
- * Implements hook_views_data()
+ * Implements hook_views_data().
  */
 function rooms_booking_views_data_alter(&$data) {
   $data['rooms_bookings']['link_booking'] = array(

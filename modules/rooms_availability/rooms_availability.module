@@ -1343,7 +1343,7 @@ function rooms_availability_fullcalendar_get_js_path() {
 }
 
 /**
- * Implementation of hook_form_alter()
+ * Implements hook_form_alter().
  */
 function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'rooms_booking_settings') {

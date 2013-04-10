@@ -36,7 +36,7 @@ function rooms_availability_reference_menu() {
 
 
 /**
- * Implements hook_field_info()
+ * Implements hook_field_info().
  */
 function rooms_availability_reference_field_info() {
   return array(

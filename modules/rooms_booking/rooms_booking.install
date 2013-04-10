@@ -8,7 +8,7 @@
 
 
 /**
- * Implements hook_install()
+ * Implements hook_install().
  */
 function rooms_booking_install() {
   // Create a basic booking type

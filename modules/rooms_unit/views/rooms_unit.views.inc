@@ -7,7 +7,7 @@
 
 
 /**
- * Implements hook_views_data()
+ * Implements hook_views_data().
  */
 function rooms_unit_views_data_alter(&$data) {
 
