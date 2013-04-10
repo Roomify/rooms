@@ -165,6 +165,8 @@ function rooms_booking_children_discount_remove_option($form, &$form_state) {
 
 
 function rooms_booking_add_customer_profile() {
+  ctools_include('modal');
+
   module_load_include('inc', 'commerce_customer', 'includes/commerce_customer_profile.forms');
   $form_state = array(
     'title' => t('Add customer'),
