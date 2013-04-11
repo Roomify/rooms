@@ -353,8 +353,8 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     $type_obj = rooms_unit_type_load($booking->unit_type);
     $unit = rooms_unit_load($booking->unit_id);
 
-    if (isset($unit->field_options[LANGUAGE_NONE])) {
-      foreach ($unit->field_options[LANGUAGE_NONE] as $option) {
+    if (isset($unit->rooms_booking_unit_options[LANGUAGE_NONE])) {
+      foreach ($unit->rooms_booking_unit_options[LANGUAGE_NONE] as $option) {
         if (isset($booking->data[strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
           $options_list .= $option['name'] . ', ';
         }
@@ -540,8 +540,8 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
             }
             $unit = rooms_unit_load($unit_id);
 
-            if (isset($unit->field_options[LANGUAGE_NONE])) {
-              foreach ($unit->field_options[LANGUAGE_NONE] as $option) {
+            if (isset($unit->rooms_booking_unit_options[LANGUAGE_NONE])) {
+              foreach ($unit->rooms_booking_unit_options[LANGUAGE_NONE] as $option) {
                 $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
 
                 $form['availability_fieldset']['unit_fieldset']['options_fieldset'][$option_name] = array(
@@ -560,8 +560,8 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
             $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
 
             $price_modifiers = array();
-            if (isset($unit->field_options[LANGUAGE_NONE])) {
-              foreach ($unit->field_options[LANGUAGE_NONE] as $option) {
+            if (isset($unit->rooms_booking_unit_options[LANGUAGE_NONE])) {
+              foreach ($unit->rooms_booking_unit_options[LANGUAGE_NONE] as $option) {
                 $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
 
                 if (isset($form_state['values'][$option_name])) {
@@ -1008,8 +1008,8 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
   $unit_object = rooms_unit_load($unit);
 
   // Store selected unit options
-  if (isset($unit_object->field_options[LANGUAGE_NONE])) {
-    foreach ($unit_object->field_options[LANGUAGE_NONE] as $option) {
+  if (isset($unit_object->rooms_booking_unit_options[LANGUAGE_NONE])) {
+    foreach ($unit_object->rooms_booking_unit_options[LANGUAGE_NONE] as $option) {
       $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
       if (isset($form_state['values'][$option_name])) {
         if ($form_state['values'][$option_name] == '1') {

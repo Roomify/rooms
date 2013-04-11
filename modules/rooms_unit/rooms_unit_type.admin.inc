@@ -174,21 +174,21 @@ function rooms_unit_type_form_submit(&$form, &$form_state) {
   // Save and go back.
   $unit_type->save();
 
-  if (!isset($unit_type->field_options)) {
-    // Create field ('field_options') if not exist
-    if (field_read_field('field_options') === FALSE) {
+  if (!isset($unit_type->rooms_booking_unit_options)) {
+    // Create field ('rooms_booking_unit_options') if not exist
+    if (field_read_field('rooms_booking_unit_options') === FALSE) {
       $field = array(
-        'field_name' => 'field_options',
+        'field_name' => 'rooms_booking_unit_options',
         'type' => 'rooms_options',
         'cardinality' => -1,
       );
       field_create_field($field);
     }
 
-    if (field_read_instance('rooms_unit', 'field_options', $unit_type->type) === FALSE) {
+    if (field_read_instance('rooms_unit', 'rooms_booking_unit_options', $unit_type->type) === FALSE) {
       // Create the instance on the bundle.
       $instance = array(
-        'field_name' => 'field_options',
+        'field_name' => 'rooms_booking_unit_options',
         'entity_type' => 'rooms_unit',
         'label' => 'Options',
         'bundle' => $unit_type->type,

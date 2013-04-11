@@ -428,13 +428,13 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
   );
 
   // Add options checkboxes
-  if (isset($unit->field_options[LANGUAGE_NONE])) {
+  if (isset($unit->rooms_booking_unit_options[LANGUAGE_NONE])) {
     // Convert Price options in Price modifiers
     $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
 
     $price_modifiers = array();
 
-    foreach ($unit->field_options[LANGUAGE_NONE] as $option) {
+    foreach ($unit->rooms_booking_unit_options[LANGUAGE_NONE] as $option) {
       $form['options'][strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
         '#type' => 'checkbox',
         '#title' => $option['name'],
@@ -884,8 +884,8 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             $form[$type][$price]['fieldset'][$c]['label']['#markup'] = $type_obj->label . ' ' . $c;
 
             // Add options checkboxes
-            if (isset($units[$units_keys[$c - 1]]['unit']->field_options[LANGUAGE_NONE])) {
-              foreach ($units[$units_keys[$c - 1]]['unit']->field_options[LANGUAGE_NONE] as $option) {
+            if (isset($units[$units_keys[$c - 1]]['unit']->rooms_booking_unit_options[LANGUAGE_NONE])) {
+              foreach ($units[$units_keys[$c - 1]]['unit']->rooms_booking_unit_options[LANGUAGE_NONE] as $option) {
                 $form[$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
                   '#type' => 'checkbox',
                   '#title' => $option['name'],
@@ -999,8 +999,8 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
 
             $price_modifiers = array();
-            if (isset($units[$units_keys[$c - 1]]['unit']->field_options[LANGUAGE_NONE])) {
-              foreach ($units[$units_keys[$c - 1]]['unit']->field_options[LANGUAGE_NONE] as $option) {
+            if (isset($units[$units_keys[$c - 1]]['unit']->rooms_booking_unit_options[LANGUAGE_NONE])) {
+              foreach ($units[$units_keys[$c - 1]]['unit']->rooms_booking_unit_options[LANGUAGE_NONE] as $option) {
                 if (isset($form_state['values'][$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
 
                   $quantity = 1;
@@ -1384,8 +1384,8 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
             $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
 
             $price_modifiers = array();
-            if (isset($unit['unit']->field_options[LANGUAGE_NONE])) {
-              foreach ($unit['unit']->field_options[LANGUAGE_NONE] as $option) {
+            if (isset($unit['unit']->rooms_booking_unit_options[LANGUAGE_NONE])) {
+              foreach ($unit['unit']->rooms_booking_unit_options[LANGUAGE_NONE] as $option) {
                 if (isset($form_state['values'][$type][$price_level]['fieldset'][$i][strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
                   if ($form_state['values'][$type][$price_level]['fieldset'][$i][strtolower(str_replace(array(':', ' '), '_', $option['name']))] == 1) {
                     $price_modifiers[strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(

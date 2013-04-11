@@ -301,17 +301,17 @@ class AvailabilityAgent {
 }
 
 function comparebyOptionals($a, $b) {
-  if (!isset($b['unit']->field_options[LANGUAGE_NONE]) && !isset($a['unit']->field_options[LANGUAGE_NONE])) {
+  if (!isset($b['unit']->rooms_booking_unit_options[LANGUAGE_NONE]) && !isset($a['unit']->rooms_booking_unit_options[LANGUAGE_NONE])) {
     return 0;
   }
 
-  if (!isset($b['unit']->field_options[LANGUAGE_NONE]) && isset($a['unit']->field_options[LANGUAGE_NONE])) {
+  if (!isset($b['unit']->rooms_booking_unit_options[LANGUAGE_NONE]) && isset($a['unit']->rooms_booking_unit_options[LANGUAGE_NONE])) {
     return -1;
   }
 
-  if (isset($b['unit']->field_options[LANGUAGE_NONE]) && !isset($a['unit']->field_options[LANGUAGE_NONE])) {
+  if (isset($b['unit']->rooms_booking_unit_options[LANGUAGE_NONE]) && !isset($a['unit']->rooms_booking_unit_options[LANGUAGE_NONE])) {
     return 1;
   }
 
-  return count($a['unit']->field_options[LANGUAGE_NONE]) < count($a['unit']->field_options[LANGUAGE_NONE]) ? -1 : 1;
+  return count($a['unit']->rooms_booking_unit_options[LANGUAGE_NONE]) < count($a['unit']->rooms_booking_unit_options[LANGUAGE_NONE]) ? -1 : 1;
 }

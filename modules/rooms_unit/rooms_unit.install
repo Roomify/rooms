@@ -21,7 +21,7 @@ function rooms_unit_uninstall() {
   rooms_description_content_type_uninstall();
 
   // Delete options field.
-  field_delete_field('field_options');
+  field_delete_field('rooms_booking_unit_options');
 
   // Delete other rooms fields.
   foreach (_rooms_description_installed_fields() as $field) {
@@ -456,5 +456,63 @@ function rooms_unit_update_7006() {
     );
 
     rooms_unit_type_save($unit_type);
+  }
+}
+
+
+/**
+ * Rename 'field_options' to 'rooms_booking_unit_options' and attach this field to any istance of rooms_unit
+ */
+function rooms_unit_update_7007() {
+  if (field_info_field('field_options') !== NULL) {
+    // Rename old field 'field_options' to 'rooms_booking_unit_options'
+    db_query("UPDATE field_config SET field_name = 'rooms_booking_unit_options' WHERE field_name = 'field_options'");
+
+    db_query("UPDATE field_config_instance SET field_name = 'rooms_booking_unit_options' WHERE field_name = 'field_options'");
+
+    
+    db_query("RENAME TABLE field_data_field_options TO field_data_rooms_booking_unit_options");
+
+    db_query("ALTER TABLE field_data_rooms_booking_unit_options CHANGE field_options_name rooms_booking_unit_options_name VARCHAR(255) NOT NULL");
+    db_query("ALTER TABLE field_data_rooms_booking_unit_options CHANGE field_options_quantity rooms_booking_unit_options_quantity INT(11) DEFAULT NULL");
+    db_query("ALTER TABLE field_data_rooms_booking_unit_options CHANGE field_options_operation rooms_booking_unit_options_operation varchar(255) DEFAULT NULL");
+    db_query("ALTER TABLE field_data_rooms_booking_unit_options CHANGE field_options_value rooms_booking_unit_options_value INT(11) DEFAULT NULL");
+
+
+    db_query("RENAME TABLE field_revision_field_options TO field_revision_rooms_booking_unit_options");
+
+    db_query("ALTER TABLE field_revision_rooms_booking_unit_options CHANGE field_options_name rooms_booking_unit_options_name VARCHAR(255) NOT NULL");
+    db_query("ALTER TABLE field_revision_rooms_booking_unit_options CHANGE field_options_quantity rooms_booking_unit_options_quantity INT(11) DEFAULT NULL");
+    db_query("ALTER TABLE field_revision_rooms_booking_unit_options CHANGE field_options_operation rooms_booking_unit_options_operation varchar(255) DEFAULT NULL");
+    db_query("ALTER TABLE field_revision_rooms_booking_unit_options CHANGE field_options_value rooms_booking_unit_options_value INT(11) DEFAULT NULL");
+  }
+  else {
+    // Create field 'rooms_booking_unit_options'
+    $field = array(
+      'field_name' => 'rooms_booking_unit_options',
+      'type' => 'rooms_options',
+      'cardinality' => -1,
+    );
+    field_create_field($field);
+  }
+
+  cache_clear_all();
+  field_cache_clear();
+
+  foreach (rooms_unit_types_ids() as $type => $value) {
+    // Attach field 'rooms_booking_unit_options' to any istance of rooms_unit
+    if (field_info_instance('rooms_unit', 'rooms_booking_unit_options', $type) === NULL) {
+      $instance = array(
+        'field_name' => 'rooms_booking_unit_options',
+        'entity_type' => 'rooms_unit',
+        'label' => 'Options',
+        'bundle' => $type,
+        'required' => FALSE,
+        'widget' => array(
+          'type' => 'rooms_options',
+        ),
+      );
+      field_create_instance($instance);
+    }
   }
 }

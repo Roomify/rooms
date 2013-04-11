@@ -133,10 +133,10 @@ class RoomsBookingTestSingleOccupancy extends DrupalWebTestCase {
           'base_price' => '100',
           'bookable' => 1,
           'default_state' => 1,
-          'field_options[und][0][name]' => 'Single discount',
-          'field_options[und][0][quantity]' => '1',
-          'field_options[und][0][operation]' => '4',
-          'field_options[und][0][value]' => '10',
+          'rooms_booking_unit_options[und][0][name]' => 'Single discount',
+          'rooms_booking_unit_options[und][0][quantity]' => '1',
+          'rooms_booking_unit_options[und][0][operation]' => '4',
+          'rooms_booking_unit_options[und][0][value]' => '10',
         ),
       t('Save Unit'));
 
