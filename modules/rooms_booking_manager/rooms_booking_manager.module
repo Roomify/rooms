@@ -881,13 +881,12 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               }
               else {
                 // Apply price modifiers and replace unit price
-                $price_calendar = new UnitPricingCalendar($units[$units_keys[$c - 1]]['unit']->unit_id, $price_modifiers);
-
                 $new_price = $price_calendar->calculatePrice($start_date, $end_date, $tmp_unit->max_sleeps);
               }
             }
             // Price is calculated as 'Price per room per night'
             else {
+              $price_calendar = new UnitPricingCalendar($units[$units_keys[$c - 1]]['unit']->unit_id, $price_modifiers);
               $new_price = $price_calendar->calculatePrice($start_date, $end_date);
             }
             $new_price = $new_price['full_price'];
