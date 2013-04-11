@@ -26,7 +26,10 @@ define ('FULL_PAYMENT', 10);
 define ('PERCENT_PAYMENT', 11);
 define ('FIRST_NIGHT_PAYMENT', 12);
 
-define ('COMMERCE_UNCORFIMED', 13);
+define ('COMMERCE_UNCORFIMED', 1);
+
+define ('ROOMS_DISPLAY_TYPE_SELECTOR', 1);
+define ('ROOMS_DISPLAY_TYPE_SELECTOR_NO', 0);
 
 
 /**
@@ -628,6 +631,12 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
           '#markup' =>  t('Base Cost:') . ' ' . $price . ' ' . $currency_symbol,
           '#suffix' => '</div>'
         );
+        if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
+          $units_keys = array_keys($units);
+
+          $base_price = $units[$units_keys[0]]['unit']->base_price * ($nights->days + 1);
+          $form[$type][$price]['price']['#markup'] = t('Price per person:') . ' ' . $base_price . ' ' . $currency_symbol;
+        }
 
         // Element to hold price
         $form[$type][$price]['price_value'] = array(
@@ -1650,12 +1659,17 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
     drupal_add_js(drupal_get_path('module', 'rooms_booking_manager') . '/js/rooms_booking_manager_checked.js');*/
 
     $form['rooms_commerce_uncorfirmed'] = array(
-      '#type' => 'checkboxes',
+      '#type' => 'checkbox',
       '#description' => t('Only when Commerce checkout is selected.'),
-      '#options' => array(
-        COMMERCE_UNCORFIMED => t('Commerce uncorfirmed.'),
-      ),
-      '#default_value' => variable_get('rooms_commerce_uncorfirmed', array(COMMERCE_UNCORFIMED)),
+      '#title' => t('Commerce uncorfirmed.'),
+      '#default_value' => variable_get('rooms_commerce_uncorfirmed', COMMERCE_UNCORFIMED),
+    );
+
+    $form['rooms_booking_manager_type_sel'] = array(
+      '#type' => 'checkbox',
+      '#description' => t('Show type selector.'),
+      '#title' => t('Show type selector.'),
+      '#default_value' => variable_get('rooms_booking_manager_type_sel', ROOMS_DISPLAY_TYPE_SELECTOR),
     );
 
     $form['rooms_date_format'] = array(

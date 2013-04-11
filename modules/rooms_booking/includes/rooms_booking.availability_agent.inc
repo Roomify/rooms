@@ -260,7 +260,13 @@ class AvailabilityAgent {
         drupal_alter('rooms_price_modifier', $price_modifiers, $booking_info);
 
         $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
-        $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
+
+        if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON && count($this->booking_parameters) == 1 && isset($this->booking_parameters[0])) {
+          $price = $price_calendar->calculatePrice($this->start_date, $this->end_date, $this->booking_parameters[0]['adults'], $this->booking_parameters[0]['children'], $this->booking_parameters[0]['childrens_age']);
+        }
+        else {
+          $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
+        }
         $full_price = $price['full_price'];
 
         $units[$unit->type][$full_price][$unit->unit_id]['unit'] = $unit;

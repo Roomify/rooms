@@ -477,10 +477,14 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       elseif (isset($booking->unit_type)) {
         $search_unit_type = $booking->unit_type;
       }
+      $childrens_age = array();
+      if (isset($form_state['values']['data']['childrens_age'])) {
+        $childrens_age = $form_state['values']['data']['childrens_age'];
+      }
 
       $group_size_children = (isset($form_state['input']['data']['group_size_children'])) ? $form_state['input']['data']['group_size_children'] : 0;
       list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
-      $available_units = rooms_booking_edit_form_get_rooms($search_unit_type, $start_date, $end_date, $form_state['input']['data']['group_size'], $group_size_children, $booking);
+      $available_units = rooms_booking_edit_form_get_rooms($search_unit_type, $start_date, $end_date, $form_state['input']['data']['group_size'], $group_size_children, $childrens_age, $booking);
       if ($available_units == 2) {
         $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
           '#markup' => t('No @search_unit_type are available', array('@search_unit_type' => $search_unit_type)),
@@ -779,8 +783,13 @@ function rooms_booking_edit_form_unit_type_callback(&$form, $form_state) {
  *   start date.
  * @param DateTime $end_date
  *   end date.
+ * @param $group_size
+ * @param $group_size_children
+ * @param $childrens_age
+ * @param $current_booking
  */
-function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date = 0, $group_size, $group_size_children, $current_booking) {
+function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date = 0, $group_size, $group_size_children, $childrens_age = array(), $current_booking) {
+  
   // Set the unit types,
   $unit_types = array($select);
 
@@ -793,7 +802,12 @@ function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date =
 
   $valid_states = array_keys(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST)));
 
-  $booking_parameters = array(array('adults' => $group_size, 'children' => $group_size_children));
+  if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
+    $booking_parameters = array(array('adults' => $group_size, 'children' => $group_size_children, 'childrens_age' => $childrens_age));
+  }
+  else {
+    $booking_parameters = array(array('adults' => $group_size, 'children' => $group_size_children));
+  }
 
   if (isset($current_booking->booking_id)) {
     $ac = new AvailabilityAgent($start_date, $end_date, $booking_parameters, 1, array_merge($valid_states, array(rooms_availability_assign_id($current_booking->booking_id, '0'), rooms_availability_assign_id($current_booking->booking_id))), $unit_types);

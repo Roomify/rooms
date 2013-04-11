@@ -168,12 +168,14 @@ function rooms_booking_availability_search_form($form, $form_state) {
     }
   }
 
-  $form['unit_type'] = array(
-    '#title' => t('Select an accommodation'),
-    '#type' => 'select',
-    '#options' => array('' => '') + rooms_unit_types_ids(),
-    '#default_value' => 0,
-  );
+  if (variable_get('rooms_booking_manager_type_sel', ROOMS_DISPLAY_TYPE_SELECTOR_NO) == ROOMS_DISPLAY_TYPE_SELECTOR) {
+    $form['unit_type'] = array(
+      '#title' => t('Select an accommodation'),
+      '#type' => 'select',
+      '#options' => array('' => '') + rooms_unit_types_ids(),
+      '#default_value' => 0,
+    );
+  }
 
   $form['actions'] = array(
     '#type' => 'container',
@@ -239,8 +241,10 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
 
   $rooms_parameters = array();
 
-  if ($form_state['values']['unit_type'] != '') {
-    $rooms_parameters['type'] = $form_state['values']['unit_type'];
+  if (isset($form_state['values']['unit_type'])) {
+    if ($form_state['values']['unit_type'] != '') {
+      $rooms_parameters['type'] = $form_state['values']['unit_type'];
+    }
   }
 
   // Collect the values for booking parameters
