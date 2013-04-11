@@ -168,7 +168,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
     }
   }
 
-  if (variable_get('rooms_booking_manager_type_sel', ROOMS_DISPLAY_TYPE_SELECTOR_NO) == ROOMS_DISPLAY_TYPE_SELECTOR) {
+  if (variable_get('rooms_booking_manager_type_selector', ROOMS_DISPLAY_TYPE_SELECTOR_NO) == ROOMS_DISPLAY_TYPE_SELECTOR) {
     $form['unit_type'] = array(
       '#title' => t('Select an accommodation'),
       '#type' => 'select',
