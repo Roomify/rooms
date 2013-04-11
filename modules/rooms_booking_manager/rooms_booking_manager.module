@@ -419,9 +419,190 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
 
   $form['price'] = array(
     '#prefix' => '<div class="unit_price" id="' . $unit->unit_id . '_price" style="font-weight:bold">',
-    '#markup' =>  t('Cost:') . ' ' . $price . ' ' . $currency_symbol,
+    '#markup' =>  t('Base Cost:') . ' ' . $price . ' ' . $currency_symbol,
     '#suffix' => '</div>'
   );
+
+  $form['options'] = array(
+    '#tree' => TRUE,
+  );
+
+  // Add options checkboxes
+  if (isset($unit->field_options[LANGUAGE_NONE])) {
+    // Convert Price options in Price modifiers
+    $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
+
+    $price_modifiers = array();
+
+    foreach ($unit->field_options[LANGUAGE_NONE] as $option) {
+      $form['options'][strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
+        '#type' => 'checkbox',
+        '#title' => $option['name'],
+        '#ajax' => array(
+          'callback' => 'rooms_booking_manager_options_change_callback',
+          'wrapper' => 'unit_' . $unit->unit_id . '_price',
+        ),
+      );
+
+      // Show quantity field selector if in option quantity is setted
+      if (is_numeric($option['quantity'])) {
+        if (isset($form_state['values']['options'][strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
+          if ($form_state['values']['options'][strtolower(str_replace(array(':', ' '), '_', $option['name']))] == 1 && $option['quantity'] > 1) {
+
+            $form['options'][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] = array(
+              '#type' => 'select',
+              '#title' => t('Quantity'),
+              '#options' => range(1, $option['quantity']),
+              '#ajax' => array(
+                'callback' => 'rooms_booking_manager_options_change_callback',
+                'wrapper' => 'unit_' . $unit->unit_id . '_price',
+              ),
+              '#prefix' => '<div id="unit_' . $unit->unit_id . '_' . strtolower(str_replace(array(':', ' '), '_', $option['name'])) . '_quantity">',
+              '#suffix' => '</div>',
+            );
+          }
+          else {
+            $form['options'][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] = array(
+              '#prefix' => '<div id="unit_' . $unit->unit_id . '_' . strtolower(str_replace(array(':', ' '), '_', $option['name'])) . '_quantity">',
+              '#suffix' => '</div>',
+            );
+          }
+        }
+        else {
+          $form['options'][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] = array(
+            '#prefix' => '<div id="' . 'unit_' . $unit->unit_id . '_' . strtolower(str_replace(array(':', ' '), '_', $option['name'])) . '_quantity">',
+            '#suffix' => '</div>',
+          );
+        }
+      }
+
+      if (isset($form_state['values']['options'][strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
+        $quantity = 1;
+        if (isset($form_state['values']['options'][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity']) && $operation_list[$option['operation']] != ROOMS_REPLACE) {
+          $quantity = $form_state['values']['options'][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] + 1;
+        }
+
+        if ($form_state['values']['options'][strtolower(str_replace(array(':', ' '), '_', $option['name']))] == 1) {
+          $price_modifiers[strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
+            '#type' => ROOMS_DYNAMIC_MODIFIER,
+            '#op_type' => $operation_list[$option['operation']],
+            '#amount' => $option['value'] * $quantity,
+          );
+        }
+      }
+    }
+
+    // Price is calculated as 'Price per person per night'
+    if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
+      $form['persons'] = array(
+        '#type' => 'select',
+        '#title' => t('Persons'),
+        '#options' => range($unit->min_sleeps, $unit->max_sleeps),
+        '#default_value' => $unit->max_sleeps - $unit->min_sleeps,
+        '#ajax' => array(
+          'callback' => 'rooms_booking_manager_quantity_change_callback',
+          'wrapper' => 'unit_' . $unit->unit_id . '_price',
+        ),
+      );
+
+      $max_children = $unit->max_children;
+      if (isset($form_state['values']['persons'])) {
+        $persons = $form_state['values']['persons'] + $unit->min_sleeps;
+
+        if ($persons < $unit->max_children) {
+          $max_children = $persons;
+        }
+      }
+
+      if ($max_children > $unit->min_children) {
+        $form['children'] = array(
+          '#type' => 'select',
+          '#title' => t('Children'),
+          '#options' => range($unit->min_children, $max_children),
+          '#default_value' => 0,
+          '#ajax' => array(
+            'callback' => 'rooms_booking_manager_children_change_callback',
+            'wrapper' => 'unit_' . $unit->unit_id . '_childrensage',
+          ),
+        );
+      }
+
+      $form['childrens_age'] = array(
+        '#prefix' => '<div id="unit_' . $unit->unit_id . '_childrensage">',
+        '#suffix' => '</div>',
+        '#tree' => TRUE,
+      );
+
+      if (isset($form_state['values']['children'])) {
+        if ($form_state['values']['children'] > 0) {
+          for ($t = 1; $t <= $form_state['values']['children']; $t++) {
+            $form['childrens_age'][$t] = array(
+              '#type' => 'textfield',
+              '#title' => t('Age #' . $t),
+              '#size' => 5,
+              '#maxlength' => 5,
+              '#ajax' => array(
+                'callback' => 'rooms_booking_manager_options_change_callback',
+                'wrapper' => 'unit_' . $unit->unit_id . '_price',
+              ),
+            );
+          }
+        }
+      }
+    }
+
+    if (isset($form_state['values']['persons'])) {
+      $group_size = $form_state['values']['persons'] + $unit->min_sleeps;
+    }
+    else {
+      $group_size = $unit->max_sleeps;
+    }
+
+    $group_size_children = (isset($form_state['values']['children'])) ?
+                              $form_state['values']['children'] + $unit->min_children : 0;
+
+    $temp_end_date = clone($end_date);
+
+    $childrens_age = array();
+    if (isset($form_state['values']['persons'])) {
+      for ($t = 1; $t <= $form_state['values']['children']; $t++) {
+        $childrens_age[] = $form_state['values']['childrens_age'][$t];
+      }
+    }
+
+    $booking_info = array(
+      'start_date' => clone($start_date),
+      'end_date' => $temp_end_date,
+      'unit' => $unit,
+      'booking_parameters' => array(
+        'group_size' => $group_size,
+        'group_size_children' => $group_size_children,
+        'childrens_age' => $childrens_age,
+      )
+    );
+
+    // Give other modules a chance to change the price modifiers
+    drupal_alter('rooms_price_modifier', $price_modifiers, $booking_info);
+
+    // Apply price modifiers and replace unit price
+    $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
+
+    if (isset($form_state['values']['persons'])) {
+      $new_price = $price_calendar->calculatePrice($start_date, $end_date,
+                      $form_state['values']['persons'] + $unit->min_sleeps,
+                      $form_state['values']['children'] + $unit->min_children,
+                      $childrens_age);
+    }
+    else {
+      $new_price = $price_calendar->calculatePrice($start_date, $end_date, $unit->max_sleeps);
+    }
+
+    $form['new_price'] = array(
+      '#prefix' => '<div id="unit_' . $unit->unit_id . '_price" style="font-weight:bold">',
+      '#markup' => t('Cost:') . ' ' . $new_price['full_price'] . ' ' . $currency_symbol,
+      '#suffix' => '</div>',
+    );
+  }
 
   // We add the form's #submit array to this button along with the actual submit
   // handler to preserve any submit handlers added by a form callback_wrapper.
@@ -717,7 +898,8 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                 // Show quantity field selector if in option quantity is setted
                 if (is_numeric($option['quantity'])) {
                   if (isset($form_state['values'][$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
-                    if ($form_state['values'][$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name']))] == 1) {
+                    if ($form_state['values'][$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name']))] == 1 && $option['quantity'] > 1) {
+
                       $form[$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] = array(
                         '#type' => 'select',
                         '#title' => t('Quantity'),
@@ -851,6 +1033,13 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
               $group_size_children = $form_state['values'][$type][$price]['fieldset'][$c]['children'] + $tmp_unit->min_children;
 
+              $childrens_age = array();
+              if (isset($form_state['values'][$type][$price]['fieldset'][$c]['persons'])) {
+                for ($t = 1; $t <= $form_state['values'][$type][$price]['fieldset'][$c]['children']; $t++) {
+                  $childrens_age[] = $form_state['values'][$type][$price]['fieldset'][$c]['childrens_age'][$t];
+                }
+              }
+
               $booking_info = array(
                 'start_date' => clone($start_date),
                 'end_date' => $temp_end_date,
@@ -869,23 +1058,18 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               $price_calendar = new UnitPricingCalendar($units[$units_keys[$c - 1]]['unit']->unit_id, $price_modifiers);
 
               if (isset($form_state['values'][$type][$price]['fieldset'][$c]['persons'])) {
-                $childrens_age = array();
-                for ($t = 1; $t <= $form_state['values'][$type][$price]['fieldset'][$c]['children']; $t++) {
-                  $childrens_age[] = $form_state['values'][$type][$price]['fieldset'][$c]['childrens_age'][$t];
-                }
-
                 $new_price = $price_calendar->calculatePrice($start_date, $end_date,
                                 $form_state['values'][$type][$price]['fieldset'][$c]['persons'] + $tmp_unit->min_sleeps,
                                 $form_state['values'][$type][$price]['fieldset'][$c]['children'] + $tmp_unit->min_children,
                                 $childrens_age);
               }
               else {
-                // Apply price modifiers and replace unit price
                 $new_price = $price_calendar->calculatePrice($start_date, $end_date, $tmp_unit->max_sleeps);
               }
             }
             // Price is calculated as 'Price per room per night'
             else {
+              // Apply price modifiers and replace unit price
               $price_calendar = new UnitPricingCalendar($units[$units_keys[$c - 1]]['unit']->unit_id, $price_modifiers);
               $new_price = $price_calendar->calculatePrice($start_date, $end_date);
             }
@@ -941,8 +1125,19 @@ function rooms_booking_manager_options_change_callback(&$form, $form_state) {
   list($type, $price, $tmp, $fieldset, $tmp, $index, $tmp, $option) = preg_split('/[\[(.)\]]/', $form_state['triggering_element']['#name']);
 
   $commands = array();
-  $commands[] = ajax_command_replace('#' . $type . '_' . $price . '_' . $index . '_' . $option . '_quantity', render($form[$type][$price]['fieldset'][$index][$option . ':quantity']));
-  $commands[] = ajax_command_replace('#' . $type . '_' . $price . '_' . $index . '_price', render($form[$type][$price][$fieldset][$index]['price']));
+
+  // Show availability of individual units.
+  if ($fieldset == '') {
+    $option = $price;
+
+    $commands[] = ajax_command_replace('#unit_' . $form['unit_id']['#value'] . '_' . $option . '_quantity', render($form['options'][$option . ':quantity']));
+    $commands[] = ajax_command_replace('#unit_' . $form['unit_id']['#value'] . '_price', render($form['new_price']));
+  }
+  // Show availability on a per-type basis.
+  else {
+    $commands[] = ajax_command_replace('#' . $type . '_' . $price . '_' . $index . '_' . $option . '_quantity', render($form[$type][$price]['fieldset'][$index][$option . ':quantity']));
+    $commands[] = ajax_command_replace('#' . $type . '_' . $price . '_' . $index . '_price', render($form[$type][$price][$fieldset][$index]['price']));
+  }
 
   return array('#type' => 'ajax', '#commands' => $commands);
 }
@@ -955,8 +1150,17 @@ function rooms_booking_manager_children_change_callback(&$form, $form_state) {
   list($type, $price, $tmp, $fieldset, $tmp, $index) = preg_split('/[\[(.)\]]/', $form_state['triggering_element']['#name']);
 
   $commands = array();
-  $commands[] = ajax_command_replace('#' . $type . '_' . $price . '_' . $index . '_childrensage', render($form[$type][$price][$fieldset][$index]['childrens_age']));
-  $commands[] = ajax_command_replace('#' . $type . '_' . $price . '_' . $index . '_price', render($form[$type][$price][$fieldset][$index]['price']));
+
+  // Show availability of individual units.
+  if ($price == '') {
+    $commands[] = ajax_command_replace('#unit_' . $form['unit_id']['#value'] . '_childrensage', render($form['childrens_age']));
+    $commands[] = ajax_command_replace('#unit_' . $form['unit_id']['#value'] . '_price', render($form['new_price']));
+  }
+  // Show availability on a per-type basis.
+  else {
+    $commands[] = ajax_command_replace('#' . $type . '_' . $price . '_' . $index . '_childrensage', render($form[$type][$price][$fieldset][$index]['childrens_age']));
+    $commands[] = ajax_command_replace('#' . $type . '_' . $price . '_' . $index . '_price', render($form[$type][$price][$fieldset][$index]['price']));
+  }
 
   return array('#type' => 'ajax', '#commands' => $commands);
 }
