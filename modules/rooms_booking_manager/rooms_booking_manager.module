@@ -1540,7 +1540,8 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'rooms_booking_settings') {
     $form['rooms_presentation_style'] = array(
       '#type' => 'radios',
-      '#title' => t('Results presentation style'),
+      '#title' => t('Results Presentation Mode'),
+      '#description' => t('Choose whether to display results grouped by unit type or as single units.'),
       '#options' => array(
         ROOMS_PER_TYPE => t('Show availability on a per-type basis.'),
         ROOMS_INDIVIDUAL => t('Show availability of individual units.'),
