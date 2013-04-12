@@ -1601,8 +1601,7 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
 
         // End date is actually the checkout date so we need to add a day
         $booking_end_day = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
-        //$booking_end_day->add(new DateInterval('P1D'));
-        $booking->end_date = clone($booking_end_day->format('Y-m-d'));
+        $booking->end_date = $booking_end_day->format('Y-m-d');
         $booking->unit_id = $line_item->rooms_booked_unit_id[LANGUAGE_NONE][0]['value'];
 
         // Load the unit to get its type
