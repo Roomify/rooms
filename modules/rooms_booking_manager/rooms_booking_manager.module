@@ -574,7 +574,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
 
     $booking_info = array(
       'start_date' => clone($start_date),
-      'end_date' => $temp_end_date,
+      'end_date' => clone($temp_end_date),
       'unit' => $unit,
       'booking_parameters' => array(
         'group_size' => $group_size,
@@ -836,7 +836,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
           $units_keys = array_keys($units);
 
-          $base_price = $units[$units_keys[0]]['unit']->base_price * ($nights->days + 1);
+          $base_price = $units[$units_keys[0]]['unit']->base_price * ($nights->days);
           $form[$type][$price]['price']['#markup'] = t('Price per person:') . ' ' . $base_price . ' ' . $currency_symbol;
         }
 
@@ -1044,9 +1044,6 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
             // Price is calculated as 'Price per person per night'
             if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
-              $temp_end_date = clone($end_date);
-              $temp_end_date->add(new DateInterval('P1D'));
-
               if (isset($form_state['values'][$type][$price]['fieldset'][$c]['persons'])) {
                 $group_size = $form_state['values'][$type][$price]['fieldset'][$c]['persons'] + $tmp_unit->min_sleeps;
               }
@@ -1065,7 +1062,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
               $booking_info = array(
                 'start_date' => clone($start_date),
-                'end_date' => $temp_end_date,
+                'end_date' => clone($end_date),
                 'unit' => $units[$units_keys[$c - 1]]['unit'],
                 'booking_parameters' => array(
                   'group_size' => $group_size,
@@ -1080,14 +1077,17 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               // Apply price modifiers and replace unit price
               $price_calendar = new UnitPricingCalendar($units[$units_keys[$c - 1]]['unit']->unit_id, $price_modifiers);
 
+              $temp_end_date = clone($end_date);
+              $temp_end_date->sub(new DateInterval('P1D'));
+
               if (isset($form_state['values'][$type][$price]['fieldset'][$c]['persons'])) {
-                $new_price = $price_calendar->calculatePrice($start_date, $end_date,
+                $new_price = $price_calendar->calculatePrice($start_date, $temp_end_date,
                                 $form_state['values'][$type][$price]['fieldset'][$c]['persons'] + $tmp_unit->min_sleeps,
                                 $form_state['values'][$type][$price]['fieldset'][$c]['children'] + $tmp_unit->min_children,
                                 $childrens_age);
               }
               else {
-                $new_price = $price_calendar->calculatePrice($start_date, $end_date, $tmp_unit->max_sleeps);
+                $new_price = $price_calendar->calculatePrice($start_date, $temp_end_date, $tmp_unit->max_sleeps);
               }
             }
             // Price is calculated as 'Price per room per night'
@@ -1373,7 +1373,6 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
   // reconvert them back to strings to only recreate them in the Availability Agent
   $sd = start_date_load($start_date);
   $ed = end_date_load($end_date);
-  $ed->add(new DateInterval('P1D'));
 
   // Let us get the available rooms again and match the order against actual rooms
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
@@ -1602,8 +1601,8 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
 
         // End date is actually the checkout date so we need to add a day
         $booking_end_day = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
-        $booking_end_day->add(new DateInterval('P1D'));
-        $booking->end_date = $booking_end_day->format('Y-m-d');
+        //$booking_end_day->add(new DateInterval('P1D'));
+        $booking->end_date = clone($booking_end_day->format('Y-m-d'));
         $booking->unit_id = $line_item->rooms_booked_unit_id[LANGUAGE_NONE][0]['value'];
 
         // Load the unit to get its type
@@ -1646,7 +1645,7 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
         $sd = new DateTime($booking->start_date);
 
         // End date is actually a day less
-        $booking_end_day->sub(new DateInterval('P1D'));
+        //$booking_end_day->sub(new DateInterval('P1D'));
         $ed = $booking_end_day;
 
         // Create a booking event
@@ -2009,8 +2008,8 @@ function rooms_booking_manager_price_apply($line_item, $name) {
                       $line_item->rooms_booking_children_ages[LANGUAGE_NONE] : array();
 
     $booking_info = array(
-      'start_date' => $start_date,
-      'end_date' => $end_date,
+      'start_date' => clone($start_date),
+      'end_date' => clone($end_date),
       'unit' => $unit,
       'booking_parameters' => array(
         'group_size' => $adults,
@@ -2024,7 +2023,10 @@ function rooms_booking_manager_price_apply($line_item, $name) {
 
     $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
 
-    $price = $price_calendar->calculatePrice($start_date, $end_date, $adults, $children, $childrens_age);
+    $temp_end_date = clone($end_date);
+    $temp_end_date->sub(new DateInterval('P1D'));
+
+    $price = $price_calendar->calculatePrice($start_date, $temp_end_date, $adults, $children, $childrens_age);
 
     $full_price = $price['full_price'] * 100;
 
@@ -2226,10 +2228,7 @@ function rooms_booking_manager_views_api() {
  * Helper function to provide a portion of a form that we use in more places
  */
 function rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, $form) {
-
-  $temp_end_date = clone($end_date);
-  $temp_end_date->add(new DateInterval('P1D'));
-  $nights = $end_date->diff($start_date)->days + 1;
+  $nights = $end_date->diff($start_date)->days;
 
   $form_tmp['info_arrival_date'] = array(
     '#type' => 'item',
@@ -2237,7 +2236,7 @@ function rooms_booking_manager_form_info_snippet($date_format, $start_date, $end
   );
   $form_tmp['info_departure_Date'] = array(
     '#type' => 'item',
-    '#markup' => t('Departure Date') . ': ' . $temp_end_date->format($date_format),
+    '#markup' => t('Departure Date') . ': ' . $end_date->format($date_format),
   );
   $form_tmp['info_nights'] = array(
     '#type' => 'item',

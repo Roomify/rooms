@@ -49,7 +49,8 @@ class AvailabilityAgent {
     $this->valid_states = $valid_states;
     $this->start_date = $start_date;
     // For availability purposes the end date is a day earlier than the checkout date
-    $this->end_date = $end_date->sub(new DateInterval('P1D'));
+    $this->end_date = clone($end_date);
+    $this->end_date->sub(new DateInterval('P1D'));
     $this->booking_parameters = $booking_parameters;
     $this->booking_units = $booking_units;
     $this->unit_types = $unit_types;
@@ -248,10 +249,12 @@ class AvailabilityAgent {
         $states = $rc->getStates($this->start_date, $this->end_date);
 
         // Calculate the price as well to add to the array
+        $temp_end_date = clone($this->end_date);
+        $temp_end_date->add(new DateInterval('P1D'));
 
         $booking_info = array(
-          'start_date' => $this->start_date,
-          'end_date' => $this->end_date,
+          'start_date' => clone($this->start_date),
+          'end_date' => $temp_end_date,
           'unit' => $unit,
           'booking_parameters' => $this->booking_parameters
         );
