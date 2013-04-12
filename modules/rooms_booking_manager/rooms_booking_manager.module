@@ -1892,7 +1892,7 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
       '#type' => 'checkbox',
       '#description' => t('Display Rooms Unit Type selector in availability search form.'),
       '#title' => t('Display Rooms Type Selector.'),
-      '#default_value' => variable_get('rooms_booking_manager_type_selector', ROOMS_DISPLAY_TYPE_SELECTOR),
+      '#default_value' => variable_get('rooms_booking_manager_type_selector', ROOMS_DISPLAY_TYPE_SELECTOR_NO),
     );
 
     $form['rooms_date_format'] = array(
