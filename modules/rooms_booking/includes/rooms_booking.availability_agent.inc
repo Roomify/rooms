@@ -261,7 +261,7 @@ class AvailabilityAgent {
 
         $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
 
-        if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON && count($this->booking_parameters) == 1 && isset($this->booking_parameters[0])) {
+        if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON && count($this->booking_parameters) == 1 && isset($this->booking_parameters[0]) && is_array($this->booking_parameters)) {
           $price = $price_calendar->calculatePrice($this->start_date, $this->end_date, $this->booking_parameters[0]['adults'], $this->booking_parameters[0]['children'], $this->booking_parameters[0]['childrens_age']);
         }
         else {
