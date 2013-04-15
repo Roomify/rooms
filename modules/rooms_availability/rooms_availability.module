@@ -1087,7 +1087,7 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
   $end_date = check_plain($end_date);
 
   $booked = FALSE;
-  if ($event_id > 10) {
+  if ($event_id > 10 || $event_id < -10) {
     $booked = TRUE;
   }
 
