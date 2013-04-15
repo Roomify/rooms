@@ -176,6 +176,7 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
     $content['booking_results'] = 1;
 
     $unit_types = array();
+    $type = '';
     if (isset($_GET['type'])) {
       $type = check_plain($_GET['type']);
 
@@ -217,7 +218,7 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
       $content['booking_search_form'] = $booking_search_form;
     }
     elseif (variable_get('rooms_presentation_style', ROOMS_PER_TYPE) == ROOMS_PER_TYPE) {
-      $content = rooms_booking_manager_present_types($units_per_type, $content, $start_date, $end_date, $booking_parameters, $booking_units);
+      $content = rooms_booking_manager_present_types($units_per_type, $content, $start_date, $end_date, $booking_parameters, $booking_units, $type);
     }
     elseif (variable_get('rooms_presentation_style', ROOMS_PER_TYPE) == ROOMS_INDIVIDUAL) {
       $content = rooms_booking_manager_present_individual_rooms($units_per_type, $content, $start_date, $end_date, $booking_parameters);
@@ -230,10 +231,16 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
   }
 
 
+  $type = '';
+  if (isset($_GET['type'])) {
+    $type = check_plain($_GET['type']);
+    if ($type == '' || rooms_unit_type_load($type) === FALSE) $type = '';
+  }
+
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
   $content['legend'] = rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, array());
 
-  $change_search_form = drupal_get_form('rooms_booking_manager_change_search_form', $start_date, $end_date, $booking_parameters, $booking_units);
+  $change_search_form = drupal_get_form('rooms_booking_manager_change_search_form', $start_date, $end_date, $booking_parameters, $booking_units, $type);
   $content['change_search'] = $change_search_form;
 
   $output = theme('rooms_booking_results', $content);
@@ -241,7 +248,7 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
 }
 
 
-function rooms_booking_manager_change_search_form($form, &$form_state, $start_date, $end_date, $booking_parameters, $b_units) {
+function rooms_booking_manager_change_search_form($form, &$form_state, $start_date, $end_date, $booking_parameters, $b_units, $type = '') {
 
   $form['start_date'] = array(
     '#type' => 'hidden',
@@ -261,6 +268,11 @@ function rooms_booking_manager_change_search_form($form, &$form_state, $start_da
   $form['b_units'] = array(
     '#type' => 'hidden',
     '#value' => $b_units,
+  );
+
+  $form['type'] = array(
+    '#type' => 'hidden',
+    '#value' => $type,
   );
 
   $form['submit'] = array(
@@ -347,12 +359,12 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
 /**
  * Prepares rooms on a per type basis
  */
-function rooms_booking_manager_present_types($units_per_type, $content, $start_date, $end_date, $booking_parameters, $b_units) {
+function rooms_booking_manager_present_types($units_per_type, $content, $start_date, $end_date, $booking_parameters, $b_units, $type = '') {
   // Flag used in tpl
   $content['style'] = ROOMS_PER_TYPE;
 
   // We build all the content as a form for now
-  $content['units_per_type_form'] = drupal_get_form('book_units_per_type_form', $units_per_type, $start_date, $end_date, $booking_parameters, $b_units);
+  $content['units_per_type_form'] = drupal_get_form('book_units_per_type_form', $units_per_type, $start_date, $end_date, $booking_parameters, $b_units, $type);
 
   return $content;
 }
@@ -721,7 +733,7 @@ function book_unit_form_submit(&$form, &$form_state) {
 }
 
 
-function book_units_per_type_form($form, $form_state, $units_per_type, $start_date, $end_date, $booking_parameters, $b_units) {
+function book_units_per_type_form($form, $form_state, $units_per_type, $start_date, $end_date, $booking_parameters, $b_units, $type = '') {
 
   $date_format = variable_get('rooms_date_format', 'd-m-Y');
   $nights = $end_date->diff($start_date);
@@ -759,6 +771,11 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     $form['b_units'] = array(
       '#type' => 'hidden',
       '#value' => $b_units,
+    );
+
+    $form['type'] = array(
+      '#type' => 'hidden',
+      '#value' => $type,
     );
 
     $form['submit'] = array(
@@ -1513,6 +1530,7 @@ function rooms_booking_manager_change_search_form_submit(&$form, &$form_state) {
     'rooms_start_date' => $form_state['values']['start_date'],
     'rooms_end_date' => $form_state['values']['end_date'],
     'rooms_b_units' => $form_state['values']['b_units'],
+    'type' => $form_state['values']['type'],
     $b_parameters,
   )));
 }

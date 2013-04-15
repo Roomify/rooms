@@ -28,13 +28,13 @@ function rooms_booking_availability_search_form($form, $form_state) {
 
   $form['rooms_date_range'] = rooms_date_range_fields();
 
-  if (isset($_GET['rooms_start_date'])) {
+  if (isset($_GET['rooms_start_date']) && isset($_GET['rooms_end_date'])) {
     $start_date = check_plain($_GET['rooms_start_date']);
-    if ($start_date != '') $form['rooms_date_range']['rooms_start_date']['#default_value'] = $start_date;
-  }
-  if (isset($_GET['rooms_end_date'])) {
     $end_date = check_plain($_GET['rooms_end_date']);
-    if ($end_date != '') $form['rooms_date_range']['rooms_end_date']['#default_value'] = $end_date;
+    if ($start_date != '' && $end_date != '') {
+      $form['rooms_date_range']['rooms_start_date']['#default_value'] = $start_date;
+      $form['rooms_date_range']['rooms_end_date']['#default_value'] = $end_date;
+    }
   }
 
 
@@ -175,6 +175,13 @@ function rooms_booking_availability_search_form($form, $form_state) {
       '#options' => array('' => '') + rooms_unit_types_ids(),
       '#default_value' => 0,
     );
+
+    if (isset($_GET['type'])) {
+      $type = check_plain($_GET['type']);
+      if ($type != '' && rooms_unit_type_load($type) !== FALSE) {
+        $form['unit_type']['#default_value'] = $type;
+      }
+    }
   }
 
   $form['actions'] = array(
