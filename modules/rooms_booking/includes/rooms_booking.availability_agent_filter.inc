@@ -122,7 +122,13 @@ class AvailabilityAgentDateFilter extends AvailabilityAgentCommonFilter {
     // Stard date and end date parameters must be set
     if ($start_date == NULL || $end_date == NULL) return $this->units;
 
-    $valid_states = isset($this->parameters['valid_states']) ? $this->parameters['valid_states'] : array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS);
+    if (isset($this->parameters['valid_states'])) {
+      $valid_states = $this->parameters['valid_states'];
+    }
+    else {
+      $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST))));
+      $valid_states = array_merge($valid_states, ROOMS_UNCONFIRMED_BOOKINGS);
+    }
 
     $query = new EntityFieldQuery();
     $query->entityCondition('entity_type', 'rooms_unit')

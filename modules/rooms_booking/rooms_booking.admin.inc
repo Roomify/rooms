@@ -800,7 +800,7 @@ function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date =
     $current_booking_state = isset($current_booking->booking_id) ? rooms_availability_assign_id($current_booking->booking_id, $current_booking->booking_status) : '';
   }
 
-  $valid_states = array_keys(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST)));
+  $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST))));
 
   if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
     $booking_parameters = array(array('adults' => $group_size, 'children' => $group_size_children, 'childrens_age' => $childrens_age));
@@ -866,7 +866,10 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
         // Check if a locked event is blocking the update
         $states_confirmed = $uc->getStates($start_date, $end_date);
 
-        $state_diff_confirmed = array_diff($states_confirmed, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS, $be->id));
+        $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST))));
+        $valid_states = array_merge($valid_states, $be->id);
+
+        $state_diff_confirmed = array_diff($states_confirmed, $valid_states);
 
         if (count($state_diff_confirmed) > 0) {
           $date1 = new DateTime($form['rooms_date_range']['rooms_start_date']['#default_value']);
@@ -881,7 +884,10 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
         // Check if this booking overlap with an uncofirmed booking
         $states_unconfirmed = $uc->getStates($start_date, $end_date, TRUE);
 
-        $state_diff_unconfirmed = array_diff($states_unconfirmed, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, $be->id));
+        $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST))));
+        $valid_states = array_merge($valid_states, $be->id);
+
+        $state_diff_unconfirmed = array_diff($states_unconfirmed, $valid_states);
 
         if (count($state_diff_unconfirmed) > 0) {
           $booking_id = rooms_availability_return_id(array_pop($state_diff_unconfirmed));
