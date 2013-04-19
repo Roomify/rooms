@@ -430,8 +430,12 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       $unit = rooms_unit_load($unitid);
       $selected = $unit->type;
 
+      if ($unit->max_sleeps <= 1) {
+        $form['data']['group_size']['#default_value'] = 0;
+      }
+
       $form_state['values']['unit_type'] = $selected;
-      $form_state['input']['data']['group_size'] = 2;
+      $form_state['input']['data']['group_size'] = ($unit->max_sleeps <= 1) ? 1 : 2;
       $form_state['input']['data']['group_size_children'] = 0;
       $form_state['input']['rooms_start_date']['date'] = date('d/m/Y', $startdate);
       $form_state['input']['rooms_end_date']['date'] = date('d/m/Y', $enddate);
@@ -589,14 +593,18 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
             list($start_date, $end_date) = rooms_form_values_get_start_end_dates($form_state);
 
+            $group_size = isset($form_state['values']['data']['group_size']) ? $form_state['values']['data']['group_size'] : $form_state['input']['data']['group_size'];
+            $group_size_children = isset($form_state['values']['data']['group_size']) ? $form_state['values']['data']['group_size_children'] : $form_state['input']['data']['group_size_children'];
+            $childrens_age = isset($form_state['values']['data']['childrens_age']) ? $form_state['values']['data']['childrens_age'] : array();
+
             $booking_info = array(
               'start_date' => clone($start_date),
               'end_date' => clone($end_date),
               'unit' => rooms_unit_load($unit_id),
               'booking_parameters' => array(
-                'group_size' => $form_state['values']['data']['group_size'],
-                'group_size_children' => $form_state['values']['data']['group_size_children'],
-                'childrens_age' => $form_state['values']['data']['childrens_age'],
+                'group_size' => $group_size,
+                'group_size_children' => $group_size_children,
+                'childrens_age' => $childrens_age,
               )
             );
 
@@ -607,7 +615,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
             $price_calendar = new UnitPricingCalendar($unit_id, $price_modifiers);
 
             $end_date->sub(new DateInterval('P1D'));
-            $new_price = $price_calendar->calculatePrice($start_date, $end_date, $form_state['values']['data']['group_size'], $form_state['values']['data']['group_size_children'], $form_state['values']['data']['childrens_age']);
+            $new_price = $price_calendar->calculatePrice($start_date, $end_date, $group_size, $group_size_children, $childrens_age);
             $new_price = $new_price['full_price'];
 
             // When user press 'Re-assign Unit' button we don't replace price
@@ -789,7 +797,7 @@ function rooms_booking_edit_form_unit_type_callback(&$form, $form_state) {
  * @param $current_booking
  */
 function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date = 0, $group_size, $group_size_children, $childrens_age = array(), $current_booking) {
-  
+
   // Set the unit types,
   $unit_types = array($select);
 
@@ -867,7 +875,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
         $states_confirmed = $uc->getStates($start_date, $end_date);
 
         $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST))));
-        $valid_states = array_merge($valid_states, $be->id);
+        $valid_states = array_merge($valid_states, array(ROOMS_UNCONFIRMED_BOOKINGS, $be->id));
 
         $state_diff_confirmed = array_diff($states_confirmed, $valid_states);
 
@@ -885,7 +893,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
         $states_unconfirmed = $uc->getStates($start_date, $end_date, TRUE);
 
         $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST))));
-        $valid_states = array_merge($valid_states, $be->id);
+        $valid_states = array_merge($valid_states, array($be->id));
 
         $state_diff_unconfirmed = array_diff($states_unconfirmed, $valid_states);
 

@@ -1134,6 +1134,9 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
     );
     // wrap the form via ctools modal
     $output = ctools_modal_form_wrapper('rooms_booking_edit_form', $form_state);
+    if ($form_state['executed']) {
+      $output = array(ctools_modal_command_dismiss());
+    }
     print ajax_render($output);
     exit();
   }

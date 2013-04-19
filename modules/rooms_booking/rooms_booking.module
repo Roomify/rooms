@@ -832,17 +832,19 @@ class RoomsBookingController extends EntityAPIController {
   }
 
   public function save($entity) {
-    parent::save($entity);
+    $entity->original = entity_load_unchanged($this->entityType, $entity->{$this->idKey});
 
     // We are going to be updating the event - so the first step is to remove the old event.
-    if ((!isset($entity->is_new)) && ($entity->unit_id != 0) && ($entity->start_date != '') && ($entity->end_date != '')) {
+    if ((!isset($entity->is_new)) && ($entity->unit_id != 0) && ($entity->original->start_date != '') && ($entity->original->end_date != '')) {
       // Create a calendar
       $uc = new UnitCalendar($entity->unit_id);
       $event_id = rooms_availability_assign_id($entity->booking_id, $entity->booking_status);
       // Create an event representing the event to remove
-      $be = new BookingEvent($entity->unit_id, $event_id, new DateTime($entity->start_date), new DateTime($entity->end_date));
+      $be = new BookingEvent($entity->unit_id, $event_id, new DateTime($entity->original->start_date), new DateTime($entity->original->end_date));
       $uc->removeEvents(array($be));
     }
+
+    parent::save($entity);
 
     // We have a unit defined so lets block availability there
     if ($entity->unit_id != 0) {
