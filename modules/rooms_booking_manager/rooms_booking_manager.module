@@ -7,7 +7,6 @@
  * - including the DrupalCommerce integration
  */
 
-
 define ('ROOMS_SIZE_FAILURE', 0);
 define ('ROOMS_AVAILABILITY_FAILURE', 1);
 define ('ROOMS_NO_ROOMS', 2);
@@ -100,7 +99,7 @@ function rooms_booking_manager_enquiry_confirmation() {
 
 
 /**
- * Displays the shopping cart form and associated information.
+ * Display the shopping cart form and associated information.
  */
 function rooms_booking_manager_cart_view() {
   global $user;
@@ -157,7 +156,6 @@ function rooms_booking_manager_enquiry_page_form_submit(&$form, &$form_state) {
  *   Start date for the search
  * @param DateTime $end_date
  *   End date for the search
- *
  * @param $booking_units
  *   In how many units are we to accommodate them
  */
@@ -282,6 +280,7 @@ function rooms_booking_manager_change_search_form($form, &$form_state, $start_da
 
   return $form;
 }
+
 
 /**
  * Checks that the booking parameters given are valid. This is mainly used to
@@ -936,7 +935,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                   ),
                 );
 
-                // Show quantity field selector if in option quantity is setted
+                // Show quantity field selector if an option quantity is setted
                 if (is_numeric($option['quantity'])) {
                   if (isset($form_state['values'][$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
                     if ($form_state['values'][$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name']))] == 1 && $option['quantity'] > 1) {
@@ -1112,7 +1111,10 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             else {
               // Apply price modifiers and replace unit price
               $price_calendar = new UnitPricingCalendar($units[$units_keys[$c - 1]]['unit']->unit_id, $price_modifiers);
-              $new_price = $price_calendar->calculatePrice($start_date, $end_date);
+              // Let us make sure we remove a day
+              $temp_end_date = clone($end_date);
+              $temp_end_date->sub(new DateInterval('P1D'));
+              $new_price = $price_calendar->calculatePrice($start_date, $temp_end_date);
             }
             $new_price = $new_price['full_price'];
 
