@@ -225,7 +225,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
   $form['min_children'] = array(
     '#type' => 'textfield',
     '#size' => 5,
-    '#default_value' => isset($unit->min_children_sleeps) ? $unit->min_children_sleeps : 0,
+    '#default_value' => isset($unit->min_children) ? $unit->min_children : 0,
     '#field_prefix' => 'Min: ',
     '#title' => t('Children sleeps'),
   );
@@ -233,7 +233,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
   $form['max_children'] = array(
     '#type' => 'textfield',
     '#size' => 5,
-    '#default_value' => isset($unit->max_children_sleeps) ? $unit->max_children_sleeps : 0,
+    '#default_value' => isset($unit->max_children) ? $unit->max_children : 0,
     '#field_prefix' => 'Max: ',
   );
 
