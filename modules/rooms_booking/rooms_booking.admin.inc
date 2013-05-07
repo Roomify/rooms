@@ -1121,6 +1121,8 @@ function rooms_booking_create_order($start_date, $end_date, $booking_parameters,
   // Save the order again to update its line item reference field
   commerce_order_save($order);
 
+  commerce_cart_order_refresh($order);
+
   return $order;
 }
 
