@@ -993,7 +993,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                 }
               }
 
-              if ($max_children > $tmp_unit->min_children) {
+              if ($tmp_unit->min_children > 0) {
                 $form[$type][$price]['fieldset'][$c]['children'] = array(
                   '#type' => 'select',
                   '#title' => t('Children'),
@@ -1011,21 +1011,26 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                 '#suffix' => '</div>',
               );
 
+              $children_number = 0;
               if (isset($form_state['values'][$type][$price]['fieldset'][$c]['children'])) {
                 if ($form_state['values'][$type][$price]['fieldset'][$c]['children'] > 0) {
-                  for ($t = 1; $t <= $form_state['values'][$type][$price]['fieldset'][$c]['children']; $t++) {
-                    $form[$type][$price]['fieldset'][$c]['childrens_age'][$t] = array(
-                      '#type' => 'textfield',
-                      '#title' => t('Age #' . $t),
-                      '#size' => 5,
-                      '#maxlength' => 5,
-                      '#ajax' => array(
-                        'callback' => 'rooms_booking_manager_options_change_callback',
-                        'wrapper' => $type . '_' . $price . '_' . $c . '_price',
-                      ),
-                    );
-                  }
+                  $children_number = $form_state['values'][$type][$price]['fieldset'][$c]['children'];
                 }
+              }
+              else {
+                $children_number = $tmp_unit->min_children;
+              }
+
+              for ($t = 1; $t <= $children_number; $t++) {
+                $form[$type][$price]['fieldset'][$c]['childrens_age'][$t] = array(
+                  '#type' => 'select',
+                  '#title' => t('Age #' . $t),
+                  '#options' => range(0, 18),
+                  '#ajax' => array(
+                  'callback' => 'rooms_booking_manager_options_change_callback',
+                    'wrapper' => $type . '_' . $price . '_' . $c . '_price',
+                  ),
+                );
               }
             }
 
