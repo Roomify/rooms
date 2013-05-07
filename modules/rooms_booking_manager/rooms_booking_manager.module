@@ -993,7 +993,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                 }
               }
 
-              if ($tmp_unit->min_children > 0) {
+              if ($tmp_unit->max_children > 0) {
                 $form[$type][$price]['fieldset'][$c]['children'] = array(
                   '#type' => 'select',
                   '#title' => t('Children'),
