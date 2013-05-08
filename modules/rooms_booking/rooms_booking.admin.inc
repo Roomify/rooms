@@ -1061,6 +1061,24 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
     $booking->data['childrens_age'] = $form_state['values']['data']['childrens_age'];
   }
 
+  $booking_original = entity_load_unchanged('rooms_booking', $booking->booking_id);
+
+  if ($booking->order_id != '') {
+    if (($order = commerce_order_load($booking->order_id)) !== FALSE) {
+      if ($booking_original->unit_id != $booking->unit_id || $booking_original->start_date != $booking->start_date ||
+          $booking_original->end_date != $booking->end_date || $booking_original->price != $booking->price ||
+          $booking_original->data['group_size'] != $booking->data['group_size'] ||
+          $booking_original->data['group_size_children'] != $booking->data['group_size_children']) {
+
+        $order->status = 'canceled';
+
+        commerce_order_save($order);
+
+        $booking->order_id = '';
+      }
+    }
+  }
+
   // Save booking
   $booking->save();
 
@@ -1144,6 +1162,9 @@ function rooms_booking_create_order($start_date, $end_date, $booking_parameters,
   // Save the order again to update its line item reference field
   commerce_order_save($order);
 
+  $line_item_wrapper->order_id = $order->order_id;
+  commerce_line_item_save($line_item);
+
   commerce_cart_order_refresh($order);
 
   return $order;
@@ -1203,7 +1224,7 @@ function rooms_booking_add_page() {
 
 
 /**
- * Displays the list of available room types for orom creation.
+ * Displays the list of available room types for room creation.
  *
  * @ingroup themeable
  */
