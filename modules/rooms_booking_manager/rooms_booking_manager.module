@@ -430,7 +430,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
 
   $form['price'] = array(
     '#prefix' => '<div class="unit_price" id="' . $unit->unit_id . '_price" style="font-weight:bold">',
-    '#markup' =>  t('Base Cost:') . ' ' . $price . ' ' . $currency_symbol,
+    '#markup' =>  t('Base Cost:') . ' ' . $currency_symbol . ' ' . $price,
     '#suffix' => '</div>'
   );
 
@@ -610,7 +610,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
 
     $form['new_price'] = array(
       '#prefix' => '<div id="unit_' . $unit->unit_id . '_price" style="font-weight:bold">',
-      '#markup' => t('Cost:') . ' ' . $new_price['full_price'] . ' ' . $currency_symbol,
+      '#markup' => t('Cost:') . ' ' . $currency_symbol . ' ' . $new_price['full_price'],
       '#suffix' => '</div>',
     );
   }
@@ -843,14 +843,14 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         // Element to display price
         $form[$type][$price]['price'] = array(
           '#prefix' => '<tr><td><div class="unit_price" style="font-weight:bold">',
-          '#markup' =>  t('Base Cost:') . ' ' . $price . ' ' . $currency_symbol,
+          '#markup' =>  t('Base Cost:') . ' ' . $currency_symbol . ' ' . $price,
           '#suffix' => '</div>'
         );
         if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
           $units_keys = array_keys($units);
 
           $base_price = $units[$units_keys[0]]['unit']->base_price * ($nights->days);
-          $form[$type][$price]['price']['#markup'] = t('Price per person:') . ' ' . $base_price . ' ' . $currency_symbol;
+          $form[$type][$price]['price']['#markup'] = t('Price per person:') . ' ' . $currency_symbol . ' ' . $base_price;
         }
 
         // Element to hold price
@@ -1032,7 +1032,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
             $form[$type][$price]['fieldset'][$c]['price'] = array(
               '#prefix' => '<div id="' . $type . '_' . $price . '_' . $c . '_price">',
-              '#markup' => $price . ' ' . $currency_symbol,
+              '#markup' =>  $currency_symbol. ' ' . $price,
               '#suffix' => '</div>',
             );
 
@@ -1118,7 +1118,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             $new_price = $new_price['full_price'];
 
             // Replace old price with the new calculated value
-            $form[$type][$price]['fieldset'][$c]['price']['#markup'] = $new_price . ' ' . $currency_symbol;
+            $form[$type][$price]['fieldset'][$c]['price']['#markup'] = $currency_symbol . ' ' . $new_price;
           }
         }
 
@@ -1469,7 +1469,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
             );
 
             $form_data[$unit['unit']->type . ':' . $j]['price'] = array(
-              '#markup' => t($type_obj->label) . ' - ' . t('Cost') . ': ' . $price . ' ' . $currency_symbol,
+              '#markup' => t($type_obj->label) . ' - ' . t('Cost') . ': ' . $currency_symbol . ' ' . $price,
             );
 
             $form_data[$unit['unit']->type . ':' . $j][$unit['unit']->type . ':' . $j . ':adults'] = array(
