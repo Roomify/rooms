@@ -27,7 +27,7 @@ class RoomsUnitTypeUIController extends EntityDefaultUIController {
  *
  */
 function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
-
+  
   if ($op == 'clone') {
     $unit_type->label .= ' (cloned)';
     $unit_type->type = '';
@@ -83,18 +83,18 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#field_prefix' => 'Max:',
   );
 
-  $form['data']['min_children_sleeps'] = array(
+  $form['data']['min_children'] = array(
     '#type' => 'textfield',
     '#title' => t('Children sleeps'),
-    '#default_value' => isset($unit_type->data['min_children_sleeps']) ? $unit_type->data['min_children_sleeps'] : '',
+    '#default_value' => isset($unit_type->data['min_children']) ? $unit_type->data['min_children'] : '',
     '#size' => '5',
     '#maxlength' => 2,
     '#field_prefix' => 'Min:',
   );
 
-  $form['data']['max_children_sleeps'] = array(
+  $form['data']['max_children'] = array(
     '#type' => 'textfield',
-    '#default_value' => isset($unit_type->data['max_children_sleeps']) ? $unit_type->data['max_children_sleeps'] : '',
+    '#default_value' => isset($unit_type->data['max_children']) ? $unit_type->data['max_children'] : '',
     '#size' => '5',
     '#description' => t('The default number of childrens that can sleep in units of this type.'),
     '#maxlength' => 2,
