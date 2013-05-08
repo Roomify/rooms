@@ -369,7 +369,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     $unit_selected .= ' (Options: ' . substr($options_list, 0, strlen($options_list) - 2) . ')';
   }
   if (isset($booking->price)) {
-    $unit_selected .= '<br>Price: ' . number_format($booking->price / 100, 2, '.', '') . ' ' . $currency_symbol;
+    $unit_selected .= '<br>Price: ' . $currency_symbol . number_format($booking->price / 100, 2, '.', '');
   }
 
   $form['availability_fieldset'] = array(
@@ -509,7 +509,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
           // Create elements based on type/price categorisation
           foreach ($units_per_price as $price => $units) {
             foreach ($units as $unit) {
-              $options[$unit['unit']->unit_id] = $unit['unit']->name . ' - ' . t('Cost:') . ' ' . $units[key($units)]['price'] . ' ' . $currency_symbol;
+              $options[$unit['unit']->unit_id] = $unit['unit']->name . ' - ' . t('Cost:') . ' ' . $currency_symbol . $units[key($units)]['price'];
             }
           }
 
