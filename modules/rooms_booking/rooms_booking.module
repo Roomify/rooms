@@ -185,9 +185,31 @@ function rooms_booking_add_customer_profile() {
 
   // wrap the form via ctools modal
   $output = ctools_modal_form_wrapper('commerce_customer_customer_profile_form', $form_state);
+
   if ($form_state['executed']) {
-    $output = array(ctools_modal_command_dismiss());
+    $form['client'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Customer'),
+      '#maxlength' => 60,
+      '#autocomplete_path' => 'admin/rooms/bookings/customers',
+      '#value' => $form_state['build_info']['args'][0]->commerce_customer_address['und'][0]['name_line'],
+      '#weight' => -1,
+      '#required' => TRUE,
+      '#prefix' => '<div id="custom-wrapper">',
+      '#suffix' => '</div>',
+      '#id' => 'edit-client',
+    );
+
+    if (module_exists('commerce_customer')) {
+      ctools_include('modal');
+      ctools_modal_add_js();
+   
+      $form['client']['#description'] = t('Customer profiles are saved in the <a href="@store-profile">store</a>. Search for an existing one by typing the customer name or <a href="@profile-create" class="ctools-use-modal">create a new profile</a>.', array('@store-profile' => url('admin/commerce/customer-profiles'), '@profile-create' => url('admin/rooms/add_customers')));
+    }
+
+    $output = array(ctools_modal_command_dismiss(), ajax_command_replace('#custom-wrapper', drupal_render_children($form)));
   }
+
   print ajax_render($output);
   exit();
 }

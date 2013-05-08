@@ -206,6 +206,8 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#default_value' => $client,
     '#weight' => -1,
     '#required' => TRUE,
+    '#prefix' => '<div id="custom-wrapper">',
+    '#suffix' => '</div>',
   );
 
   if (module_exists('commerce_customer')) {
