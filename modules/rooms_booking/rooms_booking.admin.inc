@@ -559,9 +559,8 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
                 );
               }
             }
-
-            // Convert Price options in Price modifiers
-            $operation_list = array(ROOMS_ADD, ROOMS_SUB, ROOMS_REPLACE, ROOMS_INCREASE, ROOMS_DECREASE);
+            
+            // Create Price Modifiers
 
             $price_modifiers = array();
             if (isset($unit->rooms_booking_unit_options[LANGUAGE_NONE])) {
@@ -572,7 +571,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
                   if ($form_state['values'][$option_name] == 1) {
                     $price_modifiers[$option_name] = array(
                       '#type' => ROOMS_DYNAMIC_MODIFIER,
-                      '#op_type' => $operation_list[$option['operation']],
+                      '#op_type' => $option['operation'],
                       '#amount' => $option['value'],
                     );
                   }

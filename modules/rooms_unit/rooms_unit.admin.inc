@@ -180,7 +180,7 @@ function rooms_unit_delete_form_wrapper($unit) {
  *     with only a unit type defined.
  */
 function rooms_unit_edit_form($form, &$form_state, $unit) {
-
+  
   // Add the default field elements.
   $form['name'] = array(
     '#type' => 'textfield',
