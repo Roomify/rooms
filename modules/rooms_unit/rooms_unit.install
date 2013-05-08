@@ -450,8 +450,8 @@ function rooms_unit_update_7006() {
       'base_price' => $unit_type->data['base_price'],
       'min_sleeps' => $unit_type->data['sleeps'],
       'max_sleeps' => $unit_type->data['sleeps'],
-      'min_children_sleeps' => $unit_type->data['children_sleeps'],
-      'max_children_sleeps' => $unit_type->data['children_sleeps'],
+      'min_children' => $unit_type->data['children_sleeps'],
+      'max_children' => $unit_type->data['children_sleeps'],
       'rooms_description_source' => $unit_type->data['$unit_type->data'],
     );
 
@@ -500,7 +500,7 @@ function rooms_unit_update_7007() {
   field_cache_clear();
 
   foreach (rooms_unit_types_ids() as $type => $value) {
-    // Attach field 'rooms_booking_unit_options' to any istance of rooms_unit
+    // Attach field 'rooms_booking_unit_options' to any instance of rooms_unit
     if (field_info_instance('rooms_unit', 'rooms_booking_unit_options', $type) === NULL) {
       $instance = array(
         'field_name' => 'rooms_booking_unit_options',
@@ -515,4 +515,28 @@ function rooms_unit_update_7007() {
       field_create_instance($instance);
     }
   }
+}
+
+
+/**
+ * Update all data saved in Rooms Unit Type to change max/min_children_sleeps to max/min_children
+ */
+function rooms_unit_update_7008() {
+  
+  foreach (rooms_unit_types_ids() as $type => $label) {
+    $unit_type = rooms_unit_type_load($type);
+
+    $unit_type->data = array(
+      'base_price' => $unit_type->data['base_price'],
+      'min_sleeps' => $unit_type->data['min_sleeps'],
+      'max_sleeps' => $unit_type->data['max_sleeps'],
+      // Check to see if min/max_children_sleeps is set and move that to  min/max_children
+      'min_children' => isset($unit_type->data['min_children_sleeps']) ? $unit_type->data['min_children_sleeps'] : $unit_type->data['min_children'],
+      'max_children' => isset($unit_type->data['max_children_sleeps']) ? $unit_type->data['max_children_sleeps'] : $unit_type->data['max_children'],
+      'rooms_description_source' => $unit_type->data['$unit_type->data'],
+    );
+
+    rooms_unit_type_save($unit_type);
+  }
+  
 }

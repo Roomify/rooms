@@ -570,8 +570,8 @@ class RoomsUnitController extends EntityAPIController {
     $unit_type = rooms_unit_type_load($values['type'], TRUE);
     $values['base_price'] = $unit_type->data['base_price'];
     $values['data']['cot_surcharge'] = (isset($unit_type->data['cot_surcharge'])) ? $unit_type->data['cot_surcharge'] : 0;
-    $values['min_children_sleeps'] = (isset($unit_type->data['min_children_sleeps'])) ? $unit_type->data['min_children_sleeps'] : 0;
-    $values['max_children_sleeps'] = (isset($unit_type->data['max_children_sleeps'])) ? $unit_type->data['max_children_sleeps'] : 0;
+    $values['min_children'] = (isset($unit_type->data['min_children'])) ? $unit_type->data['min_children'] : 0;
+    $values['max_children'] = (isset($unit_type->data['max_children'])) ? $unit_type->data['max_children'] : 0;
     $values['min_sleeps'] = (isset($unit_type->data['min_sleeps'])) ? $unit_type->data['min_sleeps'] : 0;
     $values['max_sleeps'] = (isset($unit_type->data['max_sleeps'])) ? $unit_type->data['max_sleeps'] : 0;
 
