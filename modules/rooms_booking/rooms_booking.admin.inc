@@ -559,6 +559,23 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
                     'wrapper' => 'options-wrapper',
                   ),
                 );
+
+                // Show quantity field selector if an option quantity is setted
+                if (is_numeric($option['quantity'])) {
+                  if (isset($form_state['values'][$option_name])) {
+                    if ($form_state['values'][$option_name] == 1 && $option['quantity'] > 1) {
+                      $form['availability_fieldset']['unit_fieldset']['options_fieldset'][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] = array(
+                        '#type' => 'select',
+                        '#title' => t('Quantity'),
+                        '#options' => range(1, $option['quantity']),
+                        '#ajax' => array(
+                          'callback' => 'rooms_booking_select_unit_callback',
+                          'wrapper' => 'options-wrapper',
+                        ),
+                      );
+                    }
+                  }
+                }
               }
             }
             
@@ -571,10 +588,15 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
                 if (isset($form_state['values'][$option_name])) {
                   if ($form_state['values'][$option_name] == 1) {
+                    $quantity = 1;
+                    if (isset($form_state['values'][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
+                      $quantity = $form_state['values'][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] + 1;
+                    }
+
                     $price_modifiers[$option_name] = array(
                       '#type' => ROOMS_DYNAMIC_MODIFIER,
                       '#op_type' => $option['operation'],
-                      '#amount' => $option['value'],
+                      '#amount' => $option['value'] * $quantity,
                     );
                   }
                 }
