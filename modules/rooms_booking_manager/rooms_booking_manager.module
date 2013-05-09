@@ -667,11 +667,9 @@ function book_unit_form_submit(&$form, &$form_state) {
   $sd = start_date_load($start_date);
   $ed = end_date_load($end_date);
   
-  $temp_end_date = clone($ed);
-
   // Let us get the available rooms again and match the order against actual rooms
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
-  $agent = new AvailabilityAgent($sd, $temp_end_date, $group_size);
+  $agent = new AvailabilityAgent($sd, $ed, $group_size);
   $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
 
   // Let us make sure our bookable unit is still available
