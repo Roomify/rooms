@@ -383,7 +383,7 @@ function rooms_unit_edit_form_submit(&$form, &$form_state) {
   }
   else {
     $units[0] =  $form_state['rooms_unit'];
-    $unites[0] = entity_ui_controller('rooms_unit')->entityFormSubmitBuildEntity($form, $form_state);
+    $units[0] = entity_ui_controller('rooms_unit')->entityFormSubmitBuildEntity($form, $form_state);
     $units[0]->changed = time();
   }
 
