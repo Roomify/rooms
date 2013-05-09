@@ -101,13 +101,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
         '#suffix' => '</td>',
       );
 
-      if (variable_get('rooms_display_children', ROOMS_DISPLAY_CHILDREN_NO) == ROOMS_DISPLAY_CHILDREN_NO) {
-        $form['rooms_fieldset']['group_size_children:' . $i] = array(
-        '#type' => 'hidden',
-        '#value' => 0,
-        );
-      }
-      else {
+      if (variable_get('rooms_display_children', ROOMS_DISPLAY_CHILDREN_NO) == ROOMS_DISPLAY_CHILDREN) {
         $form['rooms_fieldset']['group_size_children:' . $i] = array(
           '#type' => 'select',
           '#options' => array(
@@ -147,13 +141,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
       '#default_value' => isset($booking_parameters[1]['adults']) ? $booking_parameters[1]['adults'] : 2,
     );
 
-    if (variable_get('rooms_display_children', ROOMS_DISPLAY_CHILDREN_NO) == ROOMS_DISPLAY_CHILDREN_NO) {
-      $form['rooms_fieldset']['group_size_children:1'] = array(
-        '#type' => 'hidden',
-        '#value' => 0,
-      );
-    }
-    else {
+    if (variable_get('rooms_display_children', ROOMS_DISPLAY_CHILDREN_NO) == ROOMS_DISPLAY_CHILDREN) {
       $form['rooms_fieldset']['group_size_children:1'] = array(
         '#type' => 'select',
         '#title' => t('Children'),

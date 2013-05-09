@@ -303,11 +303,20 @@ function rooms_booking_manager_retrieve_booking_parameters($booking_units, $book
   for ($i = 1; $i <= $booking_units; $i++) {
     // If not data has invalidated booking parameters yet
     if ($booking_parameters != 0) {
-      if ((isset($booking_info['rooms_group_size' . $i])) && (isset($booking_info['rooms_children' . $i]))) {
-        $booking_parameters[$i]['adults'] = check_plain($booking_info['rooms_group_size' . $i]);
-        $booking_parameters[$i]['children'] = check_plain($booking_info['rooms_children' . $i]);
-      } else {
-        $booking_parameters = 0;
+      if (variable_get('rooms_display_children', ROOMS_DISPLAY_CHILDREN_NO) == ROOMS_DISPLAY_CHILDREN) {
+        if ((isset($booking_info['rooms_group_size' . $i])) && (isset($booking_info['rooms_children' . $i]))) {
+          $booking_parameters[$i]['adults'] = check_plain($booking_info['rooms_group_size' . $i]);
+          $booking_parameters[$i]['children'] = check_plain($booking_info['rooms_children' . $i]);
+        } else {
+          $booking_parameters = 0;
+        }
+      }
+      else {
+        if (isset($booking_info['rooms_group_size' . $i])) {
+          $booking_parameters[$i]['adults'] = check_plain($booking_info['rooms_group_size' . $i]);
+        } else {
+          $booking_parameters = 0;
+        }
       }
     }
   }
@@ -988,44 +997,46 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                 }
               }
 
-              if ($tmp_unit->max_children > 0) {
-                $form[$type][$price]['fieldset'][$c]['children'] = array(
-                  '#type' => 'select',
-                  '#title' => t('Children'),
-                  '#options' => range($tmp_unit->min_children, $max_children),
-                  '#default_value' => 0,
-                  '#ajax' => array(
-                    'callback' => 'rooms_booking_manager_children_change_callback',
-                    'wrapper' => $type . '_' . $price . '_' . $c . '_childrensage',
-                  ),
-                );
-              }
-
-              $form[$type][$price]['fieldset'][$c]['childrens_age'] = array(
-                '#prefix' => '<div id="' . $type . '_' . $price . '_' . $c . '_childrensage">',
-                '#suffix' => '</div>',
-              );
-
-              $children_number = 0;
-              if (isset($form_state['values'][$type][$price]['fieldset'][$c]['children'])) {
-                if ($form_state['values'][$type][$price]['fieldset'][$c]['children'] > 0) {
-                  $children_number = $form_state['values'][$type][$price]['fieldset'][$c]['children'];
+              if (variable_get('rooms_display_children', ROOMS_DISPLAY_CHILDREN_NO) == ROOMS_DISPLAY_CHILDREN) {
+                if ($tmp_unit->max_children > 0) {
+                  $form[$type][$price]['fieldset'][$c]['children'] = array(
+                    '#type' => 'select',
+                    '#title' => t('Children'),
+                    '#options' => range($tmp_unit->min_children, $max_children),
+                    '#default_value' => 0,
+                    '#ajax' => array(
+                      'callback' => 'rooms_booking_manager_children_change_callback',
+                      'wrapper' => $type . '_' . $price . '_' . $c . '_childrensage',
+                    ),
+                  );
                 }
-              }
-              else {
-                $children_number = $tmp_unit->min_children;
-              }
 
-              for ($t = 1; $t <= $children_number; $t++) {
-                $form[$type][$price]['fieldset'][$c]['childrens_age'][$t] = array(
-                  '#type' => 'select',
-                  '#title' => t('Age #' . $t),
-                  '#options' => range(0, 18),
-                  '#ajax' => array(
-                  'callback' => 'rooms_booking_manager_options_change_callback',
-                    'wrapper' => $type . '_' . $price . '_' . $c . '_price',
-                  ),
+                $form[$type][$price]['fieldset'][$c]['childrens_age'] = array(
+                  '#prefix' => '<div id="' . $type . '_' . $price . '_' . $c . '_childrensage">',
+                  '#suffix' => '</div>',
                 );
+
+                $children_number = 0;
+                if (isset($form_state['values'][$type][$price]['fieldset'][$c]['children'])) {
+                  if ($form_state['values'][$type][$price]['fieldset'][$c]['children'] > 0) {
+                    $children_number = $form_state['values'][$type][$price]['fieldset'][$c]['children'];
+                  }
+                }
+                else {
+                  $children_number = $tmp_unit->min_children;
+                }
+
+                for ($t = 1; $t <= $children_number; $t++) {
+                  $form[$type][$price]['fieldset'][$c]['childrens_age'][$t] = array(
+                    '#type' => 'select',
+                    '#title' => t('Age #' . $t),
+                    '#options' => range(0, 18),
+                    '#ajax' => array(
+                    'callback' => 'rooms_booking_manager_options_change_callback',
+                      'wrapper' => $type . '_' . $price . '_' . $c . '_price',
+                    ),
+                  );
+                }
               }
             }
 
@@ -1096,10 +1107,16 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               $temp_end_date->sub(new DateInterval('P1D'));
 
               if (isset($form_state['values'][$type][$price]['fieldset'][$c]['persons'])) {
-                $new_price = $price_calendar->calculatePrice($start_date, $temp_end_date,
-                                $form_state['values'][$type][$price]['fieldset'][$c]['persons'] + $tmp_unit->min_sleeps,
-                                $form_state['values'][$type][$price]['fieldset'][$c]['children'] + $tmp_unit->min_children,
-                                $childrens_age);
+                if (variable_get('rooms_display_children', ROOMS_DISPLAY_CHILDREN_NO) == ROOMS_DISPLAY_CHILDREN) {
+                  $new_price = $price_calendar->calculatePrice($start_date, $temp_end_date,
+                                  $form_state['values'][$type][$price]['fieldset'][$c]['persons'] + $tmp_unit->min_sleeps,
+                                  $form_state['values'][$type][$price]['fieldset'][$c]['children'] + $tmp_unit->min_children,
+                                  $childrens_age);
+                }
+                else {
+                  $new_price = $price_calendar->calculatePrice($start_date, $temp_end_date,
+                                  $form_state['values'][$type][$price]['fieldset'][$c]['persons'] + $tmp_unit->min_sleeps);
+                }
               }
               else {
                 $new_price = $price_calendar->calculatePrice($start_date, $temp_end_date, $tmp_unit->max_sleeps);
@@ -1839,7 +1856,6 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
       '#description' => t('Select whether both group size and children can be shown.'),
       '#default_value' => variable_get('rooms_display_children', ROOMS_DISPLAY_CHILDREN_NO),
     );
-
 
     $form['rooms_valid_availability_states'] = array(
       '#type' => 'checkboxes',
