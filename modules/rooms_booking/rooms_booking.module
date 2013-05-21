@@ -34,6 +34,14 @@ function rooms_booking_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  $items['admin/rooms/customer-profiles/%/edit'] = array(
+    'title' => t('Add customer profile'),
+    'page callback' => 'rooms_booking_edit_customer_profile',
+    'page arguments' => array(3),
+    'access arguments' => array('administer bookings'),
+    'type' => MENU_CALLBACK,
+  );
+
   $items['admin/rooms/config/children'] = array(
     'title' => t('Children Discount Settings'),
     'description' => t('Configure settings.'),
@@ -44,6 +52,37 @@ function rooms_booking_menu() {
   );
 
   return $items;
+}
+
+
+function rooms_booking_edit_customer_profile($customer_id) {
+  ctools_include('modal');
+
+  module_load_include('inc', 'commerce_customer', 'includes/commerce_customer_profile.forms');
+  $form_state = array(
+    'title' => t('Add customer'),
+    'ajax' => TRUE,
+    'build_info' => array(
+      'args' => array(commerce_customer_profile_load($customer_id)),
+      'files' => array(
+        'commmerce_customer' => array(
+          'module' => 'commmerce_customer',
+          'name' => 'includes/commerce_customer_profile.forms',
+          'type' => 'inc',
+        ),
+      ),
+    ),
+  );
+
+  // wrap the form via ctools modal
+  $output = ctools_modal_form_wrapper('commerce_customer_ui_customer_profile_form', $form_state);
+
+  if ($form_state['executed']) {
+    $output = array(ctools_modal_command_dismiss());
+  }
+
+  print ajax_render($output);
+  exit();
 }
 
 
@@ -206,6 +245,10 @@ function rooms_booking_add_customer_profile() {
       ctools_modal_add_js();
    
       $form['client']['#description'] = t('Customer profiles are saved in the <a href="@store-profile">store</a>. Search for an existing one by typing the customer name or <a href="@profile-create" class="ctools-use-modal">create a new profile</a>.', array('@store-profile' => url('admin/commerce/customer-profiles'), '@profile-create' => url('admin/rooms/add_customers')));
+
+      if (isset($form_state['build_info']['args'][0]->profile_id)) {
+        $form['client']['#field_suffix'] = t('<a href="@edit-profile" class="ctools-use-modal">edit profile</a>', array('@edit-profile' => url('admin/rooms/customer-profiles/' . $form_state['build_info']['args'][0]->profile_id . '/edit')));
+      }
     }
 
     $output = array(ctools_modal_command_dismiss(), ajax_command_replace('#custom-wrapper', drupal_render($form['client'])));
@@ -712,7 +755,7 @@ function rooms_booking_get_client_profiles($string = '') {
   if ($string) {
     if (module_exists('commerce_customer')) {
       $subquery_1 = db_select('field_data_commerce_customer_address')
-        ->fields('field_data_commerce_customer_address', array('commerce_customer_address_name_line', 'entity_id'))
+        ->fields('field_data_commerce_customer_address', array('commerce_customer_address_name_line', 'commerce_customer_address_thoroughfare', 'entity_id'))
         ->condition('commerce_customer_address_name_line', db_like($string) . '%', 'LIKE')
         ->condition('entity_type', 'commerce_customer_profile')
         ->condition('bundle', 'billing')
@@ -726,7 +769,7 @@ function rooms_booking_get_client_profiles($string = '') {
       $result = $subquery_1->union($subquery_2)->range(0, 10)->execute();
 
       foreach ($result as $customer) {
-        $matches[$customer->commerce_customer_address_name_line] = check_plain($customer->commerce_customer_address_name_line);
+        $matches[$customer->commerce_customer_address_name_line] = check_plain($customer->commerce_customer_address_name_line) . '<br>' . $customer->commerce_customer_address_thoroughfare;
       }
     }
     else {
