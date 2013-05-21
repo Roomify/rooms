@@ -215,6 +215,10 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     ctools_modal_add_js();
  
     $form['client']['#description'] = t('Customer profiles are saved in the <a href="@store-profile">store</a>. Search for an existing one by typing the customer name or <a href="@profile-create" class="ctools-use-modal">create a new profile</a>.', array('@store-profile' => url('admin/commerce/customer-profiles'), '@profile-create' => url('admin/rooms/add_customers')));
+
+    if (isset($booking->customer_id)) {
+      $form['client']['#field_suffix'] = t('<a href="@edit-profile" class="ctools-use-modal">edit profile</a>', array('@edit-profile' => url('admin/rooms/customer-profiles/' . $booking->customer_id . '/edit')));
+    }
   }
 
   $form['data']['#tree'] = TRUE;
