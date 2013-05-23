@@ -754,22 +754,16 @@ function rooms_booking_get_client_profiles($string = '') {
   $matches = array();
   if ($string) {
     if (module_exists('commerce_customer')) {
-      $subquery_1 = db_select('field_data_commerce_customer_address')
+      $result = db_select('field_data_commerce_customer_address')
         ->fields('field_data_commerce_customer_address', array('commerce_customer_address_name_line', 'commerce_customer_address_thoroughfare', 'entity_id'))
         ->condition('commerce_customer_address_name_line', db_like($string) . '%', 'LIKE')
         ->condition('entity_type', 'commerce_customer_profile')
         ->condition('bundle', 'billing')
-        ->range(0, 10);
-
-      $subquery_2 = db_select('rooms_customers')
-        ->fields('rooms_customers', array('name', 'id'))
-        ->condition('name', db_like($string) . '%', 'LIKE')
-        ->range(0, 10);
-
-      $result = $subquery_1->union($subquery_2)->range(0, 10)->execute();
+        ->range(0, 10)
+        ->execute();
 
       foreach ($result as $customer) {
-        $matches[$customer->commerce_customer_address_name_line] = check_plain($customer->commerce_customer_address_name_line) . '<br>' . $customer->commerce_customer_address_thoroughfare;
+        $matches[$customer->commerce_customer_address_name_line . ':' . $customer->entity_id] = check_plain($customer->commerce_customer_address_name_line) . '<br>(' . $customer->commerce_customer_address_thoroughfare . ')';
       }
     }
     else {
