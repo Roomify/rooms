@@ -176,6 +176,37 @@ function rooms_booking_delete_form_wrapper($booking) {
 
 
 /**
+ * Update "edit profile" link when value of Customer field change
+ */
+function rooms_booking_edit_profile_callback(&$form, $form_state) {
+  if (module_exists('commerce_customer')) {
+    $client = explode(':', $form_state['values']['client']);
+    
+    if (isset($client[1])) {
+      $result = db_select('field_data_commerce_customer_address')
+        ->fields('field_data_commerce_customer_address', array('entity_id'))
+        ->condition('commerce_customer_address_name_line', $client[0])
+        ->condition('entity_id', $client[1])
+        ->execute()
+        ->fetchField();
+
+      if ($result !== FALSE) {
+        $form['client']['#field_suffix'] = t('<a href="@edit-profile" class="ctools-use-modal">edit profile</a>', array('@edit-profile' => url('admin/rooms/customer-profiles/' . $client[1] . '/edit')));
+      }
+      else {
+        $form['client']['#field_suffix'] = '';
+      }
+    }
+    else {
+      $form['client']['#field_suffix'] = '';
+    }
+  }
+
+  return render($form['client']);
+}
+
+
+/**
  * Form callback: create or edit a booking.
  *
  * @param $booking
@@ -208,6 +239,10 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#required' => TRUE,
     '#prefix' => '<div id="custom-wrapper">',
     '#suffix' => '</div>',
+    '#ajax' => array(
+      'callback' => 'rooms_booking_edit_profile_callback',
+      'wrapper' => 'custom-wrapper',
+    ),
   );
 
   if (module_exists('commerce_customer')) {
@@ -217,7 +252,14 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     $form['client']['#description'] = t('Customer profiles are saved in the <a href="@store-profile">store</a>. Search for an existing one by typing the customer name or <a href="@profile-create" class="ctools-use-modal">create a new profile</a>.', array('@store-profile' => url('admin/commerce/customer-profiles'), '@profile-create' => url('admin/rooms/add_customers')));
 
     if (isset($booking->customer_id)) {
-      $form['client']['#field_suffix'] = t('<a href="@edit-profile" class="ctools-use-modal">edit profile</a>', array('@edit-profile' => url('admin/rooms/customer-profiles/' . $booking->customer_id . '/edit')));
+      $commerce_customer_id = db_select('rooms_customers')
+                                ->fields('rooms_customers', array('commerce_customer_id'))
+                                ->condition('id', $booking->customer_id, '=')
+                                ->execute()->fetchField();
+
+      if ($commerce_customer_id != NULL) {
+        $form['client']['#field_suffix'] = t('<a href="@edit-profile" class="ctools-use-modal">edit profile</a>', array('@edit-profile' => url('admin/rooms/customer-profiles/' . $commerce_customer_id . '/edit')));
+      }
     }
   }
 

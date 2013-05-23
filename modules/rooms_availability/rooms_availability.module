@@ -1237,7 +1237,7 @@ function rooms_availability_event_manager_form($form, $form_state, $unit_id, $ev
     '#ajax' => array(
       'callback' => 'rooms_availability_ajax_event_status_change',
       'wrapper' => 'replace_textfield_div',
-     ),
+    ),
   );
 
   if (module_exists('rooms_booking')) {
