@@ -35,7 +35,7 @@ function rooms_booking_menu() {
   );
 
   $items['admin/rooms/customer-profiles/%/edit'] = array(
-    'title' => t('Add customer profile'),
+    'title' => t('Edit customer profile'),
     'page callback' => 'rooms_booking_edit_customer_profile',
     'page arguments' => array(3),
     'access arguments' => array('administer bookings'),
