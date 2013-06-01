@@ -1,6 +1,9 @@
 <?php
 
-class BookingEvent {
+include 'Roomify/Event/EventInterface.php';
+
+
+class BookingEvent implements Roomify\Event\EventInterface {
 
   // The booking unit the event is relevant to
   public $unit_id;
@@ -277,4 +280,164 @@ class BookingEvent {
     return $event;
   }
 
+  /**
+   * Returns the start time (hour / minute) for the event. Should set default value if none defined (e.g. the check in
+   * time for a hotel).
+   *
+   * @param String $format How the $start_time should be formatted
+   *
+   * @return String $start_time
+   */
+  function getStartTime($format) {
+    // TODO: Implement getStartTime() method.
+  }
+
+  /**
+   * Returns the end time (hour / minute) for the event. Should set default value if none defined (e.g. the checkout
+   * time for a hotel).
+   *
+   * @param String $format How the $end_time should be formatted
+   *
+   * @return String $end_time
+   */
+  function getEndTime($format) {
+    // TODO: Implement getEndTime() method.
+  }
+
+  /**
+   * Returns the start day for the event.
+   *
+   * @param String $format How the $start_day should be formatted
+   *
+   * @return String $start_day
+   */
+  function getStartDay($format) {
+    // TODO: Implement getStartDay() method.
+  }
+
+  /**
+   * Returns the end day for the event.
+   *
+   * @param String $format How the $end_day should be formatted
+   *
+   * @return String $end_day
+   */
+  function getEndDay($format) {
+    // TODO: Implement getEndDay() method.
+  }
+
+  /**
+   * Returns the start month for the event.
+   *
+   * @param String $format How the $start_month should be formatted
+   *
+   * @return String $start_month
+   */
+  function getStartMonth($format) {
+    // TODO: Implement getStartMonth() method.
+  }
+
+  /**
+   * Returns the end Month for the event.
+   *
+   * @param String $format How the $end_month should be formatted
+   *
+   * @return String $end_month
+   */
+  function getEndMonth($format) {
+    // TODO: Implement getEndMonth() method.
+  }
+
+  /**
+   * Returns the start Year for the event.
+   *
+   * @param String $format How the $start_year should be formatted
+   *
+   * @return String $start_year
+   */
+  function getStartYear($format) {
+    // TODO: Implement getStartYear() method.
+  }
+
+  /**
+   * Returns the end Year for the event.
+   *
+   * @param String $format How the $end_year should be formatted
+   *
+   * @return String $end_year
+   */
+  function getEndYear($format) {
+    // TODO: Implement getEndYear() method.
+  }
+
+  /**
+   * Returns the start day for the event.
+   *
+   * @param String $format How the $start_day should be formatted
+   *
+   * @return String $start_day
+   */
+  function getStartDate($format) {
+    // TODO: Implement getStartDate() method.
+  }
+
+  /**
+   * Returns the end time for the event. It should be 1159am if none defined
+   *
+   * @param String $format How the $end_time should be formatted
+   *
+   * @return String $end_time representing end time
+   */
+  function getEndDate($format) {
+    // TODO: Implement getEndDate() method.
+  }
+
+  /**
+   * @return Boolean true if event starts and ends on same day
+   */
+  function isSameDay() {
+    // TODO: Implement isSameDay() method.
+  }
+
+  /**
+   * @return Boolean true if event starts and ends in the same month
+   */
+  function isSameMonth() {
+    // TODO: Implement isSameMonth() method.
+  }
+
+  /**
+   * @return Boolean true if event starts and ends in the same year
+   */
+  function isSameYear() {
+    // TODO: Implement isSameYear() method.
+  }
+
+  /**
+   * @return int the length of the event in seconds
+   */
+  function getSecondLength() {
+    // TODO: Implement getSecondLength() method.
+  }
+
+  /**
+   * @return int across how many days does the event span
+   */
+  function getDayLength() {
+    // TODO: Implement getDayLength() method.
+  }
+
+  /**
+   * @return int across how many months does the event span
+   */
+  function getMonthLength() {
+    // TODO: Implement getMonthLength() method.
+  }
+
+  /**
+   * @return int across how many years does the event span
+   */
+  function getYearLength() {
+    // TODO: Implement getYearLength() method.
+  }
 }

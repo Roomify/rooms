@@ -5,9 +5,6 @@ version = 1.x-dev
 
 package = Rooms
 
-files[] = includes/rooms_availability.booking_event.inc
-files[] = includes/rooms_availability.unit_calendar.inc
-
 
 dependencies[] = rooms_unit
 dependencies[] = rooms

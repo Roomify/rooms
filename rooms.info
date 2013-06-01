@@ -5,5 +5,8 @@ version = 1.x-dev
 php = 5.3
 
 files[] = test/rooms_test.test
+files[] = includes/rooms_availability.booking_event.inc
+files[] = includes/rooms_availability.unit_calendar.inc
+files[] = includes/Roomify/Event/EventInterface.php
 
 package = Rooms
