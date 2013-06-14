@@ -84,7 +84,7 @@ function rooms_unit_entity_info() {
     'entity class' => 'RoomsUnitType',
     'controller class' => 'RoomsUnitTypeController',
     'base table' => 'rooms_unit_type',
-    'fieldable' => FALSE,
+    'fieldable' => TRUE,
     'bundle of' => 'rooms_unit',
     'exportable' => TRUE,
     'entity keys' => array(
@@ -100,11 +100,36 @@ function rooms_unit_entity_info() {
       'file' => 'rooms_unit_type.admin.inc',
       'controller class' => 'RoomsUnitTypeUIController',
     ),
+
+    'translation' => array(
+      'entity_translation' => array(
+        'base path' => 'admin/rooms/units/unit/%rooms_unit',
+        'path wildcard' => '%rooms_unit',
+        'class' => 'EntityTranslationCustomEntityHandler',
+        'bundle callback' => 'rooms_unit_entity_translation_supported_type',
+        'default settings' => array(
+          'default_language' => LANGUAGE_NONE,
+          'hide_language_selector' => FALSE,
+        ),
+      ),
+    ),
   );
 
   return $return;
 }
 
+/**
+ * Check if a unit type has support for translation.
+ *
+ * @param $type
+ *   The machine-name of the unit type.
+ *
+ * @return
+ *   TRUE or FALSE indicating translation support.
+ */
+function rooms_unit_entity_translation_supported_type($type) {
+  return variable_get('language_book_unit_type_' . $type, 0) == ENTITY_TRANSLATION_ENABLED;
+}
 
 /**
  * Implements hook_entity_info_alter().
