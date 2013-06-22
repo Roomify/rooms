@@ -112,6 +112,19 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#weight' => 3,
   );
 
+  if (module_exists('entity_translation')) {
+    $form['multilingual'] = array(
+      '#type' => 'radios',
+      '#title' => t('Multilingual support'),
+      '#description' => t('If <em>Entity translation</em> is enabled it will be possible to provide a different version of the same product for each available language.') . '<br />' . t('You can find more options in the <a href="!url">entity translation settings</a>.', array('!url' => url('admin/config/regional/entity_translation'))),
+      '#options' => array(
+        0 => t('Disabled'),
+        ENTITY_TRANSLATION_ENABLED => t('Enabled via <em>Entity translation</em>'),
+      ),
+      '#default_value' => variable_get('language_rooms_unit_type_' . $unit_type->type, 0),
+    );
+  }
+
   $form['actions'] = array('#type' => 'actions');
   $form['actions']['submit'] = array(
     '#type' => 'submit',
@@ -129,19 +142,6 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
       '#submit' => array('rooms_unit_type_form_submit_delete')
     );
   }*/
-
-  if (module_exists('entity_translation')) {
-    $form['unit_type']['multilingual'] = array(
-      '#type' => 'radios',
-      '#title' => t('Multilingual support'),
-      '#description' => t('If <em>Entity translation</em> is enabled it will be possible to provide a different version of the same product for each available language.') . '<br />' . t('You can find more options in the <a href="!url">entity translation settings</a>.', array('!url' => url('admin/config/regional/entity_translation'))),
-      '#options' => array(
-        0 => t('Disabled'),
-        ENTITY_TRANSLATION_ENABLED => t('Enabled via <em>Entity translation</em>'),
-      ),
-      '#default_value' => variable_get('language_book_unit_type_' . $unit_type->type, 0),
-    );
-  }
 
   return $form;
 }
@@ -214,6 +214,11 @@ function rooms_unit_type_form_submit(&$form, &$form_state) {
       );
       field_create_instance($instance);
     }
+  }
+
+  // set translation config
+  if (module_exists('entity_translation')) {
+    variable_set('language_rooms_unit_type_' . $unit_type->type, $unit_type->multilingual);
   }
 
   $form_state['redirect'] = 'admin/rooms/units/unit-types';

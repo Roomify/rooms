@@ -53,7 +53,18 @@ function rooms_booking_type_form($form, &$form_state, $booking_type, $op = 'edit
     '#description' => t('A unique machine-readable name for this booking type. It must only contain lowercase letters, numbers, and underscores.'),
   );
 
-
+  if (module_exists('entity_translation')) {
+    $form['multilingual'] = array(
+      '#type' => 'radios',
+      '#title' => t('Multilingual support'),
+      '#description' => t('If <em>Entity translation</em> is enabled it will be possible to provide a different version of the same product for each available language.') . '<br />' . t('You can find more options in the <a href="!url">entity translation settings</a>.', array('!url' => url('admin/config/regional/entity_translation'))),
+      '#options' => array(
+        0 => t('Disabled'),
+        ENTITY_TRANSLATION_ENABLED => t('Enabled via <em>Entity translation</em>'),
+      ),
+      '#default_value' => variable_get('language_rooms_booking_type_' . $booking_type->type, 0),
+    );
+  }
 
   $form['actions'] = array('#type' => 'actions');
   $form['actions']['submit'] = array(
@@ -72,6 +83,11 @@ function rooms_booking_type_form_submit(&$form, &$form_state) {
   $booking_type = entity_ui_form_submit_build_entity($form, $form_state);
   // Save and go back.
   $booking_type->save();
+  // set translation config
+  if (module_exists('entity_translation')) {
+    variable_set('language_rooms_booking_type_' . $booking_type->type, $booking_type->multilingual);
+  }
+
   $form_state['redirect'] = 'admin/rooms/bookings/booking-types';
 }
 

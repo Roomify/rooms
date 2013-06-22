@@ -56,8 +56,10 @@ function rooms_unit_entity_info() {
     'base table' => 'rooms_units',
     'fieldable' => TRUE,
     'entity keys' => array(
-        'id' => 'unit_id',
-        'bundle' => 'type',
+      'id' => 'unit_id',
+      'bundle' => 'type',
+      'language' => 'language',
+      'label' => 'title',
     ),
     // Bundles are defined by the unit types below
     'bundles' => array(),
@@ -76,6 +78,18 @@ function rooms_unit_entity_info() {
       'file' => 'rooms_unit.admin.inc',
       'controller class' => 'RoomsUnitUIController',
       'menu wildcard' => '%rooms_unit',
+    ),
+    // integration with entity translate
+    'translation' => array(
+      'entity_translation' => array(
+        'base path' => 'admin/rooms/units/unit/%rooms_unit',
+        'path wildcard' => '%rooms_unit',
+        'bundle callback' => 'rooms_unit_entity_translation_supported_type',
+        'default settings' => array(
+          'default_language' => LANGUAGE_NONE,
+          'hide_language_selector' => FALSE,
+        ),
+      ),
     ),
   );
   // The entity that holds information about the entity types
@@ -100,19 +114,6 @@ function rooms_unit_entity_info() {
       'file' => 'rooms_unit_type.admin.inc',
       'controller class' => 'RoomsUnitTypeUIController',
     ),
-
-    'translation' => array(
-      'entity_translation' => array(
-        'base path' => 'admin/rooms/units/unit/%rooms_unit',
-        'path wildcard' => '%rooms_unit',
-        'class' => 'EntityTranslationCustomEntityHandler',
-        'bundle callback' => 'rooms_unit_entity_translation_supported_type',
-        'default settings' => array(
-          'default_language' => LANGUAGE_NONE,
-          'hide_language_selector' => FALSE,
-        ),
-      ),
-    ),
   );
 
   return $return;
@@ -128,7 +129,7 @@ function rooms_unit_entity_info() {
  *   TRUE or FALSE indicating translation support.
  */
 function rooms_unit_entity_translation_supported_type($type) {
-  return variable_get('language_book_unit_type_' . $type, 0) == ENTITY_TRANSLATION_ENABLED;
+  return variable_get('language_rooms_unit_type_' . $type, 0) == ENTITY_TRANSLATION_ENABLED;
 }
 
 /**
