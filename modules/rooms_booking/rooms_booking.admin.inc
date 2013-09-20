@@ -367,12 +367,12 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   $startdate = '';
   if (isset($_GET['startdate'])) {
     $startdate = (is_numeric(check_plain($_GET['startdate']))) ? check_plain($_GET['startdate']) : '';
-    if ($startdate != '') $form['rooms_date_range']['rooms_start_date']['#default_value'] = date('Y-m-d', $startdate);
+    if ($startdate != '') $form['rooms_date_range']['rooms_start_date']['#default_value'] = gmdate('Y-m-d', $startdate);
   }
   $enddate = '';
   if (isset($_GET['enddate'])) {
     $enddate = (is_numeric(check_plain($_GET['enddate']))) ? check_plain($_GET['enddate']) : '';
-    if ($enddate != '') $form['rooms_date_range']['rooms_end_date']['#default_value'] = date('Y-m-d', $enddate);
+    if ($enddate != '') $form['rooms_date_range']['rooms_end_date']['#default_value'] = gmdate('Y-m-d', $enddate);
   }
 
   $unitid = '';
@@ -485,10 +485,10 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       $form_state['values']['unit_type'] = $selected;
       $form_state['input']['data']['group_size'] = ($unit->max_sleeps <= 1) ? 1 : 2;
       $form_state['input']['data']['group_size_children'] = 0;
-      $form_state['input']['rooms_start_date']['date'] = date('d/m/Y', $startdate);
-      $form_state['input']['rooms_end_date']['date'] = date('d/m/Y', $enddate);
-      $form_state['values']['rooms_start_date'] = date('Y-m-d', $startdate);
-      $form_state['values']['rooms_end_date'] = date('Y-m-d', $enddate);
+      $form_state['input']['rooms_start_date']['date'] = gmdate('d/m/Y', $startdate);
+      $form_state['input']['rooms_end_date']['date'] = gmdate('d/m/Y', $enddate);
+      $form_state['values']['rooms_start_date'] = gmdate('Y-m-d', $startdate);
+      $form_state['values']['rooms_end_date'] = gmdate('Y-m-d', $enddate);
 
       $form_state['show_availability_options'] = TRUE;
     }
