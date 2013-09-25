@@ -6,6 +6,9 @@
  * plugin
  */
 
+define ('ROOMS_PER_NIGHT', 'rooms_per_night');
+define ('ROOMS_PER_PERSON', 'rooms_per_person');
+
 
 /**
  * Implements hook_permission().
