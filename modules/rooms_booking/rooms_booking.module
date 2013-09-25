@@ -5,6 +5,8 @@
  * Manage Bookings - Bookings are tied to a customer profile and possible a Unit ID and Order ID
  */
 
+define ('ROOMS_PER_NIGHT', 'rooms_per_night');
+define ('ROOMS_PER_PERSON', 'rooms_per_person');
 
 
 /**
