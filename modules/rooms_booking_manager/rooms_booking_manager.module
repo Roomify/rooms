@@ -15,9 +15,6 @@ define ('ROOMS_INDIVIDUAL', 'rooms_individual');
 define ('ROOMS_ENQ_CHECKOUT', 'rooms_enq_checkout');
 define ('ROOMS_COMMERCE_CHECKOUT', 'rooms_commerce_checkout');
 
-define ('ROOMS_PER_NIGHT', 'rooms_per_night');
-define ('ROOMS_PER_PERSON', 'rooms_per_person');
-
 define ('ROOMS_DISPLAY_CHILDREN', 1);
 define ('ROOMS_DISPLAY_CHILDREN_NO', 0);
 
