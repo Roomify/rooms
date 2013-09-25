@@ -10,6 +10,7 @@ dependencies[] = rooms
 dependencies[] = rooms_ui
 dependencies[] = entity
 dependencies[] = views
+dependencies[] = image
 
 
 files[] = rooms_unit.admin.inc
