@@ -1086,7 +1086,7 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
     if (variable_get('rooms_manually_booking_create_order', '1') == '1') {
       $booking_parameters = array('adults' => $form_state['values']['data']['group_size'], 'children' => $form_state['values']['data']['group_size_children']);
 
-      $order = rooms_booking_create_order($start_date, $end_date, $booking_parameters, $unit_object, $booking);
+      $order = rooms_booking_create_order($start_date, $end_date, $booking_parameters, $unit_object, $booking, $commerce_customer_id);
 
       $booking->order_id = $order->order_number;
 
@@ -1126,8 +1126,12 @@ function rooms_booking_form_submit_delete(&$form, &$form_state) {
  *   end date.
  * @param array $booking_parameters
  *   Specify the people we are looking to accommodate.
+ * @param $unit_object
+ * @param $booking
+ * @param $profile_id
+ * @return mixed
  */
-function rooms_booking_create_order($start_date, $end_date, $booking_parameters, $unit_object, $booking) {
+function rooms_booking_create_order($start_date, $end_date, $booking_parameters, $unit_object, $booking, $profile_id) {
   global $user;
 
   module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.commerce');
@@ -1158,6 +1162,16 @@ function rooms_booking_create_order($start_date, $end_date, $booking_parameters,
   // Add the line item to the order
   $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
   $order_wrapper->commerce_line_items[] = $line_item;
+
+  // Add customer profile id to store billing information
+  $profile_object = array(
+    'und' => array(
+      array('profile_id' => $profile_id,
+      ),
+    ),
+  );
+
+  $order->commerce_customer_billing = $profile_object;
 
   // Save the order again to update its line item reference field
   commerce_order_save($order);
