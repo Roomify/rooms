@@ -736,7 +736,6 @@ function book_unit_form_submit(&$form, &$form_state) {
 function book_units_per_type_form($form, $form_state, $units_per_type, $start_date, $end_date, $booking_parameters, $b_units, $type = '') {
 
   $date_format = variable_get('rooms_date_format', 'd-m-Y');
-  $nights = $end_date->diff($start_date);
 
   // Check to see if we are rebuilding the form to create an enquiry
   if (($form_state['rebuild']) && (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT)) {
@@ -853,8 +852,8 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         );
         if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
           $units_keys = array_keys($units);
-
-          $base_price = $units[$units_keys[0]]['unit']->base_price * ($nights->days);
+          // Calculate the price per person for the period
+          $base_price = $units[$units_keys[0]]['price'] / $units[$units_keys[0]]['unit']->max_sleeps;
           $form[$type][$price]['price']['#markup'] = t('Price per person:') . ' ' . $currency_symbol . ' ' . $base_price;
         }
 
