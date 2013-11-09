@@ -873,7 +873,11 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
     }
   }
 
-  if (!isset($form_state['values']['unit_id']) && (!isset($booking->unit_id))) {
+
+  // Check if unit assigned
+  if ((!isset($form_state['values']['unit_id'])) || ($form_state['values']['unit_id'] == '')) {
+    form_set_error('availability_fieldset', t('A unit has not been assigned for this booking'));
+  } elseif ((isset($form_state['values']['unit_id'])) && ($form_state['values']['unit_id'] == '')) {
     form_set_error('availability_fieldset', t('A unit has not been assigned for this booking'));
   }
 
