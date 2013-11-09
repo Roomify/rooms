@@ -402,8 +402,7 @@ class UnitCalendar {
    * @return array - An array of response on whether event updates were succesful or not
    */
   public function updateCalendar(array $events) {
-
-    $responses = array();
+    $response = array();
     // First check that none of the events supplied are blocked by an existing event with a locked status
     $monthly_events = array();
 
@@ -491,7 +490,6 @@ class UnitCalendar {
         'month' => $event->startMonth(),
       );
       $month_row = array_merge($month_row, $days);
-
       $insert = db_insert('rooms_availability')->fields($month_row);
       $insert->execute();
     }
