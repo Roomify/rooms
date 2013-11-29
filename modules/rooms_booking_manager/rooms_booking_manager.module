@@ -126,7 +126,7 @@ function rooms_booking_manager_enquiry_page_form($form, $form_state, $start_date
 
   $form['room_description'] = array(
     '#type' => 'item',
-    '#markup' => 'Room: ' . $unit_obj->name,
+    '#markup' => t('Unit: @unit_name', array('@unit_name' => $unit_obj->name)),
   );
 
   $form = rooms_booking_manager_enquiry_form($form, $start_date, $end_date, 2, 0, 1);
@@ -206,7 +206,7 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
 
       $no_results = array(
         '#prefix' => '<div class="no-booking-data">',
-        '#markup' => t('Unfortunately no rooms are available - try different dates if possible.'),
+        '#markup' => t('Unfortunately no units are available - try different dates if possible.'),
         '#suffix' => '</div>',
       );
       $content['no_results'] = $no_results;
@@ -725,7 +725,7 @@ function book_unit_form_submit(&$form, &$form_state) {
   }
   else {
 
-    drupal_set_message(t('We apologize it seems the room is no longer available'));
+    drupal_set_message(t('We apologize it seems the unit is no longer available'));
     drupal_goto('<front>');
 
   }
@@ -1685,10 +1685,10 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
         // If the event addition was succesful lock the event
         if ($responses[$id] == ROOMS_UPDATED) {
           $be->lock();
-          drupal_set_message(t('Room Availability Updated'));
+          drupal_set_message(t('Unit availability has been updated.'));
         }
         else {
-          drupal_set_message(t('Room Availability could not be updated'));
+          drupal_set_message(t('Unit availability could not be updated.'));
         }
       }
     }
@@ -1814,7 +1814,7 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
       '#type' => 'radios',
       '#title' => t('Price calculation'),
       '#options' => array(
-        ROOMS_PER_NIGHT => t('Price per room per night'),
+        ROOMS_PER_NIGHT => t('Price per unit per night'),
         ROOMS_PER_PERSON => t('Price per person per night'),
       ),
       '#default_value' => variable_get('rooms_price_calculation', ROOMS_PER_NIGHT),
@@ -1856,10 +1856,10 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
     $form['rooms_valid_availability_states'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Valid availability states'),
-      '#description' => t('Select the states for which rooms should show as available in a search.'),
+      '#description' => t('Select the states for which units should show as available in a search.'),
       '#options' => array(
-        ROOMS_AVAILABLE => t('Rooms marked as available.'),
-        ROOMS_ON_REQUEST => t('Rooms marked as available on request.'),
+        ROOMS_AVAILABLE => t('Units marked as available.'),
+        ROOMS_ON_REQUEST => t('Units marked as available on request.'),
       ),
       '#default_value' => variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)),
     );
@@ -1911,8 +1911,8 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
 
     $form['rooms_booking_manager_type_selector'] = array(
       '#type' => 'checkbox',
-      '#description' => t('Display Rooms Unit Type selector in availability search form.'),
-      '#title' => t('Display Rooms Type Selector.'),
+      '#description' => t('Display a Unit Type selector in availability search form.'),
+      '#title' => t('Display unit type selector'),
       '#default_value' => variable_get('rooms_booking_manager_type_selector', ROOMS_DISPLAY_TYPE_SELECTOR_NO),
     );
 
@@ -1976,7 +1976,7 @@ function rooms_booking_manager_rules_action_info() {
   );
 
   $actions['rooms_booking_manager_price_apply'] = array(
-    'label' => t('Apply price to a Rooms line item'),
+    'label' => t('Apply price to a booking line item'),
     'parameter' => array(
       'commerce_line_item' => array(
         'type' => 'commerce_line_item',

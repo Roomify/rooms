@@ -62,7 +62,7 @@ class RoomsBookingTestMain extends DrupalWebTestCase {
         'rooms_end_date[date]' => '06/06/2012',
         'data[group_size]' => 2,
       ),
-      array('op' => 'Assign Room'));
+      array('op' => 'Assign Unit'));
 
     $this->drupalPostAJAX(NULL,
       array(
@@ -159,7 +159,7 @@ class RoomsBookingTestSingleOccupancy extends DrupalWebTestCase {
         'rooms_end_date[date]' => '08/08/2012',
         'data[group_size]' => 1,
       ),
-      array('op' => 'Assign Room'));
+      array('op' => 'Assign Unit'));
 
     $this->drupalPostAJAX(NULL,
       array(

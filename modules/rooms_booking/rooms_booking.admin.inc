@@ -386,7 +386,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   // Access to availability information
   $form['get_availability'] = array(
     '#type' => 'submit',
-    '#value' => isset($booking->unit_id) ? t('Re-assign Unit') : t('Assign Room'),
+    '#value' => isset($booking->unit_id) ? t('Re-assign Unit') : t('Assign Unit'),
     '#submit' => array('rooms_booking_edit_form_availability_submit'),
     '#validate' => array('rooms_form_start_end_dates_validate'),
     '#ajax' => array(
@@ -1149,10 +1149,10 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
   // We have a unit defined so lets block availability there
   if ($unit != 0) {
     if ($booking->rooms_av_update == ROOMS_UPDATED) {
-      drupal_set_message(t('Room Availability Updated'));
+      drupal_set_message(t('Unit availability has been updated.'));
     }
     else {
-      drupal_set_message(t('Room Availability could not be updated'), 'error');
+      drupal_set_message(t('Unit availability could not be updated.'), 'error');
     }
   }
 
