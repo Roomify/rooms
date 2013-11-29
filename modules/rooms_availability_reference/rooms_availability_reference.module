@@ -459,7 +459,7 @@ function rooms_availability_reference_autocomplete_validate($element, &$form_sta
         $unit_id = key($references);
       }
       else {
-        form_error($element, t('%name: found no valid booking unit with that title.', array('%name' => $instance['label'])));
+        form_error($element, t('%name: unable to find a unit with that title.', array('%name' => $instance['label'])));
       }
     }
   }

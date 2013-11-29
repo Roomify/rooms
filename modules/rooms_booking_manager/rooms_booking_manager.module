@@ -2207,7 +2207,7 @@ function rooms_booking_manager_commerce_product_type_info() {
     'rooms_product' => array(
       'type' => 'rooms_product',
       'name' => t('Rooms product'),
-      'description' => t('Products bookable with Rooms.'),
+      'description' => t('Products that are bookable with Rooms.'),
       'revision' => '1',
     ),
   );

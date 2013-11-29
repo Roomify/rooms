@@ -181,11 +181,11 @@ function rooms_unit_delete_form_wrapper($unit) {
  *     with only a unit type defined.
  */
 function rooms_unit_edit_form($form, &$form_state, $unit) {
-  
+
   // Add the default field elements.
   $form['name'] = array(
     '#type' => 'textfield',
-    '#title' => t('Bookable Unit Name'),
+    '#title' => t('Unit Name'),
     '#default_value' => isset($unit->name) ? $unit->name : '',
     '#maxlength' => 255,
     '#required' => TRUE,
@@ -194,7 +194,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
 
   $form['base_price'] = array(
     '#type' => 'textfield',
-    '#title' => t('Unit Base Price'),
+    '#title' => t('Base Price'),
     '#default_value' => isset($unit->base_price) ? $unit->base_price : '',
     '#size' => '5',
     '#description' => 'Base price is per unit per night',
@@ -204,7 +204,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
   $form['bookable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Bookable'),
-    '#description' => t('To remove unit from bookable units uncheck - this will not alter availability states but remove the unit from any searches.'),
+    '#description' => t('Uncheck this to temporarily prevent the unit from being booked or appearing in any searches without affecting the scheduled availability on the calendar.'),
     '#default_value' => isset($unit->bookable) ? $unit->bookable : 1,
   );
 
@@ -240,7 +240,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
 
   $form['default_state'] = array(
     '#type' => 'select',
-    '#title' => t('Bookable Unit Default State'),
+    '#title' => t('Default Availability'),
     '#options' => array(
       ROOMS_NOT_AVAILABLE => t('Unavailable'),
       ROOMS_AVAILABLE => t('Available'),
@@ -248,7 +248,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
       ROOMS_ANON_BOOKED => t('Anonymous Booking')
     ),
     '#default_value' => isset($unit->default_state) ? $unit->default_state : 1,
-    '#description' => t('Choose what state to put the unit in for the dates chosen above'),
+    '#description' => t('Choose what state to leave the unit in by default.'),
   );
 
   $form['data']['#tree'] = TRUE;
@@ -277,16 +277,14 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     $form['multi'] = array(
       '#type' => 'fieldset',
       '#title' => t('Create multiple units'),
-      '#description' => t('Create multiple booking units allows you to quickly create the number of
-                          required units that all have the same configutation - you can still personalise
-                          each later on.'),
+      '#description' => t('Save time by creating multiple bookable units at once all containing the settings above. You can still personalise each one later on.'),
     );
 
     $form['multi']['multiple'] = array(
       '#type' => 'textfield',
       '#size' => 5,
       '#default_value' => 1,
-      '#title' => t('How many booking units like this should we create'),
+      '#title' => t('How many units should we create'),
     );
   }
 

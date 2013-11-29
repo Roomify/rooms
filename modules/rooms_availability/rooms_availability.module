@@ -410,6 +410,7 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
     $form['rooms_pricing_update'] = array(
     '#type' => 'fieldset',
     '#title' => t('Update Pricing'),
+    '#description' => '<p>' . t('Here you can apply a pricing adjustment in bulk to the units selected below for the specified date range.') . '</p>',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
@@ -499,7 +500,7 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
     $form['rooms_data']['select-all'] = array(
       '#type' => 'select',
       '#prefix' => '<tr><td>',
-      '#options' => array(t('Select...'), t('All (this page)'), t('All (all pages)'), t('None')),
+      '#options' => array(t('- Select -'), t('All (this page)'), t('All (all pages)'), t('None')),
       '#suffix' => '</td><td></td></tr>',
     );
 
@@ -617,6 +618,7 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
   $form['rooms_availability_update'] = array(
     '#type' => 'fieldset',
     '#title' => t('Update Availability'),
+    '#description' => '<p>' . t('Here you can update the availability status of the units selected below for the specified date range.') . '</p>',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
@@ -639,7 +641,7 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
   $form['rooms_availability_update']['rooms_date_range'] = rooms_availability_date_range_fields($year, $month);
 
   $state_options = array(
-    '-1' => t('Choose a new status'),
+    '-1' => t('- Select -'),
     ROOMS_NOT_AVAILABLE => t('Unavailable'),
     ROOMS_AVAILABLE => t('Available'),
     ROOMS_ON_REQUEST => t('On Request'),
@@ -650,7 +652,6 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
     '#title' => t('Bookable Unit State'),
     '#type' => 'select',
     '#options' => $state_options,
-    '#description' => t('Choose what state to put the unit in for the dates chosen above'),
   );
 
   $form['rooms_availability_update']['actions'] = array(
@@ -677,7 +678,7 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
     $form['rooms_data']['select-all'] = array(
       '#type' => 'select',
       '#prefix' => '<tr><td>',
-      '#options' => array(t('Select...'), t('All (this page)'), t('All (all pages)'), t('None')),
+      '#options' => array(t('- Select -'), t('All (this page)'), t('All (all pages)'), t('None')),
       '#suffix' => '</td><td></td></tr>',
     );
 
@@ -907,6 +908,7 @@ function update_availability_calendar_form($form, &$form_state, $unit_id, $year,
   $form['rooms_update_availability'] = array(
     '#type' => 'fieldset',
     '#title' => t('Update Availability'),
+    '#description' => t('Change the availability status for a specified date range.'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
@@ -922,14 +924,13 @@ function update_availability_calendar_form($form, &$form_state, $unit_id, $year,
 
   $form['rooms_update_availability']['unit_state'] = array(
     '#type' => 'select',
-    '#title' => t('Bookable Unit State'),
+    '#title' => t('Change status to'),
     '#options' => array(
       ROOMS_NOT_AVAILABLE => t('Unavailable'),
       ROOMS_AVAILABLE => t('Available'),
       ROOMS_ON_REQUEST => t('Available on Request'),
       ROOMS_ANON_BOOKED => t('Anonymous Booking')
     ),
-    '#description' => t('Choose what state to put the unit in for the dates chosen above'),
   );
 
   $form['rooms_update_availability']['actions'] = array(
@@ -973,7 +974,7 @@ function update_availability_calendar_form_submit(&$form, &$form_state) {
   $rc = new UnitCalendar($unit_id);
   $response = $rc->updateCalendar($events);
   if ($response[$event_id] == ROOMS_BLOCKED) {
-    drupal_set_message(t('Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period'), 'warning');
+    drupal_set_message(t('Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period.'), 'warning');
   }
   elseif ($response[$event_id] == ROOMS_UPDATED) {
     drupal_set_message(t('Calendar Updated'));
@@ -1220,7 +1221,7 @@ function rooms_availability_event_manager_form($form, $form_state, $unit_id, $ev
   );
 
   $state_options = array(
-    '-1' => t('Choose a new status'),
+    '-1' => t('- Select -'),
     ROOMS_NOT_AVAILABLE => t('Unavailable'),
     ROOMS_AVAILABLE => t('Available'),
     ROOMS_ON_REQUEST => t('On Request'),

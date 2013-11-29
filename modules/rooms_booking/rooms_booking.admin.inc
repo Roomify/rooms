@@ -281,7 +281,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       '10' => '10',
     ),
     '#default_value' =>  isset($booking->data['group_size']) ? $booking->data['group_size'] : '2',
-    '#description' => t('The number of persons staying in this room.'),
+    '#description' => t('The number of persons staying in this room (adults and children).'),
     '#ajax' => array(
       'callback' => 'rooms_booking_group_size_ajax_callback',
       'wrapper' => 'rooms_booking_group_size_children_container'
@@ -968,7 +968,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
           $form['rooms_date_range']['rooms_start_date']['date']['#value'] = $date1->format($form['rooms_date_range']['rooms_start_date']['#date_format']);
           $form['rooms_date_range']['rooms_end_date']['date']['#value'] = $date2->format($form['rooms_date_range']['rooms_end_date']['#date_format']);
 
-          form_set_error('date_range', t('Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period'));
+          form_set_error('date_range', t('Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period.'));
         }
 
         // Check if this booking overlap with an uncofirmed booking
