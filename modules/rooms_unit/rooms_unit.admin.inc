@@ -212,7 +212,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#type' => 'textfield',
     '#size' => 5,
     '#default_value' => isset($unit->min_sleeps) ? $unit->min_sleeps : 1,
-    '#field_prefix' => 'Min: ',
+    '#field_prefix' => t('Minimum') . ': ',
     '#title' => t('Person sleeps'),
   );
 
@@ -220,14 +220,14 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#type' => 'textfield',
     '#size' => 5,
     '#default_value' => isset($unit->max_sleeps) ? $unit->max_sleeps : 1,
-    '#field_prefix' => 'Max: ',
+    '#field_prefix' => t('Maximum') . ': ',
   );
 
   $form['min_children'] = array(
     '#type' => 'textfield',
     '#size' => 5,
     '#default_value' => isset($unit->min_children) ? $unit->min_children : 0,
-    '#field_prefix' => 'Min: ',
+    '#field_prefix' => t('Minimum') . ': ',
     '#title' => t('Children sleeps'),
   );
 
@@ -235,17 +235,17 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#type' => 'textfield',
     '#size' => 5,
     '#default_value' => isset($unit->max_children) ? $unit->max_children : 0,
-    '#field_prefix' => 'Max: ',
+    '#field_prefix' => t('Maximum') . ': ',
   );
 
   $form['default_state'] = array(
     '#type' => 'select',
     '#title' => t('Bookable Unit Default State'),
     '#options' => array(
-      ROOMS_NOT_AVAILABLE => 'Unavailable',
-      ROOMS_AVAILABLE => 'Available',
-      ROOMS_ON_REQUEST => 'Available on Request',
-      ROOMS_ANON_BOOKED => 'Anonymous Booking'
+      ROOMS_NOT_AVAILABLE => t('Unavailable'),
+      ROOMS_AVAILABLE => t('Available'),
+      ROOMS_ON_REQUEST => t('Available on Request'),
+      ROOMS_ANON_BOOKED => t('Anonymous Booking')
     ),
     '#default_value' => isset($unit->default_state) ? $unit->default_state : 1,
     '#description' => t('Choose what state to put the unit in for the dates chosen above'),

@@ -40,7 +40,7 @@
       unset ($content['state']);
       unset ($content['type']);
       unset ($content['sleeps']);
-      unset ($content['Bed Configuration']);
+      unset ($content['bed_arrangement']);
       print render($content);
     ?>
   </div>

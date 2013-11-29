@@ -91,7 +91,7 @@ function rooms_booking_manager_menu() {
  * Display 'Booking confirmed' message.
  */
 function rooms_booking_manager_enquiry_confirmation() {
-  return theme('rooms_booking_enquiry_confirmation', array('message' => 'Booking confirmed'));
+  return theme('rooms_booking_enquiry_confirmation', array('message' => t('Booking confirmed')));
 }
 
 
@@ -338,7 +338,7 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
     $type_obj = rooms_unit_type_load($type);
     $content[$type] = array(
       '#prefix' => '<h2>',
-      '#markup' =>  t($type_obj->label),
+      '#markup' =>  $type_obj->label,
       '#suffix' => '</h2>'
     );
 
@@ -436,7 +436,11 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
 
   $form['price'] = array(
     '#prefix' => '<div class="unit_price" id="' . $unit->unit_id . '_price" style="font-weight:bold">',
-    '#markup' =>  t('Base Cost:') . ' ' . $currency_symbol . ' ' . $price,
+    '#markup' =>  t('Base Cost') . ': ' .
+      t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
+        '@currency_symbol' => $currency_symbol,
+        '@amount' => $price,
+      )),
     '#suffix' => '</div>'
   );
 
@@ -616,7 +620,11 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
 
     $form['new_price'] = array(
       '#prefix' => '<div id="unit_' . $unit->unit_id . '_price" style="font-weight:bold">',
-      '#markup' => t('Cost:') . ' ' . $currency_symbol . ' ' . $new_price['full_price'],
+      '#markup' => t('Cost') . ': ' .
+        t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
+          '@currency_symbol'=> $currency_symbol,
+          '@amount' => $new_price['full_price']
+        )),
       '#suffix' => '</div>',
     );
   }
@@ -802,7 +810,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
       $type_obj = rooms_unit_type_load($type);
       $form[$type]['title'] = array(
         '#prefix' => '<h2>',
-        '#markup' => t($type_obj->label),
+        '#markup' => $type_obj->label,
         '#suffix' => '</h2>',
       );
 
@@ -847,14 +855,20 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         // Element to display price
         $form[$type][$price]['price'] = array(
           '#prefix' => '<tr><td><div class="unit_price" style="font-weight:bold">',
-          '#markup' =>  t('Base Cost:') . ' ' . $currency_symbol . ' ' . $price,
+          '#markup' => t('Base Cost') . ': ' .
+            t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
+              '@currency_symbol' => $currency_symbol,
+              '@amount' => $price)),
           '#suffix' => '</div>'
         );
         if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
           $units_keys = array_keys($units);
           // Calculate the price per person for the period
           $base_price = $units[$units_keys[0]]['price'] / $units[$units_keys[0]]['unit']->max_sleeps;
-          $form[$type][$price]['price']['#markup'] = t('Price per person:') . ' ' . $currency_symbol . ' ' . $base_price;
+          $form[$type][$price]['price']['#markup'] = t('Price per person') . ': ' .
+            t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
+              '@currency_symbol' => $currency_symbol,
+              '@amount' => $base_price));
         }
 
         // Element to hold price
@@ -1886,7 +1900,7 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
 
     $form['rooms_payment_options'][PERCENT_PAYMENT]['perc_option'] = array(
       '#type' => 'radio',
-      '#title' => t('Percentage of full price:&nbsp;'),
+      '#title' => t('Percentage of full price') . ':&nbsp;',
       '#return_value' => PERCENT_PAYMENT,
       '#parents' => array('rooms_payment_options'),
       '#default_value' => variable_get('rooms_payment_options', FULL_PAYMENT),
@@ -1924,7 +1938,7 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
     $form['rooms_date_format']['date_format'] = array(
       '#type' => 'textfield',
       '#size' => 12,
-      '#prefix' => '<div class="container-inline form-item">Date format: &nbsp;',
+      '#prefix' => '<div class="container-inline form-item">' . t('Date format') . ': &nbsp;',
       '#suffix' => '</div>',
       '#default_value' => variable_get('rooms_date_format', 'd-m-Y'),
     );

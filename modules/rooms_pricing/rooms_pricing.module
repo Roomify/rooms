@@ -140,7 +140,7 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
 
   $form['rooms_update_pricing'] = array(
     '#type' => 'fieldset',
-    '#title' => 'Update Pricing',
+    '#title' => t('Update Pricing'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#description' => t('Careful this will overwrite any existing pricing info.'),
@@ -174,11 +174,11 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
     '#type' => 'select',
     '#title' => t('Operation'),
     '#options' => array(
-      ROOMS_ADD => 'Add to price',
-      ROOMS_SUB => 'Subtract from price',
-      ROOMS_REPLACE => 'Replace price',
-      ROOMS_INCREASE => 'Increase price by % amount',
-      ROOMS_DECREASE => 'Decrease price by % amount',
+      ROOMS_ADD => t('Add to price'),
+      ROOMS_SUB => t('Subtract from price'),
+      ROOMS_REPLACE => t('Replace price'),
+      ROOMS_INCREASE => t('Increase price by % amount'),
+      ROOMS_DECREASE => t('Decrease price by % amount'),
     ),
     '#default_value' =>  'replace',
   );
@@ -188,7 +188,7 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
     '#title' => t('Amount'),
     '#default_value' => '',
     '#size' => '5',
-    '#description' => 'Amount to apply for rule',
+    '#description' => t('Amount to apply for rule'),
     '#maxlength' => 10,
     '#required' => TRUE,
   );

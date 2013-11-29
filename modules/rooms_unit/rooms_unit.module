@@ -608,8 +608,8 @@ class RoomsUnitController extends EntityAPIController {
     );
 
     if (isset($entity->data['bed_arrangement'])) {
-      $content[t('Bed Configuration')] = array(
-        '#markup' => t('Double Beds:') . ' ' . $entity->data['bed_arrangement']['doubles'] . '<br/>' . t('Single Beds:') . ' ' . $entity->data['bed_arrangement']['singles'] . '<br/>',
+      $content['bed_arrangement'] = array(
+        '#markup' => t('Double Beds') . ': ' . $entity->data['bed_arrangement']['doubles'] . '<br/>' . t('Single Beds') . ': ' . $entity->data['bed_arrangement']['singles'] . '<br/>',
       );
     }
 
