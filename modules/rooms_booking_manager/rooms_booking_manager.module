@@ -47,7 +47,7 @@ function rooms_booking_manager_menu() {
   $items  =  array();
 
   $items['booking'] = array(
-    'title' => t('Booking'),
+    'title' => 'Booking',
     'page callback' => 'rooms_booking_manager_search_availability',
     'file' => 'rooms_booking_manager.availability_search.inc',
     'access arguments' => array('book units'),
@@ -55,7 +55,7 @@ function rooms_booking_manager_menu() {
   );
 
   $items['booking/%start_date/%end_date'] = array(
-    'title' => t('Booking'),
+    'title' => 'Booking',
     'page callback' =>  'rooms_booking_manager_results_page',
     'page arguments' => array(1, 2),
     'access arguments' => array('book units'),
@@ -63,7 +63,7 @@ function rooms_booking_manager_menu() {
   );
 
   $items['enquiry/%start_date/%end_date'] = array(
-    'title' => t('Enquiry'),
+    'title' => 'Enquiry',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('rooms_booking_manager_enquiry_page_form', 1, 2),
     'access arguments' => array('book units'),
@@ -71,13 +71,13 @@ function rooms_booking_manager_menu() {
   );
 
   $items['bookings'] = array(
-    'title' => t('Booking cart'),
+    'title' => 'Booking cart',
     'page callback' => 'rooms_booking_manager_cart_view',
     'access arguments' => array('access content'),
   );
 
   $items['enquiry-confirmation'] = array(
-    'title' => t('Enquiry page'),
+    'title' => 'Enquiry page',
     'page callback' => 'rooms_booking_manager_enquiry_confirmation',
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,

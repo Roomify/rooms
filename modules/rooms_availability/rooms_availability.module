@@ -87,7 +87,7 @@ function rooms_availability_menu() {
   $items = array();
 
   $items['admin/rooms/units/unit/%availability_unit/availability'] = array(
-    'title' => t('Manage Availability'),
+    'title' => 'Manage Availability',
     'page callback' => 'rooms_availability_page',
     'page arguments' => array(4, 6, 7),
     'access callback' => 'rooms_availability_admin_access',
@@ -98,7 +98,7 @@ function rooms_availability_menu() {
   );
 
   $items['rooms/units/unit/%availability_unit/availability/json/%/%'] = array(
-    'title' => t('Availability Event'),
+    'title' => 'Availability Event',
     'page callback' => 'rooms_availability_event',
     'page arguments' => array(3, 6, 7, 8, 9, 10, 11, 12),
     'access callback' => 'rooms_availability_access',
@@ -108,7 +108,7 @@ function rooms_availability_menu() {
   );
 
   $items['admin/rooms/units/unit/%availability_unit/event'] = array(
-    'title' => t('Event Management'),
+    'title' => 'Event Management',
     'page callback' => 'rooms_availability_event_manager_page',
     'page arguments' => array(4),
     'access callback' => 'rooms_availability_access',
@@ -118,7 +118,7 @@ function rooms_availability_menu() {
   );
 
   $items['admin/rooms/units/bulk_unit_management'] = array(
-    'title' => t('Bulk availability management'),
+    'title' => 'Bulk availability management',
     'page callback' => 'rooms_availability_bulk_unit_management',
     'page arguments' => array(4, 5, 6),
     'access callback' => 'rooms_availability_access',
@@ -128,7 +128,7 @@ function rooms_availability_menu() {
   );
 
   $items['admin/rooms/units/bulk_pricing_management'] = array(
-    'title' => t('Bulk pricing management'),
+    'title' => 'Bulk pricing management',
     'page callback' => 'rooms_availability_bulk_pricing_management',
     'page arguments' => array(4, 5, 6),
     'access callback' => 'rooms_bulk_pricing_access',
@@ -137,14 +137,14 @@ function rooms_availability_menu() {
   );
 
   $items['admin/rooms/select-all-pages-av'] = array(
-    'title' => t('AJAX Select all availability pages callback'),
+    'title' => 'AJAX Select all availability pages callback',
     'type' => MENU_CALLBACK,
     'page callback' => 'rooms_availability_av_ajax_callback',
     'access arguments' => array('view named availability information'),
   );
 
   $items['admin/rooms/select-all-pages-pr'] = array(
-    'title' => t('AJAX Select all pricing pages callback'),
+    'title' => 'AJAX Select all pricing pages callback',
     'type' => MENU_CALLBACK,
     'page callback' => 'rooms_availability_pr_ajax_callback',
     'access arguments' => array('manage booking unit pricing'),

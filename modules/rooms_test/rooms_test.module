@@ -8,7 +8,7 @@ function rooms_test_menu() {
   $items = array();
 
   $items['admin/rooms/test/availabilitysizefilter'] = array(
-    'title' => t('AvailabilityAgentSizeFilter Test'),
+    'title' => 'AvailabilityAgentSizeFilter Test',
     'page callback' => 'rooms_test_availabilitysizefilter',
     'access callback' => 'rooms_availability_admin_access',
     'access arguments' => array('configure room settings'),
@@ -16,7 +16,7 @@ function rooms_test_menu() {
   );
 
   $items['admin/rooms/test/availabilitydatefilter'] = array(
-    'title' => t('AvailabilityAgentDateFilter Test'),
+    'title' => 'AvailabilityAgentDateFilter Test',
     'page callback' => 'rooms_test_availabilitydatefilter',
     'access callback' => 'rooms_availability_admin_access',
     'access arguments' => array('configure room settings'),
@@ -24,7 +24,7 @@ function rooms_test_menu() {
   );
 
   $items['admin/rooms/test/availabilitycommercefilter'] = array(
-    'title' => t('AvailabilityAgentCommerceFilter Test'),
+    'title' => 'AvailabilityAgentCommerceFilter Test',
     'page callback' => 'rooms_test_availabilitycommercefilter',
     'access callback' => 'rooms_availability_admin_access',
     'access arguments' => array('configure room settings'),

@@ -26,7 +26,7 @@ class RoomsUnitUIController extends EntityDefaultUIController {
 
     $items[$this->path] = array(
       'title' => 'Bookable Units',
-      'description' => 'Add edit and update bookable units (e.g. rooms at a hotel or a villa).',
+      'description' => 'Add, edit, and update bookable units.',
       'page callback' => 'system_admin_menu_block_page',
       'access arguments' => array('access administration pages'),
       'file path' => drupal_get_path('module', 'system'),
@@ -38,7 +38,7 @@ class RoomsUnitUIController extends EntityDefaultUIController {
     // Change the add page menu to multiple types of entities
     $items[$this->path . '/add'] = array(
       'title' => 'Add a Bookable Unit',
-      'description' => 'Add a new Unit',
+      'description' => 'Create a new bookable unit.',
       'page callback'  => 'rooms_unit_add_page',
       'access callback'  => 'rooms_unit_access',
       'access arguments' => array('edit'),
@@ -53,7 +53,8 @@ class RoomsUnitUIController extends EntityDefaultUIController {
     // Add menu items to add each different type of room.
     foreach (rooms_unit_get_types() as $type) {
       $items[$this->path . '/add/' . $type->type] = array(
-        'title' => 'Add ' . $type->label,
+        'title' => 'Add @unit_type_label unit',
+        'title arguments' => array('@unit_type_label' => $type->label),
         'page callback' => 'rooms_unit_create_form_wrapper',
         'page arguments' => array($type->type),
         'access callback' => 'rooms_unit_access',

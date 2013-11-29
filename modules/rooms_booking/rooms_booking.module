@@ -14,28 +14,28 @@ function rooms_booking_menu() {
   $items  =  array();
 
   $items['admin/rooms/bookings/customers'] = array(
-    'title' => t('Customers'),
+    'title' => 'Customers',
     'page callback' => 'rooms_booking_get_client_profiles',
     'access arguments' => array('administer bookings'),
     'type' => MENU_CALLBACK,
   );
 
   $items['admin/rooms/bookings/room_types'] = array(
-    'title' => t('Room Types'),
+    // This is a json request to list booking room_types
     'page callback' => 'rooms_booking_get_room_types',
     'access arguments' => array('administer bookings'),
     'type' => MENU_CALLBACK,
   );
 
   $items['admin/rooms/add_customers'] = array(
-    'title' => t('Add customer profile'),
+    'title' => 'Add customer profile',
     'page callback' => 'rooms_booking_add_customer_profile',
     'access arguments' => array('administer bookings'),
     'type' => MENU_CALLBACK,
   );
 
   $items['admin/rooms/customer-profiles/%/edit'] = array(
-    'title' => t('Edit customer profile'),
+    'title' => 'Edit customer profile',
     'page callback' => 'rooms_booking_edit_customer_profile',
     'page arguments' => array(3),
     'access arguments' => array('administer bookings'),
@@ -43,8 +43,8 @@ function rooms_booking_menu() {
   );
 
   $items['admin/rooms/config/children'] = array(
-    'title' => t('Children Discount Settings'),
-    'description' => t('Configure settings.'),
+    'title' => 'Children Discount Settings',
+    'description' => 'Configure settings for children discounts.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('rooms_booking_children_discount'),
     'access arguments' => array('configure room settings'),

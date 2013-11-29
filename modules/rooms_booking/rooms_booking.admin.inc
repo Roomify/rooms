@@ -52,7 +52,8 @@ class RoomsBookingUIController extends EntityDefaultUIController {
     // Add menu items to add each different type of room.
     foreach (rooms_booking_get_types() as $type) {
       $items[$this->path . '/add/' . $type->type] = array(
-        'title' => 'Add ' . $type->label,
+        'title' => 'Add @booking_type',
+        'title arguments' => array('@booking_type' => $type->label),
         'page callback' => 'rooms_booking_create_form_wrapper',
         'page arguments' => array($type->type),
         'access callback' => 'rooms_booking_access',
