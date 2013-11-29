@@ -137,12 +137,16 @@ function rooms_booking_children_discount($form, &$form_state) {
       '#default_value' => isset($options[$i]['end']) ? $options[$i]['discount'] : '',
     );
   }
-  $form['submit'] = array(
+  $form['actions'] = array(
+    '#type' => 'actions',
+    '#tree' => FALSE,
+  );
+  $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
   );
 
-  $form['add_option'] = array(
+  $form['actions']['add_option'] = array(
     '#type' => 'submit',
     '#value' => t('Add another option'),
     '#submit' => array('rooms_booking_children_discount_add_option'),

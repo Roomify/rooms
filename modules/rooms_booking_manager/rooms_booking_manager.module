@@ -1148,8 +1148,8 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     );
 
     $form['actions'] = array(
-      '#type' => 'container',
-      '#attributes' => array('class' => array('form-actions')),
+      '#type' => 'actions',
+      '#tree' => FALSE,
       '#weight' => 400,
     );
 

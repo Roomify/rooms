@@ -112,7 +112,10 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#weight' => 3,
   );
 
-  $form['actions'] = array('#type' => 'actions');
+  $form['actions'] = array(
+    '#type' => 'actions',
+    '#tree' => FALSE,
+  );
   $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save unit type'),

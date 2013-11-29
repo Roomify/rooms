@@ -294,9 +294,8 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
   field_attach_form('rooms_unit', $unit, $form, $form_state);
 
   $form['actions'] = array(
-    '#type' => 'container',
-    '#attributes' => array('class' => array('form-actions')),
-    '#weight' => 400,
+    '#type' => 'actions',
+    '#tree' => FALSE,
   );
 
   // We add the form's #submit array to this button along with the actual submit

@@ -173,8 +173,8 @@ function rooms_booking_availability_search_form($form, $form_state) {
   }
 
   $form['actions'] = array(
-    '#type' => 'container',
-    '#attributes' => array('class' => array('form-actions')),
+    '#type' => 'actions',
+    '#tree' => FALSE,
     '#weight' => 400,
   );
 
