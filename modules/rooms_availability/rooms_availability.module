@@ -327,7 +327,7 @@ function rooms_availability_filter_month_form($form, &$form_state, $month, $year
   );
 
   $form['rooms_availability_filter_month']['month'] = array(
-    '#title' => t("Month"),
+    '#title' => t('Month'),
     '#type' => 'select',
     '#options' => $month_options,
     '#default_value' => $month,
@@ -336,7 +336,7 @@ function rooms_availability_filter_month_form($form, &$form_state, $month, $year
   $year_options = range(date('Y', time()) - 2, date('Y', time()) + 5);
 
   $form['rooms_availability_filter_month']['year'] = array(
-    '#title' => t("Year"),
+    '#title' => t('Year'),
     '#type' => 'select',
     '#options' => $year_options,
     '#default_value' => $year - date('Y', time()) + 2,
@@ -351,7 +351,7 @@ function rooms_availability_filter_month_form($form, &$form_state, $month, $year
   }
 
   $form['rooms_availability_filter_month']['type'] = array(
-    '#title' => t("Type"),
+    '#title' => t('Type'),
     '#type' => 'select',
     '#options' => $type_options,
     '#default_value' => (arg(6) == '') ? 'all' : arg(6),
@@ -647,7 +647,7 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
   );
 
   $form['rooms_availability_update']['change_event_status2'] = array(
-    '#title' => t("Bookable Unit State"),
+    '#title' => t('Bookable Unit State'),
     '#type' => 'select',
     '#options' => $state_options,
     '#description' => t('Choose what state to put the unit in for the dates chosen above'),
@@ -1230,7 +1230,7 @@ function rooms_availability_event_manager_form($form, $form_state, $unit_id, $ev
   unset($state_options[$event_id]);
 
   $form['change_event_status'] = array(
-    '#title' => t("Change the state for this event to:") . ' ',
+    '#title' => t('Change the state for this event to:') . ' ',
     '#type' => 'select',
     '#options' => $state_options,
     '#default_value' => $event_id,

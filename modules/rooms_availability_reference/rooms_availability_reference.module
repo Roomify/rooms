@@ -193,7 +193,7 @@ function rooms_availability_reference_field_validate($entity_type, $entity, $fie
       else {
         $errors[$field['field_name']][$langcode][$delta][] = array(
           'error' => 'invalid_unit_id',
-          'message' => t("%name: invalid input.",
+          'message' => t('%name: invalid input.',
             array('%name' => $instance['label'])),
         );
       }
