@@ -139,6 +139,7 @@ class RoomsUnitUIController extends EntityDefaultUIController {
 function rooms_unit_form_wrapper($unit) {
   // Add the breadcrumb for the form's location.
   rooms_unit_set_breadcrumb();
+  drupal_set_title(t('Edit @unit_name', array('@unit_name' => $unit->name)));
   return drupal_get_form('rooms_unit_edit_form', $unit);
 }
 

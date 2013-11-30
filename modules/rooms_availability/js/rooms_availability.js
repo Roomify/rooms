@@ -7,8 +7,8 @@ Drupal.behaviors.rooms_availability = {
   attach: function(context) {
 
     // Current month is whatever comes through -1 since js counts months starting from 0
-    currentmonth = parseInt(Drupal.settings.roomsAvailability.currentMonth)-1;
-    currentyear = parseInt(Drupal.settings.roomsAvailability.currentYear);
+    currentmonth = parseInt(Drupal.settings.roomsCalendar.currentMonth)-1;
+    currentyear = parseInt(Drupal.settings.roomsCalendar.currentYear);
 
     // The first month on the calendar
     month1 = currentmonth;
@@ -104,7 +104,8 @@ Drupal.RoomsAvailability.Modal = function(element, eid, sd, ed) {
   };
   // To made all calendars trigger correctly the getResponse event we need to
   // initialize the ajax instance with the global calendar table element.
-  var calendars_table = $(element.element).closest('table');
+  var calendars_table = $(element.element).closest('.calendar-set');
+
   // create new instance only once if exists just override the url
   if (Drupal.ajax[base] === undefined) {
     Drupal.ajax[base] = new Drupal.ajax(element_settings.url, calendars_table, element_settings);

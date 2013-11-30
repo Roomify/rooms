@@ -5,8 +5,8 @@ Drupal.behaviors.rooms_availability = {
 
     // Current month is whatever comes through -1 since js counts months starting
     // from 0
-    currentmonth = parseInt(Drupal.settings.roomsPricing.currentMonth)-1;
-    currentyear = parseInt(Drupal.settings.roomsPricing.currentYear);
+    currentmonth = parseInt(Drupal.settings.roomsCalendar.currentMonth) - 1;
+    currentyear = parseInt(Drupal.settings.roomsCalendar.currentYear);
 
     // The first month on the calendar
     month1 = currentmonth;
