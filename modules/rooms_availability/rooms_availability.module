@@ -496,7 +496,7 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
   $form['rooms_data'] = array(
     '#prefix' => '<table class="rooms-month-manager">',
     '#type' => 'container',
-    '#suffix' => '</table>',
+    '#suffix' => '</tbody></table>',
   );
 
   if (count($rooms_units) > 0) {
