@@ -42,7 +42,7 @@ function rooms_booking_views_data_alter(&$data) {
   );
   $data['rooms_bookings']['start_date'] = array(
     'title' => t('Start Date'),
-    'help' => t('The starting date for a booking'),
+    'help' => t('A booking\'s arrival date.'),
     'field' => array(
       'float' => TRUE,
       'handler' => 'rooms_booking_handler_date_field',
@@ -51,7 +51,7 @@ function rooms_booking_views_data_alter(&$data) {
   );
   $data['rooms_bookings']['end_date'] = array(
     'title' => t('End Date'),
-    'help' => t('The end date for a booking'),
+    'help' => t('A booking\'s departure date.'),
     'field' => array(
       'float' => TRUE,
       'handler' => 'rooms_booking_handler_date_field',
@@ -60,14 +60,14 @@ function rooms_booking_views_data_alter(&$data) {
   );
   $data['rooms_bookings']['unit_id'] = array(
     'title' => t('Unit'),
-    'help' => t('The unit this booking is in'),
+    'help' => t('The unit for which this booking was made.'),
     'field' => array(
       'handler' => 'rooms_booking_handler_unit_field',
     ),
   );
   $data['rooms_bookings']['type']['field'] = array(
-    'title' => t('Booking  Type'),
-    'help' => t('Booking  Type Label.'),
+    'title' => t('Booking Type'),
+    'help' => t('The booking type label.'),
     'handler' => 'rooms_booking_handler_booking_type_field',
   );
 
@@ -134,7 +134,7 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['fields']['booking_id']['id'] = 'booking_id';
   $handler->display->display_options['fields']['booking_id']['table'] = 'rooms_bookings';
   $handler->display->display_options['fields']['booking_id']['field'] = 'booking_id';
-  $handler->display->display_options['fields']['booking_id']['field'] = 'Booking';
+  $handler->display->display_options['fields']['booking_id']['label'] = 'Booking';
   /* Field: Bookings: Name */
   $handler->display->display_options['fields']['name']['id'] = 'name';
   $handler->display->display_options['fields']['name']['table'] = 'rooms_bookings';
@@ -230,7 +230,7 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['fields']['type']['id'] = 'type';
   $handler->display->display_options['fields']['type']['table'] = 'rooms_bookings';
   $handler->display->display_options['fields']['type']['field'] = 'type';
-  $handler->display->display_options['fields']['type']['label'] = 'Booking Type';
+  $handler->display->display_options['fields']['type']['label'] = 'Type';
   $handler->display->display_options['fields']['type']['alter']['alter_text'] = 0;
   $handler->display->display_options['fields']['type']['alter']['make_link'] = 0;
   $handler->display->display_options['fields']['type']['alter']['absolute'] = 0;
@@ -252,7 +252,7 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['fields']['order_id']['id'] = 'order_id';
   $handler->display->display_options['fields']['order_id']['table'] = 'rooms_bookings';
   $handler->display->display_options['fields']['order_id']['field'] = 'order_id';
-  $handler->display->display_options['fields']['order_id']['label'] = 'Order ID';
+  $handler->display->display_options['fields']['order_id']['label'] = 'Order';
   $handler->display->display_options['fields']['order_id']['alter']['alter_text'] = 0;
   $handler->display->display_options['fields']['order_id']['alter']['make_link'] = 0;
   $handler->display->display_options['fields']['order_id']['alter']['absolute'] = 0;

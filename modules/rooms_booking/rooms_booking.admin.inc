@@ -139,6 +139,9 @@ function rooms_booking_form_wrapper($booking) {
   // Add the breadcrumb for the form's location.
   rooms_booking_set_breadcrumb();
 
+  // Set the page title.
+  drupal_set_title( t('Booking #@booking_id', array('@booking_id' => $booking->booking_id)));
+
   return drupal_get_form('rooms_booking_edit_form', $booking);
 }
 
@@ -390,7 +393,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   // Access to availability information
   $form['get_availability'] = array(
     '#type' => 'submit',
-    '#value' => isset($booking->unit_id) ? t('Re-assign Unit') : t('Assign Unit'),
+    '#value' => isset($booking->unit_id) ? t('Re-assign Unit') : t('Check availability'),
     '#submit' => array('rooms_booking_edit_form_availability_submit'),
     '#validate' => array('rooms_form_start_end_dates_validate'),
     '#ajax' => array(
@@ -414,7 +417,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       }
     }
   }
-  $unit_selected = isset($booking->unit_id) ? t('Currently assigned unit: @unit_name / @type', array('@type' => $type_obj->label, '@unit_name' => $unit->name)) : t('No Unit assigned.');
+  $unit_selected = isset($booking->unit_id) ? t('Currently assigned unit: @unit_name / @type', array('@type' => $type_obj->label, '@unit_name' => $unit->name)) : '';
 
   if ($options_list != '') {
     $unit_selected .= ' (' . t('Options') . substr($options_list, 0, strlen($options_list) - 2) . ')';
@@ -429,7 +432,6 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
   $form['availability_fieldset'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Availability'),
     '#description' => $unit_selected,
     '#prefix' => '<div id="availability-wrapper">',
     '#suffix' => '</div>',
@@ -461,7 +463,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
         );
         $form['order']['order_link'] = array(
           '#type' => 'markup',
-          '#markup' => t('Order Status: @order_status', array('@order_status' => $order_states[$order->status]['title'])) . '<br>' . t('Edit <a href="@url">order</a> associated to this booking', array('@url' => url('admin/commerce/orders/' . $booking->order_id . '/edit'))),
+          '#markup' => t('Order Status: @order_status', array('@order_status' => $order_states[$order->status]['title'])) . '<br>' . t('Edit <a href="@url">order</a> associated with this booking', array('@url' => url('admin/commerce/orders/' . $booking->order_id . '/edit'))),
         );
       }
     }
@@ -470,7 +472,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   // If submit above pressed and we have dates we can process to assign a unit
   if (isset($form_state['show_availability_options']) || $unitid != '') {
     $room_types = rooms_unit_get_types();
-    $types = array('notype' => t('- Select -'));
+    $types = array('' => t('- Select -'));
     foreach ($room_types as $type) {
       $types[$type->type] = $type->label;
     }
@@ -518,14 +520,11 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     // This is where the available untis will pop up
     $form['availability_fieldset']['unit_fieldset'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Units'),
       '#prefix' => '<div id="unit-wrapper">',
       '#suffix' => '</div>',
     );
 
-    $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
-      '#markup' => t('The following units are available for the chosen dates; please select one.'),
-    );
+    $form['availability_fieldset']['unit_fieldset']['instructions'] = array();
 
     // If the user has selected a unit type or we already have a unit assigned
     // show all the available units of that type (including the already assign unit)
@@ -548,7 +547,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       $available_units = rooms_booking_edit_form_get_rooms($search_unit_type, $start_date, $end_date, $form_state['input']['data']['group_size'], $group_size_children, $childrens_age, $booking);
       if ($available_units == 2) {
         $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
-          '#markup' => t('No @search_unit_type are available', array('@search_unit_type' => $search_unit_type)),
+          '#markup' => t('No @unit_type units are available for the chosen dates.', array('@unit_type' => $search_unit_type)),
         );
       }
       else {
@@ -558,6 +557,10 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
           $form['availability_fieldset']['unit_fieldset']['type'] = array(
             '#type' => 'fieldset',
             '#title' => t($type_obj->label),
+          );
+
+          $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
+            '#markup' => t('The following units are available for the chosen dates; please select one.'),
           );
 
           $options = array();
@@ -573,7 +576,6 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
           }
 
           $form['availability_fieldset']['unit_fieldset']['type']['unit_id'] = array(
-            '#title' => t('Units'),
             '#type' => 'radios',
             '#options' => $options,
             '#validated' => TRUE,
@@ -590,7 +592,6 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
           $form['availability_fieldset']['unit_fieldset']['options_fieldset'] = array(
             '#type' => 'fieldset',
-            '#title' => t('Options'),
             '#prefix' => '<div id="options-wrapper">',
             '#suffix' => '</div>',
           );
@@ -702,7 +703,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
             // When user press 'Re-assign Unit' button we don't replace price
             if (isset($form_state['triggering_element'])) {
-              if ($form_state['triggering_element']['#value'] == 'Re-assign Unit' && $form_state['triggering_element']['#name'] == 'op') {
+              if ($form_state['triggering_element']['#value'] == t('Re-assign Unit') && $form_state['triggering_element']['#name'] == 'op') {
                 $form['availability_fieldset']['unit_fieldset']['options_fieldset']['price']['#value'] = number_format($booking->price / 100, 2, '.', '');
               }
               else {
