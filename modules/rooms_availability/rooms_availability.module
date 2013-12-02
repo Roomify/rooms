@@ -311,6 +311,9 @@ function rooms_availability_bulk_pricing_management($year = '', $month = '', $ty
 
 
 function rooms_availability_filter_month_form($form, &$form_state, $month, $year) {
+
+  $form['#attributes']['class'][] = 'rooms-management-form rooms-filter-month-form';
+
   $month_options = array(
     1 => t('January'),
     2 => t('February'),
@@ -407,10 +410,13 @@ function rooms_availability_filter_month_form_submit(&$form, &$form_state) {
  * @see rooms_availability_bulk_pricing_management()
  */
 function rooms_availability_pricing_update_form($form, &$form_state, $month, $year, $type, $rooms_units) {
-    $form['rooms_pricing_update'] = array(
+
+  $form['#attributes']['class'][] = 'rooms-management-form rooms-bulk-pricing-form';
+
+  $form['rooms_pricing_update'] = array(
     '#type' => 'fieldset',
     '#title' => t('Update Pricing'),
-    '#description' => '<p>' . t('Here you can apply a pricing adjustment in bulk to the units selected below for the specified date range.') . '</p>',
+    '#description' => t('Apply a pricing adjustment in bulk to the units selected below for the specified date range.'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
@@ -447,10 +453,7 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
   );
 
   $form['rooms_pricing_update']['op'] = array(
-    '#title' => t('Operation'),
     '#type' => 'fieldset',
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
   );
 
   $form['rooms_pricing_update']['op']['operation'] = array(
@@ -491,17 +494,19 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
   $form['#validate'][] = 'rooms_form_start_end_dates_validate';
 
   $form['rooms_data'] = array(
-    '#prefix' => '<table>',
+    '#prefix' => '<table class="rooms-month-manager">',
     '#type' => 'container',
     '#suffix' => '</table>',
   );
 
   if (count($rooms_units) > 0) {
+    $date = new DateTime();
+    $date->setDate($year, $month, '01');
     $form['rooms_data']['select-all'] = array(
       '#type' => 'select',
-      '#prefix' => '<tr><td>',
+      '#prefix' => '<thead><tr><th>',
       '#options' => array(t('- Select -'), t('All (this page)'), t('All (all pages)'), t('None')),
-      '#suffix' => '</td><td></td></tr>',
+      '#suffix' => '</th><th><div class="fc-header-title"><h2>' . format_date($date->getTimestamp(), 'custom', 'F Y') . '</h2></div></th></tr></thead><tbody>',
     );
 
     if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'true') {
@@ -615,10 +620,13 @@ function rooms_availability_pricing_update_form_submit(&$form, &$form_state) {
  * @see rooms_availability_bulk_unit_management()
  */
 function rooms_availability_update_status_form($form, &$form_state, $month, $year, $type, $rooms_units) {
+
+  $form['#attributes']['class'][] = 'rooms-management-form rooms-bulk-availability-form';
+
   $form['rooms_availability_update'] = array(
     '#type' => 'fieldset',
     '#title' => t('Update Availability'),
-    '#description' => '<p>' . t('Here you can update the availability status of the units selected below for the specified date range.') . '</p>',
+    '#description' => t('Change the availability status of the units selected below for the specified date range.'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
@@ -669,17 +677,19 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
   $form['#validate'][] = 'rooms_availability_update_status_form_validate';
 
   $form['rooms_data'] = array(
-    '#prefix' => '<table>',
+    '#prefix' => '<table class="rooms-month-manager">',
     '#type' => 'container',
-    '#suffix' => '</table>',
+    '#suffix' => '</tbody></table>',
   );
 
   if (count($rooms_units) > 0) {
+    $date = new DateTime();
+    $date->setDate($year, $month, '01');
     $form['rooms_data']['select-all'] = array(
       '#type' => 'select',
-      '#prefix' => '<tr><td>',
+      '#prefix' => '<thead><tr><th>',
       '#options' => array(t('- Select -'), t('All (this page)'), t('All (all pages)'), t('None')),
-      '#suffix' => '</td><td></td></tr>',
+      '#suffix' => '</th><th><div class="fc-header-title"><h2>' . format_date($date->getTimestamp(), 'custom', 'F Y') . '</h2></div></th></tr></thead><tbody>',
     );
 
     if (variable_get('ROOMS_SELECT_ALL_PAGES_AV') == 'true') {
@@ -905,6 +915,8 @@ function rooms_availability_preprocess_rooms_three_month_calendar(&$vars) {
  * A basic form that allows us to update the state of the calendar
  */
 function update_availability_calendar_form($form, &$form_state, $unit_id, $year, $month) {
+
+  $form['#attributes']['class'][] = 'rooms-management-form rooms-availability-calendar-form';
 
   $form['rooms_update_availability'] = array(
     '#type' => 'fieldset',
@@ -1187,6 +1199,9 @@ function rooms_availability_modal_style() {
 
   // add the ctool modal configuration to settings
   drupal_add_js($modal_style, 'setting');
+
+  // add the ctools modal stylesheet.
+  drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/rooms_modal_styles.css');
 }
 
 /**
@@ -1194,6 +1209,8 @@ function rooms_availability_modal_style() {
  */
 function rooms_availability_event_manager_form($form, $form_state, $unit_id, $event_id, $start_date, $end_date) {
   $form = array();
+
+  $form['#attributes']['class'][] = 'rooms-management-form rooms-event-form';
 
   $form['form_wrapper_top'] = array(
     '#type' => 'item',

@@ -1,0 +1,31 @@
+/* Booking edit form */
+.rooms-booking-form .form-actions,
+.rooms-booking-form #edit-b-status,
+.rooms-booking-form #edit-rooms-date-range {
+  float: none;
+  clear: both;
+}
+.rooms-booking-form #edit-b-status,
+.rooms-booking-form #edit-availability-fieldset,
+.rooms-booking-form #edit-get-availability,
+.rooms-booking-form #edit-order {
+  margin-bottom: 15px;
+}
+.rooms-booking-form #edit-availability-fieldset .fieldset-description {
+  padding: 0;
+}
+.rooms-booking-form .start-date,
+.rooms-booking-form .end-date {
+  float: left;
+  margin-right: 20px;
+}
+.rooms-booking-form .form-item-data-group-size,
+.rooms-booking-form #rooms_booking_group_size_children_container {
+  float: left;
+  margin-right: 20px;
+  max-width: 175px;
+}
+.rooms-booking-form .form-item-data-group-size,
+.rooms-booking-form .form-item-data-group-size-children {
+  padding: 0;
+}

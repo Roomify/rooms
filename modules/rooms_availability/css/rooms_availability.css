@@ -1,69 +1,41 @@
-.page-admin-rooms-units-bulk-unit-management table.fc-header,
-.page-admin-rooms-units-bulk-pricing-management table.fc-header {
+
+.rooms-bulk-pricing-form .fc-header,
+.rooms-bulk-availability-form .fc-header {
   display: none;
 }
-.page-admin-rooms-units-bulk-unit-management #calendar0 table.fc-header,
-.page-admin-rooms-units-bulk-pricing-management #calendar0 table.fc-header {
-  display: inline-table;
-  border: none;
-  margin: 0;
-}
 
-.page-admin-rooms-units-bulk-unit-management #calendar0 table.fc-header tr td:last-child,
+/*.page-admin-rooms-units-bulk-unit-management #calendar0 table.fc-header tr td:last-child,
 .page-admin-rooms-units-bulk-pricing-management #calendar0 table.fc-header tr td:last-child {
   border: none;
-}
+}*/
 
-.page-admin-rooms-units-bulk-unit-management .start-date,
-.page-admin-rooms-units-bulk-unit-management .end-date,
-.page-admin-rooms-units-bulk-pricing-management .start-date,
-.page-admin-rooms-units-bulk-pricing-management .end-date {
+
+/* Filter month form */
+.rooms-filter-month-form .form-item-month,
+.rooms-filter-month-form .form-item-year,
+.rooms-filter-month-form .form-item-type {
   float: left;
   margin-right: 20px;
 }
-
-.page-admin-rooms-units-bulk-pricing-management fieldset {
-  clear: both;
-}
-
-.page-admin-rooms-units-bulk-unit-management #rooms-availability-update-status-form {
-  clear: both;
-}
-
-.page-admin-rooms-units-bulk-unit-management #rooms-availability-update-status-form .form-item-change-event-status {
-  float: left;
-  padding: 0;
-}
-
-.page-admin-rooms-units-bulk-unit-management #rooms-availability-update-status-form .form-actions {
-  clear: both;
-  padding: 10px 0px;
-}
-
-#rooms-availability-filter-month-form .form-item-month,
-#rooms-availability-filter-month-form .form-item-year,
-#rooms-availability-filter-month-form .form-item-type {
-  float: left;
-  margin-right: 25px;
-}
-
-#rooms-availability-filter-month-form .form-item-month label,
-#rooms-availability-filter-month-form .form-item-year label,
-#rooms-availability-filter-month-form .form-item-type label {
+.rooms-filter-month-form .form-item-month label,
+.rooms-filter-month-form .form-item-year label,
+.rooms-filter-month-form .form-item-type label {
   display: inline;
   margin-right: 4px;
 }
 
-#rooms-availability-filter-month-form .form-actions {
-  padding-top: 6px;
-}
-
-#edit-day-options .form-type-checkbox {
+/* Bulk pricing form */
+.rooms-bulk-pricing-form .form-item-day-options {
   float: left;
   margin-right: 20px;
 }
-
-div.ctools-modal-content .form-item label {
-  float: none;
-  width: 100%;
+.rooms-bulk-pricing-form .form-item-day-options .form-type-checkbox {
+  display: inline;
+}
+.rooms-bulk-pricing-form .form-item-day-options .form-checkboxes:after {
+  content: ".";
+  display: block;
+  height: 0;
+  clear: both;
+  visibility: hidden;
 }

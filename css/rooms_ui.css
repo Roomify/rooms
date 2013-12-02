@@ -1,0 +1,63 @@
+/* General styles for all Rooms management forms */
+.rooms-management-form:after {
+  content: ".";
+  display: block;
+  height: 0;
+  clear: both;
+  visibility: hidden;
+}
+
+.rooms-management-form .form-item {
+  padding: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.rooms-management-form .form-item label {
+  margin: 0;
+  display: block;
+}
+
+.rooms-management-form .form-type-radio label,
+.rooms-management-form .form-type-checkbox label {
+  display: inline;
+}
+
+.rooms-management-form .form-type-select,
+.rooms-management-form .form-item-operation,
+.rooms-management-form .form-item-amount,
+.rooms-management-form .form-actions,
+.rooms-management-form .start-date,
+.rooms-management-form .end-date {
+  float: left; /* LTR */
+  margin: 0 20px 0 0; /* LTR */
+  clear: none;
+}
+.rooms-management-form .start-date .form-text,
+.rooms-management-form .end-date .form-text {
+  width: 10em;
+}
+.rooms-management-form .form-actions {
+  margin-top: 1.6em;
+}
+
+/* Fieldsets are floated by default, but if its collapsible, dont float it*/
+.rooms-management-form fieldset {
+  padding: 0;
+  margin: 0;
+  border: none;
+  float: left;
+  width: auto;
+}
+.rooms-management-form fieldset.collapsible {
+  float: none;
+  clear: both;
+  margin-bottom: 20px;
+}
+.rooms-management-form .fieldset-description {
+  padding: 15px 0;
+}
+
+.rooms-month-manager td {
+  margin: 0;
+  padding: 0 0 10px;
+}

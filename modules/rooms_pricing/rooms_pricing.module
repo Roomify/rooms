@@ -112,12 +112,14 @@ function rooms_pricing_page(RoomsUnit $rooms_unit, $year='', $month='') {
  */
 function update_unit_pricing_form($form, &$form_state, $unit_id) {
 
+  $form['#attributes']['class'][] = 'rooms-management-form unit-pricing-form';
+
   $form['rooms_update_pricing'] = array(
     '#type' => 'fieldset',
     '#title' => t('Update Unit Pricing'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#description' => t('Careful this will overwrite any existing pricing info.'),
+    '#description' => t('Careful - this will overwrite any existing pricing info.'),
   );
 
   $form['rooms_update_pricing']['unit_id'] = array(
@@ -126,10 +128,7 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
   );
 
   $form['rooms_update_pricing']['rooms_date_range'] = array(
-    '#title' => t('Date Range'),
     '#type' => 'fieldset',
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
   );
 
   $form['rooms_update_pricing']['rooms_date_range'] += rooms_date_range_fields();
@@ -137,10 +136,7 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
   drupal_add_js(array('rooms' => array('roomsBookingStartDay' => 0)), 'setting');
 
   $form['rooms_update_pricing']['op'] = array(
-    '#title' => t('Operation'),
     '#type' => 'fieldset',
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
   );
 
   $form['rooms_update_pricing']['op']['operation'] = array(

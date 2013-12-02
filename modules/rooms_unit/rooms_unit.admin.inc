@@ -183,6 +183,8 @@ function rooms_unit_delete_form_wrapper($unit) {
  */
 function rooms_unit_edit_form($form, &$form_state, $unit) {
 
+  $form['#attributes']['class'][] = 'rooms-management-form unit-edit-form';
+
   // Add the default field elements.
   $form['name'] = array(
     '#type' => 'textfield',

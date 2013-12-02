@@ -27,7 +27,9 @@ class RoomsUnitTypeUIController extends EntityDefaultUIController {
  *
  */
 function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
-  
+
+  $form['#attributes']['class'][] = 'rooms-management-form unit-type-form';
+
   if ($op == 'clone') {
     $unit_type->label .= ' (cloned)';
     $unit_type->type = '';

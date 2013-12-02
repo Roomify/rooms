@@ -215,6 +215,11 @@ function rooms_booking_edit_profile_callback(&$form, $form_state) {
  *     with only a booking type defined.
  */
 function rooms_booking_edit_form($form, &$form_state, $booking) {
+
+  $form['#attributes']['class'][] = 'rooms-management-form rooms-booking-form';
+
+  drupal_add_css(drupal_get_path('module', 'rooms_booking') . '/css/rooms_booking.css');
+
   $client = '';
 
   $currency_setting = commerce_currency_load(commerce_default_currency());
@@ -249,7 +254,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   if (module_exists('commerce_customer')) {
     ctools_include('modal');
     ctools_modal_add_js();
- 
+
     $form['client']['#description'] = t('Customer profiles are saved in the <a href="@store-profile">store</a>. Search for an existing one by typing the customer name or <a href="@profile-create" class="ctools-use-modal">create a new profile</a>.', array('@store-profile' => url('admin/commerce/customer-profiles'), '@profile-create' => url('admin/rooms/add_customers')));
 
     if (isset($booking->customer_id)) {
@@ -352,7 +357,6 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   // A fieldset to hold the date range fields
   $form['rooms_date_range'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Assign Dates'),
   );
 
   $form['rooms_date_range'] = rooms_date_range_fields($form['rooms_date_range']);

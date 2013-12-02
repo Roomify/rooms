@@ -12,6 +12,8 @@ function rooms_booking_manager_search_availability() {
 
 function rooms_booking_availability_search_form($form, $form_state) {
 
+  $form['#attributes']['class'][] = 'rooms-management-form rooms-availability-pricing-form';
+
   $rooms_number = 1;
 
   if (isset($form_state['values']['rooms'])) {
@@ -24,7 +26,6 @@ function rooms_booking_availability_search_form($form, $form_state) {
 
     $booking_parameters = rooms_booking_manager_retrieve_booking_parameters($b_units, $_GET);
   }
-
 
   $form['rooms_date_range'] = rooms_date_range_fields();
 

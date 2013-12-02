@@ -1,0 +1,22 @@
+/* When modals are enabled, add hover effect to calendar */
+.fc-event:hover {
+  cursor: pointer;
+}
+.fc-widget-content:hover {
+  cursor: default;
+  background: rgba(230,230,230, 0.2);
+}
+
+/* Override some form layouts when they appear inside CTools modals */
+.ctools-modal-content .rooms-management-form .form-item label {
+  float: none;
+  width: auto;
+}
+.ctools-modal-content .rooms-management-form .form-type-select,
+.ctools-modal-content .rooms-management-form .form-item-operation,
+.ctools-modal-content .rooms-management-form .form-item-amount,
+.ctools-modal-content .rooms-management-form .form-actions {
+  float: none;
+  margin: 0;
+  clear: both;
+}
