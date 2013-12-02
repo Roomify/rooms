@@ -524,7 +524,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     );
 
     $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
-      '#markup' => t('Choose a unit from the list of available rooms below - we only show units with availability for the dates selected.'),
+      '#markup' => t('The following units are available for the chosen dates; please select one.'),
     );
 
     // If the user has selected a unit type or we already have a unit assigned
