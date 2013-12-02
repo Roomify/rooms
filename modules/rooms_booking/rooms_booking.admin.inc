@@ -281,7 +281,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       '10' => '10',
     ),
     '#default_value' =>  isset($booking->data['group_size']) ? $booking->data['group_size'] : '2',
-    '#description' => t('The number of persons staying in this room (adults and children).'),
+    '#description' => t('The number of people staying in this unit (adults and children).'),
     '#ajax' => array(
       'callback' => 'rooms_booking_group_size_ajax_callback',
       'wrapper' => 'rooms_booking_group_size_children_container'
@@ -298,7 +298,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#title' => t('Children'),
     '#options' => range(0, $persons),
     '#default_value' =>  isset($booking->data['group_size_children']) ? $booking->data['group_size_children'] : '0',
-    '#description' => t('The number of children staying in this room.'),
+    '#description' => t('The number of children staying in this unit.'),
     '#prefix' => '<div id="rooms_booking_group_size_children_container">',
     '#suffix' => '</div>',
   );

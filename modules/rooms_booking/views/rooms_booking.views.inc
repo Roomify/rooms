@@ -134,10 +134,12 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['fields']['booking_id']['id'] = 'booking_id';
   $handler->display->display_options['fields']['booking_id']['table'] = 'rooms_bookings';
   $handler->display->display_options['fields']['booking_id']['field'] = 'booking_id';
+  $handler->display->display_options['fields']['booking_id']['field'] = 'Booking';
   /* Field: Bookings: Name */
   $handler->display->display_options['fields']['name']['id'] = 'name';
   $handler->display->display_options['fields']['name']['table'] = 'rooms_bookings';
   $handler->display->display_options['fields']['name']['field'] = 'name';
+  $handler->display->display_options['fields']['name']['label'] = 'Customer';
   $handler->display->display_options['fields']['name']['alter']['alter_text'] = 0;
   $handler->display->display_options['fields']['name']['alter']['make_link'] = 0;
   $handler->display->display_options['fields']['name']['alter']['absolute'] = 0;
@@ -159,6 +161,7 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['fields']['start_date']['id'] = 'start_date';
   $handler->display->display_options['fields']['start_date']['table'] = 'rooms_bookings';
   $handler->display->display_options['fields']['start_date']['field'] = 'start_date';
+  $handler->display->display_options['fields']['start_date']['label'] = 'Arrival';
   $handler->display->display_options['fields']['start_date']['alter']['alter_text'] = 0;
   $handler->display->display_options['fields']['start_date']['alter']['make_link'] = 0;
   $handler->display->display_options['fields']['start_date']['alter']['absolute'] = 0;
@@ -182,6 +185,7 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['fields']['end_date']['id'] = 'end_date';
   $handler->display->display_options['fields']['end_date']['table'] = 'rooms_bookings';
   $handler->display->display_options['fields']['end_date']['field'] = 'end_date';
+  $handler->display->display_options['fields']['end_date']['label'] = 'Departure';
   $handler->display->display_options['fields']['end_date']['alter']['alter_text'] = 0;
   $handler->display->display_options['fields']['end_date']['alter']['make_link'] = 0;
   $handler->display->display_options['fields']['end_date']['alter']['absolute'] = 0;
