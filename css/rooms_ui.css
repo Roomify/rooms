@@ -1,3 +1,8 @@
+/* Some Rooms admin pages use tables for layout, so let's kill this default. */
+tbody {
+  border-top: none;
+}
+
 /* General styles for all Rooms management forms */
 .rooms-management-form:after {
   content: ".";
