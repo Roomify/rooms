@@ -19,6 +19,7 @@
 }
 .rooms-booking-form #availability-button {
   clear: both;
+  padding: 1em 0;
 }
 .rooms-booking-form #availability-wrapper .fieldset-description {
   padding: 0;
