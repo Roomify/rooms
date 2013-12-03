@@ -140,7 +140,8 @@ function rooms_booking_form_wrapper($booking) {
   rooms_booking_set_breadcrumb();
 
   // Set the page title.
-  drupal_set_title( t('Booking #@booking_id', array('@booking_id' => $booking->booking_id)));
+  $type = rooms_booking_get_types($booking->type);
+  drupal_set_title( t('#@booking_id - @booking_type', array('@booking_type' => $type->label, '@booking_id' => $booking->booking_id)));
 
   return drupal_get_form('rooms_booking_edit_form', $booking);
 }
