@@ -40,6 +40,16 @@
 .js .rooms-management-form .end-date .description {
   display: none;
 }
+.start-date .form-type-textfield label,
+.end-date .form-type-textfield label {
+  display: none;
+}
+.start-date .date-padding,
+.end-date .date-padding {
+  padding: 0;
+  float: none;
+}
+
 .rooms-management-form .form-actions {
   margin-top: 1.6em;
 }
