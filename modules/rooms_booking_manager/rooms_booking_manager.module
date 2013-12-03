@@ -516,13 +516,14 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
   if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
     $form['persons'] = array(
       '#type' => 'select',
-      '#title' => t('Persons'),
+      '#title' => t('Guests'),
       '#options' => range($unit->min_sleeps, $unit->max_sleeps),
       '#default_value' => $unit->max_sleeps - $unit->min_sleeps,
       '#ajax' => array(
         'callback' => 'rooms_booking_manager_quantity_change_callback',
         'wrapper' => 'unit_' . $unit->unit_id . '_price',
       ),
+      '#description' => t('The total number of people staying in this unit <b>including adults and children</b>.'),
     );
 
     $max_children = $unit->max_children;
@@ -983,19 +984,20 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               }
             }
 
-            // Show Persons and Children selectors if price calculation is setted to 'Price per person per night' 
+            // Show Guests and Children selectors if price calculation is setted to 'Price per person per night'
             if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
               $tmp_unit = $units[$units_keys[$c - 1]]['unit'];
 
               $form[$type][$price]['fieldset'][$c]['persons'] = array(
                 '#type' => 'select',
-                '#title' => t('Persons'),
+                '#title' => t('Guests'),
                 '#options' => range($tmp_unit->min_sleeps, $tmp_unit->max_sleeps),
                 '#default_value' => $tmp_unit->max_sleeps - $tmp_unit->min_sleeps,
                 '#ajax' => array(
                   'callback' => 'rooms_booking_manager_quantity_change_callback',
                   'wrapper' => $type . '_' . $price . '_container',
                 ),
+                '#description' => t('The total number of people staying in this unit <b>including adults and children</b>.'),
               );
 
               $max_children = $tmp_unit->max_children;

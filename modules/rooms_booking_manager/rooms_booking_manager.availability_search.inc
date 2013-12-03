@@ -41,7 +41,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
 
   $form['conditions']['rooms'] = array(
     '#type' => 'select',
-    '#title' => t('Rooms'),
+    '#title' => t('Units'),
     '#options' => array(
       '1' => '1',
       '2' => '2',
@@ -81,7 +81,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
     for ($i = 1; $i <= $rooms_number; $i++) {
       $form['rooms_fieldset']['rooms_label:' . $i] = array(
         '#prefix' => '<tr><td>',
-        '#markup' => ($rooms_number > 1) ? t('Room') . ' ' . $i . ':' : '',
+        '#markup' => ($rooms_number > 1) ? t('Unit') . ' ' . $i . ':' : '',
         '#suffix' => '</td>',
       );
 

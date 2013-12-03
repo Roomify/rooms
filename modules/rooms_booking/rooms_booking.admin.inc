@@ -275,7 +275,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   $form['data']['#tree'] = TRUE;
   $form['data']['group_size'] = array(
     '#type' => 'select',
-    '#title' => t('Persons'),
+    '#title' => t('Guests'),
     '#options' => array(
       '1' => '1',
       '2' => '2',
@@ -289,7 +289,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       '10' => '10',
     ),
     '#default_value' =>  isset($booking->data['group_size']) ? $booking->data['group_size'] : '2',
-    '#description' => t('The number of people staying in this unit (adults and children).'),
+    '#description' => t('The total number of people staying in this unit <b>including adults and children</b>.'),
     '#ajax' => array(
       'callback' => 'rooms_booking_group_size_ajax_callback',
       'wrapper' => 'rooms_booking_group_size_children_container'
@@ -549,7 +549,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       $available_units = rooms_booking_edit_form_get_rooms($search_unit_type, $start_date, $end_date, $form_state['input']['data']['group_size'], $group_size_children, $childrens_age, $booking);
       if ($available_units == 2) {
         $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
-          '#markup' => t('No @unit_type units are available for the chosen dates.', array('@unit_type' => $search_unit_type)),
+          '#markup' => t('No @unit_type units are available for specified party size on the chosen dates.', array('@unit_type' => $search_unit_type)),
         );
       }
       else {
