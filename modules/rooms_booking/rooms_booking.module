@@ -241,7 +241,7 @@ function rooms_booking_add_customer_profile() {
       '#value' => $form_state['build_info']['args'][0]->commerce_customer_address['und'][0]['name_line'],
       '#weight' => -1,
       '#required' => TRUE,
-      '#prefix' => '<div id="custom-wrapper">',
+      '#prefix' => '<div id="edit-customer-wrapper">',
       '#suffix' => '</div>',
       '#id' => 'edit-client',
       '#name' => 'client',
@@ -258,7 +258,7 @@ function rooms_booking_add_customer_profile() {
       }
     }
 
-    $output = array(ctools_modal_command_dismiss(), ajax_command_replace('#custom-wrapper', drupal_render($form['client'])));
+    $output = array(ctools_modal_command_dismiss(), ajax_command_replace('#edit-customer-wrapper', drupal_render($form['client'])));
   }
 
   print ajax_render($output);

@@ -246,11 +246,11 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#default_value' => $client,
     '#weight' => -1,
     '#required' => TRUE,
-    '#prefix' => '<div id="custom-wrapper">',
+    '#prefix' => '<div id="edit-customer-wrapper">',
     '#suffix' => '</div>',
     '#ajax' => array(
       'callback' => 'rooms_booking_edit_profile_callback',
-      'wrapper' => 'custom-wrapper',
+      'wrapper' => 'edit-customer-wrapper',
     ),
   );
 
@@ -400,6 +400,8 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       'callback' => 'rooms_booking_edit_form_availability_callback',
       'wrapper' => 'availability-wrapper',
     ),
+    '#prefix' => '<div id="availability-button">',
+    '#suffix' => '</div>',
   );
 
   $options_list = '';

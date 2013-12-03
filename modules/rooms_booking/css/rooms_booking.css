@@ -1,7 +1,6 @@
 /* Booking edit form */
 .rooms-booking-form .form-actions,
 .rooms-booking-form #edit-b-status,
-.rooms-booking-form #edit-rooms-date-range,
 .rooms-booking-form #availability-wrapper fieldset {
   float: none;
   clear: both;
@@ -12,6 +11,14 @@
 .rooms-booking-form #edit-order,
 .rooms-booking-form #edit-type {
   margin-bottom: 15px;
+}
+.rooms-booking-form #edit-customer-wrapper {
+  float: left;
+  max-width: 300px;
+  margin-right: 20px;
+}
+.rooms-booking-form #availability-button {
+  clear: both;
 }
 .rooms-booking-form #availability-wrapper .fieldset-description {
   padding: 0;
