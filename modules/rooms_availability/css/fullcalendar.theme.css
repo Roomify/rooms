@@ -2,7 +2,7 @@
   margin: 0;
 }
 .fc td, .fc th {
-  width: auto;
+  width: .1%; /* Attempt to make all cells equal-width */
 }
 
 /* Header styles */
@@ -38,6 +38,9 @@
 }
 
 /* Table borders */
+.fc-border-separate {
+  border: none;
+}
 .fc-border-separate th,
 .fc-border-separate th.fc-last {
   border-width: 0;
@@ -128,6 +131,10 @@
 .fc-view-singleRowMonth th.fc-sun {
   border-left-width: 1px;
 }
+.fc-view-singleRowMonth th.fc-sun.fc-first {
+  border-left-width: 0;
+}
+
 
 /* Hide plain text events when javascript is enabled */
 html.js .fullcalendar-content {
