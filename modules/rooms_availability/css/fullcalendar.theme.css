@@ -14,12 +14,15 @@
   font-weight: normal;
   margin: 0;
 }
+.fc-header {
+  border: none;
+}
 .fc-header tbody,
 .fc-header tr,
 .fc-header th,
 .fc-header td {
   background-color: transparent;
-  border: 0;
+  border: none !important;
 }
 .fc-header td {
   padding: 8px 0;

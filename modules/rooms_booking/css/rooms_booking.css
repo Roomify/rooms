@@ -14,12 +14,20 @@
 }
 .rooms-booking-form #edit-customer-wrapper {
   float: left;
-  max-width: 300px;
+  max-width: 400px;
   margin-right: 20px;
 }
-.rooms-booking-form #availability-button {
+.rooms-booking-form #edit-customer-wrapper .form-item-client .form-text,
+.rooms-booking-form #edit-customer-wrapper .form-item-client .field-suffix {
+  width: 48%;
+  margin-right: 2%;
+  display: inline-block;
+}
+
+.rooms-booking-form .form-wrapper {
   clear: both;
-  padding: 1em 0;
+  padding: 0;
+  margin: 0 0 1em;
 }
 .rooms-booking-form #availability-wrapper .fieldset-description {
   padding: 0;

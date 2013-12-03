@@ -56,7 +56,7 @@ tbody {
 }
 
 .rooms-management-form .form-actions {
-  margin-top: 1.6em;
+  padding-top: 1.6em;
 }
 
 /* Fieldsets are floated by default, but if its collapsible, dont float it*/
@@ -64,7 +64,7 @@ tbody {
   padding: 0;
   margin: 0;
   border: none;
-  float: left;
+  float: left; /* LTR */
   width: auto;
 }
 .rooms-management-form fieldset.collapsible {
@@ -82,6 +82,7 @@ tbody {
   padding: 15px 0;
 }
 
+/* Single-Row Month */
 .rooms-month-manager td {
   margin: 0;
   padding: 0 0 10px;
@@ -91,7 +92,7 @@ tbody {
   border-bottom: 1px solid #ccc !important;
 }
 
-/* Front-end booking and checkout process */
+/* Booking */
 .view-booking-cart-form table,
 .view-booking-checkout-form table,
 .commerce-checkout-form-review table {

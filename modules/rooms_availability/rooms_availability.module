@@ -1201,7 +1201,7 @@ function rooms_availability_modal_style() {
   drupal_add_js($modal_style, 'setting');
 
   // add the ctools modal stylesheet.
-  drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/rooms_modal_styles.css');
+  drupal_add_css(drupal_get_path('module', 'rooms') . '/css/modal.css');
 }
 
 /**
@@ -1384,7 +1384,7 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
       '#default_value' => variable_get('rooms_not_available_color', '#FF0000'),
       '#element_validate' => array('rooms_availability_validate_hex_color'),
       '#dependency' => array('edit-row-options-colors-legend' => array('type')),
-      '#prefix' => '<div class="rooms-colorpicker-wrapper">',
+      '#prefix' => '<div class="rooms-colorpicker-wrapper form-wrapper">',
       '#suffix' => '<div class="rooms-colorpicker"></div></div>',
       '#attributes' => array('class' => array('rooms-edit-colorpicker')),
       '#attached' => array(
@@ -1542,7 +1542,7 @@ function rooms_availability_date_range_fields($year, $month) {
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
 
   $date_range_fields['rooms_start_date'] = array(
-    '#prefix' => '<div class="start-date">',
+    '#prefix' => '<div class="form-wrapper start-date">',
     '#suffix' => '</div>',
     '#type' => 'date_popup',
     '#title' => t('Start Date'),
@@ -1554,7 +1554,7 @@ function rooms_availability_date_range_fields($year, $month) {
   );
 
   $date_range_fields['rooms_end_date'] = array(
-    '#prefix' => '<div class="end-date">',
+    '#prefix' => '<div class="form-wrapper end-date">',
     '#suffix' => '</div>',
     '#type' => 'date_popup',
     '#title' => t('End Date'),

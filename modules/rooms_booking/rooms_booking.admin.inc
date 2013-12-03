@@ -247,7 +247,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#default_value' => $client,
     '#weight' => -1,
     '#required' => TRUE,
-    '#prefix' => '<div id="edit-customer-wrapper">',
+    '#prefix' => '<div class="form-wrapper" id="edit-customer-wrapper">',
     '#suffix' => '</div>',
     '#ajax' => array(
       'callback' => 'rooms_booking_edit_profile_callback',
@@ -321,7 +321,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     );
 
     $form['data']['childrens_age'] = array(
-      '#prefix' => '<div id="rooms_booking_childrensage" class="container-inline">',
+      '#prefix' => '<div class="form-wrapper container-inline" id="rooms_booking_childrensage">',
       '#suffix' => '</div>',
     );
 
@@ -401,7 +401,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       'callback' => 'rooms_booking_edit_form_availability_callback',
       'wrapper' => 'availability-wrapper',
     ),
-    '#prefix' => '<div id="availability-button">',
+    '#prefix' => '<div class="form-wrapper" id="availability-button">',
     '#suffix' => '</div>',
   );
 
@@ -436,7 +436,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   $form['availability_fieldset'] = array(
     '#type' => 'fieldset',
     '#description' => $unit_selected,
-    '#prefix' => '<div id="availability-wrapper">',
+    '#prefix' => '<div class="form-wrapper" id="availability-wrapper">',
     '#suffix' => '</div>',
   );
 
@@ -523,7 +523,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     // This is where the available untis will pop up
     $form['availability_fieldset']['unit_fieldset'] = array(
       '#type' => 'fieldset',
-      '#prefix' => '<div id="unit-wrapper">',
+      '#prefix' => '<div class="form-wrapper" id="unit-wrapper">',
       '#suffix' => '</div>',
     );
 
@@ -595,7 +595,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
           $form['availability_fieldset']['unit_fieldset']['options_fieldset'] = array(
             '#type' => 'fieldset',
-            '#prefix' => '<div id="options-wrapper">',
+            '#prefix' => '<div class="form-wrapper" id="options-wrapper">',
             '#suffix' => '</div>',
           );
 
@@ -856,7 +856,7 @@ function rooms_booking_edit_form_unit_type_callback(&$form, $form_state) {
     $form['availability_fieldset']['unit_fieldset']['options_fieldset'] = array(
       '#type' => 'fieldset',
       '#title' => t('Options'),
-      '#prefix' => '<div id="options-wrapper">',
+      '#prefix' => '<div class="form-wrapper" id="options-wrapper">',
       '#suffix' => '</div>',
     );
   }

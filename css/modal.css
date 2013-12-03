@@ -1,0 +1,105 @@
+/* When modals are enabled, add hover effect to calendar */
+.fc-event:hover {
+  cursor: pointer;
+}
+.fc-widget-content:hover {
+  cursor: default;
+  background: rgba(230,230,230, 0.2);
+}
+
+/* Make modals responsive */
+.page-admin-rooms #modalContent,
+.page-admin-rooms #modalContent .ctools-modal-content,
+.page-admin-rooms #modalContent .ctools-modal-content .modal-content {
+  max-width: 100% !important;
+}
+
+/* Account for the extra div coming from ctools_modal_form_render() */
+.page-admin-rooms .messages div.messages {
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0;
+}
+.page-admin-rooms .ctools-modal-content .modal-header {
+  background: #fff url('../images/bg-shade-light.png') repeat-x bottom left;
+  color: #777;
+  display: block;
+  font-weight: 700;
+  letter-spacing: normal;
+  padding: 0.25em 1em;
+  -webkit-border-radius: 0.5em 0.5em 0 0;
+  -moz-border-radius: 0.5em 0.5em 0 0;
+  border-radius: 0.5em 0.5em 0 0;
+}
+.page-admin-rooms .ctools-modal-content .modal-title {
+  font-size: 120%;
+  font-weight: bold;
+  text-shadow: #fff 1px 1px 1px;
+  color: #555;
+}
+.page-admin-rooms .ctools-modal-content a.close {
+  color: #666;
+  font-weight: normal;
+  padding-left: 1.6em;
+  background: url('../images/close.png') no-repeat 0 50%;
+}
+.page-admin-rooms .ctools-modal-content a.close img {
+  display: none;
+}
+/** modal forms CSS **/
+.page-admin-rooms .ctools-modal-content .form-item label {
+  width: 100%;
+  float: none;
+  clear: both;
+}
+.page-admin-rooms .ctools-modal-content .resizable-textarea {
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+}
+.page-admin-rooms .ctools-modal-content {
+  font-size: 12px;
+  border: solid 1px #ddd;
+  -webkit-border-radius: 0.5em;
+  -moz-border-radius: 0.5em;
+  border-radius: 0.5em;
+  -webkit-box-shadow: -1em 1em 1em rgba(0, 0, 0, 0.5);
+  -moz-box-shadow: -1em 1em 1em rgba(0, 0, 0, 0.5);
+  box-shadow: -1em 1em 1em rgba(0, 0, 0, 0.5);
+}
+
+/* Override rooms form layouts when they appear inside CTools modals */
+.page-admin-rooms .modal-content .rooms-management-form fieldset,
+.page-admin-rooms .modal-content .rooms-management-form .form-wrapper {
+  float: none;
+  width: 100%;
+  max-width: 100%;
+  margin-right: 0;
+}
+.page-admin-rooms .modal-content .rooms-management-form .form-item label {
+  float: none;
+  width: auto;
+}
+.page-admin-rooms .modal-content .rooms-management-form .form-type-select,
+.page-admin-rooms .modal-content .rooms-management-form .form-item-operation,
+.page-admin-rooms .modal-content .rooms-management-form .form-item-amount,
+.page-admin-rooms .modal-content .rooms-management-form .form-actions {
+  float: none;
+  margin: 0;
+  clear: both;
+}
+.page-admin-rooms .modal-content .rooms-management-form .start-date,
+.page-admin-rooms .modal-content .rooms-management-form .end-date,
+.page-admin-rooms .modal-content .rooms-management-form .form-item-data-group-size,
+.page-admin-rooms .modal-content .rooms-management-form #rooms_booking_group_size_children_container {
+  float: left;
+  margin-right: 2%;
+  width: 48%;
+  max-width: 48%;
+  min-width: 125px;
+  clear: none;
+}
