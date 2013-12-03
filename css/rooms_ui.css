@@ -36,6 +36,10 @@
 .rooms-management-form .end-date .form-text {
   width: 10em;
 }
+.js .rooms-management-form .start-date .description,
+.js .rooms-management-form .end-date .description {
+  display: none;
+}
 .rooms-management-form .form-actions {
   margin-top: 1.6em;
 }
