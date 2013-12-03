@@ -75,3 +75,14 @@
   margin: 0;
   padding: 0 0 10px;
 }
+
+/* Front-end booking and checkout process */
+.view-booking-cart-form table,
+.view-booking-checkout-form table,
+.commerce-checkout-form-review table {
+  width: 100%;
+}
+.views-field-line-item-title,
+.views-field-line-item-label {
+  width: 67%;
+}
