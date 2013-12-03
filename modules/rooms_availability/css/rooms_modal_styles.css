@@ -20,3 +20,18 @@
   margin: 0;
   clear: both;
 }
+.ctools-modal-content .start-date,
+.ctools-modal-content .end-date,
+.ctools-modal-content .form-item-data-group-size,
+.ctools-modal-content #rooms_booking_group_size_children_container {
+  float: left !important;
+  margin-right: 2% !important;
+  width: 48%;
+  max-width: 48%;
+  clear: none;
+  min-width: 125px;
+}
+
+.ctools-modal-content .rooms-management-form fieldset {
+  width: 100%;
+}
