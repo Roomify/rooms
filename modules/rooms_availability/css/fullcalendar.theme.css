@@ -12,6 +12,7 @@
 .fc-header-title h2 {
   font-size: 18px;
   font-weight: normal;
+  margin: 0;
 }
 .fc-header tbody,
 .fc-header tr,
