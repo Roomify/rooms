@@ -67,6 +67,12 @@
   clear: both;
   margin-bottom: 20px;
 }
+.rooms-management-form .fieldset-legend,
+.rooms-management-form .fieldset-wrapper {
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
 .rooms-management-form .fieldset-description {
   padding: 15px 0;
 }
