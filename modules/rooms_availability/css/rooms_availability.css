@@ -1,14 +1,8 @@
-
+/* Hide header on single-row month form display */
 .rooms-bulk-pricing-form .fc-header,
 .rooms-bulk-availability-form .fc-header {
   display: none;
 }
-
-/*.page-admin-rooms-units-bulk-unit-management #calendar0 table.fc-header tr td:last-child,
-.page-admin-rooms-units-bulk-pricing-management #calendar0 table.fc-header tr td:last-child {
-  border: none;
-}*/
-
 
 /* Filter month form */
 .rooms-filter-month-form .form-item-month,
