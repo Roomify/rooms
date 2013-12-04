@@ -208,7 +208,7 @@ function rooms_unit_views_default_views() {
   $handler->display->display_options['fields']['base_price']['id'] = 'base_price';
   $handler->display->display_options['fields']['base_price']['table'] = 'rooms_units';
   $handler->display->display_options['fields']['base_price']['field'] = 'base_price';
-  $handler->display->display_options['fields']['base_price']['label'] = 'Base Price';
+  $handler->display->display_options['fields']['base_price']['label'] = 'Base price';
   $handler->display->display_options['fields']['base_price']['alter']['alter_text'] = 0;
   $handler->display->display_options['fields']['base_price']['alter']['make_link'] = 0;
   $handler->display->display_options['fields']['base_price']['alter']['absolute'] = 0;

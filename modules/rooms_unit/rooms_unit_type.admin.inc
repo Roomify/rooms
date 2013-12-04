@@ -60,16 +60,17 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
 
   $form['data']['base_price'] = array(
     '#type' => 'textfield',
-    '#title' => t('Unit Base Price'),
+    '#title' => t('Unit base price'),
     '#default_value' => isset($unit_type->data['base_price']) ? $unit_type->data['base_price'] : '',
     '#size' => '5',
-    '#description' => t('Base price is per unit per night - the price you set here will be the default price for all units of this type. You may then change the default base price on a per unit basis.'),
+    '#field_suffix' => t('Per unit per night'),
+    '#description' => t('The price you set here will be the default price for all units of this type. You may then change the default base price on a per unit basis.'),
     '#maxlength' => 10,
   );
 
   $form['data']['min_sleeps'] = array(
     '#type' => 'textfield',
-    '#title' => t('Guest capacity'),
+    '#title' => t('Sleeping capacity'),
     '#default_value' => isset($unit_type->data['min_sleeps']) ? $unit_type->data['min_sleeps'] : '',
     '#size' => '5',
     '#maxlength' => 2,
@@ -141,7 +142,7 @@ function rooms_unit_type_form_validate(&$form, &$form_state) {
 
   // Validate price field
   if (!empty($form_state['values']['data']['base_price']) && !is_numeric($form_state['values']['data']['base_price'])) {
-    form_set_error('data][base_price', t('%name: you must enter a numeric value for the price.', array('%name' => 'Base Price')));
+    form_set_error('data][base_price', t('%name: you must enter a numeric value for the price.', array('%name' => t('Base price'))));
   }
 
   // Validate room unit description

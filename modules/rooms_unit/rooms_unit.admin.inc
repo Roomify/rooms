@@ -183,12 +183,14 @@ function rooms_unit_delete_form_wrapper($unit) {
  */
 function rooms_unit_edit_form($form, &$form_state, $unit) {
 
-  $form['#attributes']['class'][] = 'rooms-management-form unit-edit-form';
+  $form['#attributes']['class'][] = 'rooms-management-form rooms-unit-edit-form';
+
+  drupal_add_css(drupal_get_path('module', 'rooms_unit') . '/css/rooms_unit.css');
 
   // Add the default field elements.
   $form['name'] = array(
     '#type' => 'textfield',
-    '#title' => t('Unit Name'),
+    '#title' => t('Unit name'),
     '#default_value' => isset($unit->name) ? $unit->name : '',
     '#maxlength' => 255,
     '#required' => TRUE,
@@ -197,55 +199,94 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
 
   $form['base_price'] = array(
     '#type' => 'textfield',
-    '#title' => t('Base Price'),
+    '#title' => t('Base price'),
     '#default_value' => isset($unit->base_price) ? $unit->base_price : '',
     '#size' => '5',
-    '#description' => 'Base price is per unit per night',
+    '#field_suffix' => t('Per unit per night'),
     '#maxlength' => 10,
   );
 
-  $form['bookable'] = array(
+  $form['guest_capacity'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Sleeping capacity'),
+    '#tree' => FALSE,
+  );
+
+  $form['guest_capacity']['min_sleeps'] = array(
+    '#type' => 'textfield',
+    '#size' => 5,
+    '#default_value' => isset($unit->min_sleeps) ? $unit->min_sleeps : 1,
+    '#field_suffix' => t('Person minimum'),
+  );
+
+  $form['guest_capacity']['max_sleeps'] = array(
+    '#type' => 'textfield',
+    '#size' => 5,
+    '#default_value' => isset($unit->max_sleeps) ? $unit->max_sleeps : 1,
+    '#field_suffix' => t('Person maximum'),
+    '#description' => t('The total number of guests (adults and children) allowed in this unit.'),
+  );
+
+  $form['child_capacity'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Child capacity'),
+    '#tree' => FALSE,
+  );
+
+  $form['child_capacity']['min_children'] = array(
+    '#type' => 'textfield',
+    '#size' => 5,
+    '#default_value' => isset($unit->min_children) ? $unit->min_children : 0,
+    '#field_suffix' => t('Child minimum'),
+  );
+
+  $form['child_capacity']['max_children'] = array(
+    '#type' => 'textfield',
+    '#size' => 5,
+    '#default_value' => isset($unit->max_children) ? $unit->max_children : 0,
+    '#field_suffix' => t('Child maximum'),
+    '#description' => t('The number of children allowed in this unit.'),
+  );
+
+
+  $form['data']['#tree'] = TRUE;
+
+  $form['data']['bed_arrangement'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Bed arrangement'),
+  );
+
+  $form['data']['bed_arrangement']['singles'] = array(
+    '#type' => 'textfield',
+    '#size' => 5,
+    '#default_value' => isset($unit->data['bed_arrangement']['singles']) ? $unit->data['bed_arrangement']['singles'] : '',
+    '#field_suffix' => t('Single beds'),
+  );
+
+  $form['data']['bed_arrangement']['doubles'] = array(
+    '#type' => 'textfield',
+    '#size' => 5,
+    '#default_value' => isset($unit->data['bed_arrangement']['doubles']) ? $unit->data['bed_arrangement']['doubles'] : '',
+    '#field_suffix' => t('Double beds'),
+  );
+
+
+  $form['availability'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Status'),
+    '#tree' => FALSE,
+  );
+
+  $form['availability']['bookable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Bookable'),
     '#description' => t('Uncheck this to temporarily prevent the unit from being booked or appearing in any searches without affecting the scheduled availability on the calendar.'),
     '#default_value' => isset($unit->bookable) ? $unit->bookable : 1,
   );
 
-  $form['min_sleeps'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($unit->min_sleeps) ? $unit->min_sleeps : 1,
-    '#field_prefix' => t('Minimum') . ': ',
-    '#title' => t('Guest capacity'),
-  );
-
-  $form['max_sleeps'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($unit->max_sleeps) ? $unit->max_sleeps : 1,
-    '#field_prefix' => t('Maximum') . ': ',
-    '#description' => t('The total number of people <b>including adults and children</b> for this unit.'),
-  );
-
-  $form['min_children'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($unit->min_children) ? $unit->min_children : 0,
-    '#field_prefix' => t('Minimum') . ': ',
-    '#title' => t('Children sleeps'),
-  );
-
-  $form['max_children'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($unit->max_children) ? $unit->max_children : 0,
-    '#field_prefix' => t('Maximum') . ': ',
-    '#description' => t('The number of children for this unit.'),
-  );
-
-  $form['default_state'] = array(
+  $form['availability']['default_state'] = array(
     '#type' => 'select',
-    '#title' => t('Default Availability'),
+    '#title' => t('Default availability'),
     '#options' => array(
       ROOMS_NOT_AVAILABLE => t('Unavailable'),
       ROOMS_AVAILABLE => t('Available'),
@@ -254,27 +295,6 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     ),
     '#default_value' => isset($unit->default_state) ? $unit->default_state : 1,
     '#description' => t('Choose what state to leave the unit in by default.'),
-  );
-
-  $form['data']['#tree'] = TRUE;
-
-  $form['data']['bed_arrangement'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Bed Arrangement'),
-  );
-
-  $form['data']['bed_arrangement']['singles'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($unit->data['bed_arrangement']['singles']) ? $unit->data['bed_arrangement']['singles'] : '',
-    '#title' => t('Single Beds'),
-  );
-
-  $form['data']['bed_arrangement']['doubles'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($unit->data['bed_arrangement']['doubles']) ? $unit->data['bed_arrangement']['doubles'] : '',
-    '#title' => t('Double Beds'),
   );
 
   // If we are creating a new booking unit
@@ -344,7 +364,7 @@ function rooms_unit_edit_form_validate(&$form, &$form_state) {
 
   // Validate price field
   if (!empty($form_state['values']['base_price']) && !is_numeric($form_state['values']['base_price'])) {
-    form_set_error('Base price error', t('%name: you must enter a numeric value for the price.', array('%name' => 'Base Price')));
+    form_set_error('Base price error', t('%name: you must enter a numeric value for the price.', array('%name' => t('Base price'))));
   }
 
   if (!empty($form_state['values']['multiple']) && !is_numeric($form_state['values']['multiple'])) {
