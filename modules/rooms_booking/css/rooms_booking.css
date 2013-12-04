@@ -19,8 +19,8 @@
 }
 .rooms-booking-form #edit-customer-wrapper .form-item-client .form-text,
 .rooms-booking-form #edit-customer-wrapper .form-item-client .field-suffix {
-  width: 48%;
-  margin-right: 2%;
+  width: 45%;
+  margin-right: 4%;
   display: inline-block;
 }
 
