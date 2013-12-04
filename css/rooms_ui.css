@@ -70,7 +70,8 @@ tbody {
 .rooms-management-form fieldset.collapsible {
   float: none;
   clear: both;
-  margin-bottom: 20px;
+  padding: 0;
+  margin: 20px 0;
 }
 .rooms-management-form .fieldset-legend,
 .rooms-management-form .fieldset-wrapper {
