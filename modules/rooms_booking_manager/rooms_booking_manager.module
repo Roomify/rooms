@@ -523,7 +523,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
         'callback' => 'rooms_booking_manager_quantity_change_callback',
         'wrapper' => 'unit_' . $unit->unit_id . '_price',
       ),
-      '#description' => t('The total number of people staying in this unit <b>including adults and children</b>.'),
+      '#description' => t('The total number of people staying in this unit (including adults and children).'),
     );
 
     $max_children = $unit->max_children;
@@ -997,7 +997,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                   'callback' => 'rooms_booking_manager_quantity_change_callback',
                   'wrapper' => $type . '_' . $price . '_container',
                 ),
-                '#description' => t('The total number of people staying in this unit <b>including adults and children</b>.'),
+                '#description' => t('The total number of people staying in this unit (including adults and children).'),
               );
 
               $max_children = $tmp_unit->max_children;
@@ -1843,8 +1843,8 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
       '#type' => 'radios',
       '#title' => t('Price calculation'),
       '#options' => array(
-        ROOMS_PER_NIGHT => t('Price per unit per night'),
-        ROOMS_PER_PERSON => t('Price per person per night'),
+        ROOMS_PER_NIGHT => t('Per unit per night'),
+        ROOMS_PER_PERSON => t('Per person per night'),
       ),
       '#default_value' => variable_get('rooms_price_calculation', ROOMS_PER_NIGHT),
     );

@@ -290,7 +290,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       '10' => '10',
     ),
     '#default_value' =>  isset($booking->data['group_size']) ? $booking->data['group_size'] : '2',
-    '#description' => t('The total number of people staying in this unit <b>including adults and children</b>.'),
+    '#description' => t('The total number of people staying in this unit (including adults and children).'),
     '#ajax' => array(
       'callback' => 'rooms_booking_group_size_ajax_callback',
       'wrapper' => 'rooms_booking_group_size_children_container'
