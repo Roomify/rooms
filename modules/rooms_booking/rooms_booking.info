@@ -1,5 +1,5 @@
 name = Rooms Booking
-description = Create bookings
+description = Create and administer bookings for Rooms.
 core = 7.x
 version = 1.x-dev
 

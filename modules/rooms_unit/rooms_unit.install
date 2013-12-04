@@ -238,7 +238,7 @@ function rooms_description_content_type_install() {
 
 
 /**
- * Create fields on content type for rooms bookable unit description
+ * Create fields on content type for Rooms bookable unit description.
  */
 function _rooms_description_installed_fields() {
   $t = get_t();
@@ -246,7 +246,7 @@ function _rooms_description_installed_fields() {
     'unit_description_description' => array(
       'field_name' => 'unit_description_description',
       'type'        => 'text',
-      'label' => $t('Room type description'),
+      'label' => $t('Unit type description'),
     ),
     'unit_description_image' => array(
       'field_name' => 'unit_description_image',
@@ -263,7 +263,7 @@ function _rooms_description_installed_instances() {
   return array(
     'unit_description_description' => array(
       'field_name' => 'unit_description_description',
-      'label'       => $t('A description of this room type unit'),
+      'label'       => $t('A description of this unit type.'),
       'widget'      => array(
         'type'    => 'text_textarea',
       ),
@@ -470,7 +470,7 @@ function rooms_unit_update_7007() {
 
     db_query("UPDATE field_config_instance SET field_name = 'rooms_booking_unit_options' WHERE field_name = 'field_options'");
 
-    
+
     db_query("RENAME TABLE field_data_field_options TO field_data_rooms_booking_unit_options");
 
     db_query("ALTER TABLE field_data_rooms_booking_unit_options CHANGE field_options_name rooms_booking_unit_options_name VARCHAR(255) NOT NULL");
@@ -522,7 +522,7 @@ function rooms_unit_update_7007() {
  * Update all data saved in Rooms Unit Type to change max/min_children_sleeps to max/min_children
  */
 function rooms_unit_update_7008() {
-  
+
   foreach (rooms_unit_types_ids() as $type => $label) {
     $unit_type = rooms_unit_type_load($type);
 
@@ -538,5 +538,5 @@ function rooms_unit_update_7008() {
 
     rooms_unit_type_save($unit_type);
   }
-  
+
 }

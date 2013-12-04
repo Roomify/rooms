@@ -1,5 +1,5 @@
 name = Rooms Availability
-description = Manages availability for Rooms
+description = Manages availability for Rooms.
 core = 7.x
 version = 1.x-dev
 

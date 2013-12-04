@@ -54,7 +54,7 @@ class RoomsPricingTestMain extends DrupalWebTestCase {
           'operation' => 'replace',
           'amount' => 200,
         ),
-      t('Update Room Pricing'));
+      t('Update Unit Pricing'));
 
     $this->drupalPost('admin/rooms/units/unit/1/pricing',
         array(
@@ -63,7 +63,7 @@ class RoomsPricingTestMain extends DrupalWebTestCase {
           'operation' => 'add',
           'amount' => 20,
         ),
-      t('Update Room Pricing'));
+      t('Update Unit Pricing'));
 
     $this->drupalPost('admin/rooms/units/unit/1/pricing',
         array(
@@ -72,7 +72,7 @@ class RoomsPricingTestMain extends DrupalWebTestCase {
           'operation' => 'sub',
           'amount' => 40,
         ),
-      t('Update Room Pricing'));
+      t('Update Unit Pricing'));
 
     $this->drupalPost('admin/rooms/units/unit/1/pricing',
         array(
@@ -81,7 +81,7 @@ class RoomsPricingTestMain extends DrupalWebTestCase {
           'operation' => 'increase',
           'amount' => 3,
         ),
-      t('Update Room Pricing'));
+      t('Update Unit Pricing'));
 
     $this->drupalPost('admin/rooms/units/unit/1/pricing',
         array(
@@ -90,7 +90,7 @@ class RoomsPricingTestMain extends DrupalWebTestCase {
           'operation' => 'decrease',
           'amount' => 4,
         ),
-      t('Update Room Pricing'));
+      t('Update Unit Pricing'));
 
     $this->drupalGet('admin/rooms/units/unit/1/pricing/json/2012/3&_=1331565982061&start=1330210800&end=1333836000');
 

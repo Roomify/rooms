@@ -24,8 +24,8 @@ define('ROOMS_DYNAMIC_MODIFIER', 'dynamic_modifier');
 function rooms_permission() {
   $permissions = array(
     'configure room settings' => array(
-      'title' => t('Configure rooms settings'),
-      'description' => t('Allows users to configure rooms settings'),
+      'title' => t('Configure Rooms'),
+      'description' => t('Allows users to manage site-wide Rooms configurations.'),
       'restrict access' => TRUE,
     ),
   );
@@ -39,8 +39,8 @@ function rooms_permission() {
 function rooms_field_info() {
   return array(
     'rooms_options' => array(
-      'label' => t('rooms options'),
-      'description' => t('rooms options'),
+      'label' => t('Unit Options'),
+      'description' => t('Bookable unit options.'),
       'settings' => array(),
       'default_widget' => 'rooms_options_combined',
       'default_formatter' => 'rooms_options_default',
@@ -325,7 +325,7 @@ function rooms_form_start_end_dates_validate($form, &$form_state) {
     $curr_year = $form_state['values']['curr_year'];
     if ($start_date->format('n') != $curr_month || $end_date->format('n') != $curr_month
       || $start_date->format('Y') != $curr_year || $end_date->format('Y') != $curr_year) {
-        $errors[] = t('End date and start date are out of current month');
+        $errors[] = t('Start and end date must be within the current month.');
       }
   }
 

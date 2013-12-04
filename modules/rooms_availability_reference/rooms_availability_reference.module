@@ -13,8 +13,8 @@
 function rooms_availability_reference_permission() {
   $permissions = array(
     'reference booking unit availability' => array(
-      'title' => t('Reference Booking Unit availability'),
-      'description' => t('Allows users to embed availability information in other nodes'),
+      'title' => t('Reference unit availability'),
+      'description' => t('Allows users to embed availability information in other nodes.'),
     ),
   );
   return $permissions;
@@ -42,8 +42,7 @@ function rooms_availability_reference_field_info() {
   return array(
     'rooms_availability_reference' => array(
       'label' => t('Availability Reference'),
-      'description' => t('This field allow you to embed availability information within
-                         other fieldable content for display'),
+      'description' => t('Display availability information embedded from other fieldable content.'),
       'settings' => array(
         'referenceable_booking_unit_types' => array(),
       ),
@@ -94,7 +93,7 @@ function rooms_availability_reference_field_formatter_info() {
   $ret = array(
     'rooms_availability_reference_default' => array(
       'label'       => t('Availability Calendar'),
-      'description' => t('Displays availability information on a calendar'),
+      'description' => t('Displays availability information on a calendar.'),
       'field types' => array('rooms_availability_reference'),
     ),
   );

@@ -15,7 +15,7 @@ function rooms_ui_menu() {
   // Top level "Rooms" container.
   $items['admin/rooms'] = array(
     'title' => 'Rooms',
-    'description' => t('Administer Rooms.'),
+    'description' => 'Administer Rooms.',
     'page callback' => 'system_admin_menu_block_page',
     'access arguments' => array('access administration pages'),
     'file path' => drupal_get_path('module', 'system'),
@@ -23,8 +23,8 @@ function rooms_ui_menu() {
     'weight' => -7,
   );
   $items['admin/rooms/config'] = array(
-    'title' => t('Configuration'),
-    'description' => t('Configure settings and business rules for Rooms management.'),
+    'title' => 'Configuration',
+    'description' => 'Configure settings and business rules for Rooms management.',
     'page callback' => 'system_admin_menu_block_page',
     'access arguments' => array('configure room settings'),
     'type' => MENU_NORMAL_ITEM,
@@ -33,8 +33,8 @@ function rooms_ui_menu() {
     'file' => 'system.admin.inc',
   );
   $items['admin/rooms/config/bookings'] = array(
-    'title' => t('Booking Settings'),
-    'description' => t('Configure settings and business rules for Bookings.'),
+    'title' => 'Booking Settings',
+    'description' => 'Configure settings and business rules for Bookings.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('rooms_booking_settings'),
     'access arguments' => array('configure room settings'),
@@ -59,12 +59,12 @@ function rooms_booking_settings() {
     '#options' => array(
       '0' => t('Same day bookings'),
       '1' => t('1 day in advance'),
-      '2' => t('2 days in advance'),
-      '3' => t('3 days in advance'),
-      '4' => t('4 days in advance'),
-      '5' => t('5 days in advance'),
-      '6' => t('6 days in advance'),
-      '7' => t('7 days in advance'),
+      '2' => t('@count days in advance', array('@count' => 2)),
+      '3' => t('@count days in advance', array('@count' => 3)),
+      '4' => t('@count days in advance', array('@count' => 4)),
+      '5' => t('@count days in advance', array('@count' => 5)),
+      '6' => t('@count days in advance', array('@count' => 6)),
+      '7' => t('@count days in advance', array('@count' => 7)),
     ),
     '#default_value' => variable_get('rooms_booking_start_date', 1),
   );

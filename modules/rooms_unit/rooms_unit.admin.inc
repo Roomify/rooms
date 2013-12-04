@@ -216,7 +216,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#size' => 5,
     '#default_value' => isset($unit->min_sleeps) ? $unit->min_sleeps : 1,
     '#field_prefix' => t('Minimum') . ': ',
-    '#title' => t('Person sleeps'),
+    '#title' => t('Guest capacity'),
   );
 
   $form['max_sleeps'] = array(
@@ -224,6 +224,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#size' => 5,
     '#default_value' => isset($unit->max_sleeps) ? $unit->max_sleeps : 1,
     '#field_prefix' => t('Maximum') . ': ',
+    '#description' => t('The total number of people <b>including adults and children</b> for this unit.'),
   );
 
   $form['min_children'] = array(
@@ -239,6 +240,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#size' => 5,
     '#default_value' => isset($unit->max_children) ? $unit->max_children : 0,
     '#field_prefix' => t('Maximum') . ': ',
+    '#description' => t('The number of children for this unit.'),
   );
 
   $form['default_state'] = array(
@@ -346,7 +348,7 @@ function rooms_unit_edit_form_validate(&$form, &$form_state) {
   }
 
   if (!empty($form_state['values']['multiple']) && !is_numeric($form_state['values']['multiple'])) {
-    form_set_error('Multiple Rooms Error', t('%name: you must enter at least 1 as the number of multiple rooms.', array('%name' => 'Multiple Rooms')));
+    form_set_error('Multiple units error', t('%name: you must enter at least 1 as the number of multiple units.', array('%name' => t('Multiple units'))));
   }
 }
 

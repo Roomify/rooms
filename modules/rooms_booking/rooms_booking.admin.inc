@@ -330,7 +330,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
         for ($t = 1; $t <= $form_state['values']['data']['group_size_children']; $t++) {
           $form['data']['childrens_age'][$t] = array(
             '#type' => 'textfield',
-            '#title' => t('Age #@childrens_age', array('@childrens_age' => $t)),
+            '#title' => t('Age #@num', array('@num' => $t)),
             '#size' => 5,
             '#maxlength' => 5,
             '#ajax' => array(
@@ -345,7 +345,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       foreach ($booking->data['childrens_age'] as $key => $age) {
         $form['data']['childrens_age'][$key] = array(
           '#type' => 'textfield',
-          '#title' => t('Age #@childrens_age', array('@childrens_age' => $key)),
+          '#title' => t('Age #@num', array('@num' => $key)),
           '#size' => 5,
           '#maxlength' => 5,
           '#default_value' => $age,
@@ -442,7 +442,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
   $form['b_status'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Booking Status'),
+    '#title' => t('Booking status'),
   );
   $form['b_status']['booking_status'] = array(
     '#type' => 'checkbox',
@@ -466,7 +466,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
         );
         $form['order']['order_link'] = array(
           '#type' => 'markup',
-          '#markup' => t('Order Status: @order_status', array('@order_status' => $order_states[$order->status]['title'])) . '<br>' . t('Edit <a href="@url">order</a> associated with this booking', array('@url' => url('admin/commerce/orders/' . $booking->order_id . '/edit'))),
+          '#markup' => t('Order status: @order_status', array('@order_status' => $order_states[$order->status]['title'])) . '<br>' . t('Edit <a href="@url">order</a> associated with this booking', array('@url' => url('admin/commerce/orders/' . $booking->order_id . '/edit'))),
         );
       }
     }
@@ -559,7 +559,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
           $type_obj = rooms_unit_type_load($type);
           $form['availability_fieldset']['unit_fieldset']['type'] = array(
             '#type' => 'fieldset',
-            '#title' => t($type_obj->label),
+            '#title' => $type_obj->label,
           );
 
           $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
@@ -641,7 +641,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
                 }
               }
             }
-            
+
             // Create Price Modifiers
 
             $price_modifiers = array();
@@ -930,7 +930,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
     if (isset($booking->start_date) && isset($booking->end_date)) {
       if ($input_start_date != $booking->start_date || $input_end_date != $booking->end_date) {
         if (!isset($form_state['values']['unit_id']) || !is_numeric($form_state['values']['unit_id'])) {
-          form_set_error('availability_fieldset', t('A unit must be re-assigned for this booking'));
+          form_set_error('availability_fieldset', t('A unit must be re-assigned for this booking.'));
         }
       }
     }
@@ -939,9 +939,9 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
 
   // Check if unit assigned
   if ((!isset($form_state['values']['unit_id'])) || ($form_state['values']['unit_id'] == '')) {
-    form_set_error('availability_fieldset', t('A unit has not been assigned for this booking'));
+    form_set_error('availability_fieldset', t('A unit has not been assigned for this booking.'));
   } elseif ((isset($form_state['values']['unit_id'])) && ($form_state['values']['unit_id'] == '')) {
-    form_set_error('availability_fieldset', t('A unit has not been assigned for this booking'));
+    form_set_error('availability_fieldset', t('A unit has not been assigned for this booking.'));
   }
 
   $booking = $form_state['rooms_booking'];
@@ -979,7 +979,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
           form_set_error('date_range', t('Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period.'));
         }
 
-        // Check if this booking overlap with an uncofirmed booking
+        // Check if this booking overlap with an unconfirmed booking
         $states_unconfirmed = $uc->getStates($start_date, $end_date, TRUE);
 
         $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST))));
@@ -989,13 +989,13 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
 
         if (count($state_diff_unconfirmed) > 0) {
           $booking_id = rooms_availability_return_id(array_pop($state_diff_unconfirmed));
-          form_set_error('date_range', t('Change of dates leads to an overlap with an uncofirmed booking, please resolve issue with booking !booking_link first.', array('!booking_link' => l($booking_id, 'admin/rooms/bookings/booking/' . $booking_id . '/edit'))));
+          form_set_error('date_range', t('Change of dates leads to an overlap with an unconfirmed booking, please resolve issue with booking !booking_link first.', array('!booking_link' => l($booking_id, 'admin/rooms/bookings/booking/' . $booking_id . '/edit'))));
         }
       }
     }
   }
 
-  // For new bookings check if the owner has an oustanding order, don't run on AJAX
+  // For new bookings check if the owner has an outstanding order, don't run on AJAX
   // requests due this could cause message duplication
   if (!isset($booking->customer_id) && strpos(request_uri(), 'system/ajax') === FALSE) {
     $customer_name = $form_state['input']['client'];
@@ -1005,7 +1005,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
     // of commerce_payment module and all the orders must have a transaction
     // history to have a reliable balance.
     $complete_statuses = array('complete', 'rooms_unit_confirmed');
-    // determine the commerce order statuses that identify an oustanding order
+    // determine the commerce order statuses that identify an outstanding order
     $incomplete_statuses = array_diff(array_keys(commerce_order_statuses()), $complete_statuses);
     $orders = commerce_order_load_multiple(array(), array('uid' => $commerce_customer_id, 'status' => $incomplete_statuses));
 
@@ -1017,13 +1017,13 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
     // in case of pending orders alert the admin
     if ($orders) {
       foreach ($orders['commerce_order'] as $order) {
-        $order_links[] = l("Order #{$order->order_id}", "admin/commerce/orders/{$order->order_id}/edit");
+        $order_links[] = l(t('Order #@num', array('@num' => $order->order_id)), "admin/commerce/orders/{$order->order_id}/edit");
       }
       $message_params = array(
         '!customer_name' => check_plain($customer_name),
         '!order_links' => theme('item_list', array('items' => $order_links)),
       );
-      drupal_set_message(t('The customer !customer_name has an oustanding order: !order_links', $message_params), 'warning');
+      drupal_set_message(t('The customer !customer_name has an outstanding order: !order_links', $message_params), 'warning');
     }
   }
 
@@ -1031,7 +1031,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
   $client_name = $client[0];
   $commerce_customer_id = rooms_booking_find_customer_by_name($client_name);
   if ($commerce_customer_id === FALSE) {
-    form_set_error('client', t('Enter a valid customer!'));
+    form_set_error('client', t('Enter a valid customer.'));
   }
 
   //Notify field widgets to validate their data.

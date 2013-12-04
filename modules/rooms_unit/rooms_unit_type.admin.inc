@@ -69,7 +69,7 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
 
   $form['data']['min_sleeps'] = array(
     '#type' => 'textfield',
-    '#title' => t('Person sleeps'),
+    '#title' => t('Guest capacity'),
     '#default_value' => isset($unit_type->data['min_sleeps']) ? $unit_type->data['min_sleeps'] : '',
     '#size' => '5',
     '#maxlength' => 2,
@@ -80,14 +80,14 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#type' => 'textfield',
     '#default_value' => isset($unit_type->data['max_sleeps']) ? $unit_type->data['max_sleeps'] : '',
     '#size' => '5',
-    '#description' => t('The default number of people that can sleep in units of this type.'),
+    '#description' => t('The default number of people (including adults and children) for each unit of this type.'),
     '#maxlength' => 2,
     '#field_prefix' => t('Maximum') . ':',
   );
 
   $form['data']['min_children'] = array(
     '#type' => 'textfield',
-    '#title' => t('Children sleeps'),
+    '#title' => t('Child capacity'),
     '#default_value' => isset($unit_type->data['min_children']) ? $unit_type->data['min_children'] : '',
     '#size' => '5',
     '#maxlength' => 2,
@@ -98,7 +98,7 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#type' => 'textfield',
     '#default_value' => isset($unit_type->data['max_children']) ? $unit_type->data['max_children'] : '',
     '#size' => '5',
-    '#description' => t('The default number of childrens that can sleep in units of this type.'),
+    '#description' => t('The default number of children per unit of this type.'),
     '#maxlength' => 2,
     '#field_prefix' => t('Maximum') . ':',
   );

@@ -33,7 +33,7 @@ function rooms_booking_manager_permission() {
   $permissions = array(
     'book units' => array(
       'title' => t('Book units'),
-      'description' => t('Allows users to book units'),
+      'description' => t('Allows users to book units.'),
     ),
   );
   return $permissions;
@@ -559,7 +559,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
         for ($t = 1; $t <= $form_state['values']['children']; $t++) {
           $form['childrens_age'][$t] = array(
             '#type' => 'textfield',
-            '#title' => t('Age #' . $t),
+            '#title' => t('Age #@num', array('@num' => $t)),
             '#size' => 5,
             '#maxlength' => 5,
             '#ajax' => array(
@@ -734,7 +734,7 @@ function book_unit_form_submit(&$form, &$form_state) {
   }
   else {
 
-    drupal_set_message(t('We apologize it seems the unit is no longer available'));
+    drupal_set_message(t('We apologize for the inconvenience; this unit is no longer available.'));
     drupal_goto('<front>');
 
   }
@@ -1041,7 +1041,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                 for ($t = 1; $t <= $children_number; $t++) {
                   $form[$type][$price]['fieldset'][$c]['childrens_age'][$t] = array(
                     '#type' => 'select',
-                    '#title' => t('Age #' . $t),
+                    '#title' => t('Age #@num', array('@num' => $t)),
                     '#options' => range(0, 18),
                     '#ajax' => array(
                     'callback' => 'rooms_booking_manager_options_change_callback',
@@ -1054,7 +1054,11 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
             $form[$type][$price]['fieldset'][$c]['price'] = array(
               '#prefix' => '<div id="' . $type . '_' . $price . '_' . $c . '_price">',
-              '#markup' =>  $currency_symbol. ' ' . $price,
+              // TODO: replace with a proper currency formatter
+              '#markup' =>  t('@currency_symbol @amount', array(
+                  '@currency_symbol' => $currency_symbol,
+                  '@amount' => $price,
+                )),
               '#suffix' => '</div>',
             );
 
@@ -1079,7 +1083,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                 }
               }
             }
-            
+
             // Price is calculated as 'Price per person per night'
             if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
               if (isset($form_state['values'][$type][$price]['fieldset'][$c]['persons'])) {
@@ -1146,7 +1150,12 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             $new_price = $new_price['full_price'];
 
             // Replace old price with the new calculated value
-            $form[$type][$price]['fieldset'][$c]['price']['#markup'] = $currency_symbol . ' ' . $new_price;
+            $form[$type][$price]['fieldset'][$c]['price']['#markup'] =
+              // TODO: replace with a proper currency formatter
+              t('@currency_symbol @amount', array(
+                '@currency_symbol' => $currency_symbol,
+                '@amount' => $new_price,
+              ));
           }
         }
 
@@ -1256,44 +1265,44 @@ function rooms_booking_manager_enquiry_form($form, $start_date, $end_date, $book
   );
 
   $form['customer_name'] = array(
-    '#title' => t('Name:'),
+    '#title' => t('Name') . ':',
     '#type' => 'textfield',
     '#size' => 50,
     '#required' => TRUE,
   );
   $form['customer_email'] = array(
-    '#title' => t('Email:'),
+    '#title' => t('Email') . ':',
     '#type' => 'textfield',
     '#size' => 50,
   );
   $form['customer_add1'] = array(
-    '#title' => t('Address Line 1:'),
+    '#title' => t('Address Line 1') . ':',
     '#type' => 'textfield',
     '#size' => 80,
   );
   $form['customer_add2'] = array(
-    '#title' => t('Address Line 2:'),
+    '#title' => t('Address Line 2') . ':',
     '#type' => 'textfield',
     '#size' => 80,
   );
   $form['customer_city'] = array(
-    '#title' => t('City:'),
+    '#title' => t('City') . ':',
     '#type' => 'textfield',
     '#size' => 60,
   );
   $form['customer_state'] = array(
-    '#title' => t('State/County:'),
+    '#title' => t('State/Province') . ':',
     '#type' => 'textfield',
     '#size' => 60,
   );
   $form['customer_country'] = array(
-    '#title' => t('Country:'),
+    '#title' => t('Country') . ':',
     '#type' => 'textfield',
     '#size' => 60,
   );
 
   $form['comments'] = array(
-    '#title' => t('Comments:'),
+    '#title' => t('Comments') . ':',
     '#type' => 'textarea',
     '#cols' => 50,
     '#resizable' => TRUE,
@@ -1339,7 +1348,7 @@ function room_booking_manager_send_email($form_state) {
   $send = FALSE;
   $message = drupal_mail($module, $key, $email, $language, $params, $from, $send);
 
-  $message['subject'] = 'Booking';
+  $message['subject'] = t('Booking');
 
   $variables = array();
 
@@ -1349,21 +1358,21 @@ function room_booking_manager_send_email($form_state) {
     if (count($values) == 3 && $values[2] == 'adults') {
       $label = db_select('rooms_unit_type', 'n')->fields('n', array('label'))->condition('type', $values[0], '=')->execute()->fetchField();
 
-      $booking_request[] = '<p>' . $label . ' (Adults: ' . $value . ' - Children: ' . $form_state['values'][$values[0] . ':' . $values[1] . ':children']  . ')</p>';
+      $booking_request[] = '<p>' . $label . ' (' . t('Adults') . ': ' . $value . ' - ' . t('Children') . ': ' . $form_state['values'][$values[0] . ':' . $values[1] . ':children']  . ')</p>';
     }
   }
   if (isset($form_state['complete form']['room_description'])) {
     $booking_request[] = $form_state['complete form']['room_description']['#markup'];
   }
 
-  $variables['customer_name'] = t('Name:') . ' ' . $form_state['values']['customer_name'];
-  $variables['customer_email'] = t('Email:') . ' ' . $form_state['values']['customer_email'];
-  $variables['customer_add1'] = t('Address Line 1:') . ' ' . $form_state['values']['customer_add1'];
-  $variables['customer_add2'] = t('Address Line 2:') . ' ' . $form_state['values']['customer_add2'];
-  $variables['customer_city'] = t('City:') . ' ' . $form_state['values']['customer_city'];
-  $variables['customer_state'] = t('State/County:') . ' ' . $form_state['values']['customer_state'];
-  $variables['customer_country'] = t('Country:') . ' ' . $form_state['values']['customer_country'];
-  $variables['comments'] = t('Comments:') . ' ' . $form_state['values']['comments'];
+  $variables['customer_name'] = t('Name') . ': ' . $form_state['values']['customer_name'];
+  $variables['customer_email'] = t('Email') . ': ' . $form_state['values']['customer_email'];
+  $variables['customer_add1'] = t('Address Line 1') . ': ' . $form_state['values']['customer_add1'];
+  $variables['customer_add2'] = t('Address Line 2') . ': ' . $form_state['values']['customer_add2'];
+  $variables['customer_city'] = t('City') . ': ' . $form_state['values']['customer_city'];
+  $variables['customer_state'] = t('State/Province') . ': ' . $form_state['values']['customer_state'];
+  $variables['customer_country'] = t('Country') . ': ' . $form_state['values']['customer_country'];
+  $variables['comments'] = t('Comments') . ': ' . $form_state['values']['comments'];
 
   $variables['booking_request'] = $booking_request;
 
@@ -1497,7 +1506,11 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
             );
 
             $form_data[$unit['unit']->type . ':' . $j]['price'] = array(
-              '#markup' => t($type_obj->label) . ' - ' . t('Cost') . ': ' . $currency_symbol . ' ' . $price,
+              '#markup' => $type_obj->label . ' - ' . t('Cost') . ': ' .
+                t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
+                  '@currency_symbol' => $currency_symbol,
+                  '@amount' => $price,
+                )),
             );
 
             $form_data[$unit['unit']->type . ':' . $j][$unit['unit']->type . ':' . $j . ':adults'] = array(
@@ -1718,7 +1731,7 @@ function rooms_booking_manager_commerce_order_state_info() {
     $order_states['rooms_unit_booking'] = array(
     'name' => 'rooms_unit_booking',
     'title' => t('Rooms Booking'),
-    'description' => t('Orders related to Rooms bookings'),
+    'description' => t('Orders related to Rooms bookings.'),
     'weight' => 0,
     'default_status' => 'confirmed',
   );
@@ -1820,7 +1833,7 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
     $form['rooms_checkout_style'] = array(
       '#type' => 'radios',
       '#title' => t('Checkout presentation style'),
-      '#options' => array(        
+      '#options' => array(
         ROOMS_COMMERCE_CHECKOUT => t('Commerce checkout'),
         ROOMS_ENQ_CHECKOUT => t('Enquiry checkout'),
       ),
@@ -1847,7 +1860,7 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
       '#type' => 'select',
       '#title' => t('Active Booking type'),
       '#options' => $options,
-      '#description' => t('Booking type created by commerce'),
+      '#description' => t('The booking type created by Commerce.'),
       '#default_value' => variable_get('rooms_booking_type', 'standard_booking'),
     );
 
@@ -1927,14 +1940,15 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
 
     $form['rooms_booking_manager_type_selector'] = array(
       '#type' => 'checkbox',
-      '#description' => t('Display a Unit Type selector in availability search form.'),
-      '#title' => t('Display unit type selector'),
+      '#description' => t('Display a drop-down list of unit types for filtering the availability search.'),
+      '#title' => t('Display unit type selector in availability search'),
       '#default_value' => variable_get('rooms_booking_manager_type_selector', ROOMS_DISPLAY_TYPE_SELECTOR_NO),
     );
 
     $form['rooms_date_format'] = array(
       '#type' => 'item',
       '#title' => t('Rooms PHP Date Format'),
+      '#description' => t("A custom date format used throughout the Rooms admin interface. Define a php date format string like 'm-d-Y' (see <a href=\"@link\">http://php.net/date</a> for more details).", array('@link' => 'http://php.net/date')),
     );
 
     $form['rooms_date_format']['date_format'] = array(
@@ -1982,7 +1996,7 @@ function rooms_booking_manager_rules_action_info() {
     'parameter' => array(
       'commerce_order' => array(
         'type' => 'commerce_order',
-        'label' => t('Order to extract info from for booking cancellation'),
+        'label' => t('Order from which to extract info for booking cancellation'),
       ),
     ),
     'group' => t('Rooms'),
@@ -2105,7 +2119,7 @@ function rooms_booking_manager_block_info() {
   $blocks = array();
 
   $blocks['rooms_availability_search'] = array(
-    'info' => t('Rooms Availability Search'),
+    'info' => t('Availability Search'),
     'cache' => DRUPAL_NO_CACHE,
   );
 

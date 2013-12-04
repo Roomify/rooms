@@ -224,7 +224,7 @@ function rooms_booking_availability_search_form_validate(&$form, &$form_state) {
   $rooms_booking_start_date = variable_get('rooms_booking_start_date', 1);
   // Check the difference in number of days
   if ($diff1->days < $rooms_booking_start_date) {
-    form_set_error('rooms_date_range', t('Bookings need to be at least ' . $rooms_booking_start_date . ' day(s) in the future'));
+    form_set_error('rooms_date_range', t('Bookings must be made at least @count_days in advance.', array('@count_days' => format_plural($rooms_booking_start_date, '1 day', '@count days'))));
   }
 }
 

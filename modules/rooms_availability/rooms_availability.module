@@ -59,21 +59,21 @@ function rooms_availability_library() {
 function rooms_availability_permission() {
   $permissions = array(
     'manage booking unit availability' => array(
-      'title' => t('Manage Booking Unit Availability'),
-      'description' => t('Allows users to manage availability settings for Rooms'),
+      'title' => t('Manage unit availability'),
+      'description' => t('Allows users to manage availability settings for Rooms.'),
       'restrict access' => TRUE,
     ),
     'view anonymous availability information' => array(
       'title' => t('View anonymous availability information'),
-      'description' => t('Allow users to view anonymous availability info (especially via availability reference field)'),
+      'description' => t('Allow users to view anonymous availability info (especially via availability reference field).'),
     ),
     'view named availability information' => array(
       'title' => t('View named availability information'),
-      'description' => t('Allow users to view named availability info (especially via availability reference field)'),
+      'description' => t('Allow users to view named availability info (especially via availability reference field).'),
     ),
     'view past availability information' => array(
       'title' => t('View past availability information'),
-      'description' => t('Allow users to view availability info in the past (especially via availability reference field)'),
+      'description' => t('Allow users to view availability info in the past (especially via availability reference field).'),
     ),
   );
   return $permissions;
@@ -536,7 +536,7 @@ function rooms_availability_pricing_update_form($form, &$form_state, $month, $ye
 function rooms_availability_pricing_update_form_validate(&$form, &$form_state) {
   // Make sure amount entered is numeric
   if (!empty($form_state['values']['amount']) && !is_numeric($form_state['values']['amount'])) {
-    form_set_error('amount', t('%name: you must enter a numeric value for the price.', array('%name' => 'Amount')));
+    form_set_error('amount', t('%name: you must enter a numeric value for the price.', array('%name' => t('Amount'))));
   }
   // validate that a rooms is selected
   _rooms_availability_select_rooms_validation($form_state);
@@ -718,7 +718,7 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
  */
 function rooms_availability_update_status_form_validate(&$form, &$form_state) {
   if ($form_state['values']['change_event_status2'] == -1) {
-    form_set_error('change_event_status', t('Select a valid status'));
+    form_set_error('change_event_status', t('Select a valid status.'));
   }
   // validate that a rooms is selected
   _rooms_availability_select_rooms_validation($form_state);
@@ -1085,7 +1085,7 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
   // If any info missing we cannot load the event
   if ($event_id == NULL || $start_date == 0 || $end_date == 0) {
     $output[] = ctools_modal_command_dismiss();
-    drupal_set_message(t('Unable to load event'), 'error');
+    drupal_set_message(t('Unable to load event.'), 'error');
   }
 
   $state_options = array(
@@ -1167,7 +1167,7 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
   }
 
   $output = theme('rooms_event', $content);
-  return ctools_modal_render('Event Management', $output);
+  return ctools_modal_render(t('Event Management'), $output);
 }
 
 /**
@@ -1378,7 +1378,7 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
 
     $form['label_settings']['rooms_not_available_color'] = array(
       '#type' => 'textfield',
-      '#title' => t('Not available color'),
+      '#title' => t('"@availability_status" color', array('@availability_status' => t('Unavailable'))),
       '#size' => 10,
       '#maxlength' => 7,
       '#default_value' => variable_get('rooms_not_available_color', '#FF0000'),
@@ -1399,7 +1399,7 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
 
     $form['label_settings']['rooms_not_available_text'] = array(
       '#type' => 'textfield',
-      '#title' => t('Not available label'),
+      '#title' => t('"@availability_status" label', array('@availability_status' => t('Unavailable'))),
       '#size' => 10,
       '#maxlength' => 50,
       '#default_value' => variable_get('rooms_not_available_text', 'N/A'),
@@ -1407,7 +1407,7 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
 
     $form['label_settings']['rooms_available_color'] = array(
       '#type' => 'textfield',
-      '#title' => t('Available color'),
+      '#title' => t('"@availability_status" color', array('@availability_status' => t('Available'))),
       '#size' => 10,
       '#maxlength' => 7,
       '#default_value' => variable_get('rooms_available_color', '#8CBF62'),
@@ -1428,7 +1428,7 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
 
     $form['label_settings']['rooms_available_text'] = array(
       '#type' => 'textfield',
-      '#title' => t('Available label'),
+      '#title' => t('"@availability_status" label', array('@availability_status' => t('Available'))),
       '#size' => 10,
       '#maxlength' => 50,
       '#default_value' => variable_get('rooms_available_text', 'AV'),
@@ -1436,7 +1436,7 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
 
     $form['label_settings']['rooms_on_request_color'] = array(
       '#type' => 'textfield',
-      '#title' => t('Available on request color'),
+      '#title' => t('"@availability_status" color', array('@availability_status' => t('Available on Request'))),
       '#size' => 10,
       '#maxlength' => 7,
       '#default_value' => variable_get('rooms_on_request_color', '#C5C5C5'),
@@ -1457,7 +1457,7 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
 
     $form['label_settings']['rooms_on_request_text'] = array(
       '#type' => 'textfield',
-      '#title' => t('Available on request label'),
+      '#title' => t('"@availability_status" label', array('@availability_status' => t('Available on Request'))),
       '#size' => 10,
       '#maxlength' => 50,
       '#default_value' => variable_get('rooms_on_request_text', 'ON-REQ'),
@@ -1465,7 +1465,7 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
 
     $form['label_settings']['rooms_anon_booking_color'] = array(
       '#type' => 'textfield',
-      '#title' => t('Anonymous booking color'),
+      '#title' => t('"@availability_status" color', array('@availability_status' => t('Anonymous booking'))),
       '#size' => 10,
       '#maxlength' => 7,
       '#default_value' => variable_get('rooms_anon_booking_color', '#481600'),
@@ -1486,7 +1486,7 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
 
     $form['label_settings']['rooms_anon_booking_text'] = array(
       '#type' => 'textfield',
-      '#title' => t('Anonymous booking label'),
+      '#title' => t('"@availability_status" label', array('@availability_status' => t('Anonymous booking'))),
       '#size' => 10,
       '#maxlength' => 50,
       '#default_value' => variable_get('rooms_anon_booking_text', 'A-B'),
@@ -1494,7 +1494,7 @@ function rooms_availability_form_alter(&$form, &$form_state, $form_id) {
 
     $form['label_settings']['rooms_unconfirmed_booking_color'] = array(
       '#type' => 'textfield',
-      '#title' => t('Unconfirmed booking'),
+      '#title' => t('"@availability_status" color', array('@availability_status' => t('Unconfirmed booking'))),
       '#size' => 10,
       '#maxlength' => 7,
       '#default_value' => variable_get('rooms_unconfirmed_booking_color', '#481600'),
@@ -1592,6 +1592,6 @@ function _rooms_availability_select_rooms_validation($form_state) {
   }
 
   if (!$select_rooms) {
-    form_set_error('select-all', t('Select at least one unit'));
+    form_set_error('select-all', t('Select at least one unit.'));
   }
 }

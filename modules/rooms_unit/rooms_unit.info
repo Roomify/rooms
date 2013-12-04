@@ -1,5 +1,5 @@
 name = Rooms Unit
-description = Create and manage bookable units (e.g. rooms)
+description = Create and manage bookable units (e.g. rooms).
 core = 7.x
 
 package = Rooms

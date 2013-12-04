@@ -1,5 +1,5 @@
 name = Rooms Test
-description = Provide Rooms Tests
+description = Provides tests for Rooms.
 core = 7.x
 
 package = Rooms

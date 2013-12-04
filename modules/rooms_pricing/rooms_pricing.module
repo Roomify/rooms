@@ -17,7 +17,7 @@ function rooms_pricing_permission() {
   $permissions = array(
     'manage booking unit pricing' => array(
       'title' => t('manage booking unit pricing'),
-      'description' => t('Allows users to manage pricing settings for Rooms'),
+      'description' => t('Allows users to manage pricing settings for Rooms.'),
       'restrict access' => TRUE,
     ),
   );

@@ -595,16 +595,16 @@ class RoomsUnitController extends EntityAPIController {
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
     $content = parent::buildContent($entity, $view_mode, $langcode, $content);
 
-    $content[t('state')] =  array(
-      '#markup' => t('State:') . $entity->bookable . '<br/>',
+    $content['state'] =  array(
+      '#markup' => t('State') . ': ' . $entity->bookable . '<br/>',
     );
 
-    $content[t('type')] =  array(
-      '#markup' => t('Type:') . ' ' . $entity->type . '<br/>',
+    $content['type'] =  array(
+      '#markup' => t('Type') . ': ' . $entity->type . '<br/>',
     );
 
-    $content[t('sleeps')] =  array(
-      '#markup' => t('Sleeps:') . $entity->max_sleeps . '<br/>',
+    $content['sleeps'] =  array(
+      '#markup' => t('Sleeps') . ': ' . $entity->max_sleeps . '<br/>',
     );
 
     if (isset($entity->data['bed_arrangement'])) {
