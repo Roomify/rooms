@@ -241,7 +241,7 @@ function rooms_booking_add_customer_profile() {
       '#value' => $form_state['build_info']['args'][0]->commerce_customer_address['und'][0]['name_line'],
       '#weight' => -1,
       '#required' => TRUE,
-      '#prefix' => '<div id="edit-customer-wrapper">',
+      '#prefix' => '<div class="form-wrapper" id="edit-customer-wrapper">',
       '#suffix' => '</div>',
       '#id' => 'edit-client',
       '#name' => 'client',

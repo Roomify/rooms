@@ -37,13 +37,19 @@ tbody {
   margin: 0 20px 0 0; /* LTR */
   clear: none;
 }
+
+/* Start and end date fields */
+.js .rooms-management-form .start-date .description,
+.js .rooms-management-form .end-date .description {
+  display: none;
+}
 .rooms-management-form .start-date .form-text,
 .rooms-management-form .end-date .form-text {
   width: 10em;
 }
-.js .rooms-management-form .start-date .description,
-.js .rooms-management-form .end-date .description {
-  display: none;
+.start-date .form-item,
+.end-date .form-item {
+  margin-right: 0;
 }
 .start-date .form-type-textfield label,
 .end-date .form-type-textfield label {

@@ -12,7 +12,7 @@ function rooms_booking_manager_search_availability() {
 
 function rooms_booking_availability_search_form($form, $form_state) {
 
-  $form['#attributes']['class'][] = 'rooms-management-form rooms-availability-pricing-form';
+  $form['#attributes']['class'][] = 'rooms-management-form rooms-availability-search';
 
   $rooms_number = 1;
 
@@ -54,7 +54,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
   );
 
   $form['rooms_fieldset'] = array(
-    '#prefix' => '<div id="rooms-wrapper">',
+    '#prefix' => '<div class="form-wrapper" id="rooms-wrapper">',
     '#suffix' => '</div>',
   );
 
@@ -64,14 +64,16 @@ function rooms_booking_availability_search_form($form, $form_state) {
       'wrapper' => 'rooms-wrapper',
     );
 
+    $classes = 'rooms-group-size ';
+    $classes .= ($rooms_number > 1) ? 'rooms-group-size-multiple-units': 'rooms-group-size-one-unit';
     $form['rooms_fieldset']['table_header'] = array(
-      '#prefix' => '<table><thead>',
-      '#markup' => '<th></th><th>' . t('Group size') . '</th>',
+      '#prefix' => '<table class="' . $classes . '"><thead>',
+      '#markup' => '<th class="rooms-group-size__people" colspan="2">' . t('Group size') . '</th>',
       '#suffix' => '</thead>',
     );
 
     if (variable_get('rooms_display_children', ROOMS_DISPLAY_CHILDREN_NO) == ROOMS_DISPLAY_CHILDREN) {
-      $form['rooms_fieldset']['table_header']['#markup'] .= '<th>' . t('Children') . '</th>';
+      $form['rooms_fieldset']['table_header']['#markup'] .= '<th class="rooms-group-size__children">' . t('Children') . '</th>';
     }
 
     $form['rooms_fieldset']['table_body'] = array(
@@ -80,9 +82,9 @@ function rooms_booking_availability_search_form($form, $form_state) {
 
     for ($i = 1; $i <= $rooms_number; $i++) {
       $form['rooms_fieldset']['rooms_label:' . $i] = array(
-        '#prefix' => '<tr><td>',
-        '#markup' => ($rooms_number > 1) ? t('Unit') . ' ' . $i . ':' : '',
-        '#suffix' => '</td>',
+        '#prefix' => '<tr><th class="rooms-group-size__unit">',
+        '#markup' =>  ($rooms_number > 1) ? '<label>' . t('Unit') . ' ' . $i . ':&nbsp;</label>' : '',
+        '#suffix' => '</th>',
       );
 
       $form['rooms_fieldset']['group_size_adults:' . $i] = array(
@@ -98,7 +100,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
           '8' => '8',
         ),
         '#default_value' => isset($booking_parameters[$i]['adults']) ? $booking_parameters[$i]['adults'] : '2',
-        '#prefix' => '<td>',
+        '#prefix' => '<td class="rooms-group-size__people">',
         '#suffix' => '</td>',
       );
 
@@ -112,7 +114,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
             '3' => '3',
           ),
           '#default_value' =>  isset($booking_parameters[$i]['children']) ? $booking_parameters[$i]['children'] : '0',
-          '#prefix' => '<td>',
+          '#prefix' => '<td class="rooms-group-size__children">',
           '#suffix' => '</td>',
         );
       }
