@@ -1201,7 +1201,7 @@ function rooms_availability_modal_style() {
   drupal_add_js($modal_style, 'setting');
 
   // add the ctools modal stylesheet.
-  drupal_add_css(drupal_get_path('module', 'rooms') . '/css/modal.css');
+  drupal_add_css(drupal_get_path('module', 'rooms') . '/css/rooms_modal.css');
 }
 
 /**

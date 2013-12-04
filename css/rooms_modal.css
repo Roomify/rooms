@@ -24,6 +24,17 @@
   -moz-border-radius: 0;
   border-radius: 0;
 }
+.page-admin-rooms .ctools-modal-content {
+  font-size: 12px;
+  border: solid 1px #ddd;
+  -webkit-border-radius: 0.5em;
+  -moz-border-radius: 0.5em;
+  border-radius: 0.5em;
+  -webkit-box-shadow: -1em 1em 1em rgba(0, 0, 0, 0.5);
+  -moz-box-shadow: -1em 1em 1em rgba(0, 0, 0, 0.5);
+  box-shadow: -1em 1em 1em rgba(0, 0, 0, 0.5);
+  background: #FFF;
+}
 .page-admin-rooms .ctools-modal-content .modal-header {
   background: #fff url('../images/bg-shade-light.png') repeat-x bottom left;
   color: #777;
@@ -40,6 +51,13 @@
   font-weight: bold;
   text-shadow: #fff 1px 1px 1px;
   color: #555;
+}
+.page-admin-rooms .ctools-modal-content .modal-content {
+  width: 96% !important;
+  padding: 15px 2%;
+  -webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
 }
 .page-admin-rooms .ctools-modal-content a.close {
   color: #666;
@@ -61,24 +79,14 @@
   margin-left: 0;
   margin-right: 0;
 }
-.page-admin-rooms .ctools-modal-content {
-  font-size: 12px;
-  border: solid 1px #ddd;
-  -webkit-border-radius: 0.5em;
-  -moz-border-radius: 0.5em;
-  border-radius: 0.5em;
-  -webkit-box-shadow: -1em 1em 1em rgba(0, 0, 0, 0.5);
-  -moz-box-shadow: -1em 1em 1em rgba(0, 0, 0, 0.5);
-  box-shadow: -1em 1em 1em rgba(0, 0, 0, 0.5);
-}
 
 /* Override rooms form layouts when they appear inside CTools modals */
 .page-admin-rooms .modal-content .rooms-management-form fieldset,
 .page-admin-rooms .modal-content .rooms-management-form .form-wrapper {
-  float: none;
-  width: 100%;
-  max-width: 100%;
-  margin-right: 0;
+  float: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-right: 0 !important;
 }
 .page-admin-rooms .modal-content .rooms-management-form .form-item label {
   float: none;
@@ -96,10 +104,10 @@
 .page-admin-rooms .modal-content .rooms-management-form .end-date,
 .page-admin-rooms .modal-content .rooms-management-form .form-item-data-group-size,
 .page-admin-rooms .modal-content .rooms-management-form #rooms_booking_group_size_children_container {
-  float: left;
-  margin-right: 2%;
-  width: 48%;
-  max-width: 48%;
-  min-width: 125px;
+  float: left !important;
+  margin-right: 4% !important;
+  width: 45% !important;
+  max-width: 45% !important;
+  min-width: 125px !important;
   clear: none;
 }
