@@ -50,9 +50,6 @@
 
 
 /* Children discount form */
-.children-discount-form .form-item label {
-  display: inline;
-}
 .children-discount-form .child-discount {
   clear: both;
   float: none;

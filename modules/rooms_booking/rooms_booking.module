@@ -118,7 +118,7 @@ function rooms_booking_children_discount($form, &$form_state) {
 
   for ($i = 1; $i <= $form_state['num_options']; $i++) {
     $form['option'][$i] = array(
-      '#type' => 'fieldset',
+      '#type' => 'container',
       '#attributes' => array('class' => array('child-discount container-inline')),
     );
     $form['option'][$i]['discount'] = array(
