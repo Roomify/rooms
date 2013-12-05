@@ -805,6 +805,8 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     }
 
     $form['submit'] = array(
+      '#prefix' => '<div class="form-wrapper change-search-button">',
+      '#suffix' => '</div>',
       '#type' => 'submit',
       '#value' => t('Change search'),
       '#submit' => $submit + array('rooms_booking_manager_change_search_form_submit'),

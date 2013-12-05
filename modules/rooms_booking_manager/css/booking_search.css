@@ -69,12 +69,8 @@
 }
 
 .rooms-availability-search-results #edit-info,
-.rooms-availability-search-results #edit-submit {
-  /*float: left;
-  margin-right: 20px;*/
-}
-.rooms-availability-search-results #edit-info .form-item {
-  /*display: inline;*/
+.rooms-availability-search-results .change-search-button {
+  text-align: right
 }
 
 .rooms-search-result__unit-type {
