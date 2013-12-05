@@ -55,7 +55,7 @@ function rooms_booking_manager_menu() {
   );
 
   $items['booking/%start_date/%end_date'] = array(
-    'title' => 'Select a unit',
+    'title' => 'Select your stay',
     'page callback' =>  'rooms_booking_manager_results_page',
     'page arguments' => array(1, 2),
     'access arguments' => array('book units'),
@@ -271,6 +271,7 @@ function rooms_booking_manager_change_search_form($form, &$form_state, $start_da
     $form['info'] = array(
       '#type' => 'container',
       '#tree' => FALSE,
+      '#attributes' => array('class' => array('rooms-current-search-info')),
     );
   }
 
@@ -366,7 +367,7 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
   foreach ($units_per_type as $type => $price_level) {
     $type_obj = rooms_unit_type_load($type);
     $content[$type] = array(
-      '#prefix' => '<h3 class="rooms-search-result__unit-name">',
+      '#prefix' => '<h3 class="rooms-search-result__unit-type-name">',
       '#markup' =>  $type_obj->label,
       '#suffix' => '</h3>'
     );
@@ -440,6 +441,10 @@ function rooms_booking_manager_forms($form_id, $args) {
  */
 function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_date, $group_size_adults, $status, $price) {
 
+  // Add stylesheets and classes.
+  drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
+  $form['#attributes']['class'][] = 'rooms-management-form rooms-book-unit-form';
+
   $currency_setting = commerce_currency_load(commerce_default_currency());
   $currency_symbol = $currency_setting['symbol'];
 
@@ -447,6 +452,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     '#tree' => FALSE,
     '#type' => 'container',
     '#weight' => 999,
+    '#attributes' => array('class' => array('rooms-unit-info-hidden')),
   );
   $form['hidden']['unit_id'] = array(
     '#type' => 'hidden',
@@ -805,7 +811,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     }
 
     $form['submit'] = array(
-      '#prefix' => '<div class="form-wrapper change-search-button">',
+      '#prefix' => '<div class="rooms-current-search-change-search-button form-wrapper">',
       '#suffix' => '</div>',
       '#type' => 'submit',
       '#value' => t('Change search'),
@@ -817,6 +823,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         '#type' => 'container',
         '#tree' => FALSE,
         '#weight' => 999,
+        '#attributes' => array('class' => array('rooms-current-search-info-hidden')),
       );
     }
 
@@ -2341,6 +2348,7 @@ function rooms_booking_manager_form_info_snippet($date_format, $start_date, $end
   $form_tmp['info'] = array(
     '#type' => 'container',
     '#tree' => FALSE,
+    '#attributes' => array('class' => array('rooms-current-search-info')),
   );
   $form_tmp['info']['arrival_date'] = array(
     '#type' => 'item',

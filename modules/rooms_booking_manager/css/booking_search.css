@@ -68,9 +68,16 @@
   margin: 1.2em 0 0;
 }
 
-.rooms-availability-search-results #edit-info,
-.rooms-availability-search-results .change-search-button {
+.rooms-current-search-info,
+.rooms-current-search-change-search-button {
   text-align: right
+}
+.rooms-current-search-info .form-item {
+  margin: 0 0 0.3em;
+  padding: 0;
+}
+.rooms-current-search-info .form-type-item label {
+  display: inline;
 }
 
 .rooms-search-result__unit-type {
