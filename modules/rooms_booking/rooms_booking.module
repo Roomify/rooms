@@ -88,6 +88,7 @@ function rooms_booking_edit_customer_profile($customer_id) {
 
 function rooms_booking_children_discount($form, &$form_state) {
 
+  drupal_add_css(drupal_get_path('module', 'rooms_booking') . '/css/rooms_booking.css');
   $form['#attributes']['class'][] = 'rooms-management-form children-discount-form';
 
   $form['#tree'] = TRUE;
@@ -103,41 +104,51 @@ function rooms_booking_children_discount($form, &$form_state) {
     }
   }
 
+  // This string gives us an easy way to translate the sentence used for
+  // giving the child discount, and at the same time we can break the string
+  // into components to use around our fields with clever useage of "explode".
+  // The "<wbr>" is used here to create an invisible boundary between the
+  // "option" field suffix and the "start" field prefix.
+  $string = t('Give a @amount % discount <wbr> for children ages @start to @end.');
+
+  list($option_prefix, $string) = explode('@amount', $string);
+  list($option_suffix, $string) = explode('<wbr>', $string);
+  list($start_prefix, $string) = explode('@start', $string);
+  list($end_prefix, $end_suffix) = explode('@end', $string);
+
   for ($i = 1; $i <= $form_state['num_options']; $i++) {
     $form['option'][$i] = array(
       '#type' => 'fieldset',
-      '#title' => t('Option #@num', array('@num' => $i)),
-      '#collapsible' => TRUE,
-      '#collapsed' => FALSE,
-      '#attributes' => array('class' => array('container-inline')),
-    );
-
-    $form['option'][$i]['start'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Start:'),
-      '#size' => 5,
-      '#maxlength' => 5,
-      '#required' => TRUE,
-      '#suffix' => '+ days',
-      '#default_value' => isset($options[$i]['start']) ? $options[$i]['start'] : '',
-    );
-    $form['option'][$i]['end'] = array(
-      '#type' => 'textfield',
-      '#title' => t('End:'),
-      '#size' => 5,
-      '#maxlength' => 5,
-      '#required' => TRUE,
-      '#suffix' => '- days',
-      '#default_value' => isset($options[$i]['end']) ? $options[$i]['end'] : '',
+      '#attributes' => array('class' => array('child-discount container-inline')),
     );
     $form['option'][$i]['discount'] = array(
       '#type' => 'textfield',
-      '#title' => t('Discount:'),
+      '#field_prefix' => $option_prefix,
+      '#field_suffix' => $option_suffix,
       '#size' => 10,
       '#maxlength' => 10,
       '#required' => TRUE,
-      '#suffix' => '%',
       '#default_value' => isset($options[$i]['end']) ? $options[$i]['discount'] : '',
+      '#attributes' => array('class' => array('child-discount__amount')),
+    );
+    $form['option'][$i]['start'] = array(
+      '#type' => 'textfield',
+      '#field_prefix' => $start_prefix,
+      '#size' => 5,
+      '#maxlength' => 5,
+      '#required' => TRUE,
+      '#default_value' => isset($options[$i]['start']) ? $options[$i]['start'] : '',
+      '#attributes' => array('class' => array('child-discount__age-start')),
+    );
+    $form['option'][$i]['end'] = array(
+      '#type' => 'textfield',
+      '#field_prefix' => $end_prefix,
+      '#field_suffix' => $end_suffix,
+      '#size' => 5,
+      '#maxlength' => 5,
+      '#required' => TRUE,
+      '#default_value' => isset($options[$i]['end']) ? $options[$i]['end'] : '',
+      '#attributes' => array('class' => array('child-discount__age-end')),
     );
   }
   $form['actions'] = array(
@@ -147,20 +158,23 @@ function rooms_booking_children_discount($form, &$form_state) {
   $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
+    '#attributes' => array('class' => array('child-discount__save-button')),
   );
 
   $form['actions']['add_option'] = array(
     '#type' => 'submit',
-    '#value' => t('Add another option'),
+    '#value' => t('Add another discount'),
     '#submit' => array('rooms_booking_children_discount_add_option'),
+    '#attributes' => array('class' => array('child-discount__add-button')),
   );
 
   if ($form_state['num_options'] > 1) {
-    $form['remove_option'] = array(
+    $form['actions']['remove_option'] = array(
       '#type' => 'submit',
-      '#value' => t('Remove latest option'),
+      '#value' => t('Remove last discount'),
       '#submit' => array('rooms_booking_children_discount_remove_option'),
       '#limit_validation_errors' => array(),
+      '#attributes' => array('class' => array('child-discount__remove-button')),
     );
   }
 

@@ -47,3 +47,22 @@
 .rooms-booking-form .form-item-data-group-size-children {
   padding: 0;
 }
+
+
+/* Children discount form */
+.children-discount-form .form-item label {
+  display: inline;
+}
+.children-discount-form .child-discount {
+  clear: both;
+  float: none;
+}
+.children-discount-form .child-discount__age-start,
+.children-discount-form .child-discount__age-end {
+  width: 2em;
+  text-align: right;
+}
+.children-discount-form .child-discount__amount {
+  width: 3em;
+  text-align: right;
+}
