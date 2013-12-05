@@ -480,7 +480,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
   );
 
   $form['price'] = array(
-    '#prefix' => '<div class="rooms-search-result__unit-price" id="' . $unit->unit_id . '_price" style="font-weight:bold">',
+    '#prefix' => '<div class="rooms-search-result__unit-base-price" id="' . $unit->unit_id . '_price">',
     '#markup' =>  '<label>'. t('Base price'). ':</label> <span class="rooms-search-result__base-price-amount">' .
       t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
         '@currency_symbol' => $currency_symbol,
@@ -593,11 +593,13 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
           'callback' => 'rooms_booking_manager_children_change_callback',
           'wrapper' => 'unit_' . $unit->unit_id . '_childrensage',
         ),
+        '#prefix' => '<div class="rooms-search-result__select-children">',
+        '#suffix' => '</div>',
       );
     }
 
     $form['childrens_age'] = array(
-      '#prefix' => '<div id="unit_' . $unit->unit_id . '_childrensage">',
+      '#prefix' => '<div class="rooms-search-result__select-childrenage" id="unit_' . $unit->unit_id . '_childrensage">',
       '#suffix' => '</div>',
       '#tree' => TRUE,
     );
@@ -613,6 +615,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
             '#ajax' => array(
               'callback' => 'rooms_booking_manager_options_change_callback',
               'wrapper' => 'unit_' . $unit->unit_id . '_price',
+            '#attributes' => array('class' => array('rooms-search-result__childrens-age')),
             ),
           );
         }
@@ -668,7 +671,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     }
 
     $form['new_price'] = array(
-      '#prefix' => '<div id="unit_' . $unit->unit_id . '_price" style="font-weight:bold">',
+      '#prefix' => '<div class="rooms-search-result__new-price" id="unit_' . $unit->unit_id . '_price" style="font-weight:bold">',
       '#markup' => '<label>' . t('Cost') . ':</label> <span class="rooms-search-result__new-price-amount">' .
         t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
           '@currency_symbol'=> $currency_symbol,
@@ -794,7 +797,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
   // Add stylesheets and classes.
   drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
-  $form['#attributes']['class'][] = 'rooms-management-form rooms-availability-search-results';
+  $form['#attributes']['class'][] = 'rooms-availability-search-results';
 
   $date_format = variable_get('rooms_date_format', 'd-m-Y');
 
@@ -912,7 +915,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                 $node_html = render($node_view);
 
                 $form[$type][$price]['description'] = array(
-                  '#prefix' => '<tr><td class="rooms-search-result__room-description">',
+                  '#prefix' => '<tr class="rooms-search-result__unit_details_wrapper"><td class="rooms-search-result__room-description">',
                   '#markup' => $node_html,
                   '#suffix' => '</td><td class="empty"></td><td class="empty"></td></tr>',
                 );
@@ -923,7 +926,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
         // Element to display price
         $form[$type][$price]['price'] = array(
-          '#prefix' => '<tr><td><div class="unit_price" style="font-weight:bold">',
+          '#prefix' => '<tr class="rooms-search-result__unit_summary_wrapper"><td class="rooms-search-result__base_price">',
           '#markup' => format_plural(count($units), '1 @unit_type unit available from @price', '@count @unit_type units available from @price', array(
             '@unit_type' => $type_obj->label,
             '@price' =>
@@ -994,12 +997,12 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
         // Display price options
         $form[$type][$price]['field_start'] = array(
-         '#markup' => '<tr style="display:none;" id="rooms_' . $type . '_' . $price . '"><td>',
+         '#markup' => '<tr id="rooms_' . $type . '_' . $price . '" style="display:none;"><td class="rooms-search-result__unit_options_wrapper" colspan="2">',
         );
 
         $form[$type][$price]['fieldset'] = array(
-         '#prefix' => '<div class="form-wrapper" id="' . $type . '_' . $price . '_container">',
-         '#type' => 'fieldset',
+         '#prefix' => '<div class="rooms-search-result__unit_options form-wrapper" id="' . $type . '_' . $price . '_container">',
+         '#type' => 'container',
          '#suffix' => '</div>'
         );
 
@@ -1034,20 +1037,20 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                           'callback' => 'rooms_booking_manager_options_change_callback',
                           'wrapper' => $type . '_' . $price . '_' . $c . '_price',
                         ),
-                        '#prefix' => '<div id="' . $type . '_' . $price . '_' . $c . '_' . strtolower(str_replace(array(':', ' '), '_', $option['name'])) . '_quantity">',
+                        '#prefix' => '<div class="rooms-search-result__select-quantity" id="' . $type . '_' . $price . '_' . $c . '_' . strtolower(str_replace(array(':', ' '), '_', $option['name'])) . '_quantity">',
                         '#suffix' => '</div>',
                       );
                     }
                     else {
                       $form[$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] = array(
-                        '#prefix' => '<div id="' . $type . '_' . $price . '_' . $c . '_' . strtolower(str_replace(array(':', ' '), '_', $option['name'])) . '_quantity">',
+                        '#prefix' => '<div class="rooms-search-result__select-quantity" id="' . $type . '_' . $price . '_' . $c . '_' . strtolower(str_replace(array(':', ' '), '_', $option['name'])) . '_quantity">',
                         '#suffix' => '</div>',
                       );
                     }
                   }
                   else {
                     $form[$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] = array(
-                      '#prefix' => '<div id="' . $type . '_' . $price . '_' . $c . '_' . strtolower(str_replace(array(':', ' '), '_', $option['name'])) . '_quantity">',
+                      '#prefix' => '<div class="rooms-search-result__select-quantity" id="' . $type . '_' . $price . '_' . $c . '_' . strtolower(str_replace(array(':', ' '), '_', $option['name'])) . '_quantity">',
                       '#suffix' => '</div>',
                     );
                   }
@@ -1069,6 +1072,8 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                   'wrapper' => $type . '_' . $price . '_container',
                 ),
                 '#title' => t('How many people in this unit (including adults and children)?'),
+                '#prefix' => '<div class="rooms-search-result__select-guests">',
+                '#suffix' => '</div>',
               );
 
               $max_children = $tmp_unit->max_children;
@@ -1092,11 +1097,13 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                       'callback' => 'rooms_booking_manager_children_change_callback',
                       'wrapper' => $type . '_' . $price . '_' . $c . '_childrensage',
                     ),
+                    '#prefix' => '<div class="rooms-search-result__select-children">',
+                    '#suffix' => '</div>',
                   );
                 }
 
                 $form[$type][$price]['fieldset'][$c]['childrens_age'] = array(
-                  '#prefix' => '<div id="' . $type . '_' . $price . '_' . $c . '_childrensage">',
+                  '#prefix' => '<div class="rooms-search-result__select-childrenage" id="' . $type . '_' . $price . '_' . $c . '_childrensage">',
                   '#suffix' => '</div>',
                 );
 
@@ -1119,6 +1126,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                     'callback' => 'rooms_booking_manager_options_change_callback',
                       'wrapper' => $type . '_' . $price . '_' . $c . '_price',
                     ),
+                    '#attributes' => array('class' => array('rooms-search-result__childrens-age')),
                   );
                 }
               }
@@ -1133,7 +1141,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               $label = t('Price');
             }
             $form[$type][$price]['fieldset'][$c]['price'] = array(
-              '#prefix' => '<div class="rooms-search-result__unit-price" id="' . $type . '_' . $price . '_' . $c . '_price"><label>'. t('Subtotal') . ':</label> <span class="rooms-search-result__unit-price-amount">',
+              '#prefix' => '<div class="rooms-search-result__unit-price" id="' . $type . '_' . $price . '_' . $c . '_price"><label>'. $label . ':</label> <span class="rooms-search-result__unit-price-amount">',
               // TODO: replace with a proper currency formatter
               '#markup' =>  t('@currency_symbol @amount', array(
                   '@currency_symbol' => $currency_symbol,

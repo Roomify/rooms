@@ -105,13 +105,14 @@
   font-weight: bold;
 }
 .rooms-search-result__unit-price {
-  vertical-align: top;
+  text-align: right;
 }
+.rooms-search-result__unit-base-price label,
 .rooms-search-result__unit-price label {
-  font-weight: normal;
+  font-weight: bold;
 }
 .rooms-search-result__select-units {
-  text-align: right;
+  text-align: left;
 }
 .rooms-search-result__select-units .form-item label {
   display: inline;
