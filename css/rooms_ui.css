@@ -112,3 +112,19 @@ tbody {
 .views-field-line-item-label {
   width: 67%;
 }
+.page-bookings .views-field-commerce-total {
+  text-align: right;
+  padding-right: 1em;
+}
+.page-bookings .component-total {
+  text-align: right;
+  padding-right: 1em;
+}
+.page-bookings .views-field-commerce-unit-price,
+.page-bookings .component-title {
+  padding-left: 1em;
+  padding-right: 1em;
+}
+.commerce-line-item-actions {
+  margin: 20px 1em 20px 0;
+}
