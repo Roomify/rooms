@@ -91,7 +91,7 @@ function rooms_booking_manager_menu() {
  * Display 'Booking confirmed' message.
  */
 function rooms_booking_manager_enquiry_confirmation() {
-  return theme('rooms_booking_enquiry_confirmation', array('message' => t('Booking confirmed')));
+  return theme('rooms_booking_enquiry_confirmation', array('message' => t('Thank you - a reservation has been created in our system for this unit and your enquiry has been sent successfully. Our staff will be contacting you soon about confirmation.')));
 }
 
 
@@ -481,11 +481,11 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
 
   $form['price'] = array(
     '#prefix' => '<div class="rooms-search-result__unit-price" id="' . $unit->unit_id . '_price" style="font-weight:bold">',
-    '#markup' =>  t('Base price') . ': ' .
+    '#markup' =>  '<label>'. t('Base price'). ':</label> <span class="rooms-search-result__base-price-amount">' .
       t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
         '@currency_symbol' => $currency_symbol,
         '@amount' => $price,
-      )),
+      )) . '</span>',
     '#suffix' => '</div>'
   );
 
@@ -561,14 +561,16 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
   if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
     $form['persons'] = array(
       '#type' => 'select',
-      '#title' => t('Guests'),
+      '#field_suffix' => t('Guests'),
       '#options' => range($unit->min_sleeps, $unit->max_sleeps),
       '#default_value' => $unit->max_sleeps - $unit->min_sleeps,
       '#ajax' => array(
         'callback' => 'rooms_booking_manager_quantity_change_callback',
         'wrapper' => 'unit_' . $unit->unit_id . '_price',
       ),
-      '#description' => t('The total number of people staying in this unit (including adults and children).'),
+      '#title' => t('How many people in this unit (including adults and children)?'),
+      '#prefix' => '<div class="rooms-search-result__select-guests">',
+      '#suffix' => '</div>',
     );
 
     $max_children = $unit->max_children;
@@ -583,7 +585,8 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     if ($max_children > $unit->min_children) {
       $form['children'] = array(
         '#type' => 'select',
-        '#title' => t('Children'),
+        '#title' => t('How many of the guests are children?'),
+        '#field_suffix' => t('Children'),
         '#options' => range($unit->min_children, $max_children),
         '#default_value' => 0,
         '#ajax' => array(
@@ -604,7 +607,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
         for ($t = 1; $t <= $form_state['values']['children']; $t++) {
           $form['childrens_age'][$t] = array(
             '#type' => 'textfield',
-            '#title' => t('Age #@num', array('@num' => $t)),
+            '#field_prefix' => t('Age of child @num', array('@num' => $t)),
             '#size' => 5,
             '#maxlength' => 5,
             '#ajax' => array(
@@ -666,11 +669,11 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
 
     $form['new_price'] = array(
       '#prefix' => '<div id="unit_' . $unit->unit_id . '_price" style="font-weight:bold">',
-      '#markup' => t('Cost') . ': ' .
+      '#markup' => '<label>' . t('Cost') . ':</label> <span class="rooms-search-result__new-price-amount">' .
         t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
           '@currency_symbol'=> $currency_symbol,
           '@amount' => $new_price['full_price']
-        )),
+        )) . '</span>',
       '#suffix' => '</div>',
     );
   }
@@ -921,20 +924,23 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         // Element to display price
         $form[$type][$price]['price'] = array(
           '#prefix' => '<tr><td><div class="unit_price" style="font-weight:bold">',
-          '#markup' => t('Base price') . ': ' .
+          '#markup' => format_plural(count($units), '1 @unit_type unit available from @price', '@count @unit_type units available from @price', array(
+            '@unit_type' => $type_obj->label,
+            '@price' =>
             t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
           '@currency_symbol' => $currency_symbol,
-              '@amount' => $price)),
-          '#suffix' => '</div>'
+              '@amount' => $price)))),
         );
         if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
           $units_keys = array_keys($units);
           // Calculate the price per person for the period
           $base_price = $units[$units_keys[0]]['price'] / $units[$units_keys[0]]['unit']->max_sleeps;
-          $form[$type][$price]['price']['#markup'] = t('Price per person') . ': ' .
+          $form[$type][$price]['price']['#markup'] = format_plural(count($units), '1 @unit_type unit available starting at @price per person', '@count @unit_type units available starting at @price per person', array(
+            '@unit_type' => $type_obj->label,
+            '@price' =>
             t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
             '@currency_symbol' => $currency_symbol,
-            '@amount' => $base_price));
+            '@amount' => $base_price))));
         }
 
         // Element to hold price
@@ -953,8 +959,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         $id = 'rooms_' . $type . '_' . $price;
         $form[$type][$price]['quantity'] = array(
           '#prefix' => '<td class="rooms-search-result__select-units" style="width:15%;">',
-          '#title' => t('Units'),
-          '#title_display' => 'after',
+          '#field_suffix' => t('Units chosen'),
           '#type' => 'select',
           '#options' => $options,
           '#suffix' => '</td>',
@@ -1056,14 +1061,14 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
               $form[$type][$price]['fieldset'][$c]['persons'] = array(
                 '#type' => 'select',
-                '#title' => t('Guests'),
+                '#field_suffix' => t('Guests'),
                 '#options' => range($tmp_unit->min_sleeps, $tmp_unit->max_sleeps),
                 '#default_value' => $tmp_unit->max_sleeps - $tmp_unit->min_sleeps,
                 '#ajax' => array(
                   'callback' => 'rooms_booking_manager_quantity_change_callback',
                   'wrapper' => $type . '_' . $price . '_container',
                 ),
-                '#description' => t('The total number of people staying in this unit (including adults and children).'),
+                '#title' => t('How many people in this unit (including adults and children)?'),
               );
 
               $max_children = $tmp_unit->max_children;
@@ -1079,7 +1084,8 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                 if ($tmp_unit->max_children > 0) {
                   $form[$type][$price]['fieldset'][$c]['children'] = array(
                     '#type' => 'select',
-                    '#title' => t('Children'),
+                    '#title' => t('How many of the guests are children?'),
+                    '#field_suffix' => t('Children'),
                     '#options' => range($tmp_unit->min_children, $max_children),
                     '#default_value' => 0,
                     '#ajax' => array(
@@ -1107,7 +1113,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                 for ($t = 1; $t <= $children_number; $t++) {
                   $form[$type][$price]['fieldset'][$c]['childrens_age'][$t] = array(
                     '#type' => 'select',
-                    '#title' => t('Age #@num', array('@num' => $t)),
+                    '#field_prefix' => t('Age of child @num', array('@num' => $t)),
                     '#options' => range(0, 18),
                     '#ajax' => array(
                     'callback' => 'rooms_booking_manager_options_change_callback',
@@ -1118,14 +1124,22 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               }
             }
 
+            // When prices are shown as per person, display this one as a subtotal
+            // for all people in the room.
+            if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
+              $label = t('Subtotal');
+            }
+            else {
+              $label = t('Price');
+            }
             $form[$type][$price]['fieldset'][$c]['price'] = array(
-              '#prefix' => '<div id="' . $type . '_' . $price . '_' . $c . '_price">',
+              '#prefix' => '<div class="rooms-search-result__unit-price" id="' . $type . '_' . $price . '_' . $c . '_price"><label>'. t('Subtotal') . ':</label> <span class="rooms-search-result__unit-price-amount">',
               // TODO: replace with a proper currency formatter
               '#markup' =>  t('@currency_symbol @amount', array(
                   '@currency_symbol' => $currency_symbol,
                   '@amount' => $price,
                 )),
-              '#suffix' => '</div>',
+              '#suffix' => '</span></div>',
             );
 
 

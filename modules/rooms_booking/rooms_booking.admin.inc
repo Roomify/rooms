@@ -330,7 +330,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
         for ($t = 1; $t <= $form_state['values']['data']['group_size_children']; $t++) {
           $form['data']['childrens_age'][$t] = array(
             '#type' => 'textfield',
-            '#title' => t('Age #@num', array('@num' => $t)),
+            '#title' => t('Age of child @num', array('@num' => $t)),
             '#size' => 5,
             '#maxlength' => 5,
             '#ajax' => array(
@@ -345,7 +345,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       foreach ($booking->data['childrens_age'] as $key => $age) {
         $form['data']['childrens_age'][$key] = array(
           '#type' => 'textfield',
-          '#title' => t('Age #@num', array('@num' => $key)),
+          '#title' => t('Age of child @num', array('@num' => $key)),
           '#size' => 5,
           '#maxlength' => 5,
           '#default_value' => $age,
