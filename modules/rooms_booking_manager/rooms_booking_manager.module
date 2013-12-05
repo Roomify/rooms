@@ -896,6 +896,8 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
       // Load the type obj and set a title
       $type_obj = rooms_unit_type_load($type);
 
+      // Decorate the available units by type as rows inside a table, which
+      // sits inside a container wrapper.
       $form[$type] = array(
         '#type' => 'container',
         '#tree' => TRUE,
@@ -908,15 +910,15 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         '#suffix' => '</h3>',
       );
 
+      $form[$type]['open-markup'] = array(
+        '#markup' => '<table class="rooms-search-result__booking-form">',
+      );
+
       foreach ($units_per_price as $price => $units) {
 
         $form[$type][$price] = array();
 
-        $form[$type][$price]['open-markup'] = array(
-          '#markup' => '<table class="rooms-search-result__booking-form">',
-        );
-
-        // Check if a description source is loaded and if so render
+        // Check if a description source is loaded and if so render.
         if (isset($type_obj->data['rooms_description_source'])) {
           if ($type_obj->data['rooms_description_source'] != '') {
             $source_ref = explode(':', $type_obj->data['rooms_description_source']);
@@ -1284,10 +1286,14 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
           }
         }
 
-        $form[$type][$price]['close-markup'] = array(
-          '#markup' => '</td></tr></table>',
+        $form[$type][$price]['close-row'] = array(
+          '#markup' => '</td></tr>',
         );
       }
+
+      $form[$type]['close-markup'] = array(
+        '#markup' => '</table> <!-- /.rooms-search-result__booking-form -->',
+      );
 
     }
 
