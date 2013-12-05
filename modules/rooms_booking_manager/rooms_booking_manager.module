@@ -868,7 +868,9 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     $currency_setting = commerce_currency_load(commerce_default_currency());
     $currency_symbol = $currency_setting['symbol'];
 
-    $index = 0;
+    // Used below to add a "Place booking" button at the top of the form
+    // in the first row only).
+    $first_row = TRUE;
 
     foreach ($units_per_type as $type => $units_per_price) {
       // Load the type obj and set a title
@@ -977,7 +979,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         );
 
         // Show button 'Place Booking' only on the first row
-        if ($index == 0) {
+        if ($first_row == TRUE) {
           $form[$type][$price]['submit'] = array(
             '#prefix' => '<td class="rooms-search-result__booking_button"  style="width:15%;"><div id="rooms_booking_button">',
             '#type' => 'submit',
@@ -986,7 +988,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             '#suffix' => '</div></td></tr>',
           );
 
-          $index++;
+          $first_row = FALSE;
         }
         else {
           $form[$type][$price]['submit'] = array(
