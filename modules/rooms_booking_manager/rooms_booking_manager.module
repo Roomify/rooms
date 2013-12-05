@@ -872,6 +872,26 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     // in the first row only).
     $first_row = TRUE;
 
+    // Check if there are multiple units chosen, and keep a running tally of
+    // the number of elements chosen.
+    $multiple_chosen = FALSE;
+    $chosen_unit_counter = 0;
+    if (isset($form_state['values'])) {
+      foreach ($units_per_type as $type => $units_per_price) {
+        foreach ($units_per_price as $price => $j) {
+          if (isset($form_state['values'][$type][$price]['quantity'])) {
+            $chosen_unit_counter += $form_state['values'][$type][$price]['quantity'];
+          }
+        }
+      }
+    }
+    if ($chosen_unit_counter > 1) {
+      $multiple_chosen = TRUE;
+    }
+    // Reset the counter back to zero, so it can be used below as an incremental
+    // index.
+    $chosen_unit_counter = 0;
+
     foreach ($units_per_type as $type => $units_per_price) {
       // Load the type obj and set a title
       $type_obj = rooms_unit_type_load($type);
@@ -1012,7 +1032,22 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
           $units_keys = array_keys($units);
 
           for ($c = 1; $c <= $form_state['values'][$type][$price]['quantity']; $c++) {
-            $form[$type][$price]['fieldset'][$c]['label']['#markup'] = $type_obj->label . ' ' . $c;
+
+            // Display each row as a fieldset.
+            $form[$type][$price]['fieldset'][$c]['#type'] = 'fieldset';
+
+            // Display a clean title for each unit. If there are multiple units
+            // chosen, add a cumulative index to the unit label. You can disable
+            // this feature by overriding the string used below in your
+            // settings.php file.
+            // Eg:
+            // $conf['locale_custom_strings_en']['']['Unit @num - @label'] = '@label';
+            //
+            $unit_label = $type_obj->label;
+            if ($multiple_chosen) {
+              $unit_label = t('Unit @num - @label', array('@num' => ++$chosen_unit_counter), $type_obj->label);
+            }
+            $form[$type][$price]['fieldset'][$c]['#title'] = $unit_label;
 
             // Add options checkboxes
             if (isset($units[$units_keys[$c - 1]]['unit']->rooms_booking_unit_options[LANGUAGE_NONE])) {
