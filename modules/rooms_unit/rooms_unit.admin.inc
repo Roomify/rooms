@@ -194,7 +194,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#default_value' => isset($unit->name) ? $unit->name : '',
     '#maxlength' => 255,
     '#required' => TRUE,
-    '#weight' => -5,
+    '#weight' => -99,
   );
 
   $form['base_price'] = array(
@@ -204,6 +204,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#size' => '5',
     '#field_suffix' => t('Per unit per night'),
     '#maxlength' => 10,
+    '#weight' => -98,
   );
 
   $form['guest_capacity'] = array(
@@ -405,7 +406,7 @@ function rooms_unit_edit_form_submit(&$form, &$form_state) {
     }
   }
   else {
-    $units[0] =  $form_state['rooms_unit'];
+    $units[0] = $form_state['rooms_unit'];
     $units[0] = entity_ui_controller('rooms_unit')->entityFormSubmitBuildEntity($form, $form_state);
     $units[0]->changed = time();
   }

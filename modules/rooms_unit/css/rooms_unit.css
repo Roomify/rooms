@@ -15,6 +15,11 @@
   font-size: 1em;
   font-weight: bold;
 }
+.rooms-unit-edit-form .field-widget-rooms-options-combined {
+  max-width: inherit;
+  margin-right: 0;
+  clear: both;
+}
 
 .rooms-unit-edit-form .form-item-name,
 .rooms-unit-edit-form .form-item-base-price,
