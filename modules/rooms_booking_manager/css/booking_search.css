@@ -58,12 +58,58 @@
 
 .rooms-availability-search .form-item-adults,
 .rooms-availability-search .form-item-children,
-#book-units-per-type-form .form-item-adults,
-#book-units-per-type-form .form-item-children {
+.rooms-availability-search-results .form-item-adults,
+.rooms-availability-search-results .form-item-children {
   padding-left: 1.1em;
 }
 
 .rooms-availability-search #edit-actions {
   padding: 0;
   margin: 1.2em 0 0;
+}
+
+.rooms-availability-search-results #edit-info,
+.rooms-availability-search-results #edit-submit {
+  /*float: left;
+  margin-right: 20px;*/
+}
+.rooms-availability-search-results #edit-info .form-item {
+  /*display: inline;*/
+}
+
+.rooms-search-result__unit-type {
+  clear: both;
+  margin: 20px 0;
+  padding-top: 20px;
+  border-top: 1px solid #ccc;
+}
+.rooms-search-result__booking-form {
+  vertical-align: top;
+}
+.rooms-search-result__booking-form {
+  position: relative;
+  width: 100%;
+}
+.rooms-search-result__booking-form .ajax-progress {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  height: 100%;
+  left: 0;
+}
+.rooms-search-result__unit-type-name {
+  font-weight: bold;
+}
+.rooms-search-result__unit-price {
+  vertical-align: top;
+}
+.rooms-search-result__unit-price label {
+  font-weight: normal;
+}
+.rooms-search-result__select-units {
+  text-align: right;
+}
+.rooms-search-result__select-units .form-item label {
+  display: inline;
 }

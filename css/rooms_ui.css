@@ -21,6 +21,9 @@ tbody {
   margin: 0;
   display: block;
 }
+.rooms-management-form .form-type-item label {
+  display: inline;
+}
 
 .rooms-management-form .form-type-radio label,
 .rooms-management-form .form-type-checkbox label {

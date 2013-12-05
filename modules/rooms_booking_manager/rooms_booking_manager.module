@@ -47,7 +47,7 @@ function rooms_booking_manager_menu() {
   $items  =  array();
 
   $items['booking'] = array(
-    'title' => 'Booking',
+    'title' => 'Create your booking',
     'page callback' => 'rooms_booking_manager_search_availability',
     'file' => 'rooms_booking_manager.availability_search.inc',
     'access arguments' => array('book units'),
@@ -55,7 +55,7 @@ function rooms_booking_manager_menu() {
   );
 
   $items['booking/%start_date/%end_date'] = array(
-    'title' => 'Booking',
+    'title' => 'Select a unit',
     'page callback' =>  'rooms_booking_manager_results_page',
     'page arguments' => array(1, 2),
     'access arguments' => array('book units'),
@@ -63,7 +63,7 @@ function rooms_booking_manager_menu() {
   );
 
   $items['enquiry/%start_date/%end_date'] = array(
-    'title' => 'Enquiry',
+    'title' => 'Ask about availability',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('rooms_booking_manager_enquiry_page_form', 1, 2),
     'access arguments' => array('book units'),
@@ -77,7 +77,7 @@ function rooms_booking_manager_menu() {
   );
 
   $items['enquiry-confirmation'] = array(
-    'title' => 'Enquiry page',
+    'title' => 'Availability enquiry',
     'page callback' => 'rooms_booking_manager_enquiry_confirmation',
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
@@ -192,9 +192,11 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
     if (($units_per_type == ROOMS_NO_ROOMS) || ($units_per_type == ROOMS_SIZE_FAILURE)) {
       $content['booking_results'] = 0;
 
-      // Use form_load_include() instead of module_load_include() as it ensures that the include file is loaded whenever the
-      // form is processed. In contrast to using module_load_include() directly, form_load_include() makes sure the
-      // include file is correctly loaded also if the form is cached.
+      // Use form_load_include() instead of module_load_include() as it
+      // ensures that the include file is loaded whenever the form is
+      // processed. In contrast to using module_load_include() directly,
+      // form_load_include() makes sure the include file is correctly
+      // loaded also if the form is cached.
       $form_state = array();
       $form_state['build_info']['args'] = array();
       form_load_include($form_state, 'inc', 'rooms_booking_manager', 'rooms_booking_manager.availability_search');
@@ -204,18 +206,39 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
 
       $booking_search_form = drupal_build_form('rooms_booking_availability_search_form', $form_state);
 
-      $no_results = array(
+      // Alter the page title.
+      drupal_set_title(t('Create your booking'));
+
+      // Store and clean old messages.
+      $old_messages = drupal_get_messages();
+
+      // Create a warning message.
+      drupal_set_message(t('Unfortunately no units are available - try different dates if possible.'), 'warning');
+
+      // Show the themed warning message inside our form.
+      $content['no_results'] = array(
         '#prefix' => '<div class="no-booking-data">',
-        '#markup' => t('Unfortunately no units are available - try different dates if possible.'),
+        '#markup' => theme('status_messages'),
         '#suffix' => '</div>',
       );
-      $content['no_results'] = $no_results;
+
+      // Restore old messages.
+      $_SESSION['messages'] = $old_messages;
+
       $content['booking_search_form'] = $booking_search_form;
     }
     elseif (variable_get('rooms_presentation_style', ROOMS_PER_TYPE) == ROOMS_PER_TYPE) {
+
+      // Alter the page title.
+      drupal_set_title(t('Select your stay'));
+
       $content = rooms_booking_manager_present_types($units_per_type, $content, $start_date, $end_date, $booking_parameters, $booking_units, $type);
     }
     elseif (variable_get('rooms_presentation_style', ROOMS_PER_TYPE) == ROOMS_INDIVIDUAL) {
+
+      // Alter the page title.
+      drupal_set_title(t('Select a unit'));
+
       $content = rooms_booking_manager_present_individual_rooms($units_per_type, $content, $start_date, $end_date, $booking_parameters);
     }
   }
@@ -224,7 +247,6 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
     drupal_goto('booking');
     exit;
   }
-
 
   $type = '';
   if (isset($_GET['type'])) {
@@ -245,32 +267,39 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
 
 function rooms_booking_manager_change_search_form($form, &$form_state, $start_date, $end_date, $booking_parameters, $b_units, $type = '') {
 
-  $form['start_date'] = array(
+  if (!isset($form['info'])) {
+    $form['info'] = array(
+      '#type' => 'container',
+      '#tree' => FALSE,
+    );
+  }
+
+  $form['info']['start_date'] = array(
     '#type' => 'hidden',
     '#value' => $start_date->format('Y-m-d'),
   );
 
-  $form['end_date'] = array(
+  $form['info']['end_date'] = array(
     '#type' => 'hidden',
     '#value' => $end_date->format('Y-m-d'),
   );
 
-  $form['booking_parameters'] = array(
+  $form['info']['booking_parameters'] = array(
     '#type' => 'hidden',
     '#value' => serialize($booking_parameters),
   );
 
-  $form['b_units'] = array(
+  $form['info']['b_units'] = array(
     '#type' => 'hidden',
     '#value' => $b_units,
   );
 
-  $form['type'] = array(
+  $form['info']['type'] = array(
     '#type' => 'hidden',
     '#value' => $type,
   );
 
-  $form['submit'] = array(
+  $form['info']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Change search'),
   );
@@ -337,9 +366,9 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
   foreach ($units_per_type as $type => $price_level) {
     $type_obj = rooms_unit_type_load($type);
     $content[$type] = array(
-      '#prefix' => '<h2>',
+      '#prefix' => '<h3 class="rooms-search-result__unit-name">',
       '#markup' =>  $type_obj->label,
-      '#suffix' => '</h2>'
+      '#suffix' => '</h3>'
     );
 
     foreach ($price_level as $price => $units) {
@@ -362,11 +391,14 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
 
 
 /**
- * Prepares rooms on a per type basis
+ * Prepares Units on a per type basis.
  */
 function rooms_booking_manager_present_types($units_per_type, $content, $start_date, $end_date, $booking_parameters, $b_units, $type = '') {
   // Flag used in tpl
   $content['style'] = ROOMS_PER_TYPE;
+
+  // Stylesheet improves basic booking results layout.
+  drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
 
   // We build all the content as a form for now
   $content['units_per_type_form'] = drupal_get_form('book_units_per_type_form', $units_per_type, $start_date, $end_date, $booking_parameters, $b_units, $type);
@@ -378,7 +410,7 @@ function rooms_booking_manager_present_types($units_per_type, $content, $start_d
 /**
  * Implements hook_forms()
  *
- * We use this to be able to present a different purchase button for each choice
+ * We use this to be able to present a different purchase button for each choice.
  */
 function rooms_booking_manager_forms($form_id, $args) {
 
@@ -397,46 +429,53 @@ function rooms_booking_manager_forms($form_id, $args) {
 
 
 /**
- * The form builder builds the form (where visible is simply the purchase button)
- * for individual bookable units.
+ * The form builder builds the form (where visible is simply the purchase
+ * button) for individual bookable units.
  *
- * The builder gets called for each unit from the rooms_booking_manager_present_individual_rooms function above.
+ * The builder gets called for each unit from the
+ * rooms_booking_manager_present_individual_rooms function above.
  *
- * The available units have already been identified by rooms_booking_manager_results_page.
+ * The available units have already been identified by
+ * rooms_booking_manager_results_page.
  */
 function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_date, $group_size_adults, $status, $price) {
 
   $currency_setting = commerce_currency_load(commerce_default_currency());
   $currency_symbol = $currency_setting['symbol'];
 
-  $form['unit_id'] = array(
+  $form['hidden'] = array(
+    '#tree' => FALSE,
+    '#type' => 'container',
+    '#weight' => 999,
+  );
+  $form['hidden']['unit_id'] = array(
     '#type' => 'hidden',
     '#value' => $unit->unit_id,
   );
 
-  $form['status'] = array(
+  $form['hidden']['status'] = array(
     '#type' => 'hidden',
     '#value' => $status,
   );
 
-  $form['start_date'] = array(
+  $form['hidden']['start_date'] = array(
     '#type' => 'hidden',
     '#value' => $start_date->format('Y-m-d'),
   );
 
-  $form['end_date'] = array(
+  $form['hidden']['end_date'] = array(
     '#type' => 'hidden',
     '#value' => $end_date->format('Y-m-d'),
   );
 
-  $form['group_size'] = array(
+  $form['hidden']['group_size'] = array(
     '#type' => 'hidden',
     '#value' => $group_size_adults,
   );
 
   $form['price'] = array(
-    '#prefix' => '<div class="unit_price" id="' . $unit->unit_id . '_price" style="font-weight:bold">',
-    '#markup' =>  t('Base Cost') . ': ' .
+    '#prefix' => '<div class="rooms-search-result__unit-price" id="' . $unit->unit_id . '_price" style="font-weight:bold">',
+    '#markup' =>  t('Base price') . ': ' .
       t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
         '@currency_symbol' => $currency_symbol,
         '@amount' => $price,
@@ -476,20 +515,20 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
                 'callback' => 'rooms_booking_manager_options_change_callback',
                 'wrapper' => 'unit_' . $unit->unit_id . '_price',
               ),
-              '#prefix' => '<div id="unit_' . $unit->unit_id . '_' . strtolower(str_replace(array(':', ' '), '_', $option['name'])) . '_quantity">',
+              '#prefix' => '<div class="rooms-search-result__unit-quantity" id="unit_' . $unit->unit_id . '_' . strtolower(str_replace(array(':', ' '), '_', $option['name'])) . '_quantity">',
               '#suffix' => '</div>',
             );
           }
           else {
             $form['options'][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] = array(
-              '#prefix' => '<div id="unit_' . $unit->unit_id . '_' . strtolower(str_replace(array(':', ' '), '_', $option['name'])) . '_quantity">',
+              '#prefix' => '<div class="rooms-search-result__unit-quantity" id="unit_' . $unit->unit_id . '_' . strtolower(str_replace(array(':', ' '), '_', $option['name'])) . '_quantity">',
               '#suffix' => '</div>',
             );
           }
         }
         else {
           $form['options'][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] = array(
-            '#prefix' => '<div id="' . 'unit_' . $unit->unit_id . '_' . strtolower(str_replace(array(':', ' '), '_', $option['name'])) . '_quantity">',
+            '#prefix' => '<div class="rooms-search-result__unit-quantity" id="' . 'unit_' . $unit->unit_id . '_' . strtolower(str_replace(array(':', ' '), '_', $option['name'])) . '_quantity">',
             '#suffix' => '</div>',
           );
         }
@@ -681,7 +720,7 @@ function book_unit_form_submit(&$form, &$form_state) {
   // reconvert them back to strings to only recreate them in the Availability Agent
   $sd = start_date_load($start_date);
   $ed = end_date_load($end_date);
-  
+
   // Let us get the available rooms again and match the order against actual rooms
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
   $agent = new AvailabilityAgent($sd, $ed, $group_size);
@@ -744,6 +783,10 @@ function book_unit_form_submit(&$form, &$form_state) {
 
 function book_units_per_type_form($form, $form_state, $units_per_type, $start_date, $end_date, $booking_parameters, $b_units, $type = '') {
 
+  // Add stylesheets and classes.
+  drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
+  $form['#attributes']['class'][] = 'rooms-management-form rooms-availability-search-results';
+
   $date_format = variable_get('rooms_date_format', 'd-m-Y');
 
   // Check to see if we are rebuilding the form to create an enquiry
@@ -761,36 +804,45 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
       $submit += $form['#submit'];
     }
 
-    $form['start_date'] = array(
-      '#type' => 'hidden',
-      '#value' => $start_date->format('Y-m-d'),
-    );
-
-    $form['end_date'] = array(
-      '#type' => 'hidden',
-      '#value' => $end_date->format('Y-m-d'),
-    );
-
-    $form['booking_parameters'] = array(
-      '#type' => 'hidden',
-      '#value' => serialize($booking_parameters),
-    );
-
-    $form['b_units'] = array(
-      '#type' => 'hidden',
-      '#value' => $b_units,
-    );
-
-    $form['type'] = array(
-      '#type' => 'hidden',
-      '#value' => $type,
-    );
-
     $form['submit'] = array(
       '#type' => 'submit',
       '#value' => t('Change search'),
       '#submit' => $submit + array('rooms_booking_manager_change_search_form_submit'),
     );
+
+    if (!isset($form['info_hidden'])) {
+      $form['info_hidden'] = array(
+        '#type' => 'container',
+        '#tree' => FALSE,
+        '#weight' => 999,
+      );
+    }
+
+    $form['info_hidden']['start_date'] = array(
+      '#type' => 'hidden',
+      '#value' => $start_date->format('Y-m-d'),
+    );
+
+    $form['info_hidden']['end_date'] = array(
+      '#type' => 'hidden',
+      '#value' => $end_date->format('Y-m-d'),
+    );
+
+    $form['info_hidden']['booking_parameters'] = array(
+      '#type' => 'hidden',
+      '#value' => serialize($booking_parameters),
+    );
+
+    $form['info_hidden']['b_units'] = array(
+      '#type' => 'hidden',
+      '#value' => $b_units,
+    );
+
+    $form['info_hidden']['type'] = array(
+      '#type' => 'hidden',
+      '#value' => $type,
+    );
+
 
     $form = rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, $form);
 
@@ -804,15 +856,19 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     $index = 0;
 
     foreach ($units_per_type as $type => $units_per_price) {
-      $form[$type] = array();
-      $form[$type]['#tree'] = TRUE;
-
       // Load the type obj and set a title
       $type_obj = rooms_unit_type_load($type);
+
+      $form[$type] = array(
+        '#type' => 'container',
+        '#tree' => TRUE,
+        '#attributes' => array('class' => array('rooms-search-result__unit-type')),
+      );
+
       $form[$type]['title'] = array(
-        '#prefix' => '<h2>',
+        '#prefix' => '<h3 class="rooms-search-result__unit-type-name">',
         '#markup' => $type_obj->label,
-        '#suffix' => '</h2>',
+        '#suffix' => '</h3>',
       );
 
       foreach ($units_per_price as $price => $units) {
@@ -820,7 +876,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         $form[$type][$price] = array();
 
         $form[$type][$price]['open-markup'] = array(
-          '#markup' => '<table>',
+          '#markup' => '<table class="rooms-search-result__booking-form">',
         );
 
         // Check if a description source is loaded and if so render
@@ -844,9 +900,9 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                 $node_html = render($node_view);
 
                 $form[$type][$price]['description'] = array(
-                  '#prefix' => '<tr><td class="room_description">',
+                  '#prefix' => '<tr><td class="rooms-search-result__room-description">',
                   '#markup' => $node_html,
-                  '#suffix' => '</td><td></td><td></td></tr>',
+                  '#suffix' => '</td><td class="empty"></td><td class="empty"></td></tr>',
                 );
               }
             }
@@ -856,9 +912,9 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         // Element to display price
         $form[$type][$price]['price'] = array(
           '#prefix' => '<tr><td><div class="unit_price" style="font-weight:bold">',
-          '#markup' => t('Base Cost') . ': ' .
+          '#markup' => t('Base price') . ': ' .
             t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
-              '@currency_symbol' => $currency_symbol,
+          '@currency_symbol' => $currency_symbol,
               '@amount' => $price)),
           '#suffix' => '</div>'
         );
@@ -868,8 +924,8 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
           $base_price = $units[$units_keys[0]]['price'] / $units[$units_keys[0]]['unit']->max_sleeps;
           $form[$type][$price]['price']['#markup'] = t('Price per person') . ': ' .
             t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
-              '@currency_symbol' => $currency_symbol,
-              '@amount' => $base_price));
+            '@currency_symbol' => $currency_symbol,
+            '@amount' => $base_price));
         }
 
         // Element to hold price
@@ -887,8 +943,9 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         // ajax wrapper id
         $id = 'rooms_' . $type . '_' . $price;
         $form[$type][$price]['quantity'] = array(
-          '#prefix' => '<td style="width:15%;" class="room_units">',
+          '#prefix' => '<td class="rooms-search-result__select-units" style="width:15%;">',
           '#title' => t('Units'),
+          '#title_display' => 'after',
           '#type' => 'select',
           '#options' => $options,
           '#suffix' => '</td>',
@@ -905,7 +962,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         // Show button 'Place Booking' only on the first row
         if ($index == 0) {
           $form[$type][$price]['submit'] = array(
-            '#prefix' => '<td style="width:15%;" class="room_placebooking"><div id="rooms_booking_button">',
+            '#prefix' => '<td class="rooms-search-result__booking_button"  style="width:15%;"><div id="rooms_booking_button">',
             '#type' => 'submit',
             '#value' => t('Place Booking'),
             '#submit' => $submit + array('book_units_per_type_form_submit'),
@@ -916,7 +973,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         }
         else {
           $form[$type][$price]['submit'] = array(
-            '#prefix' => '<td style="width:15%;" class="room_placebooking">',
+            '#prefix' => '<td class="rooms-search-result__booking_button" style="width:15%;">',
             '#suffix' => '</td></tr>',
           );
         }
@@ -927,7 +984,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         );
 
         $form[$type][$price]['fieldset'] = array(
-         '#prefix' => '<div id="' . $type . '_' . $price . '_container">',
+         '#prefix' => '<div class="form-wrapper" id="' . $type . '_' . $price . '_container">',
          '#type' => 'fieldset',
          '#suffix' => '</div>'
         );
@@ -1166,16 +1223,16 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
     }
 
-    $form['place_booking'] = array(
-      '#type' => 'submit',
-      '#value' => t('Place Booking'),
-      '#submit' => $submit + array('book_units_per_type_form_submit'),
-    );
-
     $form['actions'] = array(
       '#type' => 'actions',
       '#tree' => FALSE,
       '#weight' => 400,
+    );
+
+    $form['actions']['place_booking'] = array(
+      '#type' => 'submit',
+      '#value' => t('Place Booking'),
+      '#submit' => $submit + array('book_units_per_type_form_submit'),
     );
 
     // We append the validate handler to #validate in case a form callback_wrapper
@@ -2274,22 +2331,29 @@ function rooms_booking_manager_views_api() {
 
 
 /**
- * Helper function to provide a portion of a form that we use in more places
+ * Helper function to provide a portion of a form that we use in more places.
  */
 function rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, $form) {
   $nights = $end_date->diff($start_date)->days;
 
-  $form_tmp['info_arrival_date'] = array(
-    '#type' => 'item',
-    '#markup' => t('Arrival Date') . ': ' . $start_date->format($date_format),
+  $form_tmp['info'] = array(
+    '#type' => 'container',
+    '#tree' => FALSE,
   );
-  $form_tmp['info_departure_Date'] = array(
+  $form_tmp['info']['arrival_date'] = array(
     '#type' => 'item',
-    '#markup' => t('Departure Date') . ': ' . $end_date->format($date_format),
+    '#title' => t('Arrival Date'),
+    '#markup' => '<span class="info">' . check_plain($start_date->format($date_format)) . '</span>',
   );
-  $form_tmp['info_nights'] = array(
+  $form_tmp['info']['departure_date'] = array(
     '#type' => 'item',
-    '#markup' => t('Nights') . ': ' . $nights,
+    '#title' => t('Departure Date'),
+    '#markup' => '<span class="info">' . check_plain($end_date->format($date_format)) . '</span>',
+  );
+  $form_tmp['info']['nights'] = array(
+    '#type' => 'item',
+    '#title' => t('Nights'),
+    '#markup' => '<span class="info">' . check_plain($nights) . '</span>',
   );
 
   $form = array_merge($form_tmp, $form);

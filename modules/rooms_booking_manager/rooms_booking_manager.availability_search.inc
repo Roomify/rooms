@@ -2,7 +2,7 @@
 
 function rooms_booking_manager_search_availability() {
 
-  // Add css to align date boxes
+  // Stylesheet improves basic search layout.
   drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
 
   $output = drupal_get_form('rooms_booking_availability_search_form');
