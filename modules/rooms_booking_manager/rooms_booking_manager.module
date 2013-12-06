@@ -618,8 +618,8 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
             '#ajax' => array(
               'callback' => 'rooms_booking_manager_options_change_callback',
               'wrapper' => 'unit_' . $unit->unit_id . '_price',
-            '#attributes' => array('class' => array('rooms-search-result__childrens-age')),
             ),
+            '#attributes' => array('class' => array('rooms-search-result__childrens-age')),
           );
         }
       }
