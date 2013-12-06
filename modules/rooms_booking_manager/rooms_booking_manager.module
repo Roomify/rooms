@@ -638,10 +638,9 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
       if ($form_state['values']['children'] > 0) {
         for ($t = 1; $t <= $form_state['values']['children']; $t++) {
           $form['childrens_age'][$t] = array(
-            '#type' => 'textfield',
+            '#type' => 'select',
             '#field_prefix' => t('Age of child @num', array('@num' => $t)),
-            '#size' => 5,
-            '#maxlength' => 5,
+            '#options' => range(0, 18),
             '#ajax' => array(
               'callback' => 'rooms_booking_manager_options_change_callback',
               'wrapper' => 'unit_' . $unit->unit_id . '_price',
