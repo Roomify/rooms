@@ -1025,7 +1025,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             //
             $unit_label = $type_obj->label;
             if ($multiple_chosen) {
-              $unit_label = t('Unit @num - @label', array('@num' => ++$chosen_unit_counter), $type_obj->label);
+              $unit_label = t('Unit @num - @label', array('@num' => ++$chosen_unit_counter, '@label' => $type_obj->label));
             }
             $form[$type][$price]['fieldset'][$c]['#title'] = $unit_label;
 
