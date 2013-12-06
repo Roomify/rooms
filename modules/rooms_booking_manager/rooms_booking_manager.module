@@ -254,56 +254,23 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
     if ($type == '' || rooms_unit_type_load($type) === FALSE) $type = '';
   }
 
+  // TODO: investigate why this is needed, if not, refactor and remove it.
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
-  $content['legend'] = rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, array());
 
-  $change_search_form = drupal_get_form('rooms_booking_manager_change_search_form', $start_date, $end_date, $booking_parameters, $booking_units, $type);
-  $content['change_search'] = $change_search_form;
+  $content['change_search'] = drupal_get_form('rooms_booking_manager_change_search_form', $start_date, $end_date, $booking_parameters, $booking_units, $type, $date_format);
 
   $output = theme('rooms_booking_results', $content);
   return $output;
 }
 
 
-function rooms_booking_manager_change_search_form($form, &$form_state, $start_date, $end_date, $booking_parameters, $b_units, $type = '') {
+function rooms_booking_manager_change_search_form($form, &$form_state, $start_date, $end_date, $booking_parameters, $b_units, $type = '', $date_format = '') {
 
-  if (!isset($form['info'])) {
-    $form['info'] = array(
-      '#type' => 'container',
-      '#tree' => FALSE,
-      '#attributes' => array('class' => array('rooms-current-search-info')),
-    );
-  }
+  // Add stylesheet.
+  drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
 
-  $form['info']['start_date'] = array(
-    '#type' => 'hidden',
-    '#value' => $start_date->format('Y-m-d'),
-  );
-
-  $form['info']['end_date'] = array(
-    '#type' => 'hidden',
-    '#value' => $end_date->format('Y-m-d'),
-  );
-
-  $form['info']['booking_parameters'] = array(
-    '#type' => 'hidden',
-    '#value' => serialize($booking_parameters),
-  );
-
-  $form['info']['b_units'] = array(
-    '#type' => 'hidden',
-    '#value' => $b_units,
-  );
-
-  $form['info']['type'] = array(
-    '#type' => 'hidden',
-    '#value' => $type,
-  );
-
-  $form['info']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Change search'),
-  );
+  // Include info snippet.
+  rooms_booking_manager_form_info_snippet($form, $start_date, $end_date, $booking_parameters, $b_units, $type, $date_format);
 
   return $form;
 }
@@ -767,8 +734,10 @@ function book_unit_form_submit(&$form, &$form_state) {
   $sd = start_date_load($start_date);
   $ed = end_date_load($end_date);
 
-  // Let us get the available rooms again and match the order against actual rooms
+  // TODO: investigate why this is needed, if not, refactor and remove it.
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
+
+  // Let us get the available rooms again and match the order against actual rooms.
   $agent = new AvailabilityAgent($sd, $ed, $group_size);
   $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
 
@@ -833,67 +802,17 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
   drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
   $form['#attributes']['class'][] = 'rooms-availability-search-results';
 
+  // TODO: investigate why this is needed, if not, refactor and remove it.
   $date_format = variable_get('rooms_date_format', 'd-m-Y');
 
   // Check to see if we are rebuilding the form to create an enquiry
   if (($form_state['rebuild']) && (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT)) {
-    $form = rooms_booking_manager_enquiry_form($form_state['values']['form_data'], $start_date, $end_date, $booking_parameters, $b_units);
+    $form = rooms_booking_manager_enquiry_form($form_state['values']['form_data'], $start_date, $end_date, $booking_parameters, $b_units, $date_format);
     // If not display the per type choices
   }
   else {
 
-    // We add the form's #submit array to this button along with the actual submit
-    // handler to preserve any submit handlers added by a form callback_wrapper.
-    $submit = array();
-
-    if (!empty($form['#submit'])) {
-      $submit += $form['#submit'];
-    }
-
-    $form['submit'] = array(
-      '#prefix' => '<div class="rooms-current-search-change-search-button form-wrapper">',
-      '#suffix' => '</div>',
-      '#type' => 'submit',
-      '#value' => t('Change search'),
-      '#submit' => $submit + array('rooms_booking_manager_change_search_form_submit'),
-    );
-
-    if (!isset($form['info_hidden'])) {
-      $form['info_hidden'] = array(
-        '#type' => 'container',
-        '#tree' => FALSE,
-        '#weight' => 999,
-        '#attributes' => array('class' => array('rooms-current-search-info-hidden')),
-      );
-    }
-
-    $form['info_hidden']['start_date'] = array(
-      '#type' => 'hidden',
-      '#value' => $start_date->format('Y-m-d'),
-    );
-
-    $form['info_hidden']['end_date'] = array(
-      '#type' => 'hidden',
-      '#value' => $end_date->format('Y-m-d'),
-    );
-
-    $form['info_hidden']['booking_parameters'] = array(
-      '#type' => 'hidden',
-      '#value' => serialize($booking_parameters),
-    );
-
-    $form['info_hidden']['b_units'] = array(
-      '#type' => 'hidden',
-      '#value' => $b_units,
-    );
-
-    $form['info_hidden']['type'] = array(
-      '#type' => 'hidden',
-      '#value' => $type,
-    );
-
-
-    $form = rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, $form);
+    rooms_booking_manager_form_info_snippet($form, $start_date, $end_date, $booking_parameters, $b_units, $type, $date_format);
 
     drupal_add_js(drupal_get_path('module', 'rooms_booking_manager') . '/js/rooms_booking_manager_button_scroll.js');
 
@@ -1014,7 +933,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             '@unit_type' => $type_obj->label,
             '@price' =>
             t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
-          '@currency_symbol' => $currency_symbol,
+              '@currency_symbol' => $currency_symbol,
               '@amount' => $price)))),
         );
         if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
@@ -1065,7 +984,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             '#prefix' => '<td class="rooms-search-result__booking_button"  style="width:15%;"><div id="rooms_booking_button">',
             '#type' => 'submit',
             '#value' => t('Place Booking'),
-            '#submit' => $submit + array('book_units_per_type_form_submit'),
+            '#submit' => array('book_units_per_type_form_submit'),
             '#suffix' => '</div></td></tr>',
           );
 
@@ -1365,7 +1284,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     $form['actions']['place_booking'] = array(
       '#type' => 'submit',
       '#value' => t('Place Booking'),
-      '#submit' => $submit + array('book_units_per_type_form_submit'),
+      '#submit' => array('book_units_per_type_form_submit'),
     );
 
     // We append the validate handler to #validate in case a form callback_wrapper
@@ -1442,13 +1361,10 @@ function rooms_booking_manager_children_change_callback(&$form, $form_state) {
 }
 
 
-function rooms_booking_manager_enquiry_form($form, $start_date, $end_date, $booking_parameters, $b_units) {
+function rooms_booking_manager_enquiry_form($form, $start_date, $end_date, $booking_parameters, $b_units, $date_format = '') {
 
-  $date_format = variable_get('rooms_date_format', 'd-m-Y');
-  $nights = $end_date->diff($start_date);
-
-  $form = rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, $form);
   $form['#attributes']['class'][] = 'rooms-enquiry-form';
+  rooms_booking_manager_form_info_snippet($form, $start_date, $end_date, $booking_parameters, $b_units, $date_format);
 
   $form['enquiry_form'] = array(
     '#type' => 'hidden',
@@ -1621,9 +1537,10 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
   $sd = start_date_load($start_date);
   $ed = end_date_load($end_date);
 
-  // Let us get the available rooms again and match the order against actual rooms
+  // TODO: investigate why this is needed, if not, refactor and remove it.
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
 
+  // Let us get the available rooms again and match the order against actual rooms.
   $agent = new AvailabilityAgent($sd, $ed, $booking_parameters, $b_units, array());
   $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
 
@@ -1744,6 +1661,12 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
  * of the search as a convenient way to modify the search.
  */
 function rooms_booking_manager_change_search_form_submit(&$form, &$form_state) {
+
+  // Only process if the 'Change search' button was clicked.
+  if ($form_state['clicked_button']['#value'] != t('Change search')) {
+    return;
+  }
+
   $booking_parameters = unserialize($form_state['values']['booking_parameters']);
 
   $b_parameters = array();
@@ -1758,13 +1681,18 @@ function rooms_booking_manager_change_search_form_submit(&$form, &$form_state) {
     }
   }
 
-  drupal_goto('booking', array('query' => array(
-    'rooms_start_date' => $form_state['values']['start_date'],
-    'rooms_end_date' => $form_state['values']['end_date'],
-    'rooms_b_units' => $form_state['values']['b_units'],
-    'type' => $form_state['values']['type'],
-    $b_parameters,
-  )));
+  // Build query parameters from the provided form fields.
+  $query['rooms_start_date'] = $form_state['values']['start_date'];
+  $query['rooms_start_date'] = $form_state['values']['start_date'];
+  $query['rooms_end_date'] = $form_state['values']['end_date'];
+  $query['rooms_b_units'] = $form_state['values']['b_units'];
+  if (isset($form_state['values']['type']) && !empty($form_state['values']['type'])) {
+    $query['type'] = $form_state['values']['type'];
+  }
+  $query += $b_parameters;
+
+  // Redirect back to the search page.
+  drupal_goto('booking', array('query' => $query));
 }
 
 
@@ -2465,33 +2393,127 @@ function rooms_booking_manager_views_api() {
 
 
 /**
- * Helper function to provide a portion of a form that we use in more places.
+ * Provides a single integrated group of form elements storing the current
+ * availability search along with a "change search" button that will take you
+ * back to the initial booking search page.  These form compoents are used in
+ * multiple places for the different kinds of booking configurations.  The
+ * components can be used as a standalone form, not by calling this funciton
+ * directly, but by using drupal_get_form to render
+ * rooms_booking_manager_change_search_form().
+ *
+ * @param $form
+ *    An existing Drupal form array to which the change search will be added.
+ * @param $start_date
+ * @param $end_date
+ * @param $booking_parameters
+ * @param $b_units
+ * @param $type
+ * @param $date_format
  */
-function rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, $form) {
-  $nights = $end_date->diff($start_date)->days;
+function rooms_booking_manager_form_info_snippet(&$form, $start_date, $end_date, $booking_parameters = array(), $b_units = '', $type = '', $date_format = '') {
 
-  $form_tmp['info'] = array(
+  // Ensure stylesheets are added to the page.
+  drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
+
+  // Use the default date format if one is not provided.
+  // TODO: investigate why this option is needed, if not, refactor and remove it.
+  if (!$date_format) {
+    $date_format = variable_get('rooms_date_format', 'd-m-Y');
+  }
+
+  if (!isset($form['info'])) {
+    $form['info'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Your current search'),
+      '#tree' => FALSE,
+      '#attributes' => array('class' => array('rooms-current-search__info', 'form-item')),
+    );
+  }
+  if (!isset($form['info']['params'])) {
+    $form['info']['params'] = array(
+      '#type' => 'container',
+      '#tree' => FALSE,
+      '#attributes' => array('class' => array('rooms-current-search__params', 'form-item')),
+      '#weight' => 10,
+    );
+  }
+
+  $form['info']['arrival_date'] = array(
+    '#theme' => 'container',
+    '#markup' => '<label>' . t('Arrival Date') . '</label> <span class="info">' . check_plain($start_date->format($date_format)) . '</span>',
+    '#attributes' => array('class' => array('rooms-current-search__arrival', 'form-item')),
+  );
+  $form['info']['params']['start_date'] = array(
+    '#type' => 'hidden',
+    '#value' => $start_date->format('Y-m-d'),
+  );
+
+  $form['info']['departure_date'] = array(
+    '#theme' => 'container',
+    '#markup' => '<label>' . t('Departure Date') . '</label> <span class="info">' . check_plain($end_date->format($date_format)) . '</span>',
+    '#attributes' => array('class' => array('rooms-current-search__departure', 'form-item')),
+  );
+  $form['info']['params']['end_date'] = array(
+    '#type' => 'hidden',
+    '#value' => $end_date->format('Y-m-d'),
+  );
+
+  $form['info']['nights'] = array(
+    '#theme' => 'container',
+    '#markup' => '<label>' . t('Nights') . '</label> <span class="info">' . $end_date->diff($start_date)->days . '</span>',
+    '#attributes' => array('class' => array('rooms-current-search__nights', 'form-item')),
+  );
+
+  if ($b_units) {
+    $form['info']['units'] = array(
+      '#theme' => 'container',
+      '#markup' => '<label>' . t('Units') . '</label> <span class="info">' . check_plain($b_units) . '</span>',
+      '#attributes' => array('class' => array('rooms-current-search__units', 'form-item')),
+    );
+    $form['info']['params']['b_units'] = array(
+      '#type' => 'hidden',
+      '#value' => check_plain($b_units),
+    );
+  }
+
+  if ($type && $type_obj = rooms_unit_get_types($type)) {
+    $form['info']['type'] = array(
+      '#theme' => 'container',
+      '#markup' => '<label>' . t('Unit type') . '</label> <span class="info">' . check_plain($type_obj->label) . '</span>',
+      '#attributes' => array('class' => array('rooms-current-search__type', 'form-item')),
+    );
+    $form['info']['params']['type'] = array(
+      '#type' => 'hidden',
+      '#value' => check_plain($type),
+    );
+  }
+
+  if(!empty($booking_parameters)) {
+    $form['info']['params']['booking_parameters'] = array(
+      '#type' => 'hidden',
+      '#value' => serialize($booking_parameters),
+    );
+  }
+
+  // We add the form's #submit array to this button along with the actual submit
+  // handler to preserve any submit handlers added by a form callback_wrapper.
+  $submit = array('rooms_booking_manager_change_search_form_submit');
+
+  if (!empty($form['#submit'])) {
+    $submit += $form['#submit'];
+    $form['#submit'] = $submit;
+  }
+
+  $form['info']['actions'] = array(
     '#type' => 'container',
     '#tree' => FALSE,
-    '#attributes' => array('class' => array('rooms-current-search-info')),
+    '#attributes' => array('class' => array('rooms-current-search__actions', 'form-item')),
   );
-  $form_tmp['info']['arrival_date'] = array(
-    '#type' => 'item',
-    '#title' => t('Arrival Date'),
-    '#markup' => '<span class="info">' . check_plain($start_date->format($date_format)) . '</span>',
-  );
-  $form_tmp['info']['departure_date'] = array(
-    '#type' => 'item',
-    '#title' => t('Departure Date'),
-    '#markup' => '<span class="info">' . check_plain($end_date->format($date_format)) . '</span>',
-  );
-  $form_tmp['info']['nights'] = array(
-    '#type' => 'item',
-    '#title' => t('Nights'),
-    '#markup' => '<span class="info">' . check_plain($nights) . '</span>',
+  $form['info']['actions']['change_search'] = array(
+    '#type' => 'submit',
+    '#value' => t('Change search'),
+    '#submit' => $submit,
+    '#attributes' => array('class' => array('rooms-current-search__change-search-button')),
   );
 
-  $form = array_merge($form_tmp, $form);
-
-  return $form;
 }

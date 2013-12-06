@@ -68,21 +68,43 @@
   margin: 1.2em 0 0;
 }
 
-.rooms-current-search-info,
-.rooms-current-search-change-search-button {
-  text-align: right
+
+/* Current Search Info */
+.rooms-current-search__info,
+.rooms-management-form .rooms-current-search__info {
+  float: right; /* or right */
+  margin-bottom: 20px;
 }
-.rooms-current-search-info .form-item {
-  margin: 0 0 0.3em;
-  padding: 0;
+.rooms-current-search__info .form-item,
+.rooms-current-search__actions {
+  font-size: 0.9em;
+  clear: both;
+  width: 18em;
+  margin: 0;
 }
-.rooms-current-search-info .form-type-item label {
-  display: inline;
+.rooms-current-search__change-search-button {
+  float: left;
+  margin-left: 10em;
+}
+.rooms-current-search__info .form-item label {
+  display: block;
+  float: left;
+  width: 9.5em;
+  text-align: right;
+  margin-right: .5em;
+}
+.rooms-current-search__info .form-type-item .info {
+  display: block;
+  float: left;
+  width: 8em;
 }
 
 .rooms-search-result__unit-type {
   clear: both;
-  margin: 20px 0;
+  margin-bottom: 20px;
+}
+.rooms-search-result__unit-type-name {
+  margin-top: 20px;
   padding-top: 20px;
   border-top: 1px solid #ccc;
 }
