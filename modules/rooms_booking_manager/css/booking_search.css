@@ -139,3 +139,23 @@
 .rooms-search-result__select-units .form-item label {
   display: inline;
 }
+
+/* Individual (embedded) unit search results layout */
+.rooms-search-result__unit-embedded {
+  float: left;
+  width: 100%;
+}
+.rooms-search-result__unit-embedded .rooms-search-result__select-guests,
+.rooms-search-result__unit-embedded .rooms-search-result__select-children,
+.rooms-search-result__unit-embedded .rooms-search-result__select-childrenage {
+  float: left;
+  margin-right: 20px;
+}
+.rooms-search-result__unit-embedded .rooms-search-result__new-price,
+.rooms-search-result__unit-embedded .rooms-search-result__actions {
+  float: right;
+  clear: right;
+}
+.rooms-search-result__new-price {
+  font-weight: bold;
+}
