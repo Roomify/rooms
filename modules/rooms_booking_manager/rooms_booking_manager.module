@@ -237,7 +237,7 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
     elseif (variable_get('rooms_presentation_style', ROOMS_PER_TYPE) == ROOMS_INDIVIDUAL) {
 
       // Alter the page title.
-      drupal_set_title(t('Select a unit'));
+      drupal_set_title(t('Select your stay'));
 
       $content = rooms_booking_manager_present_individual_rooms($units_per_type, $content, $start_date, $end_date, $booking_parameters);
     }
