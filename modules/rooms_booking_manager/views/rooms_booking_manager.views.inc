@@ -24,7 +24,7 @@ function rooms_booking_manager_cart_view_views_default_views() {
   $view->description = 'Display a shopping cart update form.';
   $view->tag = 'commerce';
   $view->base_table = 'commerce_order';
-  $view->human_name = 'Booking cart form';
+  $view->human_name = 'Review your reservation';
   $view->core = 0;
   $view->api_version = '3.0';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */

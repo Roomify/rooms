@@ -71,7 +71,7 @@ function rooms_booking_manager_menu() {
   );
 
   $items['bookings'] = array(
-    'title' => 'Booking cart',
+    'title' => 'Review your reservation',
     'page callback' => 'rooms_booking_manager_cart_view',
     'access arguments' => array('access content'),
   );

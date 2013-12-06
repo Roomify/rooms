@@ -67,7 +67,7 @@ class RoomsBookingManagerTestMain extends DrupalWebTestCase {
         ),
       t('Place Booking'));
 
-    $this->assertText('Booking cart');
+    $this->assertText('Review your reservation');
     $this->assertText('Booking for Single Rooms (4 Nights; Arrival: 21-04-2014 Departure: 25-04-2014)');
     $this->assertText('$400.00');
   }
