@@ -1494,7 +1494,7 @@ function book_units_per_type_form_validate(&$form, &$form_state) {
     }
   }
 
-  form_set_error('', t('Please select a unit in order to continue with booking'));
+  form_set_error('', t('Please select a unit in order to continue with booking.'));
 }
 
 
