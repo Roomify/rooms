@@ -53,15 +53,16 @@ function rooms_booking_availability_search_form($form, $form_state) {
     '#default_value' =>  $rooms_number,
   );
 
+  $ajax_wrapper_id = drupal_html_id('rooms-group');
   $form['rooms_fieldset'] = array(
-    '#prefix' => '<div class="form-wrapper" id="rooms-wrapper">',
+    '#prefix' => '<div class="form-wrapper rooms-group" id="' . $ajax_wrapper_id . '">',
     '#suffix' => '</div>',
   );
 
   if (variable_get('rooms_presentation_style', ROOMS_PER_TYPE) == ROOMS_PER_TYPE) {
     $form['conditions']['rooms']['#ajax'] = array(
       'callback' => 'rooms_booking_availability_search_form_callback',
-      'wrapper' => 'rooms-wrapper',
+      'wrapper' => $ajax_wrapper_id,
     );
 
     $classes = 'rooms-group-size ';
