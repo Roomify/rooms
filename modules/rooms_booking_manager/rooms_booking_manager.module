@@ -364,6 +364,9 @@ function rooms_booking_manager_retrieve_booking_parameters($booking_units, $book
  */
 function rooms_booking_manager_present_individual_rooms($units_per_type, $content, $start_date, $end_date, $booking_parameters) {
   $content['style'] = ROOMS_INDIVIDUAL;
+
+  drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
+
   foreach ($units_per_type as $type => $price_level) {
     $type_obj = rooms_unit_type_load($type);
     $content[$type] = array(
@@ -381,6 +384,10 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
         $unit_obj = rooms_unit_load($unit_id);
         $controller = entity_get_controller('rooms_unit');
         $unit_content = $controller->view(array($unit_id => $unit_obj));
+        $content['units_per_type'][$type][$price][$unit_id] = array(
+          '#theme' => 'container',
+          '#attributes' => array('class' => array('rooms-search-result__unit')),
+        );
         $content['units_per_type'][$type][$price][$unit_id]['unit'] = $unit_content;
 
         // Add purchase forms - passing through hook_forms to handle multiple forms on the page
@@ -483,7 +490,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
   );
 
   $form['price'] = array(
-    '#prefix' => '<div class="rooms-search-result__unit-base-price" id="' . $unit->unit_id . '_price">',
+    '#prefix' => '<div class="rooms-search-result__unit-base-price" id="unit_' . $unit->unit_id . '_base_price">',
     '#markup' =>  '<label>'. t('Base price'). ':</label> <span class="rooms-search-result__base-price-amount">' .
       t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
         '@currency_symbol' => $currency_symbol,
@@ -491,6 +498,26 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
       )) . '</span>',
     '#suffix' => '</div>'
   );
+
+  if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
+
+    // Calculate the period.
+    $nights = $end_date->diff($start_date)->days;
+
+    // Calculate the price per person for the period
+    $price_per_person = $price / $unit->max_sleeps;
+
+    // Calculate the price per person per night, too.
+    $base_price = $price_per_person / $nights;
+
+    $form['price']['#markup'] = format_plural($nights, 'Book this unit for 1 night at <b>@price per person</b> (@base_price per person per night)', 'Book this unit for @count nights at <b>@price per person</b> (@base_price per person per night)', array(
+      '@price' => t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
+        '@currency_symbol' => $currency_symbol,
+        '@amount' => $price_per_person)),
+      '@base_price' => t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
+        '@currency_symbol' => $currency_symbol,
+        '@amount' => $base_price))));
+  }
 
   $form['options'] = array(
     '#tree' => TRUE,
@@ -602,7 +629,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     }
 
     $form['childrens_age'] = array(
-      '#prefix' => '<div class="rooms-search-result__select-childrenage" id="unit_' . $unit->unit_id . '_childrensage">',
+      '#prefix' => '<div class="rooms-search-result__select-childrensage" id="unit_' . $unit->unit_id . '_childrensage">',
       '#suffix' => '</div>',
       '#tree' => TRUE,
     );
@@ -674,7 +701,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     }
 
     $form['new_price'] = array(
-      '#prefix' => '<div class="rooms-search-result__new-price" id="unit_' . $unit->unit_id . '_price" style="font-weight:bold">',
+      '#prefix' => '<div class="rooms-search-result__new-price" id="unit_' . $unit->unit_id . '_price">',
       '#markup' => '<label>' . t('Cost') . ':</label> <span class="rooms-search-result__new-price-amount">' .
         t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
           '@currency_symbol'=> $currency_symbol,
@@ -692,6 +719,11 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     $submit += $form['#submit'];
   }
 
+  $form['actions'] = array(
+    '#type' => 'container',
+    '#tree' => FALSE,
+    '#attributes' => array('class' => array('rooms-search-result__actions')),
+  );
   $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Book This'),
