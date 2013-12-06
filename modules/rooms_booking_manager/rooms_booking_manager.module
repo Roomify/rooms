@@ -1389,6 +1389,7 @@ function rooms_booking_manager_enquiry_form($form, $start_date, $end_date, $book
   $nights = $end_date->diff($start_date);
 
   $form = rooms_booking_manager_form_info_snippet($date_format, $start_date, $end_date, $form);
+  $form['#attributes']['class'][] = 'rooms-enquiry-form';
 
   $form['enquiry_form'] = array(
     '#type' => 'hidden',
