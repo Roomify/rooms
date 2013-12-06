@@ -372,6 +372,9 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
       '#suffix' => '</h3>'
     );
 
+    // Sort by least expensive first.
+    ksort($price_level, SORT_NUMERIC);
+
     foreach ($price_level as $price => $units) {
       foreach ($units as $unit_id => $unit) {
         // Load the unit and render
@@ -876,12 +879,27 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     // the number of elements chosen.
     $multiple_chosen = FALSE;
     $chosen_unit_counter = 0;
-    if (isset($form_state['values'])) {
-      foreach ($units_per_type as $type => $units_per_price) {
-        foreach ($units_per_price as $price => $j) {
-          if (isset($form_state['values'][$type][$price]['quantity'])) {
-            $chosen_unit_counter += $form_state['values'][$type][$price]['quantity'];
-          }
+
+    // Sort the types by the one who has the cheapest option.
+    $sortorder = array();
+
+    //  Before building our output, we execute one preliminary run through the
+    //  types and units found, to gather some statistics and update sort order
+    //  by price.
+    foreach ($units_per_type as $type => $units_per_price) {
+      foreach ($units_per_price as $price => $j) {
+
+        // Detect if units are chosen at each given price point for each type
+        // by inspecting the form state's "quanity" value, if some are
+        // selected, increment the counter.
+        if (isset($form_state['values']) && isset($form_state['values'][$type][$price]['quantity'])) {
+          $chosen_unit_counter += $form_state['values'][$type][$price]['quantity'];
+        }
+
+        // Build an array with the least expensive unit price per unit type.
+        // This is used below to sort which type should appear first.
+        if (!isset($sortorder[$type]) || $price < $sortorder[$type]) {
+          $sortorder[$type] = $price;
         }
       }
     }
@@ -892,7 +910,14 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     // index.
     $chosen_unit_counter = 0;
 
-    foreach ($units_per_type as $type => $units_per_price) {
+    // Sort the types by least expensive first.
+    asort($sortorder);
+
+    foreach ($sortorder as $type => $least_expensive_base_price) {
+
+      // Load the units per price.
+      $units_per_price = $units_per_type[$type];
+
       // Load the type obj and set a title
       $type_obj = rooms_unit_type_load($type);
 
@@ -913,6 +938,9 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
       $form[$type]['open-markup'] = array(
         '#markup' => '<table class="rooms-search-result__booking-form">',
       );
+
+      // Sort by least expensive first.
+      ksort($units_per_price, SORT_NUMERIC);
 
       foreach ($units_per_price as $price => $units) {
 
