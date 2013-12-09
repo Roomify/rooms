@@ -1535,14 +1535,30 @@ function rooms_availability_validate_hex_color($element, &$form_state) {
   }
 }
 
-
+/**
+ * Creates a pair of date popup fields for Bulk Unit Management operations.
+ *
+ * This function is similar to rooms_date_range_fields() in the main rooms
+ * module, however, since the bulk management UI limits date range input to
+ * act on the current month only, we've modified the original functionality
+ * to also make the same limits for the datepicker as well to only allow days
+ * within the specified month and year.
+ */
 function rooms_availability_date_range_fields($year, $month) {
   $date_range_fields = array();
 
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
 
+  // Calculate min and max dates of the specified year/month.
+  $date = new DateTime();
+  $date->setDate($year, $month, 01);
+  $min_date = $date->format($date_format);
+  $date->modify('last day of this month');
+  $max_date = $date->format($date_format);
+
+  $start_date_id = drupal_html_id('datepicker-start-date');
   $date_range_fields['rooms_start_date'] = array(
-    '#prefix' => '<div class="form-wrapper start-date">',
+    '#prefix' => '<div class="form-wrapper start-date" id="' . $start_date_id . '">',
     '#suffix' => '</div>',
     '#type' => 'date_popup',
     '#title' => t('Start Date'),
@@ -1553,8 +1569,9 @@ function rooms_availability_date_range_fields($year, $month) {
     '#required' => TRUE,
   );
 
+  $end_date_id = drupal_html_id('datepicker-end-date');
   $date_range_fields['rooms_end_date'] = array(
-    '#prefix' => '<div class="form-wrapper end-date">',
+    '#prefix' => '<div class="form-wrapper end-date" id="' . $end_date_id . '">',
     '#suffix' => '</div>',
     '#type' => 'date_popup',
     '#title' => t('End Date'),
@@ -1563,15 +1580,35 @@ function rooms_availability_date_range_fields($year, $month) {
     '#date_increment' => 1,
     '#date_year_range' => '-1:+3',
     '#required' => TRUE,
+    '#attached' => array(
+      'js' => array(
+        drupal_get_path('module', 'rooms') . '/js/rooms_date_popup.js',
+        array(
+         'data' => array(
+            'rooms' => array(
+              'roomsStartYear' => $year,
+              'roomsStartMonth' => $month,
+              'roomsBookingStartDay' => variable_get('rooms_booking_start_date', 1),
+              'roomsDateFormat' => rooms_dateFormatTojQueryUIDatePickerFormat($date_format),
+              'datepickers' => array(
+                $start_date_id => array(
+                  'endDateId' => $end_date_id,
+                  'settings' => array(
+                    'dateFormat' => rooms_dateFormatTojQueryUIDatePickerFormat($date_format),
+                    'minDate' => $min_date,
+                    'maxDate' => $max_date,
+                    'defaultDate' => $min_date,
+                    'numberOfMonths' => 1,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          'type' => 'setting',
+        ),
+      ),
+    ),
   );
-
-  drupal_add_js(array('rooms' => array(
-      'roomsStartYear' => $year,
-      'roomsStartMonth' => $month,
-      'roomsDateFormat' => rooms_dateFormatTojQueryUIDatePickerFormat($date_format),
-    )), 'setting');
-  drupal_add_js(drupal_get_path('module', 'rooms_availability') . '/js/rooms_availability_date_popup.js');
-
   return $date_range_fields;
 }
 
