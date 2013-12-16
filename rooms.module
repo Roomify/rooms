@@ -181,7 +181,22 @@ function rooms_end_of_month_dates($year) {
 function rooms_date_range_fields($date_range_fields = array()) {
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
 
+  // Create unique ids and selectors for each picker.
   $start_date_id = drupal_html_id('datepicker-start-date');
+  $start_date_selector = '#' . $start_date_id . ' .form-text';
+
+  $end_date_id = drupal_html_id('datepicker-end-date');
+  $end_date_selector = '#' . $start_date_id . ' .form-text';
+
+  // Specify the default datepicker parameters (see date_popup_element_info())
+  $datepicker_options = array(
+    'dateFormat' => rooms_dateFormatTojQueryUIDatePickerFormat($date_format),
+    // Limit bookings to X days in advance, depending on the
+    // chosen configuration in your Rooms installation, defaults
+    // to one day in advance.
+    'minDate' => '+' . variable_get('rooms_booking_start_date', 1) . 'd',
+  );
+
   $date_range_fields['rooms_start_date'] = array(
     '#prefix' => '<div class="form-wrapper start-date" id="'. $start_date_id .'">',
     '#suffix' => '</div>',
@@ -192,10 +207,12 @@ function rooms_date_range_fields($date_range_fields = array()) {
     //'#default_value' => "$year-$month-01 00:00:00",
     '#date_increment' => 1,
     '#date_year_range' => '-1:+3',
+    // Default parameters defined above, with an additional parameter
+    // linking to the jQuery selector for the end datepicker.
+    '#datepicker_options' => array_merge($datepicker_options, array('endDateSelector' => $end_date_selector)),
     '#required' => TRUE,
   );
 
-  $end_date_id = drupal_html_id('datepicker-end-date');
   $date_range_fields['rooms_end_date'] = array(
     '#prefix' => '<div class="form-wrapper end-date" id="'. $end_date_id .'">',
     '#suffix' => '</div>',
@@ -206,6 +223,9 @@ function rooms_date_range_fields($date_range_fields = array()) {
     //'#default_value' => "$year-$month-01 00:00:00",
     '#date_increment' => 1,
     '#date_year_range' => '-1:+3',
+    // Default parameters defined above, with an additional parameter
+    // parameter linking to the jQuery selector for the start datepicker.
+    '#datepicker_options' => array_merge($datepicker_options, array('startDateSelector' => $start_date_selector)),
     '#required' => TRUE,
     '#attached' => array(
       'js' => array(
@@ -215,17 +235,13 @@ function rooms_date_range_fields($date_range_fields = array()) {
             'rooms' => array(
               'roomsBookingStartDay' => variable_get('rooms_booking_start_date', 1),
               'roomsDateFormat' => rooms_dateFormatTojQueryUIDatePickerFormat($date_format),
-              'datepickers' => array(
-                $start_date_id => array(
-                  'endDateId' => $end_date_id,
-                  'settings' => array(
-                    'dateFormat' => rooms_dateFormatTojQueryUIDatePickerFormat($date_format),
 
-                    // Limit bookings to X days in advance, depending on the
-                    // chosen configuration in your Rooms installation, defaults
-                    // to one day in advance.
-                    'minDate' => '+' . variable_get('rooms_booking_start_date', 1) . 'd',
-                  ),
+              // Here we create a listing of all datepickers registered on the
+              // current page. This is available for use in your own custom
+              // jQuery scripts as Drupal.settings.rooms.datepickers.
+              'datepickers' => array(
+                $start_date_selector => array(
+                  'endDateSelector' => $end_date_selector,
                 ),
               ),
             ),
