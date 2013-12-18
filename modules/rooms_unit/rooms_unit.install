@@ -339,7 +339,7 @@ function rooms_unit_update_7001() {
 
   db_change_field('rooms_units', 'base_price', 'base_price', $base_price_field_spec);
 
-  return t('Schema for the commerce_order and commerce_order_revision tables has been updated.');
+  return t('Schema for the rooms_unit table has been updated.');
 
 }
 
