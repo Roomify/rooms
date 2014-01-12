@@ -213,3 +213,84 @@ class MigrateDestinationRoomsUnit extends MigrateDestinationEntity {
     migrate_instrument_stop('rooms_unit_delete_multiple');
   }
 }
+
+/**
+ * Base Migration class that imports bookable units from a csv file.
+ *
+ * Arguments:
+ *   'type': The bundle of the bookable unit.
+ *   'file': The filepath of the csv file.
+ *
+ * @see vacation_rental_example_content_migrate_api() as an example of use.
+ */
+class RoomsUnitMigration extends Migration {
+  public function __construct($args) {
+    parent::__construct($args);
+    $this->description = t('Import Rooms units of type "@type" from the file @file',
+      array('@type' => $args['type'], '@file' => $args['file']));
+
+    // Create a map object for tracking the relationships between source rows
+    $this->map = new MigrateSQLMap($this->machineName,
+      array(
+        'row_id' => array(
+          'type' => 'int',
+          'length' => 10,
+          'not null' => TRUE,
+        ),
+      ),
+      MigrateDestinationRoomsUnit::getKeySchema()
+    );
+
+    // Create a MigrateSource object.
+    $this->source = new MigrateSourceCSV($args['file'], $this->unit_csvcolumns(), array('header_rows' => 1));
+
+    // Create a MigrateDestination object.
+    $this->destination = new MigrateDestinationRoomsUnit($args['type']);
+
+    // Field mappings
+    $this->addFieldMapping('name', 'name');
+    $this->addFieldMapping('base_price', 'base_price');
+    $this->addFieldMapping('default_state', 'default_state');
+    $this->addFieldMapping('bookable', 'bookable');
+    $this->addFieldMapping('min_sleeps', 'min_sleeps');
+    $this->addFieldMapping('max_sleeps', 'max_sleeps');
+    $this->addFieldMapping('min_children', 'min_children');
+    $this->addFieldMapping('max_children', 'max_children');
+
+    // Bed arrangement, will be automatically inserted into ->data['bed_arrangement'].
+    $this->addFieldMapping('singles', 'singles');
+    $this->addFieldMapping('doubles', 'doubles');
+
+    // These are set by the migration.
+    $this->addUnmigratedSources(
+      array(
+        'unit_id',
+        'type',
+      )
+    );
+
+    $this->addUnmigratedDestinations(
+      array(
+        'data',
+        'path',
+        'type',
+      )
+    );
+  }
+
+  function unit_csvcolumns() {
+    //'Row ID','Name','Base price','Default state','Bookable','Min sleeps','Max sleeps','Min children','Max children','Single beds','Double beds'
+    $columns[0] = array('row_id', 'Row ID');
+    $columns[1] = array('name', 'Name');
+    $columns[2] = array('base_price', 'Base price');
+    $columns[3] = array('default_state', 'Default state');
+    $columns[4] = array('bookable', 'Default state');
+    $columns[5] = array('min_sleeps', 'Min sleeps');
+    $columns[6] = array('max_sleeps', 'Max sleeps');
+    $columns[7] = array('min_children', 'Min children');
+    $columns[8] = array('max_children', 'Max children');
+    $columns[9] = array('singles', 'Single beds');
+    $columns[10] = array('doubles', 'Double beds');
+    return $columns;
+  }
+}
