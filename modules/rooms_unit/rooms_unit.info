@@ -21,5 +21,6 @@ files[] = views/rooms_unit_handler_delete_link_field.inc
 files[] = views/rooms_unit_handler_edit_link_field.inc
 files[] = views/rooms_unit_handler_unit_operations_field.inc
 files[] = views/rooms_unit_handler_unit_type_field.inc
+files[] = rooms_unit.migrate.inc
 
 files[] = test/rooms_unit_test.test
