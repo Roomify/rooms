@@ -261,14 +261,6 @@ class RoomsUnitMigration extends Migration {
     $this->addFieldMapping('singles', 'singles');
     $this->addFieldMapping('doubles', 'doubles');
 
-    // These are set by the migration.
-    $this->addUnmigratedSources(
-      array(
-        'unit_id',
-        'type',
-      )
-    );
-
     $this->addUnmigratedDestinations(
       array(
         'data',
@@ -278,7 +270,7 @@ class RoomsUnitMigration extends Migration {
     );
   }
 
-  function unit_csvcolumns() {
+  static public function unit_csvcolumns() {
     //'Row ID','Name','Base price','Default state','Bookable','Min sleeps','Max sleeps','Min children','Max children','Single beds','Double beds'
     $columns[0] = array('row_id', 'Row ID');
     $columns[1] = array('name', 'Name');
