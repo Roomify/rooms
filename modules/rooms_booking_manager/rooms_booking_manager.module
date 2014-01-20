@@ -338,7 +338,7 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
     $type_obj = rooms_unit_type_load($type);
     $content[$type] = array(
       '#prefix' => '<h3 class="rooms-search-result__unit-type-name">',
-      '#markup' =>  $type_obj->label,
+      '#markup' => t($type_obj->label),
       '#suffix' => '</h3>'
     );
 
@@ -881,7 +881,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
       $form[$type]['title'] = array(
         '#prefix' => '<h3 class="rooms-search-result__unit-type-name">',
-        '#markup' => $type_obj->label,
+        '#markup' => t($type_obj->label),
         '#suffix' => '</h3>',
       );
 
