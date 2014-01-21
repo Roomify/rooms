@@ -547,7 +547,8 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
           $price_modifiers[strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
             '#type' => ROOMS_DYNAMIC_MODIFIER,
             '#op_type' => $option['operation'],
-            '#amount' => $option['value'] * $quantity,
+            '#amount' => $option['value'],
+            '#quantity' => $quantity,
           );
         }
       }
@@ -760,7 +761,7 @@ function book_unit_form_submit(&$form, &$form_state) {
                   '#name' => $option['name'],
                   '#type' => ROOMS_DYNAMIC_MODIFIER,
                   '#op_type' => $option['operation'],
-                  '#amount' => $option['value'],
+                  '#amount' => $option['value'] * $option['quantity'],
                 );
               }
             }
@@ -1182,7 +1183,8 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
                     $price_modifiers[strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
                       '#type' => ROOMS_DYNAMIC_MODIFIER,
                       '#op_type' => $option['operation'],
-                      '#amount' => $option['value'] * $quantity,
+                      '#amount' => $option['value'],
+                      '#quantity' => $quantity,
                     );
                   }
                 }
@@ -1584,6 +1586,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
                       '#type' => ROOMS_DYNAMIC_MODIFIER,
                       '#op_type' => $option['operation'],
                       '#amount' => $option['value'],
+                      '#quantity' => $option['quantity'],
                     );
                   }
                 }
@@ -2167,6 +2170,7 @@ function rooms_booking_manager_price_apply($line_item, $name) {
         '#type' => ROOMS_DYNAMIC_MODIFIER,
         '#op_type' => $option['operation'],
         '#amount' => $option['value'],
+        '#quantity' => $option['quantity'],
       );
     }
 

@@ -104,7 +104,7 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent, $bookin
       foreach ($price_modifiers as $mod) {
         $price_options[LANGUAGE_NONE][] = array(
           'name' => $mod['#name'],
-          'quantity' => 1,
+          'quantity' => $mod['#quantity'],
           'operation' => $mod['#op_type'],
           'value' => $mod['#amount'],
         );
