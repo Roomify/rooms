@@ -106,6 +106,42 @@ function rooms_field_widget_info() {
 }
 
 /**
+ * Implements hook_field_formatter_info().
+ */
+function rooms_field_formatter_info() {
+  return array(
+    'rooms_options_default' => array(
+      'label' => t('Rooms Options Default'),
+      'field types' => array('rooms_options'),
+    ),
+    'rooms_options_admin' => array(
+      'label' => t('Rooms Options Administrator'),
+      'field types' => array('rooms_options'),
+    ),
+  );
+}
+
+function rooms_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  $settings = $display['settings'];
+
+  switch ($display['type']) {
+    case 'rooms_options_default':
+      foreach ($items as $delta => $item) {
+        $element[$delta] = array('#markup' => "{$item['quantity']} x {$item['name']}");
+      }
+      break;
+    case 'rooms_options_admin':
+      foreach ($items as $delta => $item) {
+        $element[$delta] = array('#markup' => "{$item['quantity']} x {$item['name']} - {$item['operation']} {$item['value']}");
+      }
+      break;
+  }
+
+  return $element;
+}
+
+/**
  * Implements hook_field_widget_form().
  */
 function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
