@@ -409,8 +409,8 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
   // If a unit is assigned get the unit type label
   if (isset($booking->unit_id)) {
+    $type_obj = rooms_unit_type_load($booking->unit_type);
     $unit = rooms_unit_load($booking->unit_id);
-    $type_obj = rooms_unit_type_load($unit->type);
 
     if (isset($unit->rooms_booking_unit_options[LANGUAGE_NONE])) {
       foreach ($unit->rooms_booking_unit_options[LANGUAGE_NONE] as $option) {
