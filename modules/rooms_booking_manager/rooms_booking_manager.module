@@ -760,7 +760,7 @@ function book_unit_form_submit(&$form, &$form_state) {
                   '#name' => $option['name'],
                   '#type' => ROOMS_DYNAMIC_MODIFIER,
                   '#op_type' => $option['operation'],
-                  '#amount' => $option['value'],
+                  '#amount' => $option['value'] * $option['quantity'],
                 );
               }
             }
@@ -1583,7 +1583,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
                       '#name' => $option['name'],
                       '#type' => ROOMS_DYNAMIC_MODIFIER,
                       '#op_type' => $option['operation'],
-                      '#amount' => $option['value'],
+                      '#amount' => $option['value'] * $option['quantity'],
                     );
                   }
                 }
@@ -2166,7 +2166,7 @@ function rooms_booking_manager_price_apply($line_item, $name) {
         '#name' => $option['name'],
         '#type' => ROOMS_DYNAMIC_MODIFIER,
         '#op_type' => $option['operation'],
-        '#amount' => $option['value'],
+        '#amount' => $option['value'] * $option['quantity'],
       );
     }
 
