@@ -30,6 +30,10 @@ tbody {
   display: inline;
 }
 
+.rooms-management-form .form-item-name .form-text {
+  width: 100%;
+}
+
 .rooms-management-form .form-type-select,
 .rooms-management-form .form-item-operation,
 .rooms-management-form .form-item-amount,
@@ -87,6 +91,7 @@ tbody {
   margin: 0;
   padding: 0;
   position: relative;
+  text-transform: none;
 }
 .rooms-management-form .fieldset-description {
   padding: 15px 0;
