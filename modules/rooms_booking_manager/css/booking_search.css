@@ -81,6 +81,10 @@
   clear: both;
   margin: 0;
 }
+.rooms-current-search__info .fieldset-legend {
+  position: relative;
+  text-transform: none;
+}
 .rooms-current-search__change-search-button {
   float: left;
   margin-left: 10em;
