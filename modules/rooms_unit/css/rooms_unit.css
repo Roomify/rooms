@@ -43,6 +43,11 @@
   text-align: right;
 }
 
+.rooms-unit-edit-form .field-type-rooms-options .field-multiple-table .form-item {
+  float: left;
+  margin-right: 20px;
+}
+
 .rooms-unit-edit-form .form-item-base-price .form-text {
   width: 6em;
   text-align: right;
