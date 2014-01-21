@@ -211,18 +211,22 @@ class AvailabilityAgentCommerceFilter extends AvailabilityAgentCommonFilter {
       if (commerce_line_items_quantity($wrapper->commerce_line_items, commerce_product_line_item_types()) > 0) {
         // Get the unit IDs already in the cart.
         foreach ($wrapper->commerce_line_items as $line_item) {
-          // Need to check if commerce_product_type = 'rooms_product'
-          if ($line_item->commerce_product->value()->type == 'rooms_product') {
-            $line_item_values = $line_item->value();
+          // There are some line_item types as: coupon, fee, etc. that don't have
+          // a referenced commerce_product.
+          if (in_array($line_item->type->value(), commerce_product_line_item_types())) {
+            // Need to check if commerce_product_type = 'rooms_product'
+            if ($line_item->commerce_product->value()->type == 'rooms_product') {
+              $line_item_values = $line_item->value();
 
-            // Current line_item start_date and end_date values
-            $s_date = new DateTime($line_item_values->rooms_booking_dates[LANGUAGE_NONE][0]['value']);
-            $e_date = new DateTime($line_item_values->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
+              // Current line_item start_date and end_date values
+              $s_date = new DateTime($line_item_values->rooms_booking_dates[LANGUAGE_NONE][0]['value']);
+              $e_date = new DateTime($line_item_values->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
 
-            // If current line_item date interval overlap parameters interval remove unit from results
-            if ( $this->check_in_range($s_date, $e_date, $start_date, $end_date) ) {
-              if (isset($results['rooms_unit'][$line_item_values->rooms_booked_unit_id[LANGUAGE_NONE][0]['value']])) {
-                unset($results['rooms_unit'][$line_item_values->rooms_booked_unit_id[LANGUAGE_NONE][0]['value']]);
+              // If current line_item date interval overlap parameters interval remove unit from results
+              if ( $this->check_in_range($s_date, $e_date, $start_date, $end_date) ) {
+                if (isset($results['rooms_unit'][$line_item_values->rooms_booked_unit_id[LANGUAGE_NONE][0]['value']])) {
+                  unset($results['rooms_unit'][$line_item_values->rooms_booked_unit_id[LANGUAGE_NONE][0]['value']]);
+                }
               }
             }
           }
