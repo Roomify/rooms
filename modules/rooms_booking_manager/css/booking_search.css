@@ -72,14 +72,13 @@
 /* Current Search Info */
 .rooms-current-search__info,
 .rooms-management-form .rooms-current-search__info {
-  float: right; /* or right */
+  float: left; /* or right */
   margin-bottom: 20px;
 }
 .rooms-current-search__info .form-item,
 .rooms-current-search__actions {
   font-size: 0.9em;
   clear: both;
-  width: 18em;
   margin: 0;
 }
 .rooms-current-search__change-search-button {
