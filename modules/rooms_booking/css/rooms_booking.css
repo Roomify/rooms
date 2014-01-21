@@ -36,6 +36,7 @@
 .rooms-booking-form .end-date {
   float: left;
   margin-right: 20px;
+  clear: none;
 }
 .rooms-booking-form .form-item-data-group-size,
 .rooms-booking-form #rooms_booking_group_size_children_container {
@@ -47,7 +48,9 @@
 .rooms-booking-form .form-item-data-group-size-children {
   padding: 0;
 }
-
+.rooms-booking-form #availability-wrapper fieldset {
+  background: none;
+}
 
 /* Children discount form */
 .children-discount-form .child-discount {
