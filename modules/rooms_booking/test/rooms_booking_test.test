@@ -365,3 +365,169 @@ class RoomsBookingFilterTestCase extends DrupalWebTestCase {
   }
 
 }
+
+class RoomsBookingOverlapTestCase extends DrupalWebTestCase {
+
+  protected $account;
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Rooms Booking Overlap Test',
+      'description' => t('Rooms Booking Overlap Test.'),
+      'group' => 'Rooms',
+    );
+  }
+
+  public function setUp() {
+
+    parent::setUp(array('rooms_booking', 'rooms_booking_manager'));
+
+    $this->account = $this->drupalCreateUser(array(
+      'administer bookable units',
+      'administer bookable unit types',
+      'administer booking types',
+      'administer bookings',
+      'administer customer profile types',
+      'administer commerce_customer_profile entities',
+    ));
+    $this->drupalLogin($this->account);
+
+  }
+
+  public function testRoomsBookingOverlap() {
+
+    // Create a bookable unit type.
+    $this->drupalPost('admin/rooms/units/unit-types/add',
+      array(
+        'label' => 'Single Rooms',
+        'type' => 'single_rooms',
+        'data[base_price]' => '100',
+        'data[max_sleeps]' => '2',
+      ),
+      t('Save unit type')
+    );
+
+    // Create a bookable unit of the type above.
+    $this->drupalPost('admin/rooms/units/add/single_rooms',
+      array(
+        'name' => 'Room 100',
+        'max_sleeps' => '2',
+        'base_price' => '100',
+        'bookable' => 1,
+        'default_state' => 1,
+      ),
+      t('Save Unit')
+    );
+
+    // Create a customer.
+    $this->drupalPost('admin/commerce/customer-profiles/add/billing',
+      array(
+        'commerce_customer_address[und][0][name_line]' => 'user1',
+        'commerce_customer_address[und][0][thoroughfare]' => 'test',
+        'commerce_customer_address[und][0][locality]' => 'test',
+      ),
+      t('Save profile')
+    );
+
+    // Go to the bookings page.
+    $this->drupalGet('admin/rooms/bookings');
+
+    // Assert that no bookings exist.
+    $this->assertText('No bookings have been created yet.');
+
+    // Add a booking.
+    $this->drupalPostAJAX('admin/rooms/bookings/add/standard_booking',
+      array(
+        'client' => 'user1',
+        'rooms_start_date[date]' => '25/12/2014',
+        'rooms_end_date[date]' => '31/12/2014',
+        'data[group_size]' => 2,
+      ),
+      array('op' => 'Assign Room')
+    );
+
+    $this->drupalPostAJAX(NULL,
+      array(
+        'client' => 'user1',
+        'rooms_start_date[date]' => '25/12/2014',
+        'rooms_end_date[date]' => '31/12/2014',
+        'data[group_size]' => 2,
+        'unit_type' => 'single_rooms',
+      ),
+      'unit_type'
+    );
+
+    $this->drupalPost(NULL,
+      array(
+        'client' => 'user1',
+        'rooms_start_date[date]' => '25/12/2014',
+        'rooms_end_date[date]' => '31/12/2014',
+        'data[group_size]' => 2,
+        'unit_type' => 'single_rooms',
+        'unit_id' => 1,
+      ),
+      t('Save Booking')
+    );
+
+    // Add a second, earlier, booking for the same room.
+    $this->drupalPostAJAX('admin/rooms/bookings/add/standard_booking',
+      array(
+        'client' => 'user1',
+        'rooms_start_date[date]' => '22/12/2014',
+        'rooms_end_date[date]' => '24/12/2014',
+        'data[group_size]' => 2,
+      ),
+      array('op' => 'Assign Room')
+    );
+
+    $this->drupalPostAJAX(NULL,
+      array(
+        'client' => 'user1',
+        'rooms_start_date[date]' => '22/12/2014',
+        'rooms_end_date[date]' => '24/12/2014',
+        'data[group_size]' => 2,
+        'unit_type' => 'single_rooms',
+      ),
+      'unit_type'
+    );
+
+    $this->drupalPost(NULL,
+      array(
+        'client' => 'user1',
+        'rooms_start_date[date]' => '22/12/2014',
+        'rooms_end_date[date]' => '24/12/2014',
+        'data[group_size]' => 2,
+        'unit_type' => 'single_rooms',
+        'unit_id' => 1,
+      ),
+      t('Save Booking')
+    );
+
+    // Make the departure date for the second booking the same as the arrival date for the first.
+    $this->drupalPostAJAX('admin/rooms/bookings/booking/2/edit',
+      array(
+        'client' => 'user1',
+        'rooms_start_date[date]' => '22/12/2014',
+        'rooms_end_date[date]' => '25/12/2014',
+        'data[group_size]' => 2,
+      ),
+      array('op' => 'Re-assign Unit')
+    );
+
+    $this->drupalPost(NULL,
+      array(
+        'client' => 'user1',
+        'rooms_start_date[date]' => '22/12/2014',
+        'rooms_end_date[date]' => '25/12/2014',
+        'data[group_size]' => 2,
+        'unit_type' => 'single_rooms',
+        'unit_id' => 1,
+      ),
+      t('Save Booking')
+    );
+
+    $warning_text = 'Change of dates leads to an overlap with an uncofirmed booking';
+    $this->assertNoText($warning_text, t('Changing a booking doesn\'t falsely report an overlap of dates'));
+
+  }
+}
