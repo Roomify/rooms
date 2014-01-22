@@ -133,7 +133,7 @@ class UnitPricingCalendar {
         elseif ($modifier['#type'] == ROOMS_DYNAMIC_MODIFIER) {
           switch ($modifier['#op_type']) {
             case ROOMS_ADD:
-              $price = $modifier['#amount'] * $modifier['#quantity'];
+              $price += $modifier['#amount'] * $modifier['#quantity'];
               break;
             case ROOMS_SUB:
               $price -= $modifier['#amount'] * $modifier['#quantity'];
