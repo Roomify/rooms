@@ -28,12 +28,15 @@
 
 /* Group size field */
 .rooms-group-size,
+.rooms-group-size tr,
 .rooms-group-size th,
 .rooms-group-size td {
   background: none;
   border: none;
   margin: 0;
   padding: 0;
+  color: inherit;
+  font: inherit;
 }
 
 /* Labels */
