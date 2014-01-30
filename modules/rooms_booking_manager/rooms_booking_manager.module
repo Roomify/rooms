@@ -295,15 +295,30 @@ function rooms_booking_manager_retrieve_booking_parameters($booking_units, $book
   $booking_parameters = array();
 
   if (variable_get('rooms_presentation_style', ROOMS_PER_TYPE) == ROOMS_INDIVIDUAL) {
-    // If the booking parameter data was not valid invalidate the data
-    if ((isset($booking_info['rooms_group_size1'])) && (isset($booking_info['rooms_children1']))) {
-      $booking_parameters[1]['adults'] = check_plain($booking_info['rooms_group_size1']);
-      $booking_parameters[1]['children'] = check_plain($booking_info['rooms_children1']);
-
-      return $booking_parameters;
+    if (variable_get('rooms_display_children', ROOMS_DISPLAY_CHILDREN_NO) == ROOMS_DISPLAY_CHILDREN) {
+      if ((isset($booking_info['rooms_group_size1'])) && (isset($booking_info['rooms_children1']))) {
+        $booking_parameters[1]['adults'] = check_plain($booking_info['rooms_group_size1']);
+        $booking_parameters[1]['children'] = check_plain($booking_info['rooms_children1']);
+      }
+      else {
+        $booking_parameters = 0;
+      }
     }
     else {
+      if (isset($booking_info['rooms_group_size1'])) {
+        $booking_parameters[1]['adults'] = check_plain($booking_info['rooms_group_size1']);
+      }
+      else {
+        $booking_parameters = 0;
+      }
+    }
+
+    // If the booking parameter data was not valid invalidate the data
+    if ($booking_parameters == 0) {
       return FALSE;
+    }
+    else {
+      return $booking_parameters;
     }
   }
   else {
@@ -315,7 +330,8 @@ function rooms_booking_manager_retrieve_booking_parameters($booking_units, $book
           if ((isset($booking_info['rooms_group_size' . $i])) && (isset($booking_info['rooms_children' . $i]))) {
             $booking_parameters[$i]['adults'] = check_plain($booking_info['rooms_group_size' . $i]);
             $booking_parameters[$i]['children'] = check_plain($booking_info['rooms_children' . $i]);
-          } else {
+          }
+          else {
             $booking_parameters = 0;
           }
         }
