@@ -854,9 +854,14 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
   // Inject settings in javascript that we will use.
   drupal_add_js(array('roomsAvailability' => array('roomID' => $rooms_unit->unit_id)), 'setting');
 
+  // Get the current page's URL, striped of the year and month args.
+  // This allows us to place this page anywhere, including at
+  // unit/%/availability  or  admin/rooms/units/unit/%/availability
+  list($url) = explode('/' . $year . '/' . $month, current_path());
+
   // Send everything for theming
   $output = theme('rooms_three_month_calendar', array(
-    'url' => 'admin/rooms/units/unit/' . $rooms_unit->unit_id . '/availability',
+    'url' => $url,
     'form' => drupal_get_form('update_availability_calendar_form', $rooms_unit->unit_id, $year, $month),
     'year' => $year,
     'month' => $month,
