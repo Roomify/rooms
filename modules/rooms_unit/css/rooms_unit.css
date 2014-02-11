@@ -15,6 +15,12 @@
   font-size: 1em;
   font-weight: bold;
 }
+.rooms-unit-edit-form .form-checkbox + label {
+  font-weight: normal;
+}
+.rooms-unit-edit-form .form-checkbox:checked + label {
+  font-weight: bold;
+}
 .rooms-unit-edit-form .field-widget-rooms-options-combined {
   max-width: inherit;
   margin-right: 0;
