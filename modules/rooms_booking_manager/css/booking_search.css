@@ -21,8 +21,7 @@
   margin: 0 1em .6em 0;
 }
 
-.rooms-availability-search .start-date .form-text,
-.rooms-availability-search .end-date .form-text {
+.rooms-availability-search .rooms-date-range .form-text {
   width: 100%;
 }
 

@@ -37,35 +37,11 @@ tbody {
 .rooms-management-form .form-type-select,
 .rooms-management-form .form-item-operation,
 .rooms-management-form .form-item-amount,
-.rooms-management-form .form-actions,
-.rooms-management-form .start-date,
-.rooms-management-form .end-date {
+.rooms-management-form .rooms-date-range,
+.rooms-management-form .form-actions {
   float: left; /* LTR */
   margin: 0 20px 0 0; /* LTR */
   clear: none;
-}
-
-/* Start and end date fields */
-.js .rooms-management-form .start-date .description,
-.js .rooms-management-form .end-date .description {
-  display: none;
-}
-.rooms-management-form .start-date .form-text,
-.rooms-management-form .end-date .form-text {
-  width: 10em;
-}
-.start-date .form-item,
-.end-date .form-item {
-  margin-right: 0;
-}
-.start-date .form-type-textfield label,
-.end-date .form-type-textfield label {
-  display: none;
-}
-.start-date .date-padding,
-.end-date .date-padding {
-  padding: 0;
-  float: none;
 }
 
 .rooms-management-form .form-actions {

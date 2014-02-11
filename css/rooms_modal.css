@@ -100,8 +100,7 @@
   margin: 0;
   clear: both;
 }
-.page-admin-rooms .modal-content .rooms-management-form .start-date,
-.page-admin-rooms .modal-content .rooms-management-form .end-date,
+.page-admin-rooms .modal-content .rooms-management-form .rooms-date-range,
 .page-admin-rooms .modal-content .rooms-management-form .form-item-data-group-size,
 .page-admin-rooms .modal-content .rooms-management-form #rooms_booking_group_size_children_container {
   float: left !important;

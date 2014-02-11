@@ -1,0 +1,31 @@
+/* Theming for rooms date range fields. */
+
+.rooms-date-range .start-date,
+.rooms-date-range .end-date {
+  display: inline-block;
+  clear: none;
+  margin: 0;
+}
+
+.rooms-date-range .start-date {
+  margin-right: 20px; /* LTR */
+}
+
+
+/* Start and end date fields */
+.js .rooms-date-range .description {
+  display: none;
+}
+.rooms-date-range .form-text {
+  width: 10em;
+}
+.rooms-date-range .form-item {
+  margin-right: 0;
+}
+.rooms-date-range .form-type-textfield label {
+  display: none;
+}
+.rooms-date-range .date-padding {
+  padding: 0;
+  float: none;
+}

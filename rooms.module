@@ -234,7 +234,7 @@ function rooms_date_range_fields($date_range_fields = array()) {
   );
 
   $date_range_fields['rooms_start_date'] = array(
-    '#prefix' => '<div class="form-wrapper start-date" id="'. $start_date_id .'">',
+    '#prefix' => '<div class="form-wrapper rooms-date-range"><div class="start-date" id="' . $start_date_id . '">',
     '#suffix' => '</div>',
     '#type' => 'date_popup',
     '#title' => t('Arrival Date'),
@@ -250,8 +250,8 @@ function rooms_date_range_fields($date_range_fields = array()) {
   );
 
   $date_range_fields['rooms_end_date'] = array(
-    '#prefix' => '<div class="form-wrapper end-date" id="'. $end_date_id .'">',
-    '#suffix' => '</div>',
+    '#prefix' => '<div class="end-date" id="'. $end_date_id .'">',
+    '#suffix' => '</div></div>',
     '#type' => 'date_popup',
     '#title' => t('Departure Date'),
     '#date_type' => DATE_DATETIME,
@@ -264,6 +264,9 @@ function rooms_date_range_fields($date_range_fields = array()) {
     '#datepicker_options' => array_merge($datepicker_options, array('startDateSelector' => $start_date_selector)),
     '#required' => TRUE,
     '#attached' => array(
+      'css' => array(
+        drupal_get_path('module', 'rooms') . '/css/rooms_date_range_fields.css',
+      ),
       'js' => array(
         drupal_get_path('module', 'rooms') . '/js/rooms_date_popup.js',
         array(
