@@ -10,14 +10,14 @@
  * The default path to the FullCalendar plugin.
  */
 define('ROOMS_FC_PATH', 'sites/all/libraries/fullcalendar/fullcalendar');
-
+define('MOMENT_PATH', 'sites/all/libraries/moment');
 /**
  * The minimum supported version of the FullCalendar plugin.
  */
 define('ROOMS_FC_MIN_PLUGIN_VERSION', '1.4.10');
-
 define('ROOMS_AVAILABILITY_ADMIN_STYLE', 1);
 define('ROOMS_AVAILABILITY_GENERIC_STYLE', 2);
+
 
 
 /**
@@ -29,6 +29,7 @@ function rooms_availability_library() {
     'website' => 'http://arshaw.com/fullcalendar',
     'version' => ROOMS_FC_MIN_PLUGIN_VERSION,
     'js' => array(
+      rooms_availability_moment_get_js_path() => array(),
       rooms_availability_fullcalendar_get_js_path() => array(),
       variable_get('rooms_fc_path', ROOMS_FC_PATH) . '/gcal.js' => array(),
     ),
@@ -1367,6 +1368,18 @@ function rooms_availability_fullcalendar_get_js_path() {
   // Default to minified, but allow debugging with uncompressed version.
   $fullcalendar_file = array('none' => 'fullcalendar.js', 'min' => 'fullcalendar.min.js');
   return variable_get('rooms_ROOMS_FC_PATH', ROOMS_FC_PATH) . '/' . $fullcalendar_file[variable_get('rooms_fullcalendar_compression_type', 'min')];
+}
+
+/*
+* Returns the path to the Moment plugin.
+*/
+
+
+function rooms_availability_moment_get_js_path() {
+  //$fullcalendar_file = array('none' => 'fullcalendar.js', 'min' => 'fullcalendar.min.js');
+  $moment_file = array('none' => 'moment.js', 'min' => 'moment.min.js');
+  
+  return variable_get('rooms_MOMENT_PATH', MOMENT_PATH) . '/' . $moment_file[variable_get('rooms_momen_comprestsion_type', 'min')];
 }
 
 /**

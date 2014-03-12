@@ -51,12 +51,21 @@ Drupal.behaviors.rooms_availability = {
       // phpmonth is what we send via the url and need to add one since php handles
       // months starting from 1 not zero
       phpmonth = value[1]+1;
+      m = phpmonth;
+      y = value[2];
+    
+      if (phpmonth == 12) {
+                           m = 0;
+                           y += 1;
+                          }
+
       $(value[0]).once().fullCalendar({
         ignoreTimezone: false,
         editable: false,
         selectable: true,
-        month: value[1],
-        year: value[2],
+        defaultDate: moment([y,m]),
+        //month: value[1],
+        //year: value[2],
         header:{
           left: 'title',
           center: '',

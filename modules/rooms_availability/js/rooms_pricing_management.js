@@ -60,11 +60,20 @@ Drupal.behaviors.rooms_availability = {
     var c = 0;
     $.each(calendars, function(key, value) {
       phpmonth = value[1]+1;
+      m = phpmonth;
+      y = value[2];
+    
+      if (phpmonth == 12) {
+                           m = 0;
+                           y += 1;
+                          }
+
       $(value[0]).once().fullCalendar({
         editable:false,
         defaultView:'singleRowMonth',
-        month:value[1],
-        year:value[2],
+        defaultDate: moment([y,m]),
+        //month:value[1],
+        //year:value[2],
         header:{
           left: 'title',
           center: '',
