@@ -33,8 +33,87 @@ function rooms_permission() {
   return $permissions;
 }
 
+
 /**
- * implements hook_field_info().
+ * Implements hook_libraries_info()
+ */
+function rooms_libraries_info() {
+  $libraries['rooms_fullcalendar'] = array(
+    'name' => 'Full Calendar',
+    'vendor url' => 'http://arshaw.com/fullcalendar/',
+    'download url' => 'http://www.drupalrooms.com/sites/default/files/fullcalendar-1.5.4.zip',
+    'version arguments' => array(
+      'file' => 'fullcalendar.js',
+       //1.5.4
+      'pattern' => '/v(\d+\.\d+\.\d)/',
+      'lines' => 3,
+    ),
+    'path' => 'fullcalendar',
+    'files' => array(
+      'js' => array(
+        'fullcalendar.js',
+        'gcal.js',
+      ),
+      'css' => array(
+        'fullcalendar.css',
+      ),
+    ),
+  );
+  return $libraries;
+}
+
+
+/**
+ * Check if the FullCalendar Library is loaded
+ *
+ * @return bool
+ *   A boolean indicating the FullCalendar status.
+ */
+function rooms_fullcalendar_loaded() {
+  if (($library = libraries_load('rooms_fullcalendar')) && !empty($library['loaded'])) {
+    return TRUE;
+  }
+  else {
+
+    // Alert the authorized user/administrator to the abscence of the library.
+    drupal_set_message(t('The FullCalendar Library could not be found.
+                          Please check the installation instructions and the <a href="@status">Status Report</a>.',
+      array('@status' => url('admin/reports/status'))), 'warning');
+  }
+}
+
+
+/**
+ * Implements hook_requirements
+ */
+function rooms_requirements($phase) {
+  $requirements = array();
+
+  switch ($phase) {
+    case 'runtime':
+      if (!rooms_fullcalendar_loaded()) {
+        $requirements['Rooms FullCalendar Library'] = array(
+          'title' => t('Rooms FullCalendar'),
+          'description' => t('Could not load the FullCalendar Library'),
+          'value' => 'FullCalendar Missing',
+          'severity' => REQUIREMENT_ERROR,
+        );
+      } else {
+        $requirements['Rooms FullCalendar Library'] = array(
+          'title' => t('Rooms FullCalendar'),
+          'description' => t('The FullCalendar Library is installed'),
+          'value' => 'FullCalendar Installed',
+          'severity' => REQUIREMENT_OK,
+        );
+      }
+  }
+
+  return $requirements;
+}
+
+
+/**
+ * Implements hook_field_info().
  */
 function rooms_field_info() {
   return array(
@@ -48,11 +127,13 @@ function rooms_field_info() {
   );
 }
 
+
 /**
  * Implements hook_field_validate().
  */
 function rooms_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
 }
+
 
 /**
  * Implements hook_field_is_empty().
@@ -60,6 +141,7 @@ function rooms_field_validate($entity_type, $entity, $field, $instance, $langcod
 function rooms_field_is_empty($item, $field) {
   return empty($item['name']);
 }
+
 
 /**
  * Implements hook_field_schema().
@@ -91,6 +173,7 @@ function rooms_field_schema($field) {
   }
 }
 
+
 /**
  * Implements hook_field_widget_info().
  */
@@ -104,6 +187,7 @@ function rooms_field_widget_info() {
     ),
   );
 }
+
 
 /**
  * Implements hook_field_formatter_info().
@@ -121,6 +205,9 @@ function rooms_field_formatter_info() {
   );
 }
 
+/**
+ * Implements hook_field_formatter_view
+ */
 function rooms_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
   $settings = $display['settings'];
@@ -140,6 +227,7 @@ function rooms_field_formatter_view($entity_type, $entity, $field, $instance, $l
 
   return $element;
 }
+
 
 /**
  * Implements hook_field_widget_form().
@@ -179,6 +267,7 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
     return $element;
   }
 }
+
 
 /**
  * Utility function that returns an array with the last day of each month given a year
@@ -311,6 +400,7 @@ function rooms_dateFormatTojQueryUIDatePickerFormat($date_format) {
   return strtr((string)$date_format, $chars);
 }
 
+
 /**
  * Create a Date object from form_state input date.
  *
@@ -330,6 +420,7 @@ function rooms_form_input_date_object($form_state, $field_name) {
   return FALSE;
 }
 
+
 /**
  * Given a form_state locate the start/end dates in the input array and
  * instantiate and return DateTime objects.
@@ -340,6 +431,7 @@ function rooms_form_input_get_start_end_dates($form_state) {
   $end = DateTime::createFromFormat($date_format, $form_state['input']['rooms_end_date']['date']);
   return array($start, $end);
 }
+
 
 /**
  * Given a form_state locate the start/end dates in the values array and
@@ -364,6 +456,7 @@ function rooms_form_values_get_start_end_dates($form_state) {
 
   return array($start, $end);
 }
+
 
 /**
  * Validation callback that could be reused in all the forms that need to validate
