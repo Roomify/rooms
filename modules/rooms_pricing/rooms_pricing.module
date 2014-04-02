@@ -96,6 +96,9 @@ function rooms_pricing_page(RoomsUnit $rooms_unit, $year='', $month='') {
   // Inject settings in javascript that we will use.
   drupal_add_js(array('roomsPricing' => array('roomID' => $rooms_unit->unit_id)), 'setting');
 
+  // Load Fullcalendar
+  rooms_fullcalendar_loaded();
+
   // Get the current page's URL, striped of the year and month args.
   // This allows us to place this page anywhere, including at
   // unit/%/pricing  or  admin/rooms/units/unit/%/pricing
