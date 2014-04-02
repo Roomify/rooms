@@ -6,51 +6,9 @@
  * plugin
  */
 
-/**
- * The default path to the FullCalendar plugin.
- */
-define('ROOMS_FC_PATH', 'sites/all/libraries/fullcalendar/fullcalendar');
-
-/**
- * The minimum supported version of the FullCalendar plugin.
- */
-define('ROOMS_FC_MIN_PLUGIN_VERSION', '1.4.10');
 
 define('ROOMS_AVAILABILITY_ADMIN_STYLE', 1);
 define('ROOMS_AVAILABILITY_GENERIC_STYLE', 2);
-
-
-/**
- * Implements hook_library().
- */
-function rooms_availability_library() {
-  $libraries['rooms_fullcalendar'] = array(
-    'title' => t('Rooms FullCalendar'),
-    'website' => 'http://arshaw.com/fullcalendar',
-    'version' => ROOMS_FC_MIN_PLUGIN_VERSION,
-    'js' => array(
-      rooms_availability_fullcalendar_get_js_path() => array(),
-      variable_get('rooms_fc_path', ROOMS_FC_PATH) . '/gcal.js' => array(),
-    ),
-    'css' => array(
-      variable_get('rooms_fc_path', ROOMS_FC_PATH) . '/fullcalendar.css' => array(
-        'type' => 'file',
-        'media' => 'screen',
-      ),
-      drupal_get_path('module', 'rooms_availability') . '/css/fullcalendar.theme.css' => array(
-        'type' => 'file',
-        'media' => 'screen',
-      ),
-    ),
-    'dependencies' => array(
-      array('system', 'ui.draggable'),
-      array('system', 'ui.droppable'),
-      array('system', 'ui.resizable'),
-      array('system', 'effects.highlight'),
-    ),
-  );
-  return $libraries;
-}
 
 
 /**
@@ -177,6 +135,14 @@ function rooms_availability_pr_ajax_callback() {
  */
 function rooms_availability_bulk_unit_management($year = '', $month = '', $type = 'all', $action = '', $start = '', $end = '') {
 
+  // Load FullCalendar
+  rooms_fullcalendar_loaded();
+
+  // Add relevant CSS and JS to page
+  drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/rooms_availability.css');
+  drupal_add_js(drupal_get_path('module', 'rooms_availability') . '/js/rooms_unit_management.js');
+
+
   // modal includes and style
   rooms_availability_modal_style();
 
@@ -201,9 +167,6 @@ function rooms_availability_bulk_unit_management($year = '', $month = '', $type 
     if ($page < 0) $page = 0;
   }
 
-  drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/rooms_availability.css');
-  drupal_add_library('rooms_availability', 'rooms_fullcalendar');
-  drupal_add_js(drupal_get_path('module', 'rooms_availability') . '/js/rooms_unit_management.js');
 
   $query = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
   $query2 = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
@@ -245,6 +208,13 @@ function rooms_availability_bulk_unit_management($year = '', $month = '', $type 
 
 function rooms_availability_bulk_pricing_management($year = '', $month = '', $type = 'all', $action = '', $start = '', $end = '') {
 
+  // Load FullCalendar and relevant js/css
+  rooms_fullcalendar_loaded();
+  drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/rooms_availability.css');
+  drupal_add_js(drupal_get_path('module', 'rooms_availability') . '/js/rooms_pricing_management.js');
+
+
+
   // If year is not set then give it the current date
   $year = ($year == '') ? date('Y', time()) : $year;
   $month = ($month == '') ? date('n', time()) : $month;
@@ -267,10 +237,6 @@ function rooms_availability_bulk_pricing_management($year = '', $month = '', $ty
     $page = check_plain($_GET['page']);
     if ($page < 0) $page = 0;
   }
-
-  drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/rooms_availability.css');
-  drupal_add_library('rooms_availability', 'rooms_fullcalendar');
-  drupal_add_js(drupal_get_path('module', 'rooms_availability') . '/js/rooms_pricing_management.js');
 
   $query = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
   $query2 = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
@@ -847,8 +813,12 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
   // Add styles.
   rooms_availability_modal_style();
   drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/rooms_availability.css');
+  drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/fullcalendar.theme.css');
 
-  // Add scripts.
+  // Load FullCalendar
+  rooms_fullcalendar_loaded();
+
+  // Add additional scripts.
   drupal_add_js(drupal_get_path('module', 'rooms_availability') . '/js/rooms_availability.js');
 
   // Inject settings in javascript that we will use.
