@@ -115,6 +115,7 @@ function rooms_pricing_page(RoomsUnit $rooms_unit, $year='', $month='') {
   return $output;
 }
 
+
 /**
  * A basic form that allows us to update the state of the calendar
  */

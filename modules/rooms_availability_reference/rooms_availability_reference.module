@@ -115,7 +115,7 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
   switch ($display['type']) {
     case 'rooms_availability_reference_default':
 
-      drupal_add_library('rooms_availability', 'rooms_fullcalendar');
+      rooms_fullcalendar_loaded();
       drupal_add_js(drupal_get_path('module', 'rooms_availability_reference') . '/js/rooms_availability_reference.js');
 
       $unit_names = array();
