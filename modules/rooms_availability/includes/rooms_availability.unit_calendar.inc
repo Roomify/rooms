@@ -27,8 +27,6 @@ class UnitCalendar {
    * @param $events
    *    The events to remove from the database - an array of Booking Events
    *
-   * @return
-   *   The array of ids of events that were found and removed
    */
   public function removeEvents($events) {
 
@@ -61,7 +59,7 @@ class UnitCalendar {
    * @param $states
    * The states we are interested in
    *
-   * @return
+   * @return Boolean
    * Returns true if the date range provided does not have states other than the ones we are
    * interested in
    */
