@@ -848,8 +848,8 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
  */
 function rooms_availability_preprocess_rooms_three_month_calendar(&$vars) {
 
-  // Add dependencies.
-  drupal_add_library('rooms_availability', 'rooms_fullcalendar');
+  // Load FullCalendar
+  rooms_fullcalendar_loaded();
 
   // Add css styles for three-month-calendar.
   drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/rooms_three_month_calendar.css');
@@ -885,6 +885,7 @@ function rooms_availability_preprocess_rooms_three_month_calendar(&$vars) {
   $vars['backward_link'] = l(t('Back'), $backward_path);
   $vars['current_link'] = l(t('Current'), $current_path);
 }
+
 
 /**
  * A basic form that allows us to update the state of the calendar
@@ -947,6 +948,7 @@ function update_availability_calendar_form($form, &$form_state, $unit_id, $year,
 
   return $form;
 }
+
 
 /**
  *@todo Need to figure out what to do when we cancel an existing booking
@@ -1179,6 +1181,7 @@ function rooms_availability_modal_style() {
   drupal_add_css(drupal_get_path('module', 'rooms') . '/css/rooms_modal.css');
 }
 
+
 /**
  * The Event Manager Form - will eventually change based on the type of event we are manipulating
  */
@@ -1254,8 +1257,8 @@ function rooms_availability_event_manager_form($form, $form_state, $unit_id, $ev
   );
 
   return $form;
-
 }
+
 
 /**
  * The callback for the change_event_status widget of the event manager form
@@ -1298,6 +1301,7 @@ function rooms_availability_theme() {
 
   );
 }
+
 
 /**
  * Sets event ids
@@ -1510,6 +1514,7 @@ function rooms_availability_validate_hex_color($element, &$form_state) {
   }
 }
 
+
 /**
  * Creates a pair of date popup fields for Bulk Unit Management operations.
  *
@@ -1606,6 +1611,7 @@ function rooms_availability_date_range_fields($year, $month) {
   );
   return $date_range_fields;
 }
+
 
 /**
  * Helper validate function to ensure that at least one room is selected.
