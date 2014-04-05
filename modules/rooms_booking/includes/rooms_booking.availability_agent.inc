@@ -4,7 +4,7 @@
  * An AvailabilityAgent provides access to the availability functionality of Rooms and
  * lets you query for availability, get pricing information and create products that can be bought.
  *
- * The Agent is essentially a factory cretaing the appropriate responses for us as needed based on the
+ * The Agent is essentially a factory creating the appropriate responses for us as needed based on the
  * requests and the current status of our bookable units.
  *
  * An Agent reasons over a single set of information regarding a booking which are exposed as public
