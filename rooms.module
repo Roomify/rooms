@@ -43,7 +43,7 @@ function rooms_libraries_info() {
     'vendor url' => 'http://arshaw.com/fullcalendar/',
     'download url' => 'http://www.drupalrooms.com/sites/default/files/fullcalendar-1.5.4.zip',
     'version arguments' => array(
-      'file' => 'fullcalendar.js',
+      'file' => 'fullcalendar/fullcalendar.js',
        //1.5.4
       'pattern' => '/v(\d+\.\d+\.\d)/',
       'lines' => 3,

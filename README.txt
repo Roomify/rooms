@@ -11,7 +11,8 @@ INSTALLATION
 Follow the steps below to install Rooms.
 
 1. Download the FullCalendar library from [1] and unpack in `sites/all/libraries`
-so that you end up with `sites/all/libraries/fullcalendar/fullcalendar`.
+so that you end up with
+`sites/all/libraries/rooms_fullcalendar/fullcalendar/fullcalendar.js`.
 
 Rooms uses FullCalendar to display room availability and prices by date in an
 easily comprehensible manner.
