@@ -7,3 +7,6 @@ php = 5.3
 files[] = test/rooms_test.test
 
 package = Rooms
+
+dependencies[] = libraries
+
