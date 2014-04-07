@@ -367,7 +367,7 @@ function rooms_availability_filter_month_form_submit(&$form, &$form_state) {
     else $address .= $type . arg(7);
   }
 
-  drupal_goto($address);
+  $form_state['redirect'] = $address;
 }
 
 /**
