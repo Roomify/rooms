@@ -8,5 +8,5 @@ files[] = test/rooms_test.test
 
 package = Rooms
 
-dependencies[] = libraries
+dependencies[] = libraries (>=2.x)
 
