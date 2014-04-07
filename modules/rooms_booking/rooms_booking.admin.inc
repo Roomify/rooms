@@ -956,12 +956,15 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
         // Create a calendar
         $uc = new UnitCalendar($booking->unit_id);
 
+        $adjusted_end_date = clone($end_date);
+        $adjusted_end_date->modify('-1 day');
+
         // Create an event representing the event to remove
         $event_id = rooms_availability_assign_id($booking->booking_id, $booking->booking_status);
         $be = new BookingEvent($booking->unit_id, $event_id, $start_date, $end_date);
 
         // Check if a locked event is blocking the update
-        $states_confirmed = $uc->getStates($start_date, $end_date);
+        $states_confirmed = $uc->getStates($start_date, $adjusted_end_date);
 
         $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST))));
         $valid_states = array_merge($valid_states, array(ROOMS_UNCONFIRMED_BOOKINGS, $be->id));
@@ -979,7 +982,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
         }
 
         // Check if this booking overlap with an unconfirmed booking
-        $states_unconfirmed = $uc->getStates($start_date, $end_date, TRUE);
+        $states_unconfirmed = $uc->getStates($start_date, $adjusted_end_date, TRUE);
 
         $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST))));
         $valid_states = array_merge($valid_states, array($be->id));
