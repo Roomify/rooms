@@ -528,3 +528,22 @@ function rooms_check_dates_validity(DateTime $start_date, DateTime $end_date, $t
   }
   return $errors;
 }
+
+/**
+ * Alternative numeric range generator considering users that use PHP < v5.3.6
+ * and experiment the bug: https://bugs.php.net/bug.php?id=51894
+ * @param int $start
+ * @param int $end
+ */
+function rooms_range($start, $end) {
+  if (version_compare(phpversion(), '5.3.6', '<')) {
+    $range = array();
+    for ($index = $start; $index <= $end; $index++) {
+      $range[] = $index;
+    }
+    return $range;
+  }
+  else {
+    return range($start, $end, 1);
+  }
+}

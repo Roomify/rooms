@@ -210,7 +210,6 @@ function rooms_booking_edit_profile_callback(&$form, $form_state) {
   return render($form['client']);
 }
 
-
 /**
  * Form callback: create or edit a booking.
  *
@@ -219,7 +218,6 @@ function rooms_booking_edit_profile_callback(&$form, $form_state) {
  *     with only a booking type defined.
  */
 function rooms_booking_edit_form($form, &$form_state, $booking) {
-
   $form['#attributes']['class'][] = 'rooms-management-form rooms-booking-form';
 
   drupal_add_css(drupal_get_path('module', 'rooms_booking') . '/css/rooms_booking.css');
@@ -305,7 +303,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   $form['data']['group_size_children'] = array(
     '#type' => 'select',
     '#title' => t('Children'),
-    '#options' => range(0, $persons),
+    '#options' => rooms_range(0, $persons),
     '#default_value' =>  isset($booking->data['group_size_children']) ? $booking->data['group_size_children'] : '0',
     '#description' => t('The number of children staying in this unit.'),
     '#prefix' => '<div id="rooms_booking_group_size_children_container">',
@@ -630,7 +628,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
                       $form['availability_fieldset']['unit_fieldset']['options_fieldset'][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] = array(
                         '#type' => 'select',
                         '#title' => t('Quantity'),
-                        '#options' => range(1, $option['quantity']),
+                        '#options' => rooms_range(1, $option['quantity']),
                         '#ajax' => array(
                           'callback' => 'rooms_booking_select_unit_callback',
                           'wrapper' => 'options-wrapper',
