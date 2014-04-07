@@ -238,11 +238,11 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
 
   $units = $form_state['values']['rooms'];
 
-  $rooms_parameters = array();
+  $rooms_query = array();
 
   if (isset($form_state['values']['unit_type'])) {
     if ($form_state['values']['unit_type'] != '') {
-      $rooms_parameters['type'] = $form_state['values']['unit_type'];
+      $rooms_query['type'] = $form_state['values']['unit_type'];
     }
   }
 
@@ -251,10 +251,15 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
     $keys = explode(':', $key);
 
     if (count($keys) == 2) {
-      if ($keys[0] == 'group_size_adults') $rooms_parameters['rooms_group_size' . $keys[1]] = $value;
-      if ($keys[0] == 'group_size_children') $rooms_parameters['rooms_children' . $keys[1]] = $value;
+      if ($keys[0] == 'group_size_adults') $rooms_query['rooms_group_size' . $keys[1]] = $value;
+      if ($keys[0] == 'group_size_children') $rooms_query['rooms_children' . $keys[1]] = $value;
     }
   }
 
-  drupal_goto('booking/' . $start_date->format('Y-m-d') . '/' . $end_date->format('Y-m-d') . '/' . $units, array('query' => $rooms_parameters));
+  $form_state['redirect'] = array(
+    'booking/' . $start_date->format('Y-m-d') . '/' . $end_date->format('Y-m-d') . '/' . $units,
+    array(
+      'query' => $rooms_query,
+    )
+  );
 }
