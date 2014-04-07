@@ -117,17 +117,18 @@ class UnitPricingCalendar {
 
   /**
    * Apply price modifiers to base price
-   * @param $price
+   * @param $base_price
    * The price to modify
    *
    * @return
    * The modified price
    */
-  public function applyPriceModifiers($price) {
+  public function applyPriceModifiers($base_price) {
+    $price = $base_price;
     if (!empty($this->price_modifiers)) {
       foreach ($this->price_modifiers as $modifier) {
         if ($modifier['#type'] == ROOMS_PRICE_SINGLE_OCCUPANCY) {
-          $price -= $price * $this->unit->data['singlediscount'] / 100;
+          $price -= $base_price * $this->unit->data['singlediscount'] / 100;
         }
         elseif ($modifier['#type'] == ROOMS_DYNAMIC_MODIFIER) {
           switch ($modifier['#op_type']) {
@@ -141,10 +142,10 @@ class UnitPricingCalendar {
               $price = $modifier['#amount'];
               break;
             case ROOMS_INCREASE:
-              $price += $price * ($modifier['#amount'] * $modifier['#quantity']) / 100;
+              $price += $base_price * ($modifier['#amount'] * $modifier['#quantity']) / 100;
               break;
             case ROOMS_DECREASE:
-              $price -= $price * ($modifier['#amount'] * $modifier['#quantity']) / 100;
+              $price -= $base_price * ($modifier['#amount'] * $modifier['#quantity']) / 100;
               break;
           }
         }
