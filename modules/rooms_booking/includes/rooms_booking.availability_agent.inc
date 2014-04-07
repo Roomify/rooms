@@ -88,7 +88,7 @@ class AvailabilityAgent {
         }
       }
 
-      // Combination fails, roolback and try a new combination
+      // Combination fails, rollback and try a new combination
       if (empty($tmp_rooms_results[$el_key]['rooms_unit'])) return 0;
 
       $this->valid_rooms_combination[] = $tmp_rooms_results[$el_key]['rooms_unit'][$c_key];
