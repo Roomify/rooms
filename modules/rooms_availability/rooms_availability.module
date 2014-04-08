@@ -1474,6 +1474,14 @@ function rooms_availability_form_rooms_booking_settings_alter(&$form, &$form_sta
     ),
   );
 
+  $form['label_settings']['rooms_unconfirmed_booking_text'] = array(
+    '#type' => 'textfield',
+    '#title' => t('"@availability_status" label', array('@availability_status' => t('Unconfirmed booking'))),
+    '#size' => 10,
+    '#maxlength' => 50,
+    '#default_value' => variable_get('rooms_unconfirmed_booking_text', 'UNCONF'),
+  );
+    
   $form['label_settings']['rooms_view_unit_name'] = array(
     '#type' => 'checkboxes',
     '#options' => array(

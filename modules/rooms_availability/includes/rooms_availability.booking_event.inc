@@ -254,6 +254,7 @@ class BookingEvent {
         break;
       case ($this->id < 0):
         $event['color'] = variable_get('rooms_unconfirmed_booking_color', '#8CBF62');
+        $event['title'] = variable_get('rooms_unconfirmed_booking_text', 'UNCONF');
         break;
       case ROOMS_ANON_BOOKED:
         if ($style == ROOMS_AVAILABILITY_ADMIN_STYLE) {
