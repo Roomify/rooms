@@ -256,8 +256,8 @@ class BookingEvent {
         $event['color'] = variable_get('rooms_unconfirmed_booking_color', '#8CBF62');
         break;
       case ROOMS_ANON_BOOKED:
-        if ($style == 'admin') {
-          $event['color'] = variable_get('rooms_anon_booked_color', '#481600');
+        if ($style == ROOMS_AVAILABILITY_ADMIN_STYLE) {
+          $event['color'] = variable_get('rooms_anon_booking_color', '#481600');
           $event['title'] = variable_get('rooms_anon_booking_text', 'A-B');
         }
         elseif ($style == ROOMS_AVAILABILITY_GENERIC_STYLE) {
