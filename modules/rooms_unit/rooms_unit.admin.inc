@@ -285,15 +285,11 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#default_value' => isset($unit->bookable) ? $unit->bookable : 1,
   );
 
+  $state_options = rooms_unit_state_options();
   $form['availability']['default_state'] = array(
     '#type' => 'select',
     '#title' => t('Default availability'),
-    '#options' => array(
-      ROOMS_NOT_AVAILABLE => t('Unavailable'),
-      ROOMS_AVAILABLE => t('Available'),
-      ROOMS_ON_REQUEST => t('Available on Request'),
-      ROOMS_ANON_BOOKED => t('Anonymous Booking')
-    ),
+    '#options' => $state_options,
     '#default_value' => isset($unit->default_state) ? $unit->default_state : 1,
     '#description' => t('Choose what state to leave the unit in by default.'),
   );

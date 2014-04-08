@@ -508,6 +508,20 @@ function rooms_unit_form_rooms_unit_type_operation_form_alter(&$form, &$form_sta
   }
 }
 
+/**
+ * Helper function to generate a list of available unit states for select lists.
+ *
+ * @return array
+ *   Array of available unit states keyed by id.
+ */
+function rooms_unit_state_options() {
+  return array(
+    ROOMS_NOT_AVAILABLE => t('Unavailable'),
+    ROOMS_AVAILABLE => t('Available'),
+    ROOMS_ON_REQUEST => t('On Request'),
+    ROOMS_ANON_BOOKED => t('Anonymous Booking'),
+  );
+}
 
 /**
  * The class used for room entities
