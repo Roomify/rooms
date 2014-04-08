@@ -14,6 +14,7 @@ dependencies[] = commerce_ui
 dependencies[] = commerce_customer
 dependencies[] = commerce_customer_ui
 dependencies[] = commerce_cart
+dependencies[] = commerce_cart_expiration
 
 files[] = rooms_booking.admin.inc
 files[] = rooms_booking_type.admin.inc
