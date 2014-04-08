@@ -1042,23 +1042,30 @@ function rooms_availability_event($units, $start_year = '', $start_month = '', $
 
 
 /**
- * The EventManager page shows when clicking on an event in the availability calendar - will allow a user to manipulate
- * that event.
+ * The EventManager page shows when clicking on an event in the availability
+ * calendar - will allow a user to manipulate that event.
  */
 function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_date = 0, $end_date = 0) {
   // include modal library
   ctools_include('modal');
 
-  // If any info missing we cannot load the event
+  // If any info missing we cannot load the event.
   if ($event_id == NULL || $start_date == 0 || $end_date == 0) {
     $output[] = ctools_modal_command_dismiss();
     drupal_set_message(t('Unable to load event.'), 'error');
   }
 
-  // Basic check to avoid damage from dirty input
+  // Basic check to avoid damage from dirty input.
   $event_id = check_plain($event_id);
   $start_date = check_plain($start_date);
   $end_date = check_plain($end_date);
+
+  // Process start and end date.
+  $sd = new DateTime();
+  $sd->setTimezone(new DateTimeZone('UTC'))->setTimestamp($start_date);
+
+  $ed = new DateTime();
+  $ed->setTimezone(new DateTimeZone('UTC'))->setTimestamp($end_date);
 
   $booked = FALSE;
   if ($event_id > 10 || $event_id < -10) {
@@ -1068,7 +1075,7 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
   if ($booked) {
     $booking_id = rooms_availability_return_id($event_id);
     $booking = rooms_booking_load($booking_id);
-    // for existing bookings allow to edit in the modal
+    // For existing bookings allow to edit in the modal.
     module_load_include('inc', 'rooms_booking', 'rooms_booking.admin');
     $form_state = array(
       'title' => t('Edit booking'),
@@ -1084,7 +1091,7 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
         ),
       ),
     );
-    // wrap the form via ctools modal
+    // Wrap the form via ctools modal.
     $output = ctools_modal_form_wrapper('rooms_booking_edit_form', $form_state);
     if ($form_state['executed']) {
       $output = array(ctools_modal_command_dismiss());
@@ -1093,7 +1100,17 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
     exit();
   }
 
-  $content['event_manager_form'] = drupal_get_form('rooms_availability_event_manager_form', $unit, $event_id, $start_date, $end_date);
+  // If the event is blocked, show an error message.
+  $uc = new UnitCalendar($unit->unit_id);
+  $mock_event = new BookingEvent($unit->unit_id, NULL, $sd, $ed);
+  if ($uc->eventBlocked($mock_event)) {
+    drupal_set_message(t('You can not update calendar because a locked event is blocking the update. You need to unlock any locked events in that period.'), 'warning');
+    $output = theme('status_messages');
+    ctools_modal_render(t('Event Management'), $output);
+    return;
+  }
+
+  $content['event_manager_form'] = drupal_get_form('rooms_availability_event_manager_form', $unit, $event_id, $sd, $ed);
 
   $output = theme('rooms_event', $content);
   ctools_modal_render(t('Event Management'), $output);
@@ -1188,16 +1205,10 @@ function rooms_availability_event_manager_form($form, $form_state, $unit, $event
     );
   }
 
-  $sd = new DateTime();
-  $sd->setTimezone(new DateTimeZone('UTC'))->setTimestamp($start_date);
-
-  $ed = new DateTime();
-  $ed->setTimezone(new DateTimeZone('UTC'))->setTimestamp($end_date);
-
   $date_format = variable_get('rooms_date_format', 'd-m-Y');
   $form['event_details'] = array(
     '#prefix' => '<div class="event-details">',
-    '#markup' => t('Duration: @startdate to @enddate', array('@startdate' => $sd->format($date_format), '@enddate' => $ed->format($date_format))),
+    '#markup' => t('Duration: @startdate to @enddate', array('@startdate' => $start_date->format($date_format), '@enddate' => $end_date->format($date_format))),
     '#suffix' => '</div>'
   );
 
