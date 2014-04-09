@@ -157,8 +157,9 @@ class UnitCalendar {
 
 
   /**
-   * Given a date range it returns all data within that range including the start and
-   * end dates of states. The MySQL queries are kept simple and then the data is cleared up
+   * Given a date range it returns all data within that range including the
+   * start and end dates of states. The MySQL queries are kept simple and then
+   * the data is cleared up.
    *
    * @param $start_date
    * The starting date
