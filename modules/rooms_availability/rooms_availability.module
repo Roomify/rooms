@@ -1110,10 +1110,7 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
     return;
   }
 
-  $content['event_manager_form'] = drupal_get_form('rooms_availability_event_manager_form', $unit, $event_id, $sd, $ed);
-
-  $output = theme('rooms_event', $content);
-  ctools_modal_render(t('Event Management'), $output);
+  ctools_modal_render(t('Event Management'), drupal_get_form('rooms_availability_event_manager_form', $unit, $event_id, $sd, $ed));
 }
 
 /**
@@ -1277,10 +1274,6 @@ function rooms_availability_theme() {
     'rooms_three_month_calendar' => array(
       'template' => 'rooms_three_month_calendar'
     ),
-    'rooms_event' => array(
-      'template' => 'rooms_event'
-    )
-
   );
 }
 
