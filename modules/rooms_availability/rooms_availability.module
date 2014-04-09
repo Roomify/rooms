@@ -1244,7 +1244,8 @@ function rooms_availability_event_manager_form($form, $form_state, $unit, $event
  * The callback for the change_event_status widget of the event manager form
  */
 function rooms_availability_ajax_event_status_change($form, $form_state) {
-  list($start_date, $end_date) = rooms_form_values_get_start_end_dates($form_state);
+  $start_date = $form_state['values']['rooms_start_date'];
+  $end_date = $form_state['values']['rooms_end_date'];
   $unit_id = $form_state['values']['unit_id'];
   $event_id = $form_state['values']['event_id'];
   $new_event_id = $form_state['values']['change_event_status'];

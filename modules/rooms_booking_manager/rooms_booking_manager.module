@@ -2430,9 +2430,9 @@ function rooms_booking_manager_views_api() {
 /**
  * Provides a single integrated group of form elements storing the current
  * availability search along with a "change search" button that will take you
- * back to the initial booking search page.  These form compoents are used in
+ * back to the initial booking search page.  These form components are used in
  * multiple places for the different kinds of booking configurations.  The
- * components can be used as a standalone form, not by calling this funciton
+ * components can be used as a standalone form, not by calling this function
  * directly, but by using drupal_get_form to render
  * rooms_booking_manager_change_search_form().
  *
