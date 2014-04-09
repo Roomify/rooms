@@ -1317,15 +1317,6 @@ function rooms_availability_return_id($id) {
 }
 
 /**
- * Returns the path to the FullCalendar plugin.
- */
-function rooms_availability_fullcalendar_get_js_path() {
-  // Default to minified, but allow debugging with uncompressed version.
-  $fullcalendar_file = array('none' => 'fullcalendar.js', 'min' => 'fullcalendar.min.js');
-  return variable_get('rooms_ROOMS_FC_PATH', ROOMS_FC_PATH) . '/' . $fullcalendar_file[variable_get('rooms_fullcalendar_compression_type', 'min')];
-}
-
-/**
  * Implements hook_form__FORM_ID_alter().
  * FORM_ID = rooms_booking_settings
  */
