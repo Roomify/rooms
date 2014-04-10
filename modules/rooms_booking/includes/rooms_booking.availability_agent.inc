@@ -285,11 +285,20 @@ class AvailabilityAgent {
       }
     }
 
+    // We order units by optional items to ensure that units with options are the
+    // first to be picked by a user.
     $units = $this->orderByOptionals($units);
 
     return $units;
   }
 
+
+  /**
+   * Ordering units by the optional items that are available.
+   *
+   * @param $units
+   * @return mixed
+   */
   function orderByOptionals($units) {
     foreach ($units as $type => $v) {
       foreach ($v as $price => $value) {
