@@ -160,7 +160,7 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
   // validate the dates
   $errors = rooms_check_dates_validity($start_date, $end_date, TRUE);
 
-  // Check validity of the rest of the booking paramenters that are stored in _GET. Again this is to ensure that
+  // Check validity of the rest of the booking parameters that are stored in _GET. Again this is to ensure that
   // any direct links were structured appropriately.
   $booking_parameters = rooms_booking_manager_retrieve_booking_parameters($booking_units, $_GET);
 
@@ -450,7 +450,7 @@ function rooms_booking_manager_forms($form_id, $args) {
 function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_date, $group_size_adults, $status, $price) {
 
   // Add stylesheets and classes.
-  drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
+  $from['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
   $form['#attributes']['class'][] = 'rooms-book-unit-form';
 
   $currency_setting = commerce_currency_load(commerce_default_currency());
@@ -663,6 +663,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
                               $form_state['values']['children'] + $unit->min_children : 0;
 
     $temp_end_date = clone($end_date);
+    $temp_end_date->sub(new DateInterval('P1D'));
 
     $childrens_age = array();
     if (isset($form_state['values']['persons'])) {
@@ -689,18 +690,18 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
 
     if (isset($form_state['values']['persons'])) {
-      $new_price = $price_calendar->calculatePrice($start_date, $end_date,
+      $new_price = $price_calendar->calculatePrice($start_date, $temp_end_date,
                       $form_state['values']['persons'] + $unit->min_sleeps,
                       $form_state['values']['children'] + $unit->min_children,
                       $childrens_age);
     }
     else {
-      $new_price = $price_calendar->calculatePrice($start_date, $end_date, $unit->max_sleeps);
+      $new_price = $price_calendar->calculatePrice($start_date, $temp_end_date, $unit->max_sleeps);
     }
 
     $form['new_price'] = array(
       '#prefix' => '<div class="rooms-search-result__new-price" id="unit_' . $unit->unit_id . '_price">',
-      '#markup' => '<label>' . t('Cost') . ':</label> <span class="rooms-search-result__new-price-amount">' .
+      '#markup' => '<label>' . t('Coste') . ':</label> <span class="rooms-search-result__new-price-amount">' .
         t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
           '@currency_symbol'=> $currency_symbol,
           '@amount' => $new_price['full_price']
