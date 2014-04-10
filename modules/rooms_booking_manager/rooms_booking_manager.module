@@ -1593,9 +1593,10 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
             }
             $persons = isset($form_state['values'][$type][$price_level]['fieldset'][$i]['persons']) ?
                       $form_state['values'][$type][$price_level]['fieldset'][$i]['persons'] + $unit['unit']->min_sleeps :
-                      $unit['unit']->max_sleeps;
+                      $booking_parameters[$i]['adults'];
             $children = isset($form_state['values'][$type][$price_level]['fieldset'][$i]['children']) ?
-                      $form_state['values'][$type][$price_level]['fieldset'][$i]['children'] + $unit['unit']->min_children : 0;
+                      $form_state['values'][$type][$price_level]['fieldset'][$i]['children'] + $unit['unit']->min_children :
+                      $booking_parameters[$i]['children'];
 
             // Fill group_size with unit size
             $group_size = array('adults' => $persons, 'children' => $children, 'childrens_age' => $childrens_age);
