@@ -1,17 +1,13 @@
 <?php
 
 function rooms_booking_manager_search_availability() {
-
-  // Stylesheet improves basic search layout.
-  drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
-
   $output = drupal_get_form('rooms_booking_availability_search_form');
   return $output;
 }
 
 
 function rooms_booking_availability_search_form($form, $form_state) {
-
+  $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
   $form['#attributes']['class'][] = 'rooms-management-form rooms-availability-search';
 
   $rooms_number = 1;
@@ -200,6 +196,9 @@ function rooms_booking_availability_search_form($form, $form_state) {
   // is used to add validate handlers earlier.
   $form['#validate'][] = 'rooms_booking_availability_search_form_validate';
   $form['#validate'][] = 'rooms_form_start_end_dates_validate';
+
+  // Attach the CSS stylesheets.
+  $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
 
   return $form;
 

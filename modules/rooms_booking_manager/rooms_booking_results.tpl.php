@@ -1,3 +1,7 @@
+<?php if (isset($change_search)): ?>
+  <?php print render($change_search); ?>
+<?php endif; ?>
+
 <?php if (!$booking_results): ?>
   <?php print render($no_results); ?>
   <?php print render($booking_search_form); ?>
