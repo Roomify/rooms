@@ -229,7 +229,7 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
   // validate the dates
   $errors = rooms_check_dates_validity($start_date, $end_date, TRUE);
 
-  // Check validity of the rest of the booking paramenters that are stored in _GET. Again this is to ensure that
+  // Check validity of the rest of the booking parameters that are stored in _GET. Again this is to ensure that
   // any direct links were structured appropriately.
   $booking_parameters = rooms_booking_manager_retrieve_booking_parameters($booking_units, $_GET);
 
@@ -615,41 +615,34 @@ function rooms_booking_manager_forms($form_id, $args) {
  * rooms_booking_manager_results_page.
  */
 function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_date, $group_size_adults, $status, $price) {
-
   // Add stylesheets and classes.
-  $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
+  $from['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
   $form['#attributes']['class'][] = 'rooms-book-unit-form';
 
   $currency_setting = commerce_currency_load(commerce_default_currency());
   $currency_symbol = $currency_setting['symbol'];
 
-  $form['hidden'] = array(
-    '#tree' => FALSE,
-    '#type' => 'container',
-    '#weight' => 999,
-    '#attributes' => array('class' => array('rooms-unit-info-hidden')),
-  );
-  $form['hidden']['unit_id'] = array(
+  $form['unit_id'] = array(
     '#type' => 'hidden',
     '#value' => $unit->unit_id,
   );
 
-  $form['hidden']['status'] = array(
+  $form['status'] = array(
     '#type' => 'hidden',
     '#value' => $status,
   );
 
-  $form['hidden']['start_date'] = array(
+  $form['start_date'] = array(
     '#type' => 'hidden',
     '#value' => $start_date->format('Y-m-d'),
   );
 
-  $form['hidden']['end_date'] = array(
+  $form['end_date'] = array(
     '#type' => 'hidden',
     '#value' => $end_date->format('Y-m-d'),
   );
 
-  $form['hidden']['group_size'] = array(
+  $form['group_size'] = array(
     '#type' => 'hidden',
     '#value' => $group_size_adults,
   );
@@ -830,6 +823,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
                               $form_state['values']['children'] + $unit->min_children : 0;
 
     $temp_end_date = clone($end_date);
+    $temp_end_date->sub(new DateInterval('P1D'));
 
     $childrens_age = array();
     if (isset($form_state['values']['persons'])) {
@@ -856,13 +850,13 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
 
     if (isset($form_state['values']['persons'])) {
-      $new_price = $price_calendar->calculatePrice($start_date, $end_date,
+      $new_price = $price_calendar->calculatePrice($start_date, $temp_end_date,
                       $form_state['values']['persons'] + $unit->min_sleeps,
                       $form_state['values']['children'] + $unit->min_children,
                       $childrens_age);
     }
     else {
-      $new_price = $price_calendar->calculatePrice($start_date, $end_date, $unit->max_sleeps);
+      $new_price = $price_calendar->calculatePrice($start_date, $temp_end_date, $unit->max_sleeps);
     }
 
     $form['new_price'] = array(
@@ -1693,9 +1687,10 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
             }
             $persons = isset($form_state['values'][$type][$price_level]['fieldset'][$i]['persons']) ?
                       $form_state['values'][$type][$price_level]['fieldset'][$i]['persons'] + $unit['unit']->min_sleeps :
-                      $unit['unit']->max_sleeps;
+                      $booking_parameters[$i]['adults'];
             $children = isset($form_state['values'][$type][$price_level]['fieldset'][$i]['children']) ?
-                      $form_state['values'][$type][$price_level]['fieldset'][$i]['children'] + $unit['unit']->min_children : 0;
+                      $form_state['values'][$type][$price_level]['fieldset'][$i]['children'] + $unit['unit']->min_children :
+                      $booking_parameters[$i]['children'];
 
             // Fill group_size with unit size
             $group_size = array('adults' => $persons, 'children' => $children, 'childrens_age' => $childrens_age);

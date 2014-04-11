@@ -285,15 +285,24 @@ class AvailabilityAgent {
       }
     }
 
-    $units = $this->orderbyOptionals($units);
+    // We order units by optional items to ensure that units with options are the
+    // first to be picked by a user.
+    $units = $this->orderByOptionals($units);
 
     return $units;
   }
 
-  function orderbyOptionals($units) {
+
+  /**
+   * Ordering units by the optional items that are available.
+   *
+   * @param $units
+   * @return mixed
+   */
+  function orderByOptionals($units) {
     foreach ($units as $type => $v) {
       foreach ($v as $price => $value) {
-        uasort($value, 'comparebyOptionals');
+        uasort($value, array(get_class($this), 'compareByOptionals'));
         $units[$type][$price] = $value;
       }
     }
@@ -301,20 +310,16 @@ class AvailabilityAgent {
     return $units;
   }
 
-}
+  protected static function compareByOptionals($a, $b) {
+    $a_items = is_array(field_get_items('rooms_unit', $a['unit'],'rooms_booking_unit_options')) ? field_get_items('rooms_unit', $a['unit'],'rooms_booking_unit_options') : array();
+    $b_items = is_array(field_get_items('rooms_unit', $b['unit'],'rooms_booking_unit_options')) ? field_get_items('rooms_unit', $b['unit'],'rooms_booking_unit_options') : array();
 
-function comparebyOptionals($a, $b) {
-  if (!isset($b['unit']->rooms_booking_unit_options[LANGUAGE_NONE]) && !isset($a['unit']->rooms_booking_unit_options[LANGUAGE_NONE])) {
-    return 0;
+    if (count($a_items) == count($b_items)) {
+      return $a['unit']->unit_id < $b['unit']->unit_id ? 1 : -1;
+    }
+    else {
+      return count($a_items) < count($b_items) ? 1 : -1;
+    }
   }
 
-  if (!isset($b['unit']->rooms_booking_unit_options[LANGUAGE_NONE]) && isset($a['unit']->rooms_booking_unit_options[LANGUAGE_NONE])) {
-    return -1;
-  }
-
-  if (isset($b['unit']->rooms_booking_unit_options[LANGUAGE_NONE]) && !isset($a['unit']->rooms_booking_unit_options[LANGUAGE_NONE])) {
-    return 1;
-  }
-
-  return count($a['unit']->rooms_booking_unit_options[LANGUAGE_NONE]) < count($a['unit']->rooms_booking_unit_options[LANGUAGE_NONE]) ? -1 : 1;
 }
