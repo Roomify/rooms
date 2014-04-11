@@ -6,7 +6,6 @@
  * by all Rooms modules
  */
 
-
 define('ROOMS_CHILDREN_FEATURES', 'children_features');
 
 define('ROOMS_ADD', 'add');
@@ -16,7 +15,6 @@ define('ROOMS_INCREASE', 'increase');
 define('ROOMS_DECREASE', 'decrease');
 define('ROOMS_PRICE_SINGLE_OCCUPANCY', 'single_occupancy');
 define('ROOMS_DYNAMIC_MODIFIER', 'dynamic_modifier');
-
 
 /**
  * Implements hook_permission().
@@ -32,7 +30,6 @@ function rooms_permission() {
 
   return $permissions;
 }
-
 
 /**
  * Implements hook_libraries_info()
@@ -62,7 +59,6 @@ function rooms_libraries_info() {
   return $libraries;
 }
 
-
 /**
  * Check if the FullCalendar Library is loaded
  *
@@ -81,7 +77,6 @@ function rooms_fullcalendar_loaded() {
       array('@status' => url('admin/reports/status'))), 'warning');
   }
 }
-
 
 /**
  * Implements hook_requirements
@@ -111,7 +106,6 @@ function rooms_requirements($phase) {
   return $requirements;
 }
 
-
 /**
  * Implements hook_field_info().
  */
@@ -127,13 +121,11 @@ function rooms_field_info() {
   );
 }
 
-
 /**
  * Implements hook_field_validate().
  */
 function rooms_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
 }
-
 
 /**
  * Implements hook_field_is_empty().
@@ -141,7 +133,6 @@ function rooms_field_validate($entity_type, $entity, $field, $instance, $langcod
 function rooms_field_is_empty($item, $field) {
   return empty($item['name']);
 }
-
 
 /**
  * Implements hook_field_schema().
@@ -173,7 +164,6 @@ function rooms_field_schema($field) {
   }
 }
 
-
 /**
  * Implements hook_field_widget_info().
  */
@@ -187,7 +177,6 @@ function rooms_field_widget_info() {
     ),
   );
 }
-
 
 /**
  * Implements hook_field_formatter_info().
@@ -228,7 +217,6 @@ function rooms_field_formatter_view($entity_type, $entity, $field, $instance, $l
   return $element;
 }
 
-
 /**
  * Implements hook_field_widget_form().
  */
@@ -246,16 +234,11 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
       '#default_value' => isset($items[$delta]['quantity']) ? $items[$delta]['quantity'] : NULL,
       '#description' => 'How many of this option should be available',
     );
+    $price_options = rooms_price_options_options();
     $element['operation'] = array(
       '#type' => 'select',
       '#title' => t('Operation'),
-      '#options' => array(
-        ROOMS_ADD => t('Add to price'),
-        ROOMS_SUB => t('Subtract from price'),
-        ROOMS_REPLACE => t('Replace price'),
-        ROOMS_INCREASE => t('Increase price by % amount'),
-        ROOMS_DECREASE => t('Decrease price by % amount'),
-      ),
+      '#options' => $price_options,
       '#default_value' => isset($items[$delta]['operation']) ? $items[$delta]['operation'] : NULL,
     );
     $element['value'] = array(
@@ -268,6 +251,18 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
   }
 }
 
+/**
+ * Returns the available price options for booking_unit options field.
+ */
+function rooms_price_options_options() {
+  return array(
+    ROOMS_ADD => t('Add to price'),
+    ROOMS_SUB => t('Subtract from price'),
+    ROOMS_REPLACE => t('Replace price'),
+    ROOMS_INCREASE => t('Increase price by % amount'),
+    ROOMS_DECREASE => t('Decrease price by % amount'),
+  );
+}
 
 /**
  * Utility function that returns an array with the last day of each month given a year
@@ -291,7 +286,6 @@ function rooms_end_of_month_dates($year) {
 
   return $end_of_month_dates;
 }
-
 
 /**
  * Utility function - we have a few forms that need a start and end date field and we need to apply
@@ -383,7 +377,6 @@ function rooms_date_range_fields($date_range_fields = array()) {
   return $date_range_fields;
 }
 
-
 /**
  * Transfom from PHP conventions to jQueryUI conventions for dates
  */
@@ -399,7 +392,6 @@ function rooms_dateFormatTojQueryUIDatePickerFormat($date_format) {
 
   return strtr((string)$date_format, $chars);
 }
-
 
 /**
  * Create a Date object from form_state input date.
@@ -420,7 +412,6 @@ function rooms_form_input_date_object($form_state, $field_name) {
   return FALSE;
 }
 
-
 /**
  * Given a form_state locate the start/end dates in the input array and
  * instantiate and return DateTime objects.
@@ -431,7 +422,6 @@ function rooms_form_input_get_start_end_dates($form_state) {
   $end = DateTime::createFromFormat($date_format, $form_state['input']['rooms_end_date']['date']);
   return array($start, $end);
 }
-
 
 /**
  * Given a form_state locate the start/end dates in the values array and
@@ -456,7 +446,6 @@ function rooms_form_values_get_start_end_dates($form_state) {
 
   return array($start, $end);
 }
-
 
 /**
  * Validation callback that could be reused in all the forms that need to validate
