@@ -64,8 +64,8 @@ function rooms_booking_manager_menu() {
 
   $items['enquiry/%start_date/%end_date'] = array(
     'title' => 'Ask about availability',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('rooms_booking_manager_enquiry_page_form', 1, 2),
+    'page callback' => 'rooms_booking_manager_enquiry_page',
+    'page arguments' => array(1, 2),
     'access arguments' => array('book units'),
     'type' => MENU_CALLBACK,
   );
@@ -120,7 +120,19 @@ function rooms_booking_manager_cart_view() {
   return $content;
 }
 
+/**
+ * Page callback for enquiry search.
+ */
+function rooms_booking_manager_enquiry_page($start_date = 0, $end_date = 0, $unit = NULL) {
+  $form = drupal_get_form('rooms_booking_manager_enquiry_page_form', $start_date, $end_date, 2, 0, 1);
+  $change_search_form = drupal_get_form('rooms_booking_manager_change_search_form', $start_date, $end_date, 2, 0, 1);
 
+  return array($change_search_form, $form);
+}
+
+/**
+ * Enquiry search page form.
+ */
 function rooms_booking_manager_enquiry_page_form($form, $form_state, $start_date = 0, $end_date = 0, $unit = NULL) {
   if ($unit) {
     $unit_obj = rooms_unit_load($unit);
@@ -131,10 +143,64 @@ function rooms_booking_manager_enquiry_page_form($form, $form_state, $start_date
     );
   }
 
-  $change_search_form = drupal_get_form('rooms_booking_manager_change_search_form', $start_date, $end_date, 2, 0, 1);
-  $form = rooms_booking_manager_enquiry_form($form, $start_date, $end_date, 2, 0, 1);
+  $form['#attributes']['class'][] = 'rooms-enquiry-form';
 
-  return array($change_search_form, $form);
+  $form['enquiry_form'] = array(
+    '#type' => 'hidden',
+    '#value' => 'enquiry',
+  );
+
+  $form['customer_name'] = array(
+    '#title' => t('Name') . ':',
+    '#type' => 'textfield',
+    '#size' => 50,
+    '#required' => TRUE,
+  );
+  $form['customer_email'] = array(
+    '#title' => t('Email') . ':',
+    '#type' => 'textfield',
+    '#size' => 50,
+  );
+  $form['customer_add1'] = array(
+    '#title' => t('Address Line 1') . ':',
+    '#type' => 'textfield',
+    '#size' => 80,
+  );
+  $form['customer_add2'] = array(
+    '#title' => t('Address Line 2') . ':',
+    '#type' => 'textfield',
+    '#size' => 80,
+  );
+  $form['customer_city'] = array(
+    '#title' => t('City') . ':',
+    '#type' => 'textfield',
+    '#size' => 60,
+  );
+  $form['customer_state'] = array(
+    '#title' => t('State/Province') . ':',
+    '#type' => 'textfield',
+    '#size' => 60,
+  );
+  $form['customer_country'] = array(
+    '#title' => t('Country') . ':',
+    '#type' => 'textfield',
+    '#size' => 60,
+  );
+
+  $form['comments'] = array(
+    '#title' => t('Comments') . ':',
+    '#type' => 'textarea',
+    '#cols' => 50,
+    '#resizable' => TRUE,
+    '#rows' => 5,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+
+  return $form;
 }
 
 
@@ -1494,70 +1560,6 @@ function rooms_booking_manager_children_change_callback(&$form, $form_state) {
   return array('#type' => 'ajax', '#commands' => $commands);
 }
 
-
-function rooms_booking_manager_enquiry_form($form, $start_date, $end_date, $booking_parameters, $b_units, $date_format = '') {
-
-  $form['#attributes']['class'][] = 'rooms-enquiry-form';
-
-  $form['enquiry_form'] = array(
-    '#type' => 'hidden',
-    '#value' => 'enquiry',
-  );
-
-  $form['customer_name'] = array(
-    '#title' => t('Name') . ':',
-    '#type' => 'textfield',
-    '#size' => 50,
-    '#required' => TRUE,
-  );
-  $form['customer_email'] = array(
-    '#title' => t('Email') . ':',
-    '#type' => 'textfield',
-    '#size' => 50,
-  );
-  $form['customer_add1'] = array(
-    '#title' => t('Address Line 1') . ':',
-    '#type' => 'textfield',
-    '#size' => 80,
-  );
-  $form['customer_add2'] = array(
-    '#title' => t('Address Line 2') . ':',
-    '#type' => 'textfield',
-    '#size' => 80,
-  );
-  $form['customer_city'] = array(
-    '#title' => t('City') . ':',
-    '#type' => 'textfield',
-    '#size' => 60,
-  );
-  $form['customer_state'] = array(
-    '#title' => t('State/Province') . ':',
-    '#type' => 'textfield',
-    '#size' => 60,
-  );
-  $form['customer_country'] = array(
-    '#title' => t('Country') . ':',
-    '#type' => 'textfield',
-    '#size' => 60,
-  );
-
-  $form['comments'] = array(
-    '#title' => t('Comments') . ':',
-    '#type' => 'textarea',
-    '#cols' => 50,
-    '#resizable' => TRUE,
-    '#rows' => 5,
-  );
-
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Submit'),
-  );
-
-  return $form;
-}
-
-
 function book_units_per_type_form_validate(&$form, &$form_state) {
   if (isset($form_state['complete form']['comments'])) return;
 
@@ -1786,14 +1788,8 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
  * This function redirects the user back to the search box and sets up the values
  * of the search as a convenient way to modify the search.
  */
-function rooms_booking_manager_change_search_form_submit(&$form, &$form_state) {
-
-  // Only process if the 'Change search' button was clicked.
-  if ($form_state['clicked_button']['#value'] != t('Change search')) {
-    return;
-  }
-
-  $booking_parameters = unserialize($form_state['values']['booking_parameters']);
+function rooms_booking_manager_change_search_form_submit($form, &$form_state) {
+  $booking_parameters = isset($form_state['values']['booking_parameters']) ? unserialize($form_state['values']['booking_parameters']) : array();
 
   $b_parameters = array();
   foreach ($booking_parameters as $b_key => $param) {
@@ -1809,16 +1805,16 @@ function rooms_booking_manager_change_search_form_submit(&$form, &$form_state) {
 
   // Build query parameters from the provided form fields.
   $query['rooms_start_date'] = $form_state['values']['start_date'];
-  $query['rooms_start_date'] = $form_state['values']['start_date'];
   $query['rooms_end_date'] = $form_state['values']['end_date'];
-  $query['rooms_b_units'] = $form_state['values']['b_units'];
+  if (isset($form_state['values']['b_units']) && !empty($form_state['values']['b_units'])) {
+    $query['rooms_b_units'] = $form_state['values']['b_units'];
+  }
   if (isset($form_state['values']['type']) && !empty($form_state['values']['type'])) {
     $query['type'] = $form_state['values']['type'];
   }
   $query += $b_parameters;
 
   // Redirect back to the search page.
-
   $form_state['redirect'] = array(
     'booking',
     array(
