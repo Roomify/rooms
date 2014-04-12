@@ -148,16 +148,11 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
     '#type' => 'fieldset',
   );
 
+  $price_options = rooms_price_options_options();
   $form['rooms_update_pricing']['op']['operation'] = array(
     '#type' => 'select',
     '#title' => t('Operation'),
-    '#options' => array(
-      ROOMS_ADD => t('Add to price'),
-      ROOMS_SUB => t('Subtract from price'),
-      ROOMS_REPLACE => t('Replace price'),
-      ROOMS_INCREASE => t('Increase price by % amount'),
-      ROOMS_DECREASE => t('Decrease price by % amount'),
-    ),
+    '#options' => $price_options,
     '#default_value' =>  'replace',
   );
 

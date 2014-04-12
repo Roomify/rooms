@@ -856,7 +856,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
 
       if (isset($form_state['values']['options'][strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
         $quantity = 1;
-        if (isset($form_state['values']['options'][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity']) && $operation_list[$option['operation']] != ROOMS_REPLACE) {
+        if (isset($form_state['values']['options'][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
           $quantity = $form_state['values']['options'][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] + 1;
         }
 
@@ -1280,14 +1280,14 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               '@amount' => $base_price))));
       }
 
-      // Element to hold price
+      // Element to hold price.
       $form[$type][$price]['price_value'] = array(
         '#type' => 'hidden',
         '#value' => $price,
         '#suffix' => '</td>',
       );
 
-      // Dropdown to select quantity
+      // Dropdown to select quantity.
       $options = array();
       for ($i = 0; $i <= count($units); $i++) {
         $options[$i] = $i;
@@ -1506,7 +1506,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               if (isset($form_state['values'][$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
 
                 $quantity = 1;
-                if (isset($form_state['values'][$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity']) && $operation_list[$option['operation']] != ROOMS_REPLACE) {
+                if (isset($form_state['values'][$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
                   $quantity = $form_state['values'][$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] + 1;
                 }
 
