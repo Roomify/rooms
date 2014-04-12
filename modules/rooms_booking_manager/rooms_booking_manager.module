@@ -86,6 +86,16 @@ function rooms_booking_manager_menu() {
   return $items;
 }
 
+/**
+ * Implements hook_mail().
+ */
+function rooms_booking_manager_mail($key, &$message, $params) {
+  switch ($key) {
+    case 'enquiry_booking':
+      $message['subject'] = t('Booking');
+      $message['body'] = array(theme('rooms_booking_email', $params));
+  }
+}
 
 /**
  * Display 'Booking confirmed' message.
@@ -124,8 +134,8 @@ function rooms_booking_manager_cart_view() {
  * Page callback for enquiry search.
  */
 function rooms_booking_manager_enquiry_page($start_date = 0, $end_date = 0, $unit = NULL) {
-  $form = drupal_get_form('rooms_booking_manager_enquiry_page_form', $start_date, $end_date, 2, 0, 1);
-  $change_search_form = drupal_get_form('rooms_booking_manager_change_search_form', $start_date, $end_date, 2, 0, 1);
+  $form = drupal_get_form('rooms_booking_manager_enquiry_page_form', $start_date, $end_date, $unit, 0, 1);
+  $change_search_form = drupal_get_form('rooms_booking_manager_change_search_form', $start_date, $end_date, $unit, 0, 1);
 
   return array($change_search_form, $form);
 }
@@ -141,14 +151,81 @@ function rooms_booking_manager_enquiry_page_form($form, $form_state, $start_date
       '#type' => 'item',
       '#markup' => t('Unit: @unit_name', array('@unit_name' => $unit_obj->name)),
     );
+
+    $form['enquiry']['unit'] = array(
+      '#type' => 'hidden',
+      '#value' => $unit_obj->name,
+    );
   }
 
+  $form['#tree'] = TRUE;
   $form['#attributes']['class'][] = 'rooms-enquiry-form';
 
-  $form['enquiry_form'] = array(
+  $form['start_date'] = array(
     '#type' => 'hidden',
-    '#value' => 'enquiry',
+    '#value' => $start_date->format('Y-m-d'),
   );
+
+  $form['end_date'] = array(
+    '#type' => 'hidden',
+    '#value' => $end_date->format('Y-m-d'),
+  );
+
+  if (isset($_GET['rooms_group_size'])) {
+    $form['rooms_group_size'] = array(
+      '#type' => 'hidden',
+      '#value' => $_GET['rooms_group_size'],
+    );
+  }
+
+  if (isset($_GET['rooms_children'])) {
+    $form['rooms_children'] = array(
+      '#type' => 'hidden',
+      '#value' => $_GET['rooms_children'],
+    );
+  }
+
+  if (isset($_GET['order'])) {
+    foreach ($_GET['order'] as $type => $units) {
+      $printed = FALSE;
+      $index = 1;
+      foreach ($units as $unit) {
+        for ($i = 0; $i < $unit['quantity']; $i++) {
+          if (!$printed) {
+            $room_type = rooms_unit_type_load($type);
+            $form['units'][$type] = array(
+              '#type' => 'fieldset',
+              '#collapsible' => FALSE,
+              '#title' => $room_type->label,
+            );
+            $printed = TRUE;
+          }
+
+          $form['units'][$type]["{$type}_{$index}"] = array(
+            '#type' => 'container',
+            '#value' => t('Unit @unit', array('@unit' => $index)),
+            '#attributes' => array('class' => array('container-inline')),
+          );
+          $form['units'][$type]["{$type}_{$index}"]["{$type}_{$index}_markup"] = array(
+            '#prefix' => '<h3>',
+            '#markup' => t('Unit @unit', array('@unit' => $index)),
+            '#suffix' => '</h3>',
+          );
+          $form['units'][$type]["{$type}_{$index}"]["adults"] = array(
+            '#type' => 'textfield',
+            '#size' => 3,
+            '#title' => t('Adults') . ':' ,
+          );
+          $form['units'][$type]["{$type}_{$index}"]["children"] = array(
+            '#type' => 'textfield',
+            '#size' => 3,
+            '#title' => t('Children') . ':' ,
+          );
+        }
+        $index++;
+      }
+    }
+  }
 
   $form['customer_name'] = array(
     '#title' => t('Name') . ':',
@@ -203,17 +280,59 @@ function rooms_booking_manager_enquiry_page_form($form, $form_state, $start_date
   return $form;
 }
 
-
 /**
  * @todo - check that original availability still holds
  * @todo - fix the user ownership of products
  */
 function rooms_booking_manager_enquiry_page_form_submit(&$form, &$form_state) {
-  if (isset($form_state['values']['enquiry_form'])) {
-    room_booking_manager_send_email($form_state);
-  }
-}
+  global $language;
+  $email = variable_get('site_mail', ini_get('sendmail_from'));
+  $module = 'rooms_booking_manager';
+  $key = 'enquiry_booking';
+  $language = language_default();
+  $params = array();
 
+  $params['customer_name'] = t('Name') . ': ' . $form_state['values']['customer_name'];
+  $params['customer_email'] = t('Email') . ': ' . $form_state['values']['customer_email'];
+  $params['customer_add1'] = t('Address Line 1') . ': ' . $form_state['values']['customer_add1'];
+  $params['customer_add2'] = t('Address Line 2') . ': ' . $form_state['values']['customer_add2'];
+  $params['customer_city'] = t('City') . ': ' . $form_state['values']['customer_city'];
+  $params['customer_state'] = t('State/Province') . ': ' . $form_state['values']['customer_state'];
+  $params['customer_country'] = t('Country') . ': ' . $form_state['values']['customer_country'];
+  $params['comments'] = t('Comments') . ': ' . $form_state['values']['comments'];
+
+  $params['booking_request'] = array();
+  if (isset($form_state['values']['unit'])) {
+    $params['booking_request'][] = t('Unit: @unit', array('@unit' => $form_state['values']['unit']));
+  }
+  if (isset($form_state['values']['start_date'])) {
+    $params['booking_request'][] = t('Start date: @start_date', array('@start_date' => $form_state['values']['start_date']));
+  }
+  if (isset($form_state['values']['end_date'])) {
+    $params['booking_request'][] = t('End date: @end_date', array('@end_date' => $form_state['values']['end_date']));
+  }
+  if (isset($form_state['values']['rooms_group_size'])) {
+    $params['booking_request'][] = t('Number of adults: @adults', array('@adults' => $form_state['values']['rooms_group_size']));
+  }
+  if (isset($form_state['values']['rooms_children'])) {
+    $params['booking_request'][] = t('Number of children: @children', array('@children' => $form_state['values']['rooms_children']));
+  }
+
+  if (isset($form_state['values']['units'])) {
+    foreach($form_state['values']['units'] as $unit_type_id => $rooms) {
+      $unit_type = rooms_unit_type_load($unit_type_id);
+      $index = 1;
+      foreach ($rooms as $room) {
+        $params['booking_request'][] = t('@unit_type unit No. @index: @adults adults and @children children.', array('@unit_type' => $unit_type->label, '@index' => $index, '@adults' =>$room['adults'], '@children' => $room['children']));
+        $index++;
+      }
+    }
+  }
+
+  drupal_mail($module, $key, $email, $language, $params, $email);
+
+  $form_state['redirect'] = 'enquiry-confirmation';
+}
 
 /**
  * Constructs the booking results page following an availability search
@@ -560,7 +679,7 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
 
         // Add purchase forms - passing through hook_forms to handle multiple forms on the page
         $form = 'book_unit_form_' . $unit_id;
-        $content['units_per_type'][$type][$price][$unit_id]['book_unit_form'] = drupal_get_form($form, $unit_obj, $start_date, $end_date, $booking_parameters[1]['adults'], $unit['state'], $unit['price']);
+        $content['units_per_type'][$type][$price][$unit_id]['book_unit_form'] = drupal_get_form($form, $unit_obj, $start_date, $end_date, $booking_parameters, $unit['state'], $unit['price']);
       }
     }
   }
@@ -614,7 +733,7 @@ function rooms_booking_manager_forms($form_id, $args) {
  * The available units have already been identified by
  * rooms_booking_manager_results_page.
  */
-function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_date, $group_size_adults, $status, $price) {
+function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_date, $booking_parameters, $status, $price) {
   // Add stylesheets and classes.
   $from['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
   $form['#attributes']['class'][] = 'rooms-book-unit-form';
@@ -642,10 +761,17 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     '#value' => $end_date->format('Y-m-d'),
   );
 
-  $form['group_size'] = array(
+  $form['rooms_group_size'] = array(
     '#type' => 'hidden',
-    '#value' => $group_size_adults,
+    '#value' => $booking_parameters[1]['adults'],
   );
+
+  if (isset($booking_parameters[1]['children'])) {
+    $form['rooms_children'] = array(
+      '#type' => 'hidden',
+      '#value' => $booking_parameters[1]['children'],
+    );
+  }
 
   $form['price'] = array(
     '#prefix' => '<div class="rooms-search-result__unit-base-price" id="unit_' . $unit->unit_id . '_base_price">',
@@ -919,7 +1045,7 @@ function book_unit_form_submit(&$form, &$form_state) {
   $unit_id = $form_state['values']['unit_id'];
   $start_date = $form_state['values']['start_date'];
   $end_date = $form_state['values']['end_date'];
-  $group_size = $form_state['values']['group_size'];
+  $group_size = $form_state['values']['rooms_group_size'];
   $status = $form_state['values']['status'];
 
   // This is very inefficient right now but we need to create date objects
@@ -972,7 +1098,19 @@ function book_unit_form_submit(&$form, &$form_state) {
       $form_state['redirect'] = 'bookings';
     }
     elseif (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT) {
-      $form_state['redirect'] = 'enquiry/' . $start_date . '/' . $end_date . '/' . $unit_id;
+      $booking_parameters = array();
+      if (isset($form_state['values']['rooms_group_size'])){
+        $booking_parameters['rooms_group_size'] = $form_state['values']['rooms_group_size'];
+      }
+      if (isset($form_state['values']['rooms_children'])){
+        $booking_parameters['rooms_children'] = $form_state['values']['rooms_children'];
+      }
+      $form_state['redirect'] = array(
+        'enquiry/' . $start_date . '/' . $end_date . '/' . $unit_id,
+        array(
+          'query' => $booking_parameters,
+        )
+      );
     }
   }
   else {
@@ -1572,77 +1710,14 @@ function book_units_per_type_form_validate(&$form, &$form_state) {
   form_set_error('', t('Please select a unit in order to continue with booking.'));
 }
 
-
-function room_booking_manager_send_email(&$form_state) {
-  $email = variable_get('site_mail', ini_get('sendmail_from'));
-  $module = 'rooms_booking_manager';
-  $key = 'booking';
-  $language = language_default();
-  $params = array();
-  $from = NULL;
-  $send = FALSE;
-  $message = drupal_mail($module, $key, $email, $language, $params, $from, $send);
-
-  $message['subject'] = t('Booking');
-
-  $variables = array();
-
-  $booking_request = array();
-  foreach ($form_state['values'] as $value_key => $value) {
-    $values = explode(':', $value_key);
-    if (count($values) == 3 && $values[2] == 'adults') {
-      $label = db_select('rooms_unit_type', 'n')->fields('n', array('label'))->condition('type', $values[0], '=')->execute()->fetchField();
-
-      $booking_request[] = '<p>' . $label . ' (' . t('Adults') . ': ' . $value . ' - ' . t('Children') . ': ' . $form_state['values'][$values[0] . ':' . $values[1] . ':children']  . ')</p>';
-    }
-  }
-  if (isset($form_state['complete form']['room_description'])) {
-    $booking_request[] = $form_state['complete form']['room_description']['#markup'];
-  }
-
-  $variables['customer_name'] = t('Name') . ': ' . $form_state['values']['customer_name'];
-  $variables['customer_email'] = t('Email') . ': ' . $form_state['values']['customer_email'];
-  $variables['customer_add1'] = t('Address Line 1') . ': ' . $form_state['values']['customer_add1'];
-  $variables['customer_add2'] = t('Address Line 2') . ': ' . $form_state['values']['customer_add2'];
-  $variables['customer_city'] = t('City') . ': ' . $form_state['values']['customer_city'];
-  $variables['customer_state'] = t('State/Province') . ': ' . $form_state['values']['customer_state'];
-  $variables['customer_country'] = t('Country') . ': ' . $form_state['values']['customer_country'];
-  $variables['comments'] = t('Comments') . ': ' . $form_state['values']['comments'];
-
-  $variables['booking_request'] = $booking_request;
-
-  $message['body'] = array(theme('rooms_booking_email', $variables));
-
-  // Retrieve the responsible implementation for this message.
-  $system = drupal_mail_system($module, $key);
-
-  // Format the message body.
-  $message = $system->format($message);
-
-  // Send e-mail.
-  $message['result'] = $system->mail($message);
-
-  $form_state['redirect'] = 'enquiry-confirmation';
-}
-
 /**
  * @todo - check that original availability still holds
  * @todo - fix the user ownership of products
  */
 function book_units_per_type_form_submit(&$form, &$form_state) {
-
-  if (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT) {
-    $sd = $form_state['values']['start_date']->format('Y-m-d');
-    $ed = $form_state['values']['end_date']->format('Y-m-d');
-    $form_state['redirect'] = "enquiry/$sd/$ed";
-    return;
-  }
   module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.commerce');
 
   global $user;
-
-  $currency_setting = commerce_currency_load(commerce_default_currency());
-  $currency_symbol = $currency_setting['symbol'];
 
   $start_date = $form_state['values']['start_date'];
   $end_date = $form_state['values']['end_date'];
@@ -1661,13 +1736,25 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
     }
   }
 
+  if (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT) {
+    $sd = $start_date->format('Y-m-d');
+    $ed = $end_date->format('Y-m-d');
+    $form_state['redirect'] = array(
+      "enquiry/$sd/$ed",
+      array(
+        'query' => array(
+          'order' => $order,
+        ),
+      )
+    );
+    return;
+  }
+
   // Let us get the available rooms again and match the order against actual rooms.
   $agent = new AvailabilityAgent($start_date, $end_date, $booking_parameters, $b_units, array());
   $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
 
   $units_per_type = $agent->checkAvailability();
-
-  $j = 0;
 
   // We are going to check that this is still true - but let us try and service the order
   foreach ($order as $type => $price_serving) {
@@ -1676,106 +1763,54 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
         for ($i = 1; $i <= $unit_order['quantity']; $i++) {
           $unit = array_shift($units_per_type[$type][$price_level]);
 
-          // If we are using Commerce create the line items and pop in cart
-          if (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_COMMERCE_CHECKOUT) {
-
-            $childrens_age = array();
-            if (isset($form_state['values'][$type][$price_level]['fieldset'][$i]['children'])) {
-              for ($t = 1; $t <= $form_state['values'][$type][$price_level]['fieldset'][$i]['children']; $t++) {
-                $childrens_age[] = $form_state['values'][$type][$price_level]['fieldset'][$i]['childrens_age'][$t];
-              }
+          $childrens_age = array();
+          if (isset($form_state['values'][$type][$price_level]['fieldset'][$i]['children'])) {
+            for ($t = 1; $t <= $form_state['values'][$type][$price_level]['fieldset'][$i]['children']; $t++) {
+              $childrens_age[] = $form_state['values'][$type][$price_level]['fieldset'][$i]['childrens_age'][$t];
             }
-            $persons = isset($form_state['values'][$type][$price_level]['fieldset'][$i]['persons']) ?
-                      $form_state['values'][$type][$price_level]['fieldset'][$i]['persons'] + $unit['unit']->min_sleeps :
-                      $booking_parameters[$i]['adults'];
-            $children = isset($form_state['values'][$type][$price_level]['fieldset'][$i]['children']) ?
-                      $form_state['values'][$type][$price_level]['fieldset'][$i]['children'] + $unit['unit']->min_children :
-                      $booking_parameters[$i]['children'];
+          }
+          $persons = isset($form_state['values'][$type][$price_level]['fieldset'][$i]['persons']) ?
+            $form_state['values'][$type][$price_level]['fieldset'][$i]['persons'] + $unit['unit']->min_sleeps :
+            $booking_parameters[$i]['adults'];
+          $children = isset($form_state['values'][$type][$price_level]['fieldset'][$i]['children']) ?
+            $form_state['values'][$type][$price_level]['fieldset'][$i]['children'] + $unit['unit']->min_children :
+            $booking_parameters[$i]['children'];
 
-            // Fill group_size with unit size
-            $group_size = array('adults' => $persons, 'children' => $children, 'childrens_age' => $childrens_age);
+          // Fill group_size with unit size
+          $group_size = array('adults' => $persons, 'children' => $children, 'childrens_age' => $childrens_age);
 
-            // Convert Price options in Price modifiers
-            $price_modifiers = array();
-            if (isset($unit['unit']->rooms_booking_unit_options[LANGUAGE_NONE])) {
-              foreach ($unit['unit']->rooms_booking_unit_options[LANGUAGE_NONE] as $option) {
-                if (isset($form_state['values'][$type][$price_level]['fieldset'][$i][strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
-                  if ($form_state['values'][$type][$price_level]['fieldset'][$i][strtolower(str_replace(array(':', ' '), '_', $option['name']))] == 1) {
-                    $price_modifiers[strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
-                      '#name' => $option['name'],
-                      '#type' => ROOMS_DYNAMIC_MODIFIER,
-                      '#op_type' => $option['operation'],
-                      '#amount' => $option['value'],
-                      '#quantity' => $option['quantity'],
-                    );
-                  }
+          // Convert Price options in Price modifiers
+          $price_modifiers = array();
+          if (isset($unit['unit']->rooms_booking_unit_options[LANGUAGE_NONE])) {
+            foreach ($unit['unit']->rooms_booking_unit_options[LANGUAGE_NONE] as $option) {
+              if (isset($form_state['values'][$type][$price_level]['fieldset'][$i][strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
+                if ($form_state['values'][$type][$price_level]['fieldset'][$i][strtolower(str_replace(array(':', ' '), '_', $option['name']))] == 1) {
+                  $price_modifiers[strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
+                    '#name' => $option['name'],
+                    '#type' => ROOMS_DYNAMIC_MODIFIER,
+                    '#op_type' => $option['operation'],
+                    '#amount' => $option['value'],
+                    '#quantity' => $option['quantity'],
+                  );
                 }
               }
             }
-
-            // Create line item
-            $line_item = rooms_create_line_item($unit, $agent, $group_size, $price_modifiers);
-
-            // Add line item to cart
-            if (!empty($line_item)) {
-              $line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
-            }
-
-            // If we are doing a straight forward enquiry form add some form elements and rebuild form
-            // this allows us to preserve state across page loads and avoid repeating code
-          }
-          elseif (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT) {
-            $type_obj = rooms_unit_type_load($type);
-
-            $unit_info = $agent->checkAvailabilityForUnit($unit['unit']->unit_id);
-
-            $unit_first = array_pop($unit_info);
-            $price = $unit_first['price'];
-
-            $form_data[$unit['unit']->type . ':' . $j] = array(
-              '#type' => 'fieldset',
-            );
-
-            $form_data[$unit['unit']->type . ':' . $j]['price'] = array(
-              '#markup' => $type_obj->label . ' - ' . t('Cost') . ': ' .
-                t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
-                  '@currency_symbol' => $currency_symbol,
-                  '@amount' => $price,
-                )),
-            );
-
-            $form_data[$unit['unit']->type . ':' . $j][$unit['unit']->type . ':' . $j . ':adults'] = array(
-              '#prefix' => '<div class="container-inline">',
-              '#title' => t('Adults') . ':',
-              '#type' => 'textfield',
-              '#size' => 3,
-            );
-
-            $form_data[$unit['unit']->type . ':' . $j][$unit['unit']->type . ':' . $j . ':children'] = array(
-              '#title' => t('Children') . ':',
-              '#type' => 'textfield',
-              '#size' => 3,
-              '#suffix' => '</div></div>'
-            );
-
-            // We are storing the partially built form in form_data to use it
-            // when rebuilding the results page with the enquiry form
-            $form_state['values']['form_data'] = $form_data;
           }
 
-          $j++;
+          // Create line item
+          $line_item = rooms_create_line_item($unit, $agent, $group_size, $price_modifiers);
+
+          // Add line item to cart
+          if (!empty($line_item)) {
+            $line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
+          }
         }
       }
     }
   }
 
-  if (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_COMMERCE_CHECKOUT) {
-    // Send user to cart
-    $form_state['redirect'] = 'bookings';
-  }
-  elseif (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT) {
-    $form_state['rebuild'] = TRUE;
-  }
+  // Send user to cart
+  $form_state['redirect'] = 'bookings';
 }
 
 
@@ -1784,7 +1819,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
  * of the search as a convenient way to modify the search.
  */
 function rooms_booking_manager_change_search_form_submit($form, &$form_state) {
-  $booking_parameters = isset($form_state['values']['booking_parameters']) ? unserialize($form_state['values']['booking_parameters']) : array();
+  $booking_parameters = is_array(unserialize($form_state['values']['booking_parameters'])) ? unserialize($form_state['values']['booking_parameters']) : array();
 
   $b_parameters = array();
   foreach ($booking_parameters as $b_key => $param) {
