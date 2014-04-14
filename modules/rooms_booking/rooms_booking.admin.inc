@@ -417,6 +417,12 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
         }
       }
     }
+
+    $form['unit_id'] = array(
+      '#type' => 'hidden',
+      '#value' => $booking->unit_id
+    );
+
   }
   $unit_selected = isset($booking->unit_id) ? t('Currently assigned unit: @unit_name / @type', array('@type' => $type_obj->label, '@unit_name' => $unit->name)) : '';
 
@@ -517,6 +523,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
         'wrapper' => 'unit-wrapper',
       ),
     );
+    unset($form['unit_id']);
 
     // This is where the available untis will pop up
     $form['availability_fieldset']['unit_fieldset'] = array(
@@ -672,9 +679,6 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
               '#size' => '10',
               '#required' => TRUE,
             );
-
-            $start_date = new DateTime($form_state['values']['rooms_start_date']);
-            $end_date = new DateTime($form_state['values']['rooms_end_date']);
 
             list($start_date, $end_date) = rooms_form_values_get_start_end_dates($form_state);
 
