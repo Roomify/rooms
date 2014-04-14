@@ -1214,16 +1214,18 @@ function rooms_booking_create_order($start_date, $end_date, $booking_parameters,
 
   $price_modifiers = array();
   // Convert Price options to Price modifiers
-  foreach ($unit_object->rooms_booking_unit_options[LANGUAGE_NONE] as $option) {
-    $opt_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
-    if (isset($booking->$opt_name) && $booking->$opt_name) {
-      $price_modifiers[$opt_name] = array(
-        '#name' => $option['name'],
-        '#type' => ROOMS_DYNAMIC_MODIFIER,
-        '#op_type' => $option['operation'],
-        '#amount' => $option['value'],
-        '#quantity' => $option['quantity'],
-      );
+  if (isset($unit_object->rooms_booking_unit_options[LANGUAGE_NONE])) {
+    foreach ($unit_object->rooms_booking_unit_options[LANGUAGE_NONE] as $option) {
+      $opt_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
+      if (isset($booking->$opt_name) && $booking->$opt_name) {
+        $price_modifiers[$opt_name] = array(
+          '#name' => $option['name'],
+          '#type' => ROOMS_DYNAMIC_MODIFIER,
+          '#op_type' => $option['operation'],
+          '#amount' => $option['value'],
+          '#quantity' => $option['quantity'],
+        );
+      }
     }
   }
 
