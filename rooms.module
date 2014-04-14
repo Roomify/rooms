@@ -122,12 +122,6 @@ function rooms_field_info() {
 }
 
 /**
- * Implements hook_field_validate().
- */
-function rooms_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
-}
-
-/**
  * Implements hook_field_is_empty().
  */
 function rooms_field_is_empty($item, $field) {
@@ -199,7 +193,6 @@ function rooms_field_formatter_info() {
  */
 function rooms_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
-  $settings = $display['settings'];
 
   switch ($display['type']) {
     case 'rooms_options_default':
@@ -226,6 +219,9 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
       '#type' => 'textfield',
       '#title' => t('Name'),
       '#default_value' => isset($items[$delta]['name']) ? $items[$delta]['name'] : NULL,
+      '#attributes' => array(
+        'class' => array('booking-option-name')
+      ),
     );
     $element['quantity'] = array(
       '#type' => 'select',
@@ -244,8 +240,18 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
     $element['value'] = array(
       '#type' => 'textfield',
       '#title' => t('Value'),
+      '#size' => 10,
       '#default_value' => isset($items[$delta]['value']) ? $items[$delta]['value'] : NULL,
     );
+
+    $element['remove'] = array(
+      '#type' => 'submit',
+      '#value' => t('Remove'),
+      '#attributes' => array(
+        'class' => array('remove-booking-option'),
+      ),
+    );
+    $element['#attached']['js'] = array(drupal_get_path('module', 'rooms') . '/js/rooms_options_widget.js');
 
     return $element;
   }

@@ -409,7 +409,9 @@ function rooms_unit_edit_form_submit(&$form, &$form_state) {
 
   foreach ($units as $unit) {
     $unit->save();
+    drupal_set_message(t('Bookable unit @name saved', array('@name' => $unit->name)));
   }
+
   $form_state['redirect'] = 'admin/rooms/units';
 }
 
