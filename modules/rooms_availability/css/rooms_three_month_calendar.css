@@ -18,6 +18,7 @@
   float: left; /* LTR */
   width: 33%;
   padding: 0 15px;
+  -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
 .rooms-three-month-calendar .month1 {
