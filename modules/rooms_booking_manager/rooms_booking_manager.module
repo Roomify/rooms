@@ -156,6 +156,20 @@ function rooms_booking_manager_enquiry_page_form($form, $form_state, $start_date
       '#type' => 'hidden',
       '#value' => $unit_obj->name,
     );
+
+    if ($_GET['options']) {
+      $form['options'] = array(
+        '#type' => 'hidden',
+        '#value' => serialize($_GET['options']),
+      );
+
+      foreach($_GET['options'] as $option => $quantity) {
+        $printable_options[] = "$option: $quantity";
+      }
+      $form['options_description'] = array(
+        '#markup' => t('Options: @options', array('@options' => implode(',', $printable_options)))
+      );
+    }
   }
 
   $form['#tree'] = TRUE;
@@ -188,9 +202,8 @@ function rooms_booking_manager_enquiry_page_form($form, $form_state, $start_date
   if (isset($_GET['order'])) {
     foreach ($_GET['order'] as $type => $units) {
       $printed = FALSE;
-      $index = 1;
       foreach ($units as $unit) {
-        for ($i = 0; $i < $unit['quantity']; $i++) {
+        for ($index = 1; $index <= $unit['quantity']; $index++) {
           if (!$printed) {
             $room_type = rooms_unit_type_load($type);
             $form['units'][$type] = array(
@@ -206,23 +219,43 @@ function rooms_booking_manager_enquiry_page_form($form, $form_state, $start_date
             '#value' => t('Unit @unit', array('@unit' => $index)),
             '#attributes' => array('class' => array('container-inline')),
           );
-          $form['units'][$type]["{$type}_{$index}"]["{$type}_{$index}_markup"] = array(
+
+          $form['units'][$type]["{$type}_{$index}"]["markup"] = array(
             '#prefix' => '<h3>',
             '#markup' => t('Unit @unit', array('@unit' => $index)),
             '#suffix' => '</h3>',
           );
-          $form['units'][$type]["{$type}_{$index}"]["adults"] = array(
+
+          $options = array();
+          if (isset($unit['fieldset'][$index])) {
+            foreach ($unit['fieldset'][$index] as $option => $value) {
+              if (strpos($option, ':quantity') === FALSE) {
+                $options[] = $option . ': ' . ($unit['fieldset'][$index][$option . ':quantity'] + 1);
+              }
+            }
+            $form['units'][$type]["{$type}_{$index}"]['markup_options'] = array(
+              '#prefix' => '<h4>',
+              '#markup' => t('Options @options', array('@options' => implode(',', $options))),
+              '#suffix' => '</h4>',
+            );
+
+            $form['units'][$type]["{$type}_{$index}"]['options'] = array(
+              '#type' => 'hidden',
+              '#value' => t('Options @options', array('@options' => implode(',', $options))),
+            );
+          }
+
+          $form['units'][$type]["{$type}_{$index}"]['adults'] = array(
             '#type' => 'textfield',
             '#size' => 3,
             '#title' => t('Adults') . ':' ,
           );
-          $form['units'][$type]["{$type}_{$index}"]["children"] = array(
+          $form['units'][$type]["{$type}_{$index}"]['children'] = array(
             '#type' => 'textfield',
             '#size' => 3,
             '#title' => t('Children') . ':' ,
           );
         }
-        $index++;
       }
     }
   }
@@ -317,13 +350,24 @@ function rooms_booking_manager_enquiry_page_form_submit(&$form, &$form_state) {
   if (isset($form_state['values']['rooms_children'])) {
     $params['booking_request'][] = t('Number of children: @children', array('@children' => $form_state['values']['rooms_children']));
   }
+  if (isset($form_state['values']['options'])) {
+    $options = unserialize($form_state['values']['options']);
+    foreach($options as $option => $quantity) {
+      $printable_options[] = "$option: $quantity";
+    }
+    $params['booking_request'][] = t('Options: @options', array('@options' => implode(',', $printable_options)));
+  }
 
   if (isset($form_state['values']['units'])) {
     foreach($form_state['values']['units'] as $unit_type_id => $rooms) {
       $unit_type = rooms_unit_type_load($unit_type_id);
       $index = 1;
       foreach ($rooms as $room) {
-        $params['booking_request'][] = t('@unit_type unit No. @index: @adults adults and @children children.', array('@unit_type' => $unit_type->label, '@index' => $index, '@adults' =>$room['adults'], '@children' => $room['children']));
+        $output = t('@unit_type unit No. @index: @adults adults and @children children.', array('@unit_type' => $unit_type->label, '@index' => $index, '@adults' =>$room['adults'], '@children' => $room['children']));
+        if (isset($room['options'])) {
+          $output .= ' ' . $room['options'];
+        }
+        $params['booking_request'][] = $output;
         $index++;
       }
     }
@@ -1105,6 +1149,16 @@ function book_unit_form_submit(&$form, &$form_state) {
       if (isset($form_state['values']['rooms_children'])){
         $booking_parameters['rooms_children'] = $form_state['values']['rooms_children'];
       }
+      $options = array();
+      if (isset($form_state['values']['options'])) {
+        foreach ($form_state['values']['options'] as $option => $value) {
+          if (strpos($option, ':quantity') === FALSE) {
+            $options[$option] = ($form_state['values']['options'][$option . ':quantity'] + 1);
+          }
+        }
+
+        $booking_parameters['options'] =  $options;
+      }
       $form_state['redirect'] = array(
         'enquiry/' . $start_date . '/' . $end_date . '/' . $unit_id,
         array(
@@ -1729,7 +1783,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
   foreach ($form_state['values'] as $type => $value) {
     if (is_array($value)) {
       foreach ($value as $value2) {
-        if (isset($value2['quantity'])) {
+        if (!empty($value2['quantity'])) {
           $order[$type] = $value;
         }
       }
