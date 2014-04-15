@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * @file
  * Rooms Booking Manager brings together all the pieces required to find a room and book it
@@ -25,7 +24,6 @@ define ('FIRST_NIGHT_PAYMENT', 12);
 define ('ROOMS_DISPLAY_TYPE_SELECTOR', 1);
 define ('ROOMS_DISPLAY_TYPE_SELECTOR_NO', 0);
 
-
 /**
  * Implements hook_permission()
  */
@@ -38,7 +36,6 @@ function rooms_booking_manager_permission() {
   );
   return $permissions;
 }
-
 
 /**
  * Implements hook_menu().
@@ -103,7 +100,6 @@ function rooms_booking_manager_mail($key, &$message, $params) {
 function rooms_booking_manager_enquiry_confirmation() {
   return theme('rooms_booking_enquiry_confirmation', array('message' => t('Thank you - a reservation has been created in our system for this unit and your enquiry has been sent successfully. Our staff will be contacting you soon about confirmation.')));
 }
-
 
 /**
  * Display the shopping cart form and associated information.
@@ -270,47 +266,66 @@ function rooms_booking_manager_enquiry_page_form($form, $form_state, $start_date
     '#title' => t('Email') . ':',
     '#type' => 'textfield',
     '#size' => 50,
-  );
-  $form['customer_add1'] = array(
-    '#title' => t('Address Line 1') . ':',
-    '#type' => 'textfield',
-    '#size' => 80,
-  );
-  $form['customer_add2'] = array(
-    '#title' => t('Address Line 2') . ':',
-    '#type' => 'textfield',
-    '#size' => 80,
-  );
-  $form['customer_city'] = array(
-    '#title' => t('City') . ':',
-    '#type' => 'textfield',
-    '#size' => 60,
-  );
-  $form['customer_state'] = array(
-    '#title' => t('State/Province') . ':',
-    '#type' => 'textfield',
-    '#size' => 60,
-  );
-  $form['customer_country'] = array(
-    '#title' => t('Country') . ':',
-    '#type' => 'textfield',
-    '#size' => 60,
+    '#required' => TRUE,
   );
 
-  $form['comments'] = array(
-    '#title' => t('Comments') . ':',
-    '#type' => 'textarea',
-    '#cols' => 50,
-    '#resizable' => TRUE,
-    '#rows' => 5,
-  );
+  if (variable_get('rooms_enquiry_form_address', 1)) {
+    $form['customer_add1'] = array(
+      '#title' => t('Address Line 1') . ':',
+      '#type' => 'textfield',
+      '#size' => 80,
+      '#required' => variable_get('rooms_enquiry_form_address_required', 1),
+    );
+    $form['customer_add2'] = array(
+      '#title' => t('Address Line 2') . ':',
+      '#type' => 'textfield',
+      '#size' => 80,
+    );
+    $form['customer_city'] = array(
+      '#title' => t('City') . ':',
+      '#type' => 'textfield',
+      '#size' => 60,
+      '#required' => variable_get('rooms_enquiry_form_address_required', 1),
+    );
+    $form['customer_state'] = array(
+      '#title' => t('State/Province') . ':',
+      '#type' => 'textfield',
+      '#size' => 60,
+      '#required' => variable_get('rooms_enquiry_form_address_required', 1),
+    );
+    $form['customer_country'] = array(
+      '#title' => t('Country') . ':',
+      '#type' => 'textfield',
+      '#size' => 60,
+      '#required' => variable_get('rooms_enquiry_form_address_required', 1),
+    );
+  }
 
+  if (variable_get('rooms_enquiry_form_comments', 1)) {
+    $form['comments'] = array(
+      '#title' => t('Comments') . ':',
+      '#type' => 'textarea',
+      '#cols' => 50,
+      '#resizable' => TRUE,
+      '#rows' => 5,
+      '#required' => variable_get('rooms_enquiry_form_comments_required', 1),
+    );
+  }
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Submit'),
   );
 
   return $form;
+}
+
+/**
+ * Enquiry search page form validation handler.
+ */
+function rooms_booking_manager_enquiry_page_form_validate($form, $form_state) {
+  if (!valid_email_address($form_state['values']['customer_email'])) {
+    form_set_error('customer_email', t('You must enter a valid email address'));
+  }
 }
 
 /**
@@ -327,12 +342,16 @@ function rooms_booking_manager_enquiry_page_form_submit(&$form, &$form_state) {
 
   $params['customer_name'] = t('Name') . ': ' . $form_state['values']['customer_name'];
   $params['customer_email'] = t('Email') . ': ' . $form_state['values']['customer_email'];
-  $params['customer_add1'] = t('Address Line 1') . ': ' . $form_state['values']['customer_add1'];
-  $params['customer_add2'] = t('Address Line 2') . ': ' . $form_state['values']['customer_add2'];
-  $params['customer_city'] = t('City') . ': ' . $form_state['values']['customer_city'];
-  $params['customer_state'] = t('State/Province') . ': ' . $form_state['values']['customer_state'];
-  $params['customer_country'] = t('Country') . ': ' . $form_state['values']['customer_country'];
-  $params['comments'] = t('Comments') . ': ' . $form_state['values']['comments'];
+  if (variable_get('rooms_enquiry_form_address', 1)) {
+    $params['customer_add1'] = t('Address Line 1') . ': ' . $form_state['values']['customer_add1'];
+    $params['customer_add2'] = t('Address Line 2') . ': ' . $form_state['values']['customer_add2'];
+    $params['customer_city'] = t('City') . ': ' . $form_state['values']['customer_city'];
+    $params['customer_state'] = t('State/Province') . ': ' . $form_state['values']['customer_state'];
+    $params['customer_country'] = t('Country') . ': ' . $form_state['values']['customer_country'];
+  }
+  if (variable_get('rooms_enquiry_form_comments', 1)) {
+    $params['comments'] = t('Comments') . ': ' . $form_state['values']['comments'];
+  }
 
   $params['booking_request'] = array();
   if (isset($form_state['values']['unit'])) {
@@ -609,7 +628,6 @@ function rooms_booking_manager_change_search_form($form, &$form_state, $start_da
   return $form;
 }
 
-
 /**
  * Checks that the booking parameters given are valid. This is mainly used to
  * clean up values that came through the URL and are set in $_GET.
@@ -689,7 +707,6 @@ function rooms_booking_manager_retrieve_booking_parameters($booking_units, $book
   }
 }
 
-
 /**
  * Prepares rooms on a per room basis for presentation
  */
@@ -731,7 +748,6 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
   return $content;
 }
 
-
 /**
  * Prepares Units on a per type basis.
  */
@@ -744,7 +760,6 @@ function rooms_booking_manager_present_types($units_per_type, $content, $start_d
 
   return $content;
 }
-
 
 /**
  * Implements hook_forms()
@@ -765,7 +780,6 @@ function rooms_booking_manager_forms($form_id, $args) {
 
   return $forms;
 }
-
 
 /**
  * The form builder builds the form (where visible is simply the purchase
@@ -1065,11 +1079,9 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
   return $form;
 }
 
-
 function rooms_booking_manager_price_change_callback(&$form, $form_state) {
   return $form['price'];
 }
-
 
 /**
  * Validation for cart booking form
@@ -1078,7 +1090,6 @@ function rooms_booking_manager_price_change_callback(&$form, $form_state) {
  */
 function book_unit_form_validate(&$form, &$form_state) {
 }
-
 
 function book_unit_form_submit(&$form, &$form_state) {
 
@@ -1173,7 +1184,6 @@ function book_unit_form_submit(&$form, &$form_state) {
   }
 
 }
-
 
 function book_units_per_type_form($form, $form_state, $units_per_type, $start_date, $end_date, $booking_parameters, $b_units, $type = '') {
 
@@ -1681,7 +1691,6 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
   return $form;
 }
 
-
 /**
  * Ajax callback on booking search results page when quantity change
  */
@@ -1697,7 +1706,6 @@ function rooms_booking_manager_quantity_change_callback(&$form, $form_state) {
     return $form[$type][$price]['fieldset'];
   }
 }
-
 
 /**
  * Ajax callback on booking search results page when an Options state change
@@ -1722,7 +1730,6 @@ function rooms_booking_manager_options_change_callback(&$form, $form_state) {
 
   return array('#type' => 'ajax', '#commands' => $commands);
 }
-
 
 /**
  * Ajax callback on booking search results page when Children selector change
@@ -1867,7 +1874,6 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
   $form_state['redirect'] = 'bookings';
 }
 
-
 /**
  * This function redirects the user back to the search box and sets up the values
  * of the search as a convenient way to modify the search.
@@ -1907,7 +1913,6 @@ function rooms_booking_manager_change_search_form_submit($form, &$form_state) {
   );
 }
 
-
 /**
  * Implements hook_load()
  *
@@ -1928,7 +1933,6 @@ function start_date_load($start_date) {
 
   return $sd;
 }
-
 
 /**
  * Implements hook_load()
@@ -1951,7 +1955,6 @@ function end_date_load($end_date) {
   return $ed;
 }
 
-
 /**
  * Implements hook_theme()
  */
@@ -1968,7 +1971,6 @@ function rooms_booking_manager_theme() {
     ),
   );
 }
-
 
 /**
  * Implements hook_commerce_checkout_complete
@@ -2055,7 +2057,6 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
   }
 }
 
-
 function rooms_booking_manager_commerce_order_state_info() {
   $order_states = array();
 
@@ -2069,7 +2070,6 @@ function rooms_booking_manager_commerce_order_state_info() {
 
   return $order_states;
 }
-
 
 function rooms_booking_manager_commerce_order_status_info() {
   $order_statuses = array();
@@ -2095,11 +2095,9 @@ function rooms_booking_manager_commerce_order_status_info() {
   return $order_statuses;
 }
 
-
 function rooms_booking_manager_commerce_checkout_form_cancel_submit($form, &$form_state) {
   $form_state['redirect'] = 'bookings';
 }
-
 
 /**
  * Implements hook_form_alter().
@@ -2170,6 +2168,58 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
       ),
       '#default_value' => variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT),
     );
+
+    $form['enquiry_section'] = array(
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#title' => t('Enquiry checkout form settings'),
+      '#description' => t('Select the fields that will be shown to the user in the enquiry form page. (name and email are required)'),
+      '#states' => array(
+        'visible' => array(
+           ':input[name="rooms_checkout_style"]' => array('value' => ROOMS_ENQ_CHECKOUT),
+        ),
+      ),
+    );
+
+    $form['enquiry_section']['rooms_enquiry_form_address'] = array(
+      '#prefix' => '<div class="container-inline">',
+      '#type' => 'checkbox',
+      '#title' => t('Full address fields'),
+      '#default_value' => variable_get('rooms_enquiry_form_address', 1),
+    );
+
+    $form['enquiry_section']['rooms_enquiry_form_address_required'] = array(
+      '#suffix' => '</div>',
+      '#type' => 'checkbox',
+      '#title' => t('Required'),
+      '#default_value' => variable_get('rooms_enquiry_form_address_required', 1),
+      '#states' => array(
+        'visible' => array(
+           ':input[name="rooms_enquiry_form_address"]' => array('checked' => TRUE),
+        ),
+      ),
+    );
+
+    $form['enquiry_section']['rooms_enquiry_form_comments'] = array(
+      '#prefix' => '<div class="container-inline">',
+      '#type' => 'checkbox',
+      '#title' => t('Comments field'),
+      '#default_value' => variable_get('rooms_enquiry_form_comments', 1),
+    );
+
+    $form['enquiry_section']['rooms_enquiry_form_comments_required'] = array(
+      '#suffix' => '</div>',
+      '#type' => 'checkbox',
+      '#title' => t('Required'),
+      '#default_value' => variable_get('rooms_enquiry_form_comments_required', 1),
+      '#states' => array(
+        'visible' => array(
+          ':input[name="rooms_enquiry_form_comments"]' => array('checked' => TRUE),
+        ),
+      ),
+    );
+
     $form['rooms_price_calculation'] = array(
       '#type' => 'radios',
       '#title' => t('Price calculation'),
@@ -2301,7 +2351,6 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
   }
 }
 
-
 function rooms_booking_manager_settings_form_submit($form, &$form_state) {
   /*if($form_state['values']['rooms_payment_options'] == PERCENT_PAYMENT) {
     variable_set('rooms_payment_options_percentual', $form_state['values']['perc_textfield']);
@@ -2312,7 +2361,6 @@ function rooms_booking_manager_settings_form_submit($form, &$form_state) {
 
   variable_set('rooms_date_format', $form_state['values']['date_format']);
 }
-
 
 /**
  * Implements hook_rules_action_info()
@@ -2353,11 +2401,9 @@ function rooms_booking_manager_rules_action_info() {
   return $actions;
 }
 
-
 function rooms_booking_cancel_order_booking() {
 
 }
-
 
 function rooms_booking_manager_price_apply($line_item, $name) {
   if ($line_item->type == 'rooms_booking') {
@@ -2420,7 +2466,6 @@ function rooms_booking_manager_price_apply($line_item, $name) {
   }
 }
 
-
 /**
  * Implements hook_default_rules_configuration().
  */
@@ -2443,7 +2488,6 @@ function rooms_booking_manager_default_rules_configuration() {
   return $rules;
 }
 
-
 /**
  * Implements hook_block_info()
  */
@@ -2457,7 +2501,6 @@ function rooms_booking_manager_block_info() {
 
   return $blocks;
 }
-
 
 /**
  * Implements hook_block_view()
@@ -2482,7 +2525,6 @@ function rooms_booking_manager_block_view($block_name = '') {
   }
 }
 
-
 /**
  * Implements hook_commerce_line_item_type_info().
  */
@@ -2497,7 +2539,6 @@ function rooms_booking_manager_commerce_line_item_type_info() {
     ),
   );
 }
-
 
 /**
  * Ensures the booking line item type contains a product reference field and
@@ -2527,7 +2568,6 @@ function rooms_booking_manager_line_item_configuration($line_item_type) {
   }
 }
 
-
 /**
  * Implements hook_line_item_title()
  * Returns the title of a line item based on its type.
@@ -2543,7 +2583,6 @@ function rooms_booking_manager_line_item_title($line_item) {
   return ($line_item->line_item_label);
 }
 
-
 /**
  * Implements hook_commerce_product_type_info().
  */
@@ -2557,7 +2596,6 @@ function rooms_booking_manager_commerce_product_type_info() {
     ),
   );
 }
-
 
 /**
  * Implements hook_enable().
@@ -2589,7 +2627,6 @@ function rooms_booking_manager_enable() {
     drupal_set_message(t('There was an error creating the rooms product to handle bookings.'));
   }
 }
-
 
 /**
  * Implements hook_views_api().
