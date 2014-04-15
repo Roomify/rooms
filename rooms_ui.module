@@ -51,7 +51,9 @@ function rooms_ui_init() {
   drupal_add_css(drupal_get_path('module', 'rooms_ui') . '/css/rooms_ui.css');
 }
 
-
+/**
+ * Main booking settings form.
+ */
 function rooms_booking_settings() {
 
   $form = array();
