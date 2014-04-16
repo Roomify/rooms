@@ -121,7 +121,10 @@ class RoomsBookingUIController extends EntityDefaultUIController {
       drupal_goto($item['href']);
     }
 
-    return theme('rooms_booking_add_list', array('content' => $content));
+    return array(
+      '#theme' => 'rooms_booking_add_list',
+      '#content' => $content,
+    );
   }
 
 }
@@ -219,8 +222,7 @@ function rooms_booking_edit_profile_callback(&$form, $form_state) {
  */
 function rooms_booking_edit_form($form, &$form_state, $booking) {
   $form['#attributes']['class'][] = 'rooms-management-form rooms-booking-form';
-
-  drupal_add_css(drupal_get_path('module', 'rooms_booking') . '/css/rooms_booking.css');
+  $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking') . '/css/rooms_booking.css');
 
   $client = '';
 
@@ -1332,7 +1334,6 @@ function rooms_booking_add_page() {
  */
 function theme_rooms_booking_add_list($variables) {
   $content = $variables['content'];
-  $output = '';
   if ($content) {
     $output = '<dl class="booking-type-list">';
     foreach ($content as $item) {

@@ -87,32 +87,30 @@ function rooms_pricing_page(RoomsUnit $rooms_unit, $year='', $month='') {
   // Set the page title.
   drupal_set_title(t('Edit @unit_name Pricing', array('@unit_name' => $rooms_unit->name)));
 
-  // Add styles.
-  drupal_add_css(drupal_get_path('module', 'rooms_pricing') . '/css/rooms_pricing.css');
-
-  // Add scripts.
-  drupal_add_js(drupal_get_path('module', 'rooms_pricing') . '/js/rooms_pricing.js');
-
-  // Inject settings in javascript that we will use.
-  drupal_add_js(array('roomsPricing' => array('roomID' => $rooms_unit->unit_id)), 'setting');
-
-  // Load Fullcalendar
-  rooms_fullcalendar_loaded();
-
   // Get the current page's URL, striped of the year and month args.
   // This allows us to place this page anywhere, including at
   // unit/%/pricing  or  admin/rooms/units/unit/%/pricing
   list($url) = explode('/' . $year . '/' . $month, current_path());
 
-  // Send everything for theming
-  $output = theme('rooms_three_month_calendar', array(
-    'url' => $url,
-    'form' => drupal_get_form('update_unit_pricing_form', $rooms_unit->unit_id),
-    'year' => $year,
-    'month' => $month,
-  ));
-
-  return $output;
+  return array(
+    '#theme' => 'rooms_three_month_calendar',
+    '#url' => $url,
+    '#form' => drupal_get_form('update_unit_pricing_form', $rooms_unit->unit_id),
+    '#year' => $year,
+    '#month' => $month,
+    '#attached' => array(
+      'js' => array(
+        drupal_get_path('module', 'rooms_pricing') . '/js/rooms_pricing.js',
+        array(
+          'data' => array('roomsPricing' => array('roomID' => $rooms_unit->unit_id)),
+          'type' => 'setting',
+        ),
+      ),
+      'css' => array(
+        drupal_get_path('module', 'rooms_pricing') . '/css/rooms_pricing.css',
+      ),
+    ),
+  );
 }
 
 
