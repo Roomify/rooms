@@ -5,6 +5,10 @@
  * Manage Bookings - Bookings are tied to a customer profile and possible a Unit ID and Order ID
  */
 
+// This is a special booking type used to avoid confusion between
+// deleted bookings directly or deleting them because we deleted
+// a line item or an order.
+define('ROOMS_BOOKING_DELETED', 'rooms_booking_deleted');
 
 
 /**
@@ -569,20 +573,29 @@ function rooms_booking_delete(RoomsBooking $booking, $delete_line_item = TRUE) {
   // Check if the booking had a unit associated with it and if so update the availability calendar
   if (isset($booking->unit_id) && isset($booking->start_date) && isset($booking->end_date)) {
       $uc = new UnitCalendar($booking->unit_id);
+      // We are not concerned with the state of the event id (confirmed or unconfirmed here)
+      // because we will unlock it no matter what (we look for absolute value)
       $event_id = rooms_availability_assign_id($booking->booking_id);
       // Create an event representing the event to remove
-      $be = new BookingEvent($booking->unit_id, $event_id, $booking->start_date_object, $booking->end_date_object);
+      $start_date = $booking->start_date_object;
+      $end_date = $booking->end_date_object;
+      // Remove a day from end date to represent the actual event
+      $end_date->sub(new DateInterval('P1D'));
+      $be = new BookingEvent($booking->unit_id, $event_id, $start_date, $end_date);
       $uc->removeEvents(array($be));
+      // We've updated the calendar so mark the booking as deleted.
+      $booking->type = ROOMS_BOOKING_DELETED;
+      $booking->save();
   }
 
   if ($booking->order_id != '' && $delete_line_item) {
     $order = commerce_order_load($booking->order_id);
 
-    if (isset($order->commerce_line_items['und'])) {
-      foreach ($order->commerce_line_items['und'] as $value) {
+    if (isset($order->commerce_line_items['LANGUAGE_NONE'])) {
+      foreach ($order->commerce_line_items['LANGUAGE_NONE'] as $value) {
         $line_item = commerce_line_item_load($value['line_item_id']);
 
-        if ($line_item->rooms_booking_reference['und'][0]['target_id'] == $booking->booking_id) {
+        if ($line_item->rooms_booking_reference['LANGUAGE_NONE'][0]['target_id'] == $booking->booking_id) {
           commerce_line_item_delete($line_item->line_item_id);
           if (count($order->commerce_line_items) == 0) {
             commerce_order_delete($order->order_number);
@@ -594,7 +607,9 @@ function rooms_booking_delete(RoomsBooking $booking, $delete_line_item = TRUE) {
     }
   }
 
-  $booking->delete();
+  if ($booking->type = ROOMS_BOOKING_DELETED) {
+    $booking->delete();
+  }
 }
 
 
@@ -602,23 +617,40 @@ function rooms_booking_delete(RoomsBooking $booking, $delete_line_item = TRUE) {
  * Implements hook_commerce_line_item_delete().
  */
 function rooms_booking_commerce_line_item_delete($line_item) {
-  if (isset($line_item->rooms_booking_reference['und'][0]['target_id'])) {
-    $booking = rooms_booking_load($line_item->rooms_booking_reference['und'][0]['target_id']);
+  if (isset($line_item->rooms_booking_reference['LANGUAGE_NONE'][0]['target_id'])) {
+    $booking = rooms_booking_load($line_item->rooms_booking_reference['LANGUAGE_NONE'][0]['target_id']);
 
     if ($booking !== FALSE) {
       if ($line_item->order_id == $booking->order_id) {
-        //Check if the booking had a unit associated with it and if so update the availability calendar
-        if (isset($booking->unit_id) && isset($booking->start_date) && isset($booking->end_date)) {
-          $uc = new UnitCalendar($booking->unit_id);
-          // Create an event representing the event to remove
-          $be = new BookingEvent($booking->unit_id,
-                                 rooms_availability_assign_id($booking->booking_id),
-                                 new DateTime($booking->start_date),
-                                 new DateTime($booking->end_date));
-          $uc->removeEvents(array($be));
-        }
-
         rooms_booking_delete($booking, FALSE);
+      }
+    }
+  }
+}
+
+
+/**
+ * Implements hook_commerce_order_delete().
+ *
+ * Delete bookings associated with an order when deleting the order.
+ */
+function rooms_booking_commerce_order_delete($order) {
+
+  // Load the bookings associated with this order.
+  $query = new EntityFieldQuery();
+
+  $query->entityCondition('entity_type', 'rooms_booking')
+    ->propertyCondition('order_id', $order->order_id);
+  $bookings = $query->execute();
+
+  // Delete all bookings associated with this order.
+  if (isset($bookings['rooms_booking']) && count($bookings['rooms_booking'])) {
+    foreach ($bookings['rooms_booking'] as $result) {
+      $booking = rooms_booking_load($result->booking_id);
+
+      if ($booking !== FALSE) {
+        rooms_booking_delete($booking);
+        drupal_set_message(t('Deleted booking with id: %id', array('%id' => $result->booking_id)));
       }
     }
   }
@@ -688,33 +720,6 @@ function rooms_booking_page_title(RoomsBooking $booking) {
   return $booking->name;
 }
 
-
-/**
- * Implements hook_commerce_order_delete().
- *
- * Delete bookings associated with an order when deleting the order.
- */
-function rooms_booking_commerce_order_delete($order) {
-
-  // Load the bookings associated with this order.
-  $query = new EntityFieldQuery();
-
-  $query->entityCondition('entity_type', 'rooms_booking')
-    ->propertyCondition('order_id', $order->order_id);
-  $bookings = $query->execute();
-
-  // Delete all bookings associated with this order.
-  if (isset($bookings['rooms_booking']) && count($bookings['rooms_booking'])) {
-    foreach ($bookings['rooms_booking'] as $result) {
-      $booking = rooms_booking_load($result->booking_id);
-
-      if ($booking !== FALSE) {
-        rooms_booking_delete($booking);
-        drupal_set_message(t('Deleted booking with id: %id', array('%id' => $result->booking_id)));
-      }
-    }
-  }
-}
 
 /**
  * Get a list of Booking keyed by id and name in value
@@ -954,8 +959,10 @@ class RoomsBookingController extends EntityAPIController {
   public function save($entity) {
     $entity->original = entity_load_unchanged($this->entityType, $entity->{$this->idKey});
 
-    // We are going to be updating the event - so the first step is to remove the old event.
-    if ((!isset($entity->is_new)) && ($entity->unit_id != 0) && ($entity->original->start_date != '') && ($entity->original->end_date != '')) {
+    // We are going to be updating the event - so the first step is to remove the old event unless this
+    // is a booking we are deleting - in which case we have already removed the event
+    if ((!isset($entity->is_new)) && ($entity->unit_id != 0) && ($entity->original->start_date != '') &&
+      ($entity->original->end_date != '') && ($entity->type != ROOMS_BOOKING_DELETED)) {
       // Create a calendar
       $uc = new UnitCalendar($entity->original->unit_id);
       $event_id = rooms_availability_assign_id($entity->booking_id, $entity->booking_status);
@@ -966,8 +973,8 @@ class RoomsBookingController extends EntityAPIController {
 
     parent::save($entity);
 
-    // We have a unit defined so lets block availability there
-    if ($entity->unit_id != 0) {
+    // We have a unit defined so lets block availability there unless its a booking that is to be deleted
+    if (($entity->unit_id != 0) && ($entity->type != ROOMS_BOOKING_DELETED)) {
       // Set the event_id
       $event_id = rooms_availability_assign_id($entity->booking_id, $entity->booking_status);
       $corrected_end_date = new DateTime($entity->end_date);
