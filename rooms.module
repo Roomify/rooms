@@ -70,7 +70,6 @@ function rooms_fullcalendar_loaded() {
     return TRUE;
   }
   else {
-
     // Alert the authorized user/administrator to the abscence of the library.
     drupal_set_message(t('The FullCalendar Library could not be found.
                           Please check the installation instructions and the <a href="@status">Status Report</a>.',
