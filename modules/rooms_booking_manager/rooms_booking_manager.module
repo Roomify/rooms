@@ -157,7 +157,7 @@ function rooms_booking_manager_enquiry_page_form($form, $form_state, $start_date
       '#value' => $unit_obj->name,
     );
 
-    if ($_GET['options']) {
+    if (isset($_GET['options'])) {
       $form['options'] = array(
         '#type' => 'hidden',
         '#value' => serialize($_GET['options']),
@@ -166,8 +166,9 @@ function rooms_booking_manager_enquiry_page_form($form, $form_state, $start_date
       foreach($_GET['options'] as $option => $quantity) {
         $printable_options[] = "$option: $quantity";
       }
+      $printable_options = theme('item_list', array('items' => $printable_options));
       $form['options_description'] = array(
-        '#markup' => t('Options: @options', array('@options' => implode(',', $printable_options)))
+        '#markup' => t('Options: !options', array('!options' => $printable_options)),
       );
     }
   }
@@ -201,6 +202,7 @@ function rooms_booking_manager_enquiry_page_form($form, $form_state, $start_date
 
   if (isset($_GET['order'])) {
     foreach ($_GET['order'] as $type => $units) {
+      $i = 0;
       $printed = FALSE;
       foreach ($units as $unit) {
         for ($index = 1; $index <= $unit['quantity']; $index++) {
@@ -214,47 +216,54 @@ function rooms_booking_manager_enquiry_page_form($form, $form_state, $start_date
             $printed = TRUE;
           }
 
-          $form['units'][$type]["{$type}_{$index}"] = array(
+          $form['units'][$type]["{$type}_{$i}"] = array(
             '#type' => 'container',
-            '#value' => t('Unit @unit', array('@unit' => $index)),
             '#attributes' => array('class' => array('container-inline')),
           );
 
-          $form['units'][$type]["{$type}_{$index}"]["markup"] = array(
+          $form['units'][$type]["{$type}_{$i}"]["markup"] = array(
             '#prefix' => '<h3>',
-            '#markup' => t('Unit @unit', array('@unit' => $index)),
+            '#markup' => t('Unit @unit', array('@unit' => $i)),
             '#suffix' => '</h3>',
           );
 
           $options = array();
           if (isset($unit['fieldset'][$index])) {
             foreach ($unit['fieldset'][$index] as $option => $value) {
-              if (strpos($option, ':quantity') === FALSE) {
+              if (strpos($option, ':quantity') === FALSE && $value && $option != 'persons' && $option != 'children' && $option != 'childrens_age') {
+                if (isset($unit['fieldset'][$index][$option . ':quantity'])){
                 $options[] = $option . ': ' . ($unit['fieldset'][$index][$option . ':quantity'] + 1);
+                }
+                else{
+                  $options[] = $option . ': 1';
+                }
               }
             }
-            $form['units'][$type]["{$type}_{$index}"]['markup_options'] = array(
-              '#prefix' => '<h4>',
-              '#markup' => t('Options @options', array('@options' => implode(',', $options))),
-              '#suffix' => '</h4>',
-            );
+            if (!empty($options)) {
+              $form['units'][$type]["{$type}_{$i}"]['markup_options'] = array(
+                '#prefix' => '<h4>',
+                '#markup' => t('Options: !options', array('!options' => theme('item_list', array('items' => $options)))),
+                '#suffix' => '</h4>',
+              );
 
-            $form['units'][$type]["{$type}_{$index}"]['options'] = array(
-              '#type' => 'hidden',
-              '#value' => t('Options @options', array('@options' => implode(',', $options))),
-            );
+              $form['units'][$type]["{$type}_{$i}"]['options'] = array(
+                '#type' => 'hidden',
+                '#value' => t('Options: @options', array('@options' => implode(',', $options))),
+              );
+            }
           }
 
-          $form['units'][$type]["{$type}_{$index}"]['adults'] = array(
+          $form['units'][$type]["{$type}_{$i}"]['adults'] = array(
             '#type' => 'textfield',
             '#size' => 3,
             '#title' => t('Adults') . ':' ,
           );
-          $form['units'][$type]["{$type}_{$index}"]['children'] = array(
+          $form['units'][$type]["{$type}_{$i}"]['children'] = array(
             '#type' => 'textfield',
             '#size' => 3,
             '#title' => t('Children') . ':' ,
           );
+          $i++;
         }
       }
     }
@@ -1152,8 +1161,13 @@ function book_unit_form_submit(&$form, &$form_state) {
       $options = array();
       if (isset($form_state['values']['options'])) {
         foreach ($form_state['values']['options'] as $option => $value) {
-          if (strpos($option, ':quantity') === FALSE) {
-            $options[$option] = ($form_state['values']['options'][$option . ':quantity'] + 1);
+          if (strpos($option, ':quantity') === FALSE && $value) {
+            if (isset($form_state['values']['options'][$option . ':quantity'])) {
+              $options[$option] = ($form_state['values']['options'][$option . ':quantity'] + 1);
+            }
+            else {
+              $options[$option] = 1;
+            }
           }
         }
 
