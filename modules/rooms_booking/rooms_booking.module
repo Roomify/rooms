@@ -591,11 +591,11 @@ function rooms_booking_delete(RoomsBooking $booking, $delete_line_item = TRUE) {
   if ($booking->order_id != '' && $delete_line_item) {
     $order = commerce_order_load($booking->order_id);
 
-    if (isset($order->commerce_line_items['LANGUAGE_NONE'])) {
-      foreach ($order->commerce_line_items['LANGUAGE_NONE'] as $value) {
+    if (isset($order->commerce_line_items[LANGUAGE_NONE])) {
+      foreach ($order->commerce_line_items[LANGUAGE_NONE] as $value) {
         $line_item = commerce_line_item_load($value['line_item_id']);
 
-        if ($line_item->rooms_booking_reference['LANGUAGE_NONE'][0]['target_id'] == $booking->booking_id) {
+        if ($line_item->rooms_booking_reference[LANGUAGE_NONE][0]['target_id'] == $booking->booking_id) {
           commerce_line_item_delete($line_item->line_item_id);
           if (count($order->commerce_line_items) == 0) {
             commerce_order_delete($order->order_number);
@@ -617,8 +617,8 @@ function rooms_booking_delete(RoomsBooking $booking, $delete_line_item = TRUE) {
  * Implements hook_commerce_line_item_delete().
  */
 function rooms_booking_commerce_line_item_delete($line_item) {
-  if (isset($line_item->rooms_booking_reference['LANGUAGE_NONE'][0]['target_id'])) {
-    $booking = rooms_booking_load($line_item->rooms_booking_reference['LANGUAGE_NONE'][0]['target_id']);
+  if (isset($line_item->rooms_booking_reference[LANGUAGE_NONE][0]['target_id'])) {
+    $booking = rooms_booking_load($line_item->rooms_booking_reference[LANGUAGE_NONE][0]['target_id']);
 
     if ($booking !== FALSE) {
       if ($line_item->order_id == $booking->order_id) {
