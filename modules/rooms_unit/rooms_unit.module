@@ -8,7 +8,6 @@
 
 /**
  * Defining some room states that will be used throughout
- *
  */
 define ('ROOMS_NOT_AVAILABLE', 0);
 define ('ROOMS_AVAILABLE', 1);
@@ -24,10 +23,8 @@ define ('ROOMS_BLOCKED', 100);
 define ('ROOMS_UPDATED', 200);
 define ('ROOMS_WRONG_UNIT', 300);
 
-
-
 /**
- * Implement hook_menu()
+ * Implements hook_menu().
  */
 function rooms_unit_menu() {
   $items  =  array();
@@ -42,7 +39,6 @@ function rooms_unit_menu() {
   return $items;
 }
 
-
 /**
  * Implement hook_entity_info().
  */
@@ -50,7 +46,7 @@ function rooms_unit_entity_info() {
   $return['rooms_unit'] = array(
     'label' => t('Bookable Units'),
     // The entity class and controller class extend the classes provided by the
-    // Entity API
+    // Entity API.
     'entity class' => 'RoomsUnit',
     'controller class' => 'RoomsUnitController',
     'base table' => 'rooms_units',
@@ -61,7 +57,8 @@ function rooms_unit_entity_info() {
     ),
     // Bundles are defined by the unit types below
     'bundles' => array(),
-    // Bundle keys tell the FieldAPI how to extract information from the bundle objects
+    // Bundle keys tell the FieldAPI how to extract information from the bundle
+    // objects.
     'bundle keys' => array(
       'bundle' => 'type',
     ),
@@ -70,7 +67,8 @@ function rooms_unit_entity_info() {
     'creation callback' => 'rooms_unit_create',
     'access callback' => 'rooms_unit_access',
     'module' => 'rooms_unit',
-    // The information below is used by the RoomsRoomUIController (which extends the EntityDefaultUIController)
+    // The information below is used by the RoomsRoomUIController (which extends
+    // the EntityDefaultUIController).
     'admin ui' => array(
       'path' => 'admin/rooms/units',
       'file' => 'rooms_unit.admin.inc',
@@ -78,7 +76,7 @@ function rooms_unit_entity_info() {
       'menu wildcard' => '%rooms_unit',
     ),
   );
-  // The entity that holds information about the entity types
+  // The entity that holds information about the entity types.
   $return['rooms_unit_type'] = array(
     'label' => t('Bookable Unit Type'),
     'entity class' => 'RoomsUnitType',
@@ -104,7 +102,6 @@ function rooms_unit_entity_info() {
 
   return $return;
 }
-
 
 /**
  * Implements hook_entity_info_alter().
@@ -133,40 +130,59 @@ function rooms_unit_entity_info_alter(&$entity_info) {
   );
 }
 
-
-
 /**
  * Implements hook_permission().
  */
 function rooms_unit_permission() {
-  // We set up permisssions to manage entity types, manage all entities and the
-  // permissions for each individual entity
+  // We set up permissions to manage entity types, manage all entities and the
+  // permissions for each individual entity.
   $permissions = array(
+    'bypass bookable units access' => array(
+      'title' => t('Bypass bookable unit access control'),
+      'description' => t('View, edit and delete all bookable units regardless of permission restrictions.'),
+      'restrict access' => TRUE,
+    ),
     'administer bookable unit types' => array(
       'title' => t('Administer unit types'),
       'description' => t('Create and delete fields for bookable unit types, and set their permissions.'),
+      'restrict access' => TRUE,
     ),
     'administer bookable units' => array(
       'title' => t('Administer bookable units'),
-      'description' => t('Edit and delete all bookable units'),
+      'restrict access' => TRUE,
+    ),
+    'access bookable units overview' => array(
+      'title' => t('Access the bookable units overview page'),
+      'description' => t('Get an overview of all bookable units.'),
+    ),
+    'access bookable units' => array(
+      'title' => 'View bookable units',
     ),
   );
 
-  //Generate permissions per room
+  // Generate permissions per room.
   foreach (rooms_unit_get_types() as $type) {
     $type_name = check_plain($type->type);
     $permissions += array(
+      "create $type_name bookable unit" => array(
+        'title' => t('%type_name: Create new content', array('%type_name' => $type->label)),
+      ),
+      "edit own $type_name bookable unit" => array(
+        'title' => t('%type_name: Edit own bookable unit', array('%type_name' => $type->label)),
+      ),
       "edit any $type_name bookable unit" => array(
         'title' => t('%type_name: Edit any bookable unit', array('%type_name' => $type->label)),
       ),
-      "view any $type_name bookable unit" => array(
-        'title' => t('%type_name: View any bookable unit', array('%type_name' => $type->label)),
+      "delete own $type_name bookable unit" => array(
+        'title' => t('%type_name: Edit own bookable unit', array('%type_name' => $type->label)),
+      ),
+      "delete any $type_name bookable unit" => array(
+        'title' => t('%type_name: Edit any bookable unit', array('%type_name' => $type->label)),
       ),
     );
   }
   return $permissions;
 }
-
 
 /**
  * Determines whether the given user has access to a bookable unit.
@@ -183,18 +199,108 @@ function rooms_unit_permission() {
  *   Whether access is allowed or not.
  */
 function rooms_unit_access($op, $unit = NULL, $account = NULL) {
-  if (user_access('administer bookable units', $account)) {
+  $rights = &drupal_static(__FUNCTION__, array());
+
+  if (!$unit || !in_array($op, rooms_unit_available_operations(), TRUE)) {
+    // If there was no node to check against, or the $op was not one of the
+    // supported ones, we return access denied.
+    return FALSE;
+  }
+  // If no user object is supplied, the access check is for the current user.
+  if (empty($account)) {
+    $account = $GLOBALS['user'];
+  }
+
+  // $node may be either an object or a unit type. Since unit types cannot be
+  // an integer, use either nid or type as the static cache id.
+  $cid = is_object($unit) ? $unit->unit_id : $unit;
+
+  // If we've already checked access for this node, user and op, return from
+  // cache.
+  if (isset($rights[$account->uid][$cid][$op])) {
+    return $rights[$account->uid][$cid][$op];
+  }
+
+  if (user_access('bypass bookable units access', $account)) {
+    $rights[$account->uid][$cid][$op] = TRUE;
     return TRUE;
   }
-  if (is_object($unit)) {
-    $op = ($op == 'view') ? 'view' : 'edit';
-    if (user_access("$op any $unit->type bookable unit", $account)) {
-      return TRUE;
-    }
+
+  if (!user_access('access bookable units', $account)) {
+    $rights[$account->uid][$cid][$op] = FALSE;
+    return FALSE;
   }
+
+  $access = module_invoke_all('rooms_unit_access', $unit, $op, $account);
+  if (in_array(NODE_ACCESS_DENY, $access, TRUE)) {
+    $rights[$account->uid][$cid][$op] = FALSE;
+    return FALSE;
+  }
+  elseif (in_array(NODE_ACCESS_ALLOW, $access, TRUE)) {
+    $rights[$account->uid][$cid][$op] = TRUE;
+    return TRUE;
+  }
+
+  // Check if authors can view their own unpublished nodes.
+  if ($op == 'view' && !$unit->status && user_access('view own unpublished content', $account) && $account->uid == $node->uid && $account->uid != 0) {
+    $rights[$account->uid][$cid][$op] = TRUE;
+    return TRUE;
+  }
+
+  if (is_object($unit) && $op == 'view' && $unit->status) {
+    // The default behavior is to allow all users to view published units.
+    $rights[$account->uid][$cid][$op] = TRUE;
+    return TRUE;
+  }
+
   return FALSE;
 }
 
+/**
+ * Implements hook_rooms_unit_access().
+ */
+function rooms_unit_rooms_unit_access($unit, $op, $account) {
+  $type = is_string($unit) ? $unit : $unit->type;
+
+  if (array_key_exists($type, rooms_unit_get_types())) {
+    if ($op == 'create' && user_access('create ' . $type . ' bookable unit', $account)) {
+      return ROOMS_ACCESS_ALLOW;
+    }
+
+    if ($op == 'update') {
+      if (user_access('edit any ' . $type . ' bookable unit', $account) || (user_access('edit own ' . $type . ' bookable unit', $account) && ($account->uid == $unit->uid))) {
+        return ROOMS_ACCESS_ALLOW;
+      }
+    }
+
+    if ($op == 'delete') {
+      if (user_access('delete any ' . $type . ' bookable unit', $account) || (user_access('delete own ' . $type . ' bookable unit', $account) && ($account->uid == $unit->uid))) {
+        return ROOMS_ACCESS_ALLOW;
+      }
+    }
+  }
+
+  return ROOMS_ACCESS_IGNORE;
+}
+
+/**
+ * Filters rooms unit based on permissions for multiple values.
+ */
+function rooms_unit_access_filter($op, $units = array(), $account = NULL) {
+  $filtered_units = array();
+
+  // If no user object is supplied, the access check is for the current user.
+  if (empty($account)) {
+    $account = $GLOBALS['user'];
+  }
+
+  foreach ($units as $key => $unit) {
+    if (rooms_unit_access($op, $unit, $account)) {
+      $filtered_units[$key] = $unit;
+    }
+  }
+  return $filtered_units;
+}
 
 /**
  * Access callback for the entity API.
@@ -203,6 +309,29 @@ function rooms_unit_type_access($op, $type = NULL, $account = NULL) {
   return user_access('administer bookable unit types', $account);
 }
 
+/**
+ * Access callback: Checks whether the user has permission to add a node.
+ *
+ * @return
+ *   TRUE if the user has add permission, otherwise FALSE.
+ *
+ * @see node_menu()
+ */
+function _rooms_unit_add_access() {
+  $types = rooms_unit_get_types();
+  foreach ($types as $type) {
+    if (rooms_unit_access('create', $type->type)) {
+      return TRUE;
+    }
+  }
+  if (user_access('administer bookable unit types')) {
+    // There are no content types defined that the user has permission to create,
+    // but the user does have the permission to administer the content types, so
+    // grant them access to the page anyway.
+    return TRUE;
+  }
+  return FALSE;
+}
 
 /**
  * Gets an array of all unit types, keyed by the type name.
@@ -221,7 +350,6 @@ function rooms_unit_get_types($type_name = NULL, $reset = FALSE) {
   return isset($type_name) ? reset($types) : $types;
 }
 
-
 /**
  * Helper function useful to easily get unit types in an array for use in forms, etc
  *
@@ -238,7 +366,6 @@ function rooms_unit_types_ids() {
   return $unit_types;
 }
 
-
 /**
  * Menu argument loader; Load a unit type by string.
  *
@@ -250,7 +377,6 @@ function rooms_unit_types_ids() {
 function rooms_unit_type_load($type, $reset = FALSE) {
   return rooms_unit_get_types($type, $reset);
 }
-
 
 /**
  * Fetch a bookable unit object. Make sure that the wildcard you choose
@@ -269,7 +395,6 @@ function rooms_unit_load($unit_id, $reset = FALSE) {
   $units = rooms_unit_load_multiple(array($unit_id), array(), $reset);
   return reset($units);
 }
-
 
 /**
  * Load multiple units based on certain conditions.
@@ -290,7 +415,6 @@ function rooms_unit_load_multiple($unit_ids = array(), $conditions = array(), $r
   return entity_load('rooms_unit', $unit_ids, $conditions, $reset);
 }
 
-
 /**
  * Deletes a bookable unit.
  *
@@ -300,7 +424,6 @@ function rooms_unit_load_multiple($unit_ids = array(), $conditions = array(), $r
 function rooms_unit_delete(RoomsUnit $unit) {
   $unit->delete();
 }
-
 
 /**
  * Delete multiple units.
@@ -312,14 +435,12 @@ function rooms_unit_delete_multiple(array $unit_ids) {
   entity_get_controller('rooms_unit')->delete($unit_ids);
 }
 
-
 /**
  * Create a room object.
  */
 function rooms_unit_create($values = array()) {
   return entity_get_controller('rooms_unit')->create($values);
 }
-
 
 /**
  * Saves a unit to the database.
@@ -331,7 +452,6 @@ function rooms_unit_save(RoomsUnit $unit) {
   return $unit->save();
 }
 
-
 /**
  * Saves a unit type to the db.
  */
@@ -339,14 +459,12 @@ function rooms_unit_type_save(RoomsUnitType $type) {
   $type->save();
 }
 
-
 /**
  * Deletes a unit type from the db.
  */
 function rooms_unit_type_delete(RoomsUnitType $type) {
   $type->delete();
 }
-
 
 /**
  * URI callback for units
@@ -357,7 +475,6 @@ function rooms_unit_uri(RoomsUnit $unit) {
   );
 }
 
-
 /**
  * Menu title callback for showing individual entities
  */
@@ -365,19 +482,15 @@ function rooms_unit_page_title(RoomsUnit $unit) {
   return $unit->name;
 }
 
-
-
 /**
  * Get a list of Units keyed by id and name in value
  *
  * @todo - double check utility of this and perhaps use rooms_unit_load_multiple
  */
 function rooms_unit_ids($bundle = '') {
-
   $units = array();
 
   $query = new EntityFieldQuery();
-
   $query->entityCondition('entity_type', 'rooms_unit');
 
   if ($bundle != '') {
@@ -408,7 +521,6 @@ function rooms_unit_page_view($unit, $view_mode = 'full') {
   return $content;
 }
 
-
 /**
  * Implements hook_views_api().
  */
@@ -419,9 +531,8 @@ function rooms_unit_views_api() {
   );
 }
 
-
 /**
- * Implement hook_theme().
+ * Implements hook_theme().
  */
 function rooms_unit_theme() {
   return array(
@@ -439,7 +550,6 @@ function rooms_unit_theme() {
     ),
   );
 }
-
 
 /**
  * Helper function for Unit Description autocomplete.
@@ -461,7 +571,6 @@ function rooms_unit_type_description_source($string = '') {
   drupal_json_output($matches);
 }
 
-
 /**
  * Implements hook_menu_local_tasks_alter().
  */
@@ -477,8 +586,6 @@ function rooms_unit_menu_local_tasks_alter(&$data, $router_item, $root_path) {
     }
   }
 }
-
-
 
 /**
  * Implements hook_form_FORM_ID_alter().
@@ -524,10 +631,21 @@ function rooms_unit_state_options() {
 }
 
 /**
+ * Retrieves the available operations for bookable units.
+ */
+function rooms_unit_available_operations() {
+  $operations = &drupal_static(__FUNCTION__);
+  if (!$operations) {
+    $operations =  array('view', 'update', 'delete', 'create');
+    $operations = array_merge($operations, module_invoke_all('rooms_unit_operations'));
+  }
+  return $operations;
+}
+
+/**
  * The class used for room entities
  */
 class RoomsUnit extends Entity {
-
   public function __construct($values = array()) {
     parent::__construct($values, 'rooms_unit');
   }
@@ -540,9 +658,7 @@ class RoomsUnit extends Entity {
     return array('path' => 'unit/' . $this->unit_id);
   }
 
-
 }
-
 
 /**
  * The class used for room type entities
@@ -558,7 +674,6 @@ class RoomsUnitType extends Entity {
 
 }
 
-
 /**
  * The Controller for RoomsUnit entities
  */
@@ -567,7 +682,6 @@ class RoomsUnitController extends EntityAPIController {
   public function __construct($entityType) {
     parent::__construct($entityType);
   }
-
 
   /**
    * Create a bookable unit - we first set up the values that are specific
@@ -588,6 +702,7 @@ class RoomsUnitController extends EntityAPIController {
     $values['max_children'] = (isset($unit_type->data['max_children'])) ? $unit_type->data['max_children'] : 0;
     $values['min_sleeps'] = (isset($unit_type->data['min_sleeps'])) ? $unit_type->data['min_sleeps'] : 0;
     $values['max_sleeps'] = (isset($unit_type->data['max_sleeps'])) ? $unit_type->data['max_sleeps'] : 0;
+    $values['status'] = (isset($unit_type->data['status'])) ? $unit_type->data['status'] : 0;
 
     // Add values that are specific to our Room
     $values += array(
@@ -631,7 +746,6 @@ class RoomsUnitController extends EntityAPIController {
   }
 
 }
-
 
 /**
  * The Controller for Room entities

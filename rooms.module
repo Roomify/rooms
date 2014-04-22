@@ -15,7 +15,9 @@ define('ROOMS_INCREASE', 'increase');
 define('ROOMS_DECREASE', 'decrease');
 define('ROOMS_PRICE_SINGLE_OCCUPANCY', 'single_occupancy');
 define('ROOMS_DYNAMIC_MODIFIER', 'dynamic_modifier');
-
+define('ROOMS_ACCESS_ALLOW', 'allow');
+define('ROOMS_ACCESS_DENY', 'deny');
+define('ROOMS_ACCESS_IGNORE', NULL);
 /**
  * Implements hook_permission().
  */
@@ -272,7 +274,8 @@ function rooms_end_of_month_dates($year) {
  *
  * @return array The array holding the field definitions
  */
-function rooms_date_range_fields($date_range_fields = array()) {
+function rooms_date_range_fields($year = NULL, $month = NULL) {
+  $date_range_fields = array();
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
 
   // Create unique ids and selectors for each picker.
@@ -290,6 +293,26 @@ function rooms_date_range_fields($date_range_fields = array()) {
     // to one day in advance.
     'minDate' => '+' . variable_get('rooms_booking_start_date', 1) . 'd',
   );
+
+  if ($year && $month) {
+    // Calculate min and max dates of the specified year/month.
+    $date = new DateTime();
+    $date->setDate($year, $month, 01);
+    $min_date = $date->format($date_format);
+    $date->modify('last day of this month');
+    $max_date = $date->format($date_format);
+    $datepicker_options += array(
+      'minDate' => $min_date,
+      'maxDate' => $max_date,
+      'defaultDate' => $min_date,
+      'numberOfMonths' => 1,
+    );
+  }
+  else {
+    $datepicker_options += array(
+      'minDate' => '+' . variable_get('rooms_booking_start_date', 1) . 'd',
+    );
+  }
 
   $date_range_fields['rooms_start_date'] = array(
     '#prefix' => '<div class="form-wrapper rooms-date-range"><div class="start-date" id="' . $start_date_id . '">',
@@ -330,6 +353,8 @@ function rooms_date_range_fields($date_range_fields = array()) {
         array(
          'data' => array(
             'rooms' => array(
+              'roomsStartYear' => $year,
+              'roomsStartMonth' => $month,
               'roomsBookingStartDay' => variable_get('rooms_booking_start_date', 1),
               'roomsDateFormat' => rooms_dateFormatTojQueryUIDatePickerFormat($date_format),
 
@@ -510,4 +535,118 @@ function rooms_range($start, $end) {
   else {
     return range($start, $end, 1);
   }
+}
+
+/**
+ * Helper validate function to ensure that at least one room is selected.
+ */
+function _rooms_select_rooms_validation($form_state) {
+  $select_rooms = FALSE;
+  if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'false') {
+    foreach ($form_state['values'] as $key => $value) {
+      if (strpos($key, 'rooms-') === 0 && $value == '1') {
+        $select_rooms = TRUE;
+      }
+    }
+  }
+  else {
+    $select_rooms = TRUE;
+  }
+
+  if (!$select_rooms) {
+    form_set_error('select-all', t('Select at least one unit.'));
+  }
+}
+
+function rooms_filter_month_form($form, &$form_state, $month, $year) {
+
+  $form['#attributes']['class'][] = 'rooms-management-form rooms-filter-month-form';
+
+  $month_options = array(
+    1 => t('January'),
+    2 => t('February'),
+    3 => t('March'),
+    4 => t('April'),
+    5 => t('May'),
+    6 => t('June'),
+    7 => t('July'),
+    8 => t('August'),
+    9 => t('September'),
+    10 => t('October'),
+    11 => t('November'),
+    12 => t('December'),
+  );
+
+  $form['rooms_availability_filter_month']['month'] = array(
+    '#title' => t('Month'),
+    '#type' => 'select',
+    '#options' => $month_options,
+    '#default_value' => $month,
+  );
+
+  $year_options = range(date('Y', time()) - 2, date('Y', time()) + 5);
+
+  $form['rooms_availability_filter_month']['year'] = array(
+    '#title' => t('Year'),
+    '#type' => 'select',
+    '#options' => $year_options,
+    '#default_value' => $year - date('Y', time()) + 2,
+  );
+
+  $query = db_select('rooms_unit_type', 'n')->fields('n', array('type', 'label'));
+  $unit_type = $query->execute()->fetchAll();
+
+  $type_options['all'] = t('All types');
+  foreach ($unit_type as $unit) {
+    $type_options[$unit->type] = $unit->label;
+  }
+
+  $form['rooms_availability_filter_month']['type'] = array(
+    '#title' => t('Type'),
+    '#type' => 'select',
+    '#options' => $type_options,
+    '#default_value' => (arg(6) == '') ? 'all' : arg(6),
+  );
+
+  $form['rooms_availability_filter_month']['actions'] = array(
+    '#type' => 'container',
+    '#attributes' => array('class' => array('form-actions')),
+    '#weight' => 400,
+  );
+
+  $form['rooms_availability_filter_month']['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Filter'),
+  );
+
+  hide($form['rooms_availability_filter_month']['actions']['submit']);
+
+  return $form;
+}
+
+function rooms_filter_month_form_submit(&$form, &$form_state) {
+  global $base_url;
+
+  if (arg(3) == 'bulk_pricing_management') {
+    variable_set('ROOMS_SELECT_ALL_PAGES_PR', 'false');
+  }
+  elseif (arg(3) == 'bulk_unit_management') {
+    variable_set('ROOMS_SELECT_ALL_PAGES_AV', 'false');
+  }
+
+  $year = $form_state['values']['year'] + date('Y', time()) - 2;
+  $month = $form_state['values']['month'];
+  $type = $form_state['values']['type'];
+
+  $address = $base_url . '/admin/rooms/units/' . arg(3) . '/' . $year . '/' . $month;
+  if ($type != 'all') {
+    $address .= '/' . $type;
+  }
+
+  if (arg(7) != '') {
+    if ($type == 'all') $address .= '/all/' . arg(7);
+    else $address .= $type . arg(7);
+  }
+
+  $form_state['redirect'] = $address;
 }

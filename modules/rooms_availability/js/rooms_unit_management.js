@@ -37,7 +37,7 @@ $(document).ready(function()
       jQuery.ajax({
         type: 'POST',
         url: Drupal.settings.basePath + '?q=admin/rooms/select-all-pages-av',
-        data: {'select-all': '0'},
+        data: {'select-all': '0'}
       });
     }
   });

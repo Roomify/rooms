@@ -363,7 +363,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#type' => 'fieldset',
   );
 
-  $form['rooms_date_range'] = rooms_date_range_fields($form['rooms_date_range']);
+  $form['rooms_date_range'] += rooms_date_range_fields();
 
   // Unset the default for max days away for bookings since we are on the admin side here
   drupal_add_js(array('rooms' => array('roomsBookingStartDay' => 0)), 'setting');

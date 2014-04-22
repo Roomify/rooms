@@ -1,1 +1,34 @@
 /* Styles for the rooms_pricing edit form */
+.rooms-bulk-pricing-form .fc-header {
+    display: none;
+}
+
+/* Filter month form */
+.rooms-filter-month-form .form-item-month,
+.rooms-filter-month-form .form-item-year,
+.rooms-filter-month-form .form-item-type {
+    float: left;
+    margin-right: 20px;
+}
+.rooms-filter-month-form .form-item-month label,
+.rooms-filter-month-form .form-item-year label,
+.rooms-filter-month-form .form-item-type label {
+    display: inline;
+    margin-right: 4px;
+}
+
+/* Bulk pricing form */
+.rooms-bulk-pricing-form .form-item-day-options {
+    float: left;
+    margin-right: 20px;
+}
+.rooms-bulk-pricing-form .form-item-day-options .form-type-checkbox {
+    display: inline;
+}
+.rooms-bulk-pricing-form .form-item-day-options .form-checkboxes:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}

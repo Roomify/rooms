@@ -6,7 +6,6 @@
  * the entity types.
  */
 
-
 /**
  * Implements hook_install().
  */
@@ -30,7 +29,6 @@ function rooms_unit_uninstall() {
   $limit = variable_get('field_purge_batch_size', 10);
   field_purge_batch($limit);
 }
-
 
 /**
  * Implements hook_schema().
@@ -129,6 +127,18 @@ function rooms_unit_schema() {
         'size' => 'tiny',
         'description' => 'How many children can sleep in a unit (MAX)',
       ),
+      'status' => array(
+        'description' => 'Boolean indicating whether the booking unit is published (visible to non-administrators).',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+      'uid' => array(
+        'description' => 'The {users}.uid that created this booking.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'data' => array(
         'type' => 'blob',
         'not null' => FALSE,
@@ -202,7 +212,6 @@ function rooms_unit_schema() {
   return $schema;
 }
 
-
 /**
  * Create content type for rooms unit type description
  */
@@ -235,8 +244,6 @@ function rooms_description_content_type_install() {
   node_type_save($content_type);
 }
 
-
-
 /**
  * Create fields on content type for Rooms bookable unit description.
  */
@@ -256,7 +263,6 @@ function _rooms_description_installed_fields() {
     ),
   );
 }
-
 
 function _rooms_description_installed_instances() {
   $t = get_t();
@@ -292,13 +298,10 @@ function _rooms_description_installed_instances() {
   );
 }
 
-
 /*
  * Remove content type Unit Description
  */
-
 function rooms_description_content_type_uninstall() {
-
   $sql = 'SELECT nid FROM {node} n WHERE n.type = :type';
   $result = db_query($sql, array(':type' => 'unit_description'));
   $nids = array();
@@ -322,10 +325,8 @@ function rooms_description_content_type_uninstall() {
   field_purge_batch(1000);
 }
 
-
-
 /**
- * Changes bace_price field to numeric storage
+ * Changes base_price field to numeric storage
  */
 function rooms_unit_update_7001() {
   $base_price_field_spec = array(
@@ -340,9 +341,7 @@ function rooms_unit_update_7001() {
   db_change_field('rooms_units', 'base_price', 'base_price', $base_price_field_spec);
 
   return t('Schema for the rooms_unit table has been updated.');
-
 }
-
 
 /**
  * Create rooms_description content type
@@ -350,7 +349,6 @@ function rooms_unit_update_7001() {
 function rooms_unit_update_7002() {
   rooms_description_content_type_install();
 }
-
 
 /**
  * Add fields for children
@@ -379,14 +377,12 @@ function rooms_unit_update_7003() {
   db_add_field('rooms_units', 'children', $children);
 }
 
-
 /**
  * Remove field cot_surcharge
  */
 function rooms_unit_update_7004() {
   db_drop_field('rooms_units', 'cot_surcharge');
 }
-
 
 /**
  * Add max and min sleeps, add max and min children
@@ -411,7 +407,6 @@ function rooms_unit_update_7005() {
   );
 
   db_change_field('rooms_units', 'children', 'max_children', $max_children);
-
 
   $min_sleeps = array(
     'type' => 'int',
@@ -438,7 +433,6 @@ function rooms_unit_update_7005() {
   db_update('rooms_units')->expression('min_children', 'max_children')->execute();
 }
 
-
 /**
  * Add max and min sleeps for Bookable Unit Types
  */
@@ -458,7 +452,6 @@ function rooms_unit_update_7006() {
     rooms_unit_type_save($unit_type);
   }
 }
-
 
 /**
  * Rename 'field_options' to 'rooms_booking_unit_options' and attach this field to any istance of rooms_unit
@@ -500,7 +493,7 @@ function rooms_unit_update_7007() {
   field_cache_clear();
 
   foreach (rooms_unit_types_ids() as $type => $value) {
-    // Attach field 'rooms_booking_unit_options' to any instance of rooms_unit
+    // Attach field 'rooms_booking_unit_options' to any instance of rooms_unit.
     if (field_info_instance('rooms_unit', 'rooms_booking_unit_options', $type) === NULL) {
       $instance = array(
         'field_name' => 'rooms_booking_unit_options',
@@ -517,9 +510,9 @@ function rooms_unit_update_7007() {
   }
 }
 
-
 /**
- * Update all data saved in Rooms Unit Type to change max/min_children_sleeps to max/min_children
+ * Updates all data saved in Rooms Unit Type to change max/min_children_sleeps to
+ * max/min_children.
  */
 function rooms_unit_update_7008() {
 
@@ -539,4 +532,36 @@ function rooms_unit_update_7008() {
     rooms_unit_type_save($unit_type);
   }
 
+}
+
+/**
+ * Adds status and uid properties to Bookable units.
+ */
+function rooms_unit_update_7009() {
+  db_add_field('rooms_units', 'status', array(
+    'description' => 'Boolean indicating whether the booking unit is published (visible to non-administrators).',
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 1,
+  ));
+   db_add_field('rooms_units', 'uid', array(
+    'description' => 'The {users}.uid that created this booking.',
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+  ));
+}
+
+/**
+ * Renames "administer bookable units" permission to
+ * "bypass bookable unit access".
+ */
+function rooms_unit_update_7010() {
+  db_update('role_permission')
+    ->fields(array(
+      'permission' => 'bypass bookable units access'
+    ))
+    ->condition('permission', 'administer bookable units')
+    ->execute();
+  return t('Permission renamed properly');
 }

@@ -48,8 +48,37 @@ function rooms_unit_views_data_alter(&$data) {
     ),
   );
 
-}
+  // Expose the uid as a relationship to users.
+  $data['rooms_units']['uid'] = array(
+    'title' => t('Uid'),
+    'help' => t("The owner's user ID."),
+    'field' => array(
+      'handler' => 'views_handler_field_user',
+      'click sortable' => TRUE,
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_user_uid',
+      'name field' => 'name', // display this field in the summary
+    ),
+    'filter' => array(
+      'title' => t('Name'),
+      'handler' => 'views_handler_filter_user_name',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'relationship' => array(
+      'title' => t('Owner'),
+      'help' => t("Relate this bookable unit to its owner's user account"),
+      'handler' => 'views_handler_relationship',
+      'base' => 'users',
+      'base field' => 'uid',
+      'field' => 'uid',
+      'label' => t('Bookable unit owner'),
+    ),
+  );
 
+}
 
 /**
  * Implements hook_views_default_views().
@@ -57,8 +86,7 @@ function rooms_unit_views_data_alter(&$data) {
 function rooms_unit_views_default_views() {
   $views = array();
 
-  $view = new view;
-
+  $view = new view();
   $view->name = 'bookable_units';
   $view->description = 'A list of bookable units';
   $view->tag = 'rooms';
@@ -72,8 +100,9 @@ function rooms_unit_views_default_views() {
   $handler = $view->new_display('default', 'Master', 'default');
   $handler->display->display_options['title'] = 'Bookable Units';
   $handler->display->display_options['use_ajax'] = TRUE;
+  $handler->display->display_options['use_more_always'] = FALSE;
   $handler->display->display_options['access']['type'] = 'perm';
-  $handler->display->display_options['access']['perm'] = 'administer bookable units';
+  $handler->display->display_options['access']['perm'] = 'access bookable units overview';
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
   $handler->display->display_options['query']['options']['query_comment'] = FALSE;
@@ -82,7 +111,6 @@ function rooms_unit_views_default_views() {
   $handler->display->display_options['pager']['options']['items_per_page'] = '20';
   $handler->display->display_options['pager']['options']['offset'] = '0';
   $handler->display->display_options['pager']['options']['id'] = '0';
-  $handler->display->display_options['pager']['options']['expose']['items_per_page_options_all'] = 0;
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['columns'] = array(
     'unit_id' => 'unit_id',
@@ -132,157 +160,59 @@ function rooms_unit_views_default_views() {
       'separator' => '',
     ),
   );
-  $handler->display->display_options['style_options']['override'] = 1;
-  $handler->display->display_options['style_options']['sticky'] = 0;
-  $handler->display->display_options['style_options']['empty_table'] = 0;
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['area']['id'] = 'area';
   $handler->display->display_options['empty']['area']['table'] = 'views';
   $handler->display->display_options['empty']['area']['field'] = 'area';
   $handler->display->display_options['empty']['area']['label'] = 'Empty Message';
-  $handler->display->display_options['empty']['area']['empty'] = FALSE;
   $handler->display->display_options['empty']['area']['content'] = 'No bookable units have been created yet.';
+  /* Relationship: Bookable Units: Owner */
+  $handler->display->display_options['relationships']['uid']['id'] = 'uid';
+  $handler->display->display_options['relationships']['uid']['table'] = 'rooms_units';
+  $handler->display->display_options['relationships']['uid']['field'] = 'uid';
+  $handler->display->display_options['relationships']['uid']['required'] = TRUE;
   /* Field: Bookable Units: Bookable units ID */
   $handler->display->display_options['fields']['unit_id']['id'] = 'unit_id';
   $handler->display->display_options['fields']['unit_id']['table'] = 'rooms_units';
   $handler->display->display_options['fields']['unit_id']['field'] = 'unit_id';
   $handler->display->display_options['fields']['unit_id']['label'] = 'ID';
-  $handler->display->display_options['fields']['unit_id']['alter']['alter_text'] = 0;
-  $handler->display->display_options['fields']['unit_id']['alter']['make_link'] = 0;
-  $handler->display->display_options['fields']['unit_id']['alter']['absolute'] = 0;
-  $handler->display->display_options['fields']['unit_id']['alter']['external'] = 0;
-  $handler->display->display_options['fields']['unit_id']['alter']['replace_spaces'] = 0;
-  $handler->display->display_options['fields']['unit_id']['alter']['nl2br'] = 0;
-  $handler->display->display_options['fields']['unit_id']['alter']['word_boundary'] = 1;
-  $handler->display->display_options['fields']['unit_id']['alter']['ellipsis'] = 1;
-  $handler->display->display_options['fields']['unit_id']['alter']['strip_tags'] = 0;
-  $handler->display->display_options['fields']['unit_id']['alter']['trim'] = 0;
-  $handler->display->display_options['fields']['unit_id']['alter']['html'] = 0;
-  $handler->display->display_options['fields']['unit_id']['element_label_colon'] = 1;
-  $handler->display->display_options['fields']['unit_id']['element_default_classes'] = 1;
-  $handler->display->display_options['fields']['unit_id']['hide_empty'] = 0;
-  $handler->display->display_options['fields']['unit_id']['empty_zero'] = 0;
-  $handler->display->display_options['fields']['unit_id']['format_plural'] = 0;
   /* Field: Bookable Units: Booking Unit Type */
   $handler->display->display_options['fields']['type']['id'] = 'type';
   $handler->display->display_options['fields']['type']['table'] = 'rooms_units';
   $handler->display->display_options['fields']['type']['field'] = 'type';
   $handler->display->display_options['fields']['type']['label'] = 'Type';
-  $handler->display->display_options['fields']['type']['alter']['alter_text'] = 0;
-  $handler->display->display_options['fields']['type']['alter']['make_link'] = 0;
-  $handler->display->display_options['fields']['type']['alter']['absolute'] = 0;
-  $handler->display->display_options['fields']['type']['alter']['external'] = 0;
-  $handler->display->display_options['fields']['type']['alter']['replace_spaces'] = 0;
-  $handler->display->display_options['fields']['type']['alter']['trim_whitespace'] = 0;
-  $handler->display->display_options['fields']['type']['alter']['nl2br'] = 0;
-  $handler->display->display_options['fields']['type']['alter']['word_boundary'] = 1;
-  $handler->display->display_options['fields']['type']['alter']['ellipsis'] = 1;
-  $handler->display->display_options['fields']['type']['alter']['strip_tags'] = 0;
-  $handler->display->display_options['fields']['type']['alter']['trim'] = 0;
-  $handler->display->display_options['fields']['type']['alter']['html'] = 0;
-  $handler->display->display_options['fields']['type']['element_label_colon'] = 1;
-  $handler->display->display_options['fields']['type']['element_default_classes'] = 1;
-  $handler->display->display_options['fields']['type']['hide_empty'] = 0;
-  $handler->display->display_options['fields']['type']['empty_zero'] = 0;
-  $handler->display->display_options['fields']['type']['hide_alter_empty'] = 1;
   /* Field: Bookable Units: Name */
   $handler->display->display_options['fields']['name']['id'] = 'name';
   $handler->display->display_options['fields']['name']['table'] = 'rooms_units';
   $handler->display->display_options['fields']['name']['field'] = 'name';
-  $handler->display->display_options['fields']['name']['alter']['alter_text'] = 0;
-  $handler->display->display_options['fields']['name']['alter']['make_link'] = 0;
-  $handler->display->display_options['fields']['name']['alter']['absolute'] = 0;
-  $handler->display->display_options['fields']['name']['alter']['external'] = 0;
-  $handler->display->display_options['fields']['name']['alter']['replace_spaces'] = 0;
-  $handler->display->display_options['fields']['name']['alter']['nl2br'] = 0;
-  $handler->display->display_options['fields']['name']['alter']['word_boundary'] = 1;
-  $handler->display->display_options['fields']['name']['alter']['ellipsis'] = 1;
-  $handler->display->display_options['fields']['name']['alter']['strip_tags'] = 0;
-  $handler->display->display_options['fields']['name']['alter']['trim'] = 0;
-  $handler->display->display_options['fields']['name']['alter']['html'] = 0;
-  $handler->display->display_options['fields']['name']['element_label_colon'] = 1;
-  $handler->display->display_options['fields']['name']['element_default_classes'] = 1;
-  $handler->display->display_options['fields']['name']['hide_empty'] = 0;
-  $handler->display->display_options['fields']['name']['empty_zero'] = 0;
   /* Field: Bookable Units: Base_price */
   $handler->display->display_options['fields']['base_price']['id'] = 'base_price';
   $handler->display->display_options['fields']['base_price']['table'] = 'rooms_units';
   $handler->display->display_options['fields']['base_price']['field'] = 'base_price';
   $handler->display->display_options['fields']['base_price']['label'] = 'Base price';
-  $handler->display->display_options['fields']['base_price']['alter']['alter_text'] = 0;
-  $handler->display->display_options['fields']['base_price']['alter']['make_link'] = 0;
-  $handler->display->display_options['fields']['base_price']['alter']['absolute'] = 0;
-  $handler->display->display_options['fields']['base_price']['alter']['external'] = 0;
-  $handler->display->display_options['fields']['base_price']['alter']['replace_spaces'] = 0;
-  $handler->display->display_options['fields']['base_price']['alter']['nl2br'] = 0;
-  $handler->display->display_options['fields']['base_price']['alter']['word_boundary'] = 1;
-  $handler->display->display_options['fields']['base_price']['alter']['ellipsis'] = 1;
-  $handler->display->display_options['fields']['base_price']['alter']['strip_tags'] = 0;
-  $handler->display->display_options['fields']['base_price']['alter']['trim'] = 0;
-  $handler->display->display_options['fields']['base_price']['alter']['html'] = 0;
-  $handler->display->display_options['fields']['base_price']['element_label_colon'] = 1;
-  $handler->display->display_options['fields']['base_price']['element_default_classes'] = 1;
-  $handler->display->display_options['fields']['base_price']['hide_empty'] = 0;
-  $handler->display->display_options['fields']['base_price']['empty_zero'] = 0;
-  $handler->display->display_options['fields']['base_price']['format_plural'] = 0;
   /* Field: Bookable Units: Bookable */
   $handler->display->display_options['fields']['bookable']['id'] = 'bookable';
   $handler->display->display_options['fields']['bookable']['table'] = 'rooms_units';
   $handler->display->display_options['fields']['bookable']['field'] = 'bookable';
-  $handler->display->display_options['fields']['bookable']['alter']['alter_text'] = 0;
-  $handler->display->display_options['fields']['bookable']['alter']['make_link'] = 0;
-  $handler->display->display_options['fields']['bookable']['alter']['absolute'] = 0;
-  $handler->display->display_options['fields']['bookable']['alter']['external'] = 0;
-  $handler->display->display_options['fields']['bookable']['alter']['replace_spaces'] = 0;
-  $handler->display->display_options['fields']['bookable']['alter']['nl2br'] = 0;
-  $handler->display->display_options['fields']['bookable']['alter']['word_boundary'] = 1;
-  $handler->display->display_options['fields']['bookable']['alter']['ellipsis'] = 1;
-  $handler->display->display_options['fields']['bookable']['alter']['strip_tags'] = 0;
-  $handler->display->display_options['fields']['bookable']['alter']['trim'] = 0;
-  $handler->display->display_options['fields']['bookable']['alter']['html'] = 0;
-  $handler->display->display_options['fields']['bookable']['element_label_colon'] = 1;
-  $handler->display->display_options['fields']['bookable']['element_default_classes'] = 1;
-  $handler->display->display_options['fields']['bookable']['hide_empty'] = 0;
-  $handler->display->display_options['fields']['bookable']['empty_zero'] = 0;
-  $handler->display->display_options['fields']['bookable']['format_plural'] = 0;
+  /* Field: Bookable Units: Status */
+  $handler->display->display_options['fields']['status']['id'] = 'status';
+  $handler->display->display_options['fields']['status']['table'] = 'rooms_units';
+  $handler->display->display_options['fields']['status']['field'] = 'status';
+  $handler->display->display_options['fields']['status']['element_label_colon'] = FALSE;
+  /* Field: User: Name */
+  $handler->display->display_options['fields']['name_1']['id'] = 'name_1';
+  $handler->display->display_options['fields']['name_1']['table'] = 'users';
+  $handler->display->display_options['fields']['name_1']['field'] = 'name';
+  $handler->display->display_options['fields']['name_1']['relationship'] = 'uid';
+  $handler->display->display_options['fields']['name_1']['label'] = 'Owner';
   /* Field: Bookable Units: Link */
   $handler->display->display_options['fields']['link_unit']['id'] = 'link_unit';
   $handler->display->display_options['fields']['link_unit']['table'] = 'rooms_units';
   $handler->display->display_options['fields']['link_unit']['field'] = 'link_unit';
-  $handler->display->display_options['fields']['link_unit']['alter']['alter_text'] = 0;
-  $handler->display->display_options['fields']['link_unit']['alter']['make_link'] = 0;
-  $handler->display->display_options['fields']['link_unit']['alter']['absolute'] = 0;
-  $handler->display->display_options['fields']['link_unit']['alter']['external'] = 0;
-  $handler->display->display_options['fields']['link_unit']['alter']['replace_spaces'] = 0;
-  $handler->display->display_options['fields']['link_unit']['alter']['nl2br'] = 0;
-  $handler->display->display_options['fields']['link_unit']['alter']['word_boundary'] = 1;
-  $handler->display->display_options['fields']['link_unit']['alter']['ellipsis'] = 1;
-  $handler->display->display_options['fields']['link_unit']['alter']['strip_tags'] = 0;
-  $handler->display->display_options['fields']['link_unit']['alter']['trim'] = 0;
-  $handler->display->display_options['fields']['link_unit']['alter']['html'] = 0;
-  $handler->display->display_options['fields']['link_unit']['element_label_colon'] = 1;
-  $handler->display->display_options['fields']['link_unit']['element_default_classes'] = 1;
-  $handler->display->display_options['fields']['link_unit']['hide_empty'] = 0;
-  $handler->display->display_options['fields']['link_unit']['empty_zero'] = 0;
   /* Field: Bookable Units: Operations links */
   $handler->display->display_options['fields']['operations']['id'] = 'operations';
   $handler->display->display_options['fields']['operations']['table'] = 'rooms_units';
   $handler->display->display_options['fields']['operations']['field'] = 'operations';
-  $handler->display->display_options['fields']['operations']['alter']['alter_text'] = 0;
-  $handler->display->display_options['fields']['operations']['alter']['make_link'] = 0;
-  $handler->display->display_options['fields']['operations']['alter']['absolute'] = 0;
-  $handler->display->display_options['fields']['operations']['alter']['external'] = 0;
-  $handler->display->display_options['fields']['operations']['alter']['replace_spaces'] = 0;
-  $handler->display->display_options['fields']['operations']['alter']['nl2br'] = 0;
-  $handler->display->display_options['fields']['operations']['alter']['word_boundary'] = 1;
-  $handler->display->display_options['fields']['operations']['alter']['ellipsis'] = 1;
-  $handler->display->display_options['fields']['operations']['alter']['strip_tags'] = 0;
-  $handler->display->display_options['fields']['operations']['alter']['trim'] = 0;
-  $handler->display->display_options['fields']['operations']['alter']['html'] = 0;
-  $handler->display->display_options['fields']['operations']['element_label_colon'] = 1;
-  $handler->display->display_options['fields']['operations']['element_default_classes'] = 1;
-  $handler->display->display_options['fields']['operations']['hide_empty'] = 0;
-  $handler->display->display_options['fields']['operations']['empty_zero'] = 0;
   /* Filter criterion: Bookable Units: Type */
   $handler->display->display_options['filters']['type']['id'] = 'type';
   $handler->display->display_options['filters']['type']['table'] = 'rooms_units';
@@ -292,8 +222,7 @@ function rooms_unit_views_default_views() {
   $handler->display->display_options['filters']['type']['expose']['label'] = 'Type';
   $handler->display->display_options['filters']['type']['expose']['operator'] = 'type_op';
   $handler->display->display_options['filters']['type']['expose']['identifier'] = 'type';
-  $handler->display->display_options['filters']['type']['expose']['multiple'] = 1;
-  $handler->display->display_options['filters']['type']['expose']['reduce'] = 0;
+  $handler->display->display_options['filters']['type']['expose']['multiple'] = TRUE;
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
@@ -307,7 +236,6 @@ function rooms_unit_views_default_views() {
   $handler->display->display_options['tab_options']['description'] = 'Create and administer units that can be booked, such as rooms for a hotel. Bookable units have availability and pricing information attached to them by the Rooms module and can have extra fields added via the standard Drupal Field API functionality.';
   $handler->display->display_options['tab_options']['weight'] = '-10';
   $handler->display->display_options['tab_options']['name'] = 'management';
-
 
   $views['bookable_units'] = $view;
   return $views;
