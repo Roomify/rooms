@@ -6,7 +6,6 @@
  * the entity types.
  */
 
-
 /**
  * Implements hook_install().
  */
@@ -14,7 +13,6 @@ function rooms_booking_install() {
   // Create a basic booking type
   rooms_booking_create_booking_type();
 }
-
 
 /**
  * Implements hook_schema().
@@ -185,7 +183,6 @@ function rooms_booking_schema() {
     ),
   );
 
-
   // Stores the customer name and potentially relates it to a Commerce
   // customer profile.
   $schema['rooms_customers'] = array(
@@ -217,12 +214,10 @@ function rooms_booking_schema() {
   return $schema;
 }
 
-
 function rooms_booking_create_booking_type() {
   $booking = new RoomsBookingType(array('label' => 'Standard Booking', 'type' => 'standard_booking'));
   rooms_booking_type_save($booking);
 }
-
 
 /**
  * Create booking_status field in rooms_booking table
@@ -240,7 +235,6 @@ function rooms_booking_update_7001() {
 
   return t('Add field booking_status in Rooms Booking table.');
 }
-
 
 /**
  * Create customers table
@@ -274,7 +268,6 @@ function rooms_booking_update_7002() {
 
   db_create_table('rooms_customers', $schema['rooms_customers']);
 }
-
 
 /**
  * Create price field in rooms_booking table

@@ -40,7 +40,6 @@ class RoomsUnitUIController extends EntityDefaultUIController {
       'description' => 'Create a new bookable unit.',
       'page callback'  => 'rooms_unit_add_page',
       'access callback'  => '_rooms_unit_add_access',
-      'access arguments' => array('create'),
       'type' => MENU_NORMAL_ITEM,
       'weight' => 20,
       'file' => 'rooms_unit.admin.inc',

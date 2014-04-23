@@ -10,7 +10,6 @@
 // a line item or an order.
 define('ROOMS_BOOKING_DELETED', 'rooms_booking_deleted');
 
-
 /**
  * Implements hook_menu().
  */
@@ -58,7 +57,6 @@ function rooms_booking_menu() {
   return $items;
 }
 
-
 function rooms_booking_edit_customer_profile($customer_id) {
   ctools_include('modal');
 
@@ -89,9 +87,7 @@ function rooms_booking_edit_customer_profile($customer_id) {
   exit();
 }
 
-
 function rooms_booking_children_discount($form, &$form_state) {
-
   drupal_add_css(drupal_get_path('module', 'rooms_booking') . '/css/rooms_booking.css');
   $form['#attributes']['class'][] = 'rooms-management-form children-discount-form';
 
@@ -185,7 +181,6 @@ function rooms_booking_children_discount($form, &$form_state) {
   return $form;
 }
 
-
 function rooms_booking_children_discount_validate($form, &$form_state) {
   foreach ($form_state['values']['option'] as $key => $value) {
     if ($value['start'] != '' || $value['end'] != '' || $value['discount'] != '') {
@@ -195,7 +190,6 @@ function rooms_booking_children_discount_validate($form, &$form_state) {
     }
   }
 }
-
 
 function rooms_booking_children_discount_submit($form, &$form_state) {
   $options = array();
@@ -211,13 +205,11 @@ function rooms_booking_children_discount_submit($form, &$form_state) {
   variable_set('rooms_children_discount_options', $options);
 }
 
-
 function rooms_booking_children_discount_add_option($form, &$form_state) {
   $form_state['num_options']++;
 
   $form_state['rebuild'] = TRUE;
 }
-
 
 function rooms_booking_children_discount_remove_option($form, &$form_state) {
   if ($form_state['num_options'] > 1) {
@@ -226,7 +218,6 @@ function rooms_booking_children_discount_remove_option($form, &$form_state) {
 
   $form_state['rebuild'] = TRUE;
 }
-
 
 function rooms_booking_add_customer_profile() {
   ctools_include('modal');
@@ -282,7 +273,6 @@ function rooms_booking_add_customer_profile() {
   print ajax_render($output);
   exit();
 }
-
 
 /**
  * Implements hook_entity_info().
@@ -346,7 +336,6 @@ function rooms_booking_entity_info() {
   return $return;
 }
 
-
 /**
  * Implements hook_entity_info_alter().
  *
@@ -369,7 +358,6 @@ function rooms_booking_entity_info_alter(&$entity_info) {
   }
 }
 
-
 /**
  * Implements hook_entity_property_info_alter().
  */
@@ -377,12 +365,11 @@ function rooms_booking_entity_property_info_alter(&$info) {
   $info['rooms_booking']['properties']['booking_status']['setter callback'] = 'entity_property_verbatim_set';
 }
 
-
 /**
  * Implements hook_permission().
  */
 function rooms_booking_permission() {
-  // We set up permisssions to manage entity types, manage all entities and the
+  // We set up permissions to manage entity types, manage all entities and the
   // permissions for each individual entity
   $permissions = array(
     'administer booking types' => array(
@@ -402,6 +389,9 @@ function rooms_booking_permission() {
       "edit any $type_name booking" => array(
         'title' => t('%type_name: Edit any booking', array('%type_name' => $type->label)),
       ),
+      "edit own $type_name booking" => array(
+        'title' => t('%type_name: Edit own booking', array('%type_name' => $type->label)),
+      ),
       "view any $type_name booking" => array(
         'title' => t('%type_name: View any booking', array('%type_name' => $type->label)),
       ),
@@ -409,7 +399,6 @@ function rooms_booking_permission() {
   }
   return $permissions;
 }
-
 
 /**
  * Implements hook_ctools_plugin_type().
@@ -483,14 +472,12 @@ function rooms_booking_access($op, $booking = NULL, $account = NULL) {
   return FALSE;
 }
 
-
 /**
  * Access callback for the entity API.
  */
 function rooms_booking_type_access($op, $type = NULL, $account = NULL) {
   return user_access('administer booking types', $account);
 }
-
 
 /**
  * Gets an array of all booking types, keyed by the type name.
@@ -509,8 +496,6 @@ function rooms_booking_get_types($type_name = NULL, $reset = FALSE) {
   return isset($type_name) ? reset($types) : $types;
 }
 
-
-
 /**
  * Menu argument loader; Load a booking type by string.
  *
@@ -522,7 +507,6 @@ function rooms_booking_get_types($type_name = NULL, $reset = FALSE) {
 function rooms_booking_type_load($type, $reset = FALSE) {
   return rooms_booking_get_types($type, $reset);
 }
-
 
 /**
  * Fetch a booking object. Make sure that the wildcard you choose
@@ -542,7 +526,6 @@ function rooms_booking_load($booking_id, $reset = FALSE) {
   return reset($bookings);
 }
 
-
 /**
  * Load multiple bookings based on certain conditions.
  *
@@ -561,7 +544,6 @@ function rooms_booking_load($booking_id, $reset = FALSE) {
 function rooms_booking_load_multiple($booking_ids = array(), $conditions = array(), $reset = FALSE) {
   return entity_load('rooms_booking', $booking_ids, $conditions, $reset);
 }
-
 
 /**
  * Deletes a booking
@@ -612,7 +594,6 @@ function rooms_booking_delete(RoomsBooking $booking, $delete_line_item = TRUE) {
   }
 }
 
-
 /**
  * Implements hook_commerce_line_item_delete().
  */
@@ -627,7 +608,6 @@ function rooms_booking_commerce_line_item_delete($line_item) {
     }
   }
 }
-
 
 /**
  * Implements hook_commerce_order_delete().
@@ -656,7 +636,6 @@ function rooms_booking_commerce_order_delete($order) {
   }
 }
 
-
 /**
  * Delete multiple bookings.
  *
@@ -667,14 +646,12 @@ function rooms_booking_delete_multiple(array $booking_ids) {
   entity_get_controller('rooms_booking')->delete($booking_ids);
 }
 
-
 /**
  * Create a booking object.
  */
 function rooms_booking_create($values = array()) {
   return entity_get_controller('rooms_booking')->create($values);
 }
-
 
 /**
  * Saves a booking to the database.
@@ -686,7 +663,6 @@ function rooms_booking_save(RoomsBooking $booking) {
   return $booking->save();
 }
 
-
 /**
  * Saves a booking type to the db.
  */
@@ -694,14 +670,12 @@ function rooms_booking_type_save(RoomsBookingType $type) {
   $type->save();
 }
 
-
 /**
  * Deletes a booking type from the db.
  */
 function rooms_booking_type_delete(RoomsBookingType $type) {
   $type->delete();
 }
-
 
 /**
  * URI callback for bookings
@@ -712,7 +686,6 @@ function rooms_booking_uri(RoomsBooking $booking) {
   );
 }
 
-
 /**
  * Menu title callback for showing individual entities
  */
@@ -720,14 +693,12 @@ function rooms_booking_page_title(RoomsBooking $booking) {
   return $booking->name;
 }
 
-
 /**
  * Get a list of Booking keyed by id and name in value
  *
  * @todo - double check utility of this and perhaps use rooms_booking_load_multiple
  */
 function rooms_booking_ids($conditions = array()) {
-
   $bookings = array();
 
   $query = new EntityFieldQuery();
@@ -757,7 +728,6 @@ function rooms_booking_page_view($booking, $view_mode = 'full') {
   return $content;
 }
 
-
 /**
  * Implements hook_views_api().
  */
@@ -767,7 +737,6 @@ function rooms_booking_views_api() {
     'path' => drupal_get_path('module', 'rooms_booking') . '/views',
   );
 }
-
 
 /**
  * Implement hook_theme().
@@ -789,7 +758,6 @@ function rooms_booking_theme() {
   );
 }
 
-
 /**
  * Implements hook_menu_local_tasks_alter().
  */
@@ -805,7 +773,6 @@ function rooms_booking_menu_local_tasks_alter(&$data, $router_item, $root_path) 
     }
   }
 }
-
 
 function rooms_booking_get_client_profiles($string = '') {
   $matches = array();
@@ -875,7 +842,6 @@ function rooms_booking_get_room_types($string = '') {
   drupal_json_output($matches);
 }
 
-
 /**
  * The class used for room entities
  */
@@ -901,7 +867,6 @@ class RoomsBooking extends Entity {
 
 }
 
-
 /**
  * The class used for room type entities
  */
@@ -916,15 +881,10 @@ class RoomsBookingType extends Entity {
 
 }
 
-
 /**
  * The Controller for RoomsBooking entities
  */
 class RoomsBookingController extends EntityAPIController {
-
-  public function __construct($entityType) {
-    parent::__construct($entityType);
-  }
 
   /**
    * Create a booking - we first set up the values that are specific
@@ -1003,16 +963,12 @@ class RoomsBookingController extends EntityAPIController {
 
 }
 
-
 /**
  * The Controller for Booking Type entities
  */
 class RoomsBookingTypeController extends EntityAPIControllerExportable {
-  public function __construct($entityType) {
-    parent::__construct($entityType);
-  }
 
-   /**
+  /**
    * Create a booking type - we first set up the values that are specific
    * to our booking type schema but then also go through the EntityAPIController
    * function.

@@ -941,7 +941,6 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
     }
   }
 
-
   // Check if unit assigned
   if ((!isset($form_state['values']['unit_id'])) || ($form_state['values']['unit_id'] == '')) {
     form_set_error('availability_fieldset', t('A unit has not been assigned for this booking.'));
@@ -1019,8 +1018,8 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
 
     $query = new EntityFieldQuery();
     $orders = $query->entityCondition('entity_type', 'commerce_order')
-                    ->fieldCondition('commerce_customer_billing', 'profile_id', $commerce_customer_id)
-                    ->execute();
+      ->fieldCondition('commerce_customer_billing', 'profile_id', $commerce_customer_id)
+      ->execute();
 
     // in case of pending orders alert the admin
     if ($orders) {
