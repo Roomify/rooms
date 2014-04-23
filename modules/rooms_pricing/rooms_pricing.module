@@ -17,7 +17,7 @@ function rooms_pricing_permission() {
   $permissions = array(
     'manage booking unit pricing' => array(
       'title' => t('manage booking unit pricing'),
-      'description' => t('Allows users to manage pricing settings for Rooms.'),
+      'description' => t('Allows users to manage all pricing settings for Rooms.'),
       'restrict access' => TRUE,
     ),
   );
@@ -52,12 +52,8 @@ function rooms_pricing_rooms_unit_access($unit, $op, $account) {
   $type = is_string($unit) ? $unit : $unit->type;
 
   if (array_key_exists($type, rooms_unit_get_types())) {
-    if ($op == 'create' && user_access('create ' . $type . ' bookable unit', $account)) {
-      return ROOMS_ACCESS_ALLOW;
-    }
-
     if ($op == 'pricing') {
-      if (user_access('edit pricing any ' . $type . ' bookable unit', $account) || (user_access('edit pricing own ' . $type . ' bookable unit', $account) && ($account->uid == $unit->uid))) {
+      if (user_access('manage booking unit availability') || user_access('edit pricing any ' . $type . ' bookable unit', $account) || (user_access('edit pricing own ' . $type . ' bookable unit', $account) && ($account->uid == $unit->uid))) {
         return ROOMS_ACCESS_ALLOW;
       }
     }

@@ -18,7 +18,7 @@ function rooms_availability_permission() {
   $permissions = array(
     'manage booking unit availability' => array(
       'title' => t('Manage unit availability'),
-      'description' => t('Allows users to manage availability settings for Rooms.'),
+      'description' => t('Allows users to manage all availability settings for Rooms.'),
       'restrict access' => TRUE,
     ),
     'view anonymous availability information' => array(
