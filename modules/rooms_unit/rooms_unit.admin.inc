@@ -175,7 +175,7 @@ function rooms_unit_create_form_wrapper($type) {
   rooms_unit_set_breadcrumb();
   $unit = rooms_unit_create(array('type' => $type, 'uid' => $user->uid));
   $unit->created = REQUEST_TIME;
-  $unit->name = $user->name;
+  $unit->author_name = $user->name;
   return drupal_get_form('rooms_unit_edit_form', $unit);
 }
 
@@ -358,7 +358,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#title' => t('Authored by'),
     '#maxlength' => 60,
     '#autocomplete_path' => 'user/autocomplete',
-    '#default_value' => !empty($unit->name) ? $unit->name : '',
+    '#default_value' => !empty($unit->author_name) ? $unit->author_name : '',
     '#weight' => -1,
     '#description' => t('Leave blank for %anonymous.', array('%anonymous' => variable_get('anonymous', t('Anonymous')))),
   );
