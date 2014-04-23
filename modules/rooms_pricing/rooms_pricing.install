@@ -241,10 +241,17 @@ function rooms_pricing_schema() {
   return $schema;
 }
 
-
 /**
  * Implements hook_uninstall().
  */
 function rooms_pricing_uninstall() {
   variable_del('rooms_payment_options_percentual');
+}
+
+/**
+ * Deletes unused variable 'ROOMS_SELECT_ALL_PAGES_PR'.
+ */
+function rooms_pricing_update_7001() {
+  variable_del('ROOMS_SELECT_ALL_PAGES_PR');
+  return t('Removed stale variable');
 }

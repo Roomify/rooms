@@ -81,7 +81,7 @@ function rooms_availability_rooms_unit_access($unit, $op, $account) {
 function rooms_availability_menu() {
   $items = array();
 
-  $items['admin/rooms/units/unit/%availability_unit/availability'] = array(
+  $items['admin/rooms/units/unit/%rooms_unit/availability'] = array(
     'title' => 'Manage Availability',
     'page callback' => 'rooms_availability_page',
     'page arguments' => array(4, 6, 7),
@@ -92,7 +92,7 @@ function rooms_availability_menu() {
     'weight' => '20',
   );
 
-  $items['rooms/units/unit/%availability_unit/availability/json/%/%'] = array(
+  $items['rooms/units/unit/%rooms_unit/availability/json/%/%'] = array(
     'title' => 'Availability Event',
     'page callback' => 'rooms_availability_event',
     'page arguments' => array(3, 6, 7, 8, 9, 10, 11, 12),
@@ -102,7 +102,7 @@ function rooms_availability_menu() {
     'weight' => 30,
   );
 
-  $items['admin/rooms/units/unit/%availability_unit/event'] = array(
+  $items['admin/rooms/units/unit/%rooms_unit/event'] = array(
     'title' => 'Event Management',
     'page callback' => 'rooms_availability_event_manager_page',
     'page arguments' => array(4),
@@ -121,23 +121,7 @@ function rooms_availability_menu() {
     'weight' => 10,
   );
 
-  $items['admin/rooms/select-all-pages-av'] = array(
-    'title' => 'AJAX Select all availability pages callback',
-    'type' => MENU_CALLBACK,
-    'page callback' => 'rooms_availability_av_ajax_callback',
-    'access arguments' => array('view named availability information'),
-  );
-
   return $items;
-}
-
-function rooms_availability_av_ajax_callback() {
-  if ($_POST['select-all'] == '1') {
-    variable_set('ROOMS_SELECT_ALL_PAGES_AV', 'true');
-  }
-  else {
-    variable_set('ROOMS_SELECT_ALL_PAGES_AV', 'false');
-  }
 }
 
 /**
@@ -280,13 +264,13 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
     $form['rooms_data']['select-all'] = array(
       '#type' => 'select',
       '#prefix' => '<thead><tr><th class="unit-bulk-select">',
-      '#options' => array(t('- Select -'), t('All (this page)'), t('All (all pages)'), t('None')),
+      '#options' => array(
+        ROOMS_THIS_PAGE => t('All (this page)'),
+        ROOMS_ALL_PAGES => t('All (all pages)'),
+        ROOMS_NONE => t('None')),
+      '#empty_option' => t('- Select -'),
       '#suffix' => '</th><th class="month-name"><div class="fc-header-title"><h2>' . format_date($date->getTimestamp(), 'custom', 'F Y') . '</h2></div></th></tr></thead><tbody>',
     );
-
-    if (variable_get('ROOMS_SELECT_ALL_PAGES_AV') == 'true') {
-      $form['rooms_data']['select-all']['#default_value'] = '2';
-    }
   }
 
   foreach ($rooms_units as $key => $value) {
@@ -297,9 +281,6 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
       '#suffix' => '</th><td  class="unit-days"><div id="calendar' . $key . '"></div></td></tr>',
     );
 
-    if (variable_get('ROOMS_SELECT_ALL_PAGES_AV') == 'true') {
-      $form['rooms_data']['rooms-' . $value->unit_id]['#default_value'] = '1';
-    }
   }
 
   return $form;
@@ -321,7 +302,7 @@ function rooms_availability_update_status_form_submit(&$form, &$form_state) {
   $type = $form_state['values']['curr_type'];
   $event_id = $form_state['values']['change_event_status'];
 
-  if (variable_get('ROOMS_SELECT_ALL_PAGES_AV') == 'true') {
+  if ($form_state['values']['select-all'] == ROOMS_ALL_PAGES) {
     $query = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
     if ($type != 'all') {
       $query->condition('type', $type , '=');
@@ -362,32 +343,6 @@ function rooms_availability_update_status_form_submit(&$form, &$form_state) {
         }
       }
     }
-  }
-
-  variable_set('ROOMS_SELECT_ALL_PAGES_AV', 'false');
-}
-
-
-/**
- * Menu load for units - calls the actuall rooms_unit_load implemented in rooms_unit.module
- */
-function availability_unit_load($unit_id) {
-  $unit_ids = explode(',', $unit_id);
-
-  // If there is just a single id lets return that directly (this is for backwards compatibility
-  // to avoid having to change all fucntions directly)
-  if (count($unit_ids) == 1) {
-    $units = rooms_unit_load($unit_ids[0]);
-    return $units;
-  }
-  else {
-
-    $units = array();
-
-    foreach ($unit_ids as $unit) {
-      $units[] = rooms_unit_load($unit);
-    }
-    return $units;
   }
 }
 

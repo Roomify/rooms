@@ -15,9 +15,15 @@ define('ROOMS_INCREASE', 'increase');
 define('ROOMS_DECREASE', 'decrease');
 define('ROOMS_PRICE_SINGLE_OCCUPANCY', 'single_occupancy');
 define('ROOMS_DYNAMIC_MODIFIER', 'dynamic_modifier');
+
 define('ROOMS_ACCESS_ALLOW', 'allow');
 define('ROOMS_ACCESS_DENY', 'deny');
 define('ROOMS_ACCESS_IGNORE', NULL);
+
+define('ROOMS_THIS_PAGE', 'this');
+define('ROOMS_ALL_PAGES', 'all');
+define('ROOMS_NONE', 'none');
+
 /**
  * Implements hook_permission().
  */

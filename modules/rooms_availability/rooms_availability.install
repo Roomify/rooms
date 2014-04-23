@@ -261,15 +261,13 @@ function rooms_availability_schema() {
     )
   );
 
-
   return $schema;
 }
 
-
 /**
- * Implements hook_uninstall().
+ * Deletes unused variable 'ROOMS_SELECT_ALL_PAGES_AV'.
  */
-function rooms_availability_uninstall() {
+function rooms_availability_update_7001() {
   variable_del('ROOMS_SELECT_ALL_PAGES_AV');
-  variable_del('ROOMS_SELECT_ALL_PAGES_PR');
+  return t('Removed stale variable');
 }
