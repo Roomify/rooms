@@ -544,7 +544,7 @@ function rooms_unit_update_7009() {
     'not null' => TRUE,
     'default' => 1,
   ));
-   db_add_field('rooms_units', 'uid', array(
+  db_add_field('rooms_units', 'uid', array(
     'description' => 'The {users}.uid that created this booking.',
     'type' => 'int',
     'not null' => TRUE,

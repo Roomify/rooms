@@ -160,10 +160,9 @@ function rooms_booking_form_wrapper($booking) {
 function rooms_booking_create_form_wrapper($type) {
   // Add the breadcrumb for the form's location.
   rooms_booking_set_breadcrumb();
-  // Add the js for the improved popup handling
-  drupal_add_js(drupal_get_path('module', 'rooms') . '/js/rooms_date_popup.js');
   // Create a booking object
   $booking = rooms_booking_create(array('type' => $type));
+  $booking->created = REQUEST_TIME;
   return drupal_get_form('rooms_booking_edit_form', $booking);
 }
 
@@ -222,7 +221,10 @@ function rooms_booking_edit_profile_callback(&$form, $form_state) {
  */
 function rooms_booking_edit_form($form, &$form_state, $booking) {
   $form['#attributes']['class'][] = 'rooms-management-form rooms-booking-form';
-  $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking') . '/css/rooms_booking.css');
+  $form['#attached'] = array(
+    'css' => array(drupal_get_path('module', 'rooms_booking') . '/css/rooms_booking.css'),
+    'js' => array(drupal_get_path('module', 'rooms') . '/js/rooms_date_popup.js'),
+  );
 
   $client = '';
 
@@ -768,6 +770,60 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#value' => t('Save Booking'),
     '#submit' => $submit + array('rooms_booking_edit_form_submit'),
   );
+
+  /*$form['additional_settings'] = array(
+    '#type' => 'vertical_tabs',
+    '#weight' => 99,
+  );
+
+  // Add the user account and e-mail fields.
+  $form['user'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('User information'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#access' => user_access('administer commerce_order entities'),
+    '#group' => 'additional_settings',
+    '#attached' => array(
+      'js' => array(
+        drupal_get_path('module', 'commerce_order') . '/commerce_order.js',
+        array(
+          'type' => 'setting',
+          'data' => array('anonymous' => variable_get('anonymous', t('Anonymous'))),
+        ),
+      ),
+    ),
+    '#weight' => 30,
+  );
+  $form['user']['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Owned by'),
+    '#description' => t('Leave blank for %anonymous.', array('%anonymous' => variable_get('anonymous', t('Anonymous')))),
+    '#maxlength' => 60,
+    '#autocomplete_path' => 'user/autocomplete',
+    '#default_value' => !empty($booking->name) ? $booking->name : '',
+    '#weight' => -1,
+  );
+
+  // Add a log checkbox and timestamp field to a history tab.
+  $form['order_history'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Order history', array(), array('context' => 'a drupal commerce order')),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#group' => 'additional_settings',
+    '#attached' => array(
+      'js' => array(drupal_get_path('module', 'commerce_order') . '/commerce_order.js'),
+    ),
+    '#weight' => 40,
+  );
+  $form['order_history']['date'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Created on'),
+    '#description' => t('Format: %time. The date format is YYYY-MM-DD and %timezone is the time zone offset from UTC. Leave blank to use the time of form submission.', array('%time' => !empty($booking->date) ? date_format(date_create($order->date), 'Y-m-d H:i:s O') : format_date($booking->created, 'custom', 'Y-m-d H:i:s O'), '%timezone' => !empty($booking->date) ? date_format(date_create($booking->date), 'O') : format_date($booking->created, 'custom', 'O'))),
+    '#maxlength' => 25,
+    '#default_value' => !empty($booking->created) ? format_date($booking->created, 'custom', 'Y-m-d H:i:s O') : '',
+  );*/
 
   if (!empty($booking->name)) {
     $form['actions']['delete'] = array(
