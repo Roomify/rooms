@@ -300,6 +300,14 @@ function rooms_booking_entity_info() {
     'uri callback' => 'entity_class_uri',
     'creation callback' => 'rooms_booking_create',
     'access callback' => 'rooms_booking_access',
+    'access arguments' => array(
+      'user key' => 'uid',
+      'access tag' => 'rooms_booking_access',
+    ),
+    'permission labels' => array(
+      'singular' => t('booking'),
+      'plural' => t('bookings'),
+    ),
     'module' => 'rooms_booking',
     // The information below is used by the RoomsRoomUIController (which extends the EntityDefaultUIController)
     'admin ui' => array(
@@ -369,66 +377,14 @@ function rooms_booking_entity_property_info_alter(&$info) {
  * Implements hook_permission().
  */
 function rooms_booking_permission() {
-  // We set up permissions to manage entity types, manage all entities and the
-  // permissions for each individual entity
   $permissions = array(
-    'bypass booking access' => array(
-      'title' => t('Bypass booking access'),
-      'description' => t('Allow users to perform any action on bookings'),
-      'restrict access' => TRUE,
-    ),
     'administer booking types' => array(
       'title' => t('Administer booking types'),
-      'description' => t('Create and delete fields for booking types'),
+      'description' => t('Allows users to add booking types and configure their fields.'),
       'restrict access' => TRUE,
-    ),
-    'administer bookings' => array(
-      'title' => t('Administer bookings'),
-      'description' => t('Administer bookings'),
-      'restrict access' => TRUE,
-    ),
-    'access bookings overview' => array(
-      'title' => t('Administer bookings'),
-      'description' => t('Edit and delete all bookings'),
-      'restrict access' => TRUE,
-    ),
-    'view any booking' => array(
-      'title' => t('View any booking of any type'),
-      'restrict access' => TRUE,
-    ),
-    'view own bookings' => array(
-      'title' => t('View own bookings of any type')
     ),
   );
-
-  // Generate permissions per room.
-  foreach (rooms_booking_get_types() as $type) {
-    $type_name = check_plain($type->type);
-    $permissions += array(
-      "create $type bookings" => array(
-        'title' => t('%type_name: Create any booking', array('%type_name' => $type->label)),
-      ),
-      "view any $type_name booking" => array(
-        'title' => t('%type_name: View any booking', array('%type_name' => $type->label)),
-      ),
-      "view own $type_name booking" => array(
-        'title' => t('%type_name: View own bookings', array('%type_name' => $type->label)),
-      ),
-      "edit any $type_name booking" => array(
-        'title' => t('%type_name: Edit any booking', array('%type_name' => $type->label)),
-      ),
-      "edit own $type_name bookings" => array(
-        'title' => t('%type_name: Edit own bookings', array('%type_name' => $type->label)),
-      ),
-      "delete any $type_name booking" => array(
-        'title' => t('%type_name: Delete any booking', array('%type_name' => $type->label)),
-      ),
-      "delete own $type_name bookings" => array(
-        'title' => t('%type_name: Delete own bookings', array('%type_name' => $type->label)),
-      ),
-    );
-  }
-  return $permissions;
+  return $permissions + rooms_entity_access_permissions('rooms_booking');
 }
 
 /**
@@ -475,63 +431,43 @@ function rooms_booking_expiration_delete_orders($limit) {
 }
 
 /**
- * Determines whether the given user has access to a booking.
+ * Checks order access for various operations.
  *
  * @param $op
- *   The operation being performed. One of 'view', 'update', 'create', 'delete'
- *   or just 'edit' (being the same as 'create' or 'update').
+ *   The operation being performed. One of 'view', 'update', 'create' or
+ *   'delete'.
  * @param $booking
- *   Optionally a booking to check access for. If nothing is
- *   given, access for all bookings is determined.
+ *   Optionally an booking to check access for.
  * @param $account
- *   The user to check for. Leave it to NULL to check for the global user.
- * @return boolean
- *   Whether access is allowed or not.
+ *   The user to check for. Leave it to NULL to check for the current user.
  */
 function rooms_booking_access($op, $booking = NULL, $account = NULL) {
-  $rights = &drupal_static(__FUNCTION__, array());
+  return rooms_entity_access($op, $booking, $account, 'rooms_booking');
+}
 
-  if (!$booking || !in_array($op, array('create', 'view', 'update', 'delete'), TRUE)) {
-    // If there was no node to check against, or the $op was not one of the
-    // supported ones, we return access denied.
-    return FALSE;
-  }
-  // If no user object is supplied, the access check is for the current user.
-  if (empty($account)) {
-    $account = $GLOBALS['user'];
-  }
-
-  // $booking may be either an object or a unit type. Since unit types cannot be
-  // an integer, use either nid or type as the static cache id.
-  $cid = is_object($booking) ? $booking->unit_id : $booking;
-
-  // If we've already checked access for this node, user and op, return from
-  // cache.
-  if (isset($rights[$account->uid][$cid][$op])) {
-    return $rights[$account->uid][$cid][$op];
-  }
-
-  if (user_access('bypass bookable units access', $account)) {
-    $rights[$account->uid][$cid][$op] = TRUE;
+/**
+ * Access callback: Checks whether the user has permission to add a booking.
+ *
+ * @return
+ *   TRUE if the user has add permission, otherwise FALSE.
+ *
+ * @see node_menu()
+ */
+function _rooms_booking_add_access() {
+  if (user_access('administer rooms_booking types')) {
+    // There are no booking types defined that the user has permission to create,
+    // but the user does have the permission to administer the content types, so
+    // grant them access to the page anyway.
     return TRUE;
   }
 
-  if (!user_access('access bookable units', $account)) {
-    $rights[$account->uid][$cid][$op] = FALSE;
-    return FALSE;
-  }
-  
-  if (user_access('administer bookings', $account)) {
-    return TRUE;
-  }
-  if (is_object($booking)) {
-    if ($type_name = $booking->type) {
-      $op = ($op == 'view') ? 'view' : 'edit';
-      if (user_access("$op any $type_name booking", $account)) {
-        return TRUE;
-      }
+  $types = rooms_booking_get_types();
+  foreach ($types as $type) {
+    if (rooms_booking_access('create', rooms_booking_create(array('type' => $type->type, 'uid' => 0)))) {
+      return TRUE;
     }
   }
+
   return FALSE;
 }
 
@@ -540,6 +476,21 @@ function rooms_booking_access($op, $booking = NULL, $account = NULL) {
  */
 function rooms_booking_type_access($op, $type = NULL, $account = NULL) {
   return user_access('administer booking types', $account);
+}
+
+/**
+ * Implements hook_query_TAG_alter().
+ */
+function rooms_booking_query_rooms_booking_access_alter(QueryAlterableInterface $query) {
+  // Look for an order base table to pass to the query altering function or else
+  // assume we don't have the tables we need to establish order related altering
+  // right now.
+  foreach ($query->getTables() as $table) {
+    if ($table['table'] === 'rooms_bookings') {
+      rooms_entity_access_query_alter($query, 'rooms_booking', $table['alias']);
+      break;
+    }
+  }
 }
 
 /**

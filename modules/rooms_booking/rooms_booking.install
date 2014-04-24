@@ -294,7 +294,7 @@ function rooms_booking_update_7003() {
 }
 
 /**
- * Create owner field in rooms_booking table
+ * Create owner field in rooms_booking table.
  */
 function rooms_booking_update_7004() {
   db_add_field('rooms_bookings', 'uid', array(

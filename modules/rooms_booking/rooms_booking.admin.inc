@@ -40,8 +40,7 @@ class RoomsBookingUIController extends EntityDefaultUIController {
       'title' => 'Add a Booking',
       'description' => 'Add a new Booking',
       'page callback'  => 'rooms_booking_add_page',
-      'access callback'  => 'rooms_booking_access',
-      'access arguments' => array('edit'),
+      'access callback'  => '_rooms_booking_add_access',
       'type' => MENU_NORMAL_ITEM,
       'weight' => 20,
       'file' => 'rooms_booking.admin.inc',
@@ -57,7 +56,7 @@ class RoomsBookingUIController extends EntityDefaultUIController {
         'page callback' => 'rooms_booking_create_form_wrapper',
         'page arguments' => array($type->type),
         'access callback' => 'rooms_booking_access',
-        'access arguments' => array('edit', 'edit ' . $type->type),
+        'access arguments' => array('update', $type->type),
         'file' => 'rooms_booking.admin.inc',
         'file path' => drupal_get_path('module', $this->entityInfo['module'])
       );
@@ -68,7 +67,7 @@ class RoomsBookingUIController extends EntityDefaultUIController {
       'page callback' => 'rooms_booking_form_wrapper',
       'page arguments' => array($id_count + 1),
       'access callback' => 'rooms_booking_access',
-      'access arguments' => array('edit', $id_count + 1),
+      'access arguments' => array('update', $id_count + 1),
       'weight' => 0,
       'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
       'file' => 'rooms_booking.admin.inc',
@@ -86,7 +85,7 @@ class RoomsBookingUIController extends EntityDefaultUIController {
       'page callback' => 'rooms_booking_delete_form_wrapper',
       'page arguments' => array($id_count + 1),
       'access callback' => 'rooms_booking_access',
-      'access arguments' => array('edit', $id_count + 1),
+      'access arguments' => array('delete', $id_count + 1),
       'type' => MENU_LOCAL_TASK,
       'context' => MENU_CONTEXT_INLINE,
       'weight' => 10,
@@ -839,7 +838,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#submit' => $submit + array('rooms_booking_edit_form_submit'),
   );
 
-  if (!empty($booking->name)) {
+  if (!empty($booking->name) && rooms_booking_access('delete', $booking)) {
     $form['actions']['delete'] = array(
       '#type' => 'submit',
       '#value' => t('Delete Booking'),

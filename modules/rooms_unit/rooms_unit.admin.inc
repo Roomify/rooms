@@ -436,7 +436,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#submit' => $submit + array('rooms_unit_edit_form_submit'),
   );
 
-  if (!empty($unit->name)) {
+  if (!empty($unit->name) && rooms_unit_access('delete', $unit)) {
     $form['actions']['delete'] = array(
       '#type' => 'submit',
       '#value' => t('Delete Unit'),
@@ -479,8 +479,6 @@ function rooms_unit_edit_form_validate(&$form, &$form_state) {
  * @todo remove hard-coded link
  */
 function rooms_unit_edit_form_submit(&$form, &$form_state) {
-
-  $multiple = 1;
   $units = array();
 
   if ($form_state['rooms_unit']->unit_id == '') {
