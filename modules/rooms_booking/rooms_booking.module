@@ -372,13 +372,32 @@ function rooms_booking_permission() {
   // We set up permissions to manage entity types, manage all entities and the
   // permissions for each individual entity
   $permissions = array(
+    'bypass booking access' => array(
+      'title' => t('Bypass booking access'),
+      'description' => t('Allow users to perform any action on bookings'),
+      'restrict access' => TRUE,
+    ),
     'administer booking types' => array(
       'title' => t('Administer booking types'),
-      'description' => t('Create and delete fields for booking types, and set their permissions.'),
+      'description' => t('Create and delete fields for booking types'),
+      'restrict access' => TRUE,
     ),
     'administer bookings' => array(
       'title' => t('Administer bookings'),
+      'description' => t('Administer bookings'),
+      'restrict access' => TRUE,
+    ),
+    'access bookings overview' => array(
+      'title' => t('Administer bookings'),
       'description' => t('Edit and delete all bookings'),
+      'restrict access' => TRUE,
+    ),
+    'view any booking' => array(
+      'title' => t('View any booking of any type'),
+      'restrict access' => TRUE,
+    ),
+    'view own bookings' => array(
+      'title' => t('View own bookings of any type')
     ),
   );
 
@@ -386,14 +405,26 @@ function rooms_booking_permission() {
   foreach (rooms_booking_get_types() as $type) {
     $type_name = check_plain($type->type);
     $permissions += array(
-      "edit any $type_name booking" => array(
-        'title' => t('%type_name: Edit any booking', array('%type_name' => $type->label)),
-      ),
-      "edit own $type_name booking" => array(
-        'title' => t('%type_name: Edit own booking', array('%type_name' => $type->label)),
+      "create $type bookings" => array(
+        'title' => t('%type_name: Create any booking', array('%type_name' => $type->label)),
       ),
       "view any $type_name booking" => array(
         'title' => t('%type_name: View any booking', array('%type_name' => $type->label)),
+      ),
+      "view own $type_name booking" => array(
+        'title' => t('%type_name: View own bookings', array('%type_name' => $type->label)),
+      ),
+      "edit any $type_name booking" => array(
+        'title' => t('%type_name: Edit any booking', array('%type_name' => $type->label)),
+      ),
+      "edit own $type_name bookings" => array(
+        'title' => t('%type_name: Edit own bookings', array('%type_name' => $type->label)),
+      ),
+      "delete any $type_name booking" => array(
+        'title' => t('%type_name: Delete any booking', array('%type_name' => $type->label)),
+      ),
+      "delete own $type_name bookings" => array(
+        'title' => t('%type_name: Delete own bookings', array('%type_name' => $type->label)),
       ),
     );
   }
@@ -458,6 +489,38 @@ function rooms_booking_expiration_delete_orders($limit) {
  *   Whether access is allowed or not.
  */
 function rooms_booking_access($op, $booking = NULL, $account = NULL) {
+  $rights = &drupal_static(__FUNCTION__, array());
+
+  if (!$booking || !in_array($op, array('create', 'view', 'update', 'delete'), TRUE)) {
+    // If there was no node to check against, or the $op was not one of the
+    // supported ones, we return access denied.
+    return FALSE;
+  }
+  // If no user object is supplied, the access check is for the current user.
+  if (empty($account)) {
+    $account = $GLOBALS['user'];
+  }
+
+  // $booking may be either an object or a unit type. Since unit types cannot be
+  // an integer, use either nid or type as the static cache id.
+  $cid = is_object($booking) ? $booking->unit_id : $booking;
+
+  // If we've already checked access for this node, user and op, return from
+  // cache.
+  if (isset($rights[$account->uid][$cid][$op])) {
+    return $rights[$account->uid][$cid][$op];
+  }
+
+  if (user_access('bypass bookable units access', $account)) {
+    $rights[$account->uid][$cid][$op] = TRUE;
+    return TRUE;
+  }
+
+  if (!user_access('access bookable units', $account)) {
+    $rights[$account->uid][$cid][$op] = FALSE;
+    return FALSE;
+  }
+  
   if (user_access('administer bookings', $account)) {
     return TRUE;
   }

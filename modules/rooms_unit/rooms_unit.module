@@ -211,7 +211,7 @@ function rooms_unit_access($op, $unit = NULL, $account = NULL) {
     $account = $GLOBALS['user'];
   }
 
-  // $node may be either an object or a unit type. Since unit types cannot be
+  // $unit may be either an object or a unit type. Since unit types cannot be
   // an integer, use either nid or type as the static cache id.
   $cid = is_object($unit) ? $unit->unit_id : $unit;
 

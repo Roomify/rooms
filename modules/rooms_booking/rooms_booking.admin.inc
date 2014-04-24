@@ -145,6 +145,9 @@ function rooms_booking_form_wrapper($booking) {
   // Set the page title.
   $type = rooms_booking_get_types($booking->type);
   drupal_set_title( t('#@booking_id - @booking_type', array('@booking_type' => $type->label, '@booking_id' => $booking->booking_id)));
+  $booking->date = format_date($booking->created, 'custom', 'Y-m-d H:i:s O');
+  $account = user_load($booking->uid);
+  $booking->owner_name = $account->name;
 
   return drupal_get_form('rooms_booking_edit_form', $booking);
 }
@@ -632,7 +635,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
                   ),
                 );
 
-                // Show quantity field selector if an option quantity is setted
+                // Show quantity field selector if an option quantity is set.
                 if (is_numeric($option['quantity'])) {
                   if (isset($form_state['values'][$option_name])) {
                     if ($form_state['values'][$option_name] == 1 && $option['quantity'] > 1) {
@@ -745,6 +748,71 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     );
   }
 
+  // Management vertical tabs.
+  $form['additional_settings'] = array(
+    '#type' => 'vertical_tabs',
+    '#weight' => 99,
+  );
+
+  // Add the user account and e-mail fields.
+  $form['user'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('User information'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#access' => user_access('administer bookings'),
+    '#group' => 'additional_settings',
+    '#attached' => array(
+      'js' => array(
+        drupal_get_path('module', 'rooms_booking') . '/js/rooms_booking.js',
+        array(
+          'type' => 'setting',
+          'data' => array('anonymous' => variable_get('anonymous', t('Anonymous'))),
+        ),
+      ),
+    ),
+    '#weight' => 30,
+  );
+  $form['user']['owner_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Owned by'),
+    '#description' => t('Leave blank for %anonymous.', array('%anonymous' => variable_get('anonymous', t('Anonymous')))),
+    '#maxlength' => 60,
+    '#autocomplete_path' => 'user/autocomplete',
+    '#default_value' => !empty($booking->owner_name) ? $booking->owner_name : '',
+    '#weight' => -1,
+  );
+
+  // Add a log checkbox and timestamp field to a history tab.
+  $form['booking_history'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Booking history'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#group' => 'additional_settings',
+    '#attached' => array(
+      'js' => array(drupal_get_path('module', 'rooms_booking') . '/js/rooms_booking.js'),
+    ),
+    '#weight' => 40,
+  );
+  $form['booking_history']['date'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Created on'),
+    '#description' => t('Format: %time. The date format is YYYY-MM-DD and %timezone is the time zone offset from UTC. Leave blank to use the time of form submission.', array('%time' => !empty($booking->date) ? date_format(date_create($booking->date), 'Y-m-d H:i:s O') : format_date($booking->created, 'custom', 'Y-m-d H:i:s O'), '%timezone' => !empty($booking->date) ? date_format(date_create($booking->date), 'O') : format_date($booking->created, 'custom', 'O'))),
+    '#maxlength' => 25,
+    '#default_value' => !empty($booking->created) ? format_date($booking->created, 'custom', 'Y-m-d H:i:s O') : '',
+  );
+  $form['booking_history']['created'] = array(
+    '#type' => 'hidden',
+    '#value' => !empty($booking->created) ? format_date($booking->created, 'short') : '',
+    '#attributes' => array('id' => 'edit-created'),
+  );
+  $form['booking_history']['changed'] = array(
+    '#type' => 'hidden',
+    '#value' => !empty($booking->changed) ? format_date($booking->changed, 'short') : '',
+    '#attributes' => array('id' => 'edit-changed'),
+  );
+
   $form['actions'] = array(
     '#type' => 'container',
     '#attributes' => array('class' => array('form-actions')),
@@ -770,60 +838,6 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#value' => t('Save Booking'),
     '#submit' => $submit + array('rooms_booking_edit_form_submit'),
   );
-
-  /*$form['additional_settings'] = array(
-    '#type' => 'vertical_tabs',
-    '#weight' => 99,
-  );
-
-  // Add the user account and e-mail fields.
-  $form['user'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('User information'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#access' => user_access('administer commerce_order entities'),
-    '#group' => 'additional_settings',
-    '#attached' => array(
-      'js' => array(
-        drupal_get_path('module', 'commerce_order') . '/commerce_order.js',
-        array(
-          'type' => 'setting',
-          'data' => array('anonymous' => variable_get('anonymous', t('Anonymous'))),
-        ),
-      ),
-    ),
-    '#weight' => 30,
-  );
-  $form['user']['name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Owned by'),
-    '#description' => t('Leave blank for %anonymous.', array('%anonymous' => variable_get('anonymous', t('Anonymous')))),
-    '#maxlength' => 60,
-    '#autocomplete_path' => 'user/autocomplete',
-    '#default_value' => !empty($booking->name) ? $booking->name : '',
-    '#weight' => -1,
-  );
-
-  // Add a log checkbox and timestamp field to a history tab.
-  $form['order_history'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Order history', array(), array('context' => 'a drupal commerce order')),
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
-    '#group' => 'additional_settings',
-    '#attached' => array(
-      'js' => array(drupal_get_path('module', 'commerce_order') . '/commerce_order.js'),
-    ),
-    '#weight' => 40,
-  );
-  $form['order_history']['date'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Created on'),
-    '#description' => t('Format: %time. The date format is YYYY-MM-DD and %timezone is the time zone offset from UTC. Leave blank to use the time of form submission.', array('%time' => !empty($booking->date) ? date_format(date_create($order->date), 'Y-m-d H:i:s O') : format_date($booking->created, 'custom', 'Y-m-d H:i:s O'), '%timezone' => !empty($booking->date) ? date_format(date_create($booking->date), 'O') : format_date($booking->created, 'custom', 'O'))),
-    '#maxlength' => 25,
-    '#default_value' => !empty($booking->created) ? format_date($booking->created, 'custom', 'Y-m-d H:i:s O') : '',
-  );*/
 
   if (!empty($booking->name)) {
     $form['actions']['delete'] = array(
@@ -1151,22 +1165,28 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
 
     $booking = entity_ui_controller('rooms_booking')->entityFormSubmitBuildEntity($form, $form_state);
 
-    // Add in created and changed times.
-    if ($booking->is_new = isset($booking->is_new) ? $booking->is_new : 0) {
-      $booking->created = time();
-    }
-    $booking->changed = time();
+    $booking->is_new = isset($booking->is_new) ? $booking->is_new : 0;
   }
   else {
-    $booking = $form_state['rooms_booking'];
-
     $booking = entity_ui_controller('rooms_booking')->entityFormSubmitBuildEntity($form, $form_state);
-    $booking->changed = time();
 
     // Get the unit id from the booking to be used further down as it is not in the form_values because
     // of how unit ids are assigned
     $unit = $booking->unit_id;
   }
+
+  // Add in created and changed times.
+  $booking->created = !empty($booking->date) ? strtotime($booking->date) : REQUEST_TIME;
+  $booking->changed = time();
+  
+  // Add in the booking owner.
+  if ($account = user_load_by_name($booking->owner_name)) {
+    $booking->uid = $account->uid;
+  }
+  else {
+    $booking->uid = 0;
+  }
+
 
   if (isset($form_state['input']['price'])) {
     $booking->price = $form_state['input']['price'] * 100;
