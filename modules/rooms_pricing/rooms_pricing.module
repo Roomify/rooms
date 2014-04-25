@@ -16,8 +16,8 @@ define ('ROOMS_PER_PERSON', 'rooms_per_person');
 function rooms_pricing_permission() {
   $permissions = array(
     'administer rooms_unit pricing' => array(
-      'title' => t('Manage booking unit pricing'),
-      'description' => t('Allows users to manage all pricing settings for Rooms.'),
+      'title' => t('Administer unit pricing'),
+      'description' => t('Allows users to access bulk availability operations for bookable units.'),
       'restrict access' => TRUE,
     ),
     'update pricing own rooms_unit entities' => array(
@@ -42,6 +42,21 @@ function rooms_pricing_permission() {
   }
 
   return $permissions;
+}
+
+/**
+ * Implements hook_query_TAG_alter().
+ */
+function rooms_pricing_query_rooms_pricing_access_alter(QueryAlterableInterface $query) {
+  // Look for unit base table to pass to the query altering function or else
+  // assume we don't have the tables we need to establish order related altering
+  // right now.
+  foreach ($query->getTables() as $table) {
+    if ($table['table'] === 'rooms_units') {
+      rooms_entity_access_query_alter($query, 'rooms_unit', $table['alias'], NULL, 'update pricing');
+      break;
+    }
+  }
 }
 
 /**
@@ -315,6 +330,7 @@ function rooms_pricing_bulk_pricing_management($year = '', $month = '', $type = 
 
   $efq = new EntityFieldQuery();
   $efq->entityCondition('entity_type', 'rooms_unit');
+  $efq->addTag('rooms_pricing_access');
   if ($type != 'all') {
     $efq->entityCondition('bundle', $type, '=');
   }
@@ -323,8 +339,7 @@ function rooms_pricing_bulk_pricing_management($year = '', $month = '', $type = 
 
   $rooms_id = $units = array();
   if ($rooms_units) {
-    $units = entity_load('rooms_unit', array_keys($rooms_units['rooms_unit']));
-    $units = array_values(rooms_unit_access_filter('update pricing', $units, $account = NULL));
+    $units = array_values(entity_load('rooms_unit', array_keys($rooms_units['rooms_unit'])));
 
     $rooms_id = array();
     foreach ($units as $value) {

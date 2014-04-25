@@ -482,7 +482,7 @@ function rooms_booking_type_access($op, $type = NULL, $account = NULL) {
  * Implements hook_query_TAG_alter().
  */
 function rooms_booking_query_rooms_booking_access_alter(QueryAlterableInterface $query) {
-  // Look for an order base table to pass to the query altering function or else
+  // Look for a booking base table to pass to the query altering function or else
   // assume we don't have the tables we need to establish order related altering
   // right now.
   foreach ($query->getTables() as $table) {
@@ -504,8 +504,8 @@ function rooms_booking_query_rooms_booking_access_alter(QueryAlterableInterface 
  *   Depending whether $type isset, an array of booking types or a single one.
  */
 function rooms_booking_get_types($type_name = NULL, $reset = FALSE) {
-  // entity_load will get the Entity controller for our booking entity and call the load
-  // function of that object.
+  // entity_load will get the Entity controller for our booking entity and call
+  // the load function of that object.
   $types = entity_load_multiple_by_name('rooms_booking_type', isset($type_name) ? array($type_name) : FALSE);
   return isset($type_name) ? reset($types) : $types;
 }

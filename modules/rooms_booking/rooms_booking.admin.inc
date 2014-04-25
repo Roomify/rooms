@@ -487,7 +487,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   // If submit above pressed and we have dates we can process to assign a unit
   if (isset($form_state['show_availability_options']) || $unitid != '') {
     $room_types = rooms_unit_get_types();
-    $types = array('' => t('- Select -'));
+    $types = array();
     foreach ($room_types as $type) {
       $types[$type->type] = $type->label;
     }
@@ -525,6 +525,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       '#type' => 'select',
       '#title' => t('Unit Type'),
       '#options' => $types,
+      '#empty_option' =>  t('- Select -'),
       '#default_value' => $selected,
       '#ajax' => array(
         'callback' => 'rooms_booking_edit_form_unit_type_callback',

@@ -17,8 +17,8 @@ define('ROOMS_AVAILABILITY_GENERIC_STYLE', 2);
 function rooms_availability_permission() {
   $permissions = array(
     'administer rooms_unit availability' => array(
-      'title' => t('Manage unit availability'),
-      'description' => t('Allows users to manage all availability settings for Rooms.'),
+      'title' => t('Administer unit availability'),
+      'description' => t('Allows users to access bulk availability operations for bookable units.'),
       'restrict access' => TRUE,
     ),
     'view anonymous availability information' => array(
@@ -123,6 +123,21 @@ function rooms_availability_av_ajax_callback() {
 }
 
 /**
+ * Implements hook_query_TAG_alter().
+ */
+function rooms_availability_query_rooms_availability_access_alter(QueryAlterableInterface $query) {
+  // Look for unit base table to pass to the query altering function or else
+  // assume we don't have the tables we need to establish order related altering
+  // right now.
+  foreach ($query->getTables() as $table) {
+    if ($table['table'] === 'rooms_units') {
+      rooms_entity_access_query_alter($query, 'rooms_unit', $table['alias'], NULL, 'update availability');
+      break;
+    }
+  }
+}
+
+/**
  * Form for the Bulk Availability Management. Could receive date params for the
  * interested interval to edit.
  */
@@ -150,6 +165,7 @@ function rooms_availability_bulk_unit_management($year = '', $month = '', $type 
 
   $efq = new EntityFieldQuery();
   $efq->entityCondition('entity_type', 'rooms_unit');
+  $efq->addTag('rooms_availability_access');
   if ($type != 'all') {
     $efq->entityCondition('bundle', $type, '=');
   }
@@ -158,8 +174,7 @@ function rooms_availability_bulk_unit_management($year = '', $month = '', $type 
 
   $rooms_id = $units = array();
   if ($rooms_units) {
-    $units = entity_load('rooms_unit', array_keys($rooms_units['rooms_unit']));
-    $units = array_values(rooms_unit_access_filter('update availability', $units, $account = NULL));
+    $units = array_values(entity_load('rooms_unit', array_keys($rooms_units['rooms_unit'])));
 
     $rooms_id = array();
     foreach ($units as $value) {
@@ -374,16 +389,6 @@ function availability_unit_load($unit_id) {
 }
 
 /**
- * Unit availability access callback
- */
-function rooms_availability_access($rooms_unit) {
-  if (user_access('view anonymous availability information') || user_access('view named availability information')) {
-    return TRUE;
-  }
-  return FALSE;
-}
-
-/**
  * Callback for admin/rooms/units/unit/%unit/availability - builds availability
  * page by adding calendar and pulling events from availability table.
  *
@@ -591,12 +596,8 @@ function rooms_availability_event($units, $start_year = '', $start_month = '', $
   }
   elseif ($start_day != 0 && $end_year == 0) {
     $start_date = new DateTime("$start_year-$start_month-$start_day");
-    $end_date = new DateTime("$start_year-$start_month-15");
-    $end_date->add(new DateInterval('P1M'));
-    $end_year = $end_date->format('Y');
-    $end_month = $end_date->format('n');
-    $end_day = $eom[$end_date->format('n')];
-    $end_date = new DateTime("$end_year-$end_month-$end_day");
+    $end_day = $eom[$start_month];
+    $end_date = new DateTime("$start_year-$start_month-$end_day");
   }
   else {
     $start_date = new DateTime("$start_year-$start_month-$start_day");

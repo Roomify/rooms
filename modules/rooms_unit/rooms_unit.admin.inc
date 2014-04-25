@@ -156,7 +156,7 @@ function rooms_unit_form_wrapper($unit) {
   drupal_set_title(t('Edit @unit_name', array('@unit_name' => $unit->name)));
   $unit->date = format_date($unit->created, 'custom', 'Y-m-d H:i:s O');
   $account = user_load($unit->uid);
-  $unit->name = $account->name;
+  $unit->author_name = $account->name;
   return drupal_get_form('rooms_unit_edit_form', $unit);
 }
 

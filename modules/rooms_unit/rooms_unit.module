@@ -200,7 +200,7 @@ function rooms_unit_type_access($op, $type = NULL, $account = NULL) {
  * Implements hook_query_TAG_alter().
  */
 function rooms_unit_query_rooms_unit_access_alter(QueryAlterableInterface $query) {
-  // Look for an order base table to pass to the query altering function or else
+  // Look for an unit base table to pass to the query altering function or else
   // assume we don't have the tables we need to establish order related altering
   // right now.
   foreach ($query->getTables() as $table) {
