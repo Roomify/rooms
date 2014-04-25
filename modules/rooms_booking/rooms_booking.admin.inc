@@ -56,7 +56,7 @@ class RoomsBookingUIController extends EntityDefaultUIController {
         'page callback' => 'rooms_booking_create_form_wrapper',
         'page arguments' => array($type->type),
         'access callback' => 'rooms_booking_access',
-        'access arguments' => array('update', $type->type),
+        'access arguments' => array('create', rooms_booking_create(array('type' => $type->type, 'uid' => 0))),
         'file' => 'rooms_booking.admin.inc',
         'file path' => drupal_get_path('module', $this->entityInfo['module'])
       );
@@ -318,7 +318,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#suffix' => '</div>',
   );
 
-  // If price calculation is setted to 'Price per person per night'
+  // If price calculation is set to 'Price per person per night'
   if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
     // Show fields for enter children ages
     $form['data']['group_size_children']['#ajax'] = array(
@@ -486,11 +486,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
   // If submit above pressed and we have dates we can process to assign a unit
   if (isset($form_state['show_availability_options']) || $unitid != '') {
-    $room_types = rooms_unit_get_types();
-    $types = array();
-    foreach ($room_types as $type) {
-      $types[$type->type] = $type->label;
-    }
+    $types = rooms_booking_edit_form_get_room_types();
 
     // Figure out which is the current unit and mark that as selected
     $selected = '';
@@ -519,7 +515,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       $form_state['show_availability_options'] = TRUE;
     }
 
-    // Set the unit types - everytme a different type is chosen the available
+    // Set the unit types - everytime a different type is chosen the available
     // units for that type pop-up.
     $form['availability_fieldset']['unit_type'] = array(
       '#type' => 'select',
@@ -941,7 +937,25 @@ function rooms_booking_edit_form_unit_type_callback(&$form, $form_state) {
   return $form['availability_fieldset']['unit_fieldset'];
 }
 
-
+/**
+ * Returns a list of room types user can edit.
+ */
+function rooms_booking_edit_form_get_room_types() {
+  $efq = new EntityFieldQuery();
+  $efq->entityCondition('entity_type', 'rooms_unit');
+  $efq->addTag('rooms_availability_access');
+  $result = $efq->execute();
+  $entities = entity_load('rooms_unit', array_keys($result['rooms_unit']));
+  $types = array();
+  $all_types = rooms_unit_get_types();
+  foreach ($entities as $entity) {
+    if (!isset($types[$entity->type])) {
+      $current_type = $all_types[$entity->type];
+      $types[$entity->type] = $current_type->label;
+    }
+  }
+  return $types;
+}
 /**
  * Returns a set of available units given a unit type, start and end dates.
  *
@@ -964,7 +978,7 @@ function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date =
   // Set the unit types,
   $unit_types = array($select);
 
-  $available_units = array();
+  $bookable_units = array();
 
   // The current unit for this booking should also return as available
   if (isset($current_booking->booking_status)) {
@@ -988,7 +1002,19 @@ function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date =
   }
   $available_units = $ac->checkAvailability(TRUE);
 
-  return $available_units;
+  if (is_array($available_units)) {
+    foreach ($available_units as $type => $units_per_price) {
+      foreach ($units_per_price as $price => $units) {
+        foreach ($units as $unit_id => $unit) {
+          if (rooms_unit_access('update availability', $unit['unit'])) {
+            $bookable_units[$type][$price][$unit_id] = $unit;
+          }
+        }
+      }
+    }
+  }
+
+  return empty($bookable_units) ? ROOMS_NO_ROOMS : $bookable_units;
 }
 
 

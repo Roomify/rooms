@@ -56,7 +56,7 @@ class RoomsUnitUIController extends EntityDefaultUIController {
         'page callback' => 'rooms_unit_create_form_wrapper',
         'page arguments' => array($type->type),
         'access callback' => 'rooms_unit_access',
-        'access arguments' => array('create', $type->type),
+        'access arguments' => array('create', rooms_unit_create(array('type' => $type->type, 'uid' => 0))),
         'file' => 'rooms_unit.admin.inc',
         'file path' => drupal_get_path('module', $this->entityInfo['module'])
       );
