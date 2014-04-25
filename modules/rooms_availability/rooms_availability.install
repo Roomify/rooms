@@ -273,3 +273,19 @@ function rooms_availability_uninstall() {
   variable_del('ROOMS_SELECT_ALL_PAGES_AV');
   variable_del('ROOMS_SELECT_ALL_PAGES_PR');
 }
+
+/**
+ * Renames permissions.
+ */
+function rooms_availability_update_7001() {
+  // Load utility functions.
+  module_load_install('rooms');
+
+  $map = array(
+    'manage booking unit availability' => 'administer rooms_unit availability',
+  );
+
+  rooms_update_rename_permissions($map);
+
+  return t('Permissions renamed');
+}

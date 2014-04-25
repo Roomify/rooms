@@ -17,7 +17,7 @@ class RoomsUnitTypeUIController extends EntityDefaultUIController {
     $items = parent::hook_menu();
     foreach($items as &$item) {
       unset($item['access callback']);
-      $item['access arguments'] = array('administer bookable unit types');
+      $item['access arguments'] = array('administer rooms_unit_type entities');
     }
     $items[$this->path]['description'] = 'Manage unit types, including adding and removing fields and the display of fields.';
     $items[$this->path]['weight'] = '3';

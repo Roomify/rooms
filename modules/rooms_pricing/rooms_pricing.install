@@ -248,3 +248,20 @@ function rooms_pricing_schema() {
 function rooms_pricing_uninstall() {
   variable_del('rooms_payment_options_percentual');
 }
+
+/**
+ * Renames permissions.
+ */
+function rooms_pricing_update_7001() {
+  // Load utility functions.
+  module_load_install('commerce');
+
+  $map = array(
+    'manage booking unit pricing' => 'administer rooms_unit pricing'
+,
+  );
+
+  rooms_update_rename_permissions($map);
+
+  return t('Permissions renamed');
+}

@@ -378,7 +378,7 @@ function rooms_booking_entity_property_info_alter(&$info) {
  */
 function rooms_booking_permission() {
   $permissions = array(
-    'administer booking types' => array(
+    'administer rooms_booking types' => array(
       'title' => t('Administer booking types'),
       'description' => t('Allows users to add booking types and configure their fields.'),
       'restrict access' => TRUE,
@@ -454,7 +454,7 @@ function rooms_booking_access($op, $booking = NULL, $account = NULL) {
  * @see node_menu()
  */
 function _rooms_booking_add_access() {
-  if (user_access('administer rooms_booking types')) {
+  if (user_access('administer rooms_booking_type entities')) {
     // There are no booking types defined that the user has permission to create,
     // but the user does have the permission to administer the content types, so
     // grant them access to the page anyway.
@@ -475,7 +475,7 @@ function _rooms_booking_add_access() {
  * Access callback for the entity API.
  */
 function rooms_booking_type_access($op, $type = NULL, $account = NULL) {
-  return user_access('administer booking types', $account);
+  return user_access('administer rooms_booking_type entities', $account);
 }
 
 /**

@@ -308,3 +308,25 @@ function rooms_booking_update_7004() {
 
   return t('Add field uid in Rooms Booking table.');
 }
+
+/**
+ * Update permission names for rooms_booking entity management.
+ */
+function rooms_booking_update_7005() {
+  // Load utility functions.
+  module_load_install('rooms');
+
+  $map = array(
+    'administer booking types' => 'administer rooms_booking_type entities',
+    'administer bookings' => 'bypass rooms_booking entities access',
+  );
+  $entity_info = entity_get_info('rooms_booking');
+  foreach ($entity_info['bundles'] as $bundle_name => $bundle_info) {
+    $map['view any ' . $bundle_name . ' booking'] = 'view any rooms_booking entity of bundle ' . $bundle_name;
+    $map['edit any ' . $bundle_name . ' booking'] = 'update any rooms_booking entity of bundle ' . $bundle_name;
+  }
+
+  commerce_update_rename_permissions($map);
+
+  return t('Role and custom View permissions updated for order entity management. Access checks in modules and permissions on default Views must be updated manually.');
+}

@@ -143,7 +143,7 @@ function rooms_unit_entity_info_alter(&$entity_info) {
  */
 function rooms_unit_permission() {
   $permissions = array(
-    'administer rooms_unit types' => array(
+    'administer rooms_unit_type entities' => array(
       'title' => t('Administer bookable unit types'),
       'description' => t('Allows users to add bookable unit types and configure their fields.'),
       'restrict access' => TRUE,
@@ -193,7 +193,7 @@ function rooms_unit_access_filter($op, $units = array(), $account = NULL) {
  * Access callback for the entity API.
  */
 function rooms_unit_type_access($op, $type = NULL, $account = NULL) {
-  return user_access('administer bookable unit types', $account);
+  return user_access('administer rooms_unit_type entities', $account);
 }
 
 /**
@@ -220,7 +220,7 @@ function rooms_unit_query_rooms_unit_access_alter(QueryAlterableInterface $query
  * @see node_menu()
  */
 function _rooms_unit_add_access() {
-  if (user_access('administer rooms_booking types')) {
+  if (user_access('administer rooms_unit_type entities')) {
     // There are no bookable unit types defined that the user has permission to
     // create, but the user does have the permission to administer the content
     // types, so grant them access to the page anyway.
