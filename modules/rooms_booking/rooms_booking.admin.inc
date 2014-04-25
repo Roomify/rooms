@@ -160,11 +160,13 @@ function rooms_booking_form_wrapper($booking) {
  * @see rooms_booking_edit_form()
  */
 function rooms_booking_create_form_wrapper($type) {
+  global $user;
   // Add the breadcrumb for the form's location.
   rooms_booking_set_breadcrumb();
   // Create a booking object
   $booking = rooms_booking_create(array('type' => $type));
   $booking->created = REQUEST_TIME;
+  $booking->owner_name = $user->name;
   return drupal_get_form('rooms_booking_edit_form', $booking);
 }
 
@@ -1285,7 +1287,9 @@ function rooms_booking_create_order($start_date, $end_date, $booking_parameters,
 
   module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.commerce');
 
-  $order = commerce_order_new($user->uid, 'pending');
+  $uid = isset($booking->uid) ? $booking->uid : $user->uid;
+
+  $order = commerce_order_new($uid, 'pending');
   commerce_order_save($order);
 
   $price_modifiers = array();
