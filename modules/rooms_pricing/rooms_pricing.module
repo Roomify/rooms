@@ -15,10 +15,16 @@ define ('ROOMS_PER_PERSON', 'rooms_per_person');
  */
 function rooms_pricing_permission() {
   $permissions = array(
-    'manage booking unit pricing' => array(
+    'administer rooms_unit pricing' => array(
       'title' => t('Manage booking unit pricing'),
       'description' => t('Allows users to manage all pricing settings for Rooms.'),
       'restrict access' => TRUE,
+    ),
+    'update pricing own rooms_unit entities' => array(
+      'title' => t('Edit pricing own bookable units of any type'),
+    ),
+    'update pricing any rooms_unit entity' => array(
+      'title' => t('Edit pricing any bookable unit of any type'),
     ),
   );
 
@@ -26,40 +32,16 @@ function rooms_pricing_permission() {
   foreach (rooms_unit_get_types() as $type) {
     $type_name = check_plain($type->type);
     $permissions += array(
-      "edit pricing own $type_name bookable unit" => array(
-        'title' => t('%type_name: Manage pricing on own bookable unit', array('%type_name' => $type->label)),
+      'update pricing own rooms_unit entities of bundle ' . $type_name => array(
+        'title' => t('Edit pricing own %type_name bookable units', array('%type_name' => $type->label)),
       ),
-      "edit pricing any $type_name bookable unit" => array(
-        'title' => t('%type_name: Manage pricing on any bookable unit', array('%type_name' => $type->label)),
+      'update pricing any rooms_unit entity of bundle ' . $type_name => array(
+        'title' => t('Edit pricing any %type_name bookable unit', array('%type_name' => $type->label)),
       ),
     );
   }
 
   return $permissions;
-}
-
-/**
- * Implements hook_rooms_unit_operations().
- */
-function rooms_pricing_rooms_unit_operations() {
-  return array('pricing');
-}
-
-/**
- * Implements hook_rooms_unit_access().
- */
-function rooms_pricing_rooms_unit_access($unit, $op, $account) {
-  $type = is_string($unit) ? $unit : $unit->type;
-
-  if (array_key_exists($type, rooms_unit_get_types())) {
-    if ($op == 'pricing') {
-      if (user_access('manage booking unit availability') || user_access('edit pricing any ' . $type . ' bookable unit', $account) || (user_access('edit pricing own ' . $type . ' bookable unit', $account) && ($account->uid == $unit->uid))) {
-        return ROOMS_ACCESS_ALLOW;
-      }
-    }
-  }
-
-  return ROOMS_ACCESS_IGNORE;
 }
 
 /**
@@ -73,7 +55,7 @@ function rooms_pricing_menu() {
     'page callback' =>  'rooms_pricing_page',
     'page arguments' => array(4, 6, 7),
     'access callback' => 'rooms_unit_access',
-    'access arguments' => array('pricing', 4),
+    'access arguments' => array('update pricing', 4),
     'type' => MENU_LOCAL_TASK,
     'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
     'weight' => '30',
@@ -84,7 +66,7 @@ function rooms_pricing_menu() {
     'page callback' => 'rooms_pricing_json',
     'page arguments' => array(4, 7, 8, 9, 10, 11, 12),
     'access callback' => 'rooms_unit_access',
-    'access arguments' => array('pricing', 4),
+    'access arguments' => array('update pricing', 4),
     'type' => MENU_CALLBACK,
     'weight' => '30',
   );
@@ -93,7 +75,7 @@ function rooms_pricing_menu() {
     'title' => 'Bulk pricing management',
     'page callback' => 'rooms_pricing_bulk_pricing_management',
     'page arguments' => array(4, 5, 6),
-    'access arguments' => array('manage booking unit pricing'),
+    'access arguments' => array('administer rooms_unit pricing'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10,
   );
@@ -262,13 +244,13 @@ function update_unit_pricing_form_submit(&$form, &$form_state) {
  */
 function rooms_pricing_json($unit, $start_year = '', $start_month = '', $start_day = '', $end_year = '', $end_month = '', $end_day = '') {
 
-  $start_year = (int)$start_year;
-  $start_month = (int)$start_month;
-  $start_day = (int)$start_day;
+  $start_year = (int) $start_year;
+  $start_month = (int) $start_month;
+  $start_day = (int) $start_day;
 
-  $end_year = (int)$end_year;
-  $end_month = (int)$end_month;
-  $end_day = (int)$end_day;
+  $end_year = (int) $end_year;
+  $end_month = (int) $end_month;
+  $end_day = (int) $end_day;
 
   $eom = rooms_end_of_month_dates($start_year);
 
@@ -342,7 +324,7 @@ function rooms_pricing_bulk_pricing_management($year = '', $month = '', $type = 
   $rooms_id = $units = array();
   if ($rooms_units) {
     $units = entity_load('rooms_unit', array_keys($rooms_units['rooms_unit']));
-    $units = array_values(rooms_unit_access_filter('pricing', $units, $account = NULL));
+    $units = array_values(rooms_unit_access_filter('update pricing', $units, $account = NULL));
 
     $rooms_id = array();
     foreach ($units as $value) {

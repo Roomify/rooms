@@ -426,7 +426,7 @@ function rooms_entity_access_query_alter($query, $entity_type, $base_table = NUL
   if (!empty($entity_info['access arguments']['user key'])) {
     // Perform 'view own' access control for the entity in the query if the user
     // is authenticated.
-    if ($account->uid && user_access('view own ' . $entity_type, $account)) {
+    if ($account->uid && user_access('view own ' . $entity_type . ' entities', $account)) {
       $conditions->condition($base_table . '.' . $entity_info['access arguments']['user key'], $account->uid);
     }
   }

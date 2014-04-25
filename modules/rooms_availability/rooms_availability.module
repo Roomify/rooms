@@ -16,7 +16,7 @@ define('ROOMS_AVAILABILITY_GENERIC_STYLE', 2);
  */
 function rooms_availability_permission() {
   $permissions = array(
-    'manage booking unit availability' => array(
+    'administer rooms_unit availability' => array(
       'title' => t('Manage unit availability'),
       'description' => t('Allows users to manage all availability settings for Rooms.'),
       'restrict access' => TRUE,
@@ -33,46 +33,28 @@ function rooms_availability_permission() {
       'title' => t('View past availability information'),
       'description' => t('Allow users to view availability info in the past (especially via availability reference field).'),
     ),
+    'update availability own rooms_unit entities' => array(
+      'title' => t('Edit availability own bookable units of any type'),
+    ),
+    'update availability any rooms_unit entity' => array(
+      'title' => t('Edit availability any bookable unit of any type'),
+    ),
   );
 
   // Generate permissions per room type.
   foreach (rooms_unit_get_types() as $type) {
     $type_name = check_plain($type->type);
     $permissions += array(
-      "edit availability own $type_name bookable unit" => array(
-        'title' => t('%type_name: Manage availability on own bookable unit', array('%type_name' => $type->label)),
+      'update availability own rooms_unit entities of bundle ' . $type_name => array(
+        'title' => t('Edit availability own %type_name bookable units', array('%type_name' => $type->label)),
       ),
-      "edit availability any $type_name bookable unit" => array(
-        'title' => t('%type_name: Manage availability on any bookable unit', array('%type_name' => $type->label)),
+      'update availability any rooms_unit entity of bundle ' . $type_name => array(
+        'title' => t('Edit availability any %type_name bookable unit', array('%type_name' => $type->label)),
       ),
     );
   }
 
   return $permissions;
-}
-
-/**
- * Implements hook_rooms_unit_operations().
- */
-function rooms_availability_rooms_unit_operations() {
-  return array('availability');
-}
-
-/**
- * Implements hook_rooms_unit_access().
- */
-function rooms_availability_rooms_unit_access($unit, $op, $account) {
-  $type = is_string($unit) ? $unit : $unit->type;
-
-  if (array_key_exists($type, rooms_unit_get_types())) {
-    if ($op == 'availability') {
-      if (user_access('manage booking unit availability') || user_access('edit availability any ' . $type . ' bookable unit', $account) || (user_access('edit availability own ' . $type . ' bookable unit', $account) && ($account->uid == $unit->uid))) {
-        return ROOMS_ACCESS_ALLOW;
-      }
-    }
-  }
-
-  return ROOMS_ACCESS_IGNORE;
 }
 
 /**
@@ -86,7 +68,7 @@ function rooms_availability_menu() {
     'page callback' => 'rooms_availability_page',
     'page arguments' => array(4, 6, 7),
     'access callback' => 'rooms_unit_access',
-    'access arguments' => array('availability', 4),
+    'access arguments' => array('update availability', 4),
     'type' => MENU_LOCAL_TASK,
     'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
     'weight' => '20',
@@ -97,7 +79,7 @@ function rooms_availability_menu() {
     'page callback' => 'rooms_availability_event',
     'page arguments' => array(3, 6, 7, 8, 9, 10, 11, 12),
     'access callback' => 'rooms_unit_access',
-    'access arguments' => array('availability', 3,FALSE),
+    'access arguments' => array('update availability', 3),
     'type' => MENU_CALLBACK,
     'weight' => 30,
   );
@@ -107,7 +89,7 @@ function rooms_availability_menu() {
     'page callback' => 'rooms_availability_event_manager_page',
     'page arguments' => array(4),
     'access callback' => 'rooms_unit_access',
-    'access arguments' => array('availability', 4),
+    'access arguments' => array('update availability', 4),
     'type' => MENU_CALLBACK,
     'weight' => 30,
   );
@@ -116,7 +98,7 @@ function rooms_availability_menu() {
     'title' => 'Bulk availability management',
     'page callback' => 'rooms_availability_bulk_unit_management',
     'page arguments' => array(4, 5, 6),
-    'access arguments' => array('manage booking unit availability'),
+    'access arguments' => array('administer rooms_unit availability'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10,
   );
@@ -177,7 +159,7 @@ function rooms_availability_bulk_unit_management($year = '', $month = '', $type 
   $rooms_id = $units = array();
   if ($rooms_units) {
     $units = entity_load('rooms_unit', array_keys($rooms_units['rooms_unit']));
-    $units = array_values(rooms_unit_access_filter('availability', $units, $account = NULL));
+    $units = array_values(rooms_unit_access_filter('update availability', $units, $account = NULL));
 
     $rooms_id = array();
     foreach ($units as $value) {
@@ -643,12 +625,12 @@ function rooms_availability_get_style($event_style, $unit) {
   else $event_style = (int)ROOMS_AVAILABILITY_ADMIN_STYLE;
 
   // If user don't have 'view named availability information' permission
-  if (!(user_access('view named availability information') || rooms_unit_access('availability', $unit))
+  if (!(user_access('view named availability information') || rooms_unit_access('update availability', $unit))
     && $event_style == ROOMS_AVAILABILITY_ADMIN_STYLE) {
     $event_style = (int)ROOMS_AVAILABILITY_GENERIC_STYLE;
   }
   // If user don't have 'view anonymous availability information' permission
-  if (!(user_access('view anonymous availability information') || rooms_unit_access('availability', $unit))
+  if (!(user_access('view anonymous availability information') || rooms_unit_access('update availability', $unit))
     && $event_style == ROOMS_AVAILABILITY_GENERIC_STYLE) {
     echo drupal_json_encode(array());
   }
