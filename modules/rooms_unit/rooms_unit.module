@@ -227,7 +227,7 @@ function _rooms_unit_add_access() {
     return TRUE;
   }
 
-  $types = rooms_booking_get_types();
+  $types = rooms_unit_get_types();
   foreach ($types as $type) {
     if (rooms_unit_access('create', rooms_unit_create(array('type' => $type->type, 'uid' => 0)))) {
       return TRUE;
