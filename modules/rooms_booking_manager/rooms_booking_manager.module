@@ -45,7 +45,8 @@ function rooms_booking_manager_menu() {
 
   $items['booking'] = array(
     'title' => 'Create your booking',
-    'page callback' => 'rooms_booking_manager_search_availability',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('rooms_booking_availability_search_form'),
     'file' => 'rooms_booking_manager.availability_search.inc',
     'access arguments' => array('book units'),
     'type' => MENU_NORMAL_ITEM,
