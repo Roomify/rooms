@@ -15,9 +15,15 @@ define('ROOMS_INCREASE', 'increase');
 define('ROOMS_DECREASE', 'decrease');
 define('ROOMS_PRICE_SINGLE_OCCUPANCY', 'single_occupancy');
 define('ROOMS_DYNAMIC_MODIFIER', 'dynamic_modifier');
+
 define('ROOMS_ACCESS_ALLOW', 'allow');
 define('ROOMS_ACCESS_DENY', 'deny');
 define('ROOMS_ACCESS_IGNORE', NULL);
+
+define('ROOMS_THIS_PAGE', 'this');
+define('ROOMS_ALL_PAGES', 'all');
+define('ROOMS_NONE', 'none');
+
 /**
  * Implements hook_permission().
  */
@@ -895,19 +901,19 @@ function rooms_range($start, $end) {
  */
 function _rooms_select_rooms_validation($form_state) {
   $select_rooms = FALSE;
-  if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'false') {
+  if ($form_state['values']['select-all'] == ROOMS_ALL_PAGES || $form_state['values']['select-all'] == ROOMS_THIS_PAGE) {
+    $select_rooms = TRUE;
+  }
+  else {
     foreach ($form_state['values'] as $key => $value) {
       if (strpos($key, 'rooms-') === 0 && $value == '1') {
         $select_rooms = TRUE;
       }
     }
   }
-  else {
-    $select_rooms = TRUE;
-  }
 
   if (!$select_rooms) {
-    form_set_error('select-all', t('Select at least one unit.'));
+    form_set_error('select-all', t('You have to select at least one unit to update.'));
   }
 }
 
@@ -979,13 +985,6 @@ function rooms_filter_month_form($form, &$form_state, $month, $year) {
 
 function rooms_filter_month_form_submit(&$form, &$form_state) {
   global $base_url;
-
-  if (arg(3) == 'bulk_pricing_management') {
-    variable_set('ROOMS_SELECT_ALL_PAGES_PR', 'false');
-  }
-  elseif (arg(3) == 'bulk_unit_management') {
-    variable_set('ROOMS_SELECT_ALL_PAGES_AV', 'false');
-  }
 
   $year = $form_state['values']['year'] + date('Y', time()) - 2;
   $month = $form_state['values']['month'];

@@ -241,7 +241,6 @@ function rooms_pricing_schema() {
   return $schema;
 }
 
-
 /**
  * Implements hook_uninstall().
  */
@@ -254,14 +253,21 @@ function rooms_pricing_uninstall() {
  */
 function rooms_pricing_update_7001() {
   // Load utility functions.
-  module_load_install('commerce');
+  module_load_install('rooms');
 
   $map = array(
     'manage booking unit pricing' => 'administer rooms_unit pricing'
-,
   );
 
   rooms_update_rename_permissions($map);
 
   return t('Permissions renamed');
+}
+
+/**
+ * Deletes unused variable 'ROOMS_SELECT_ALL_PAGES_PR'.
+ */
+function rooms_pricing_update_7002() {
+  variable_del('ROOMS_SELECT_ALL_PAGES_PR');
+  return t('Removed stale variable');
 }

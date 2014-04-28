@@ -65,7 +65,7 @@ function rooms_pricing_query_rooms_pricing_access_alter(QueryAlterableInterface 
 function rooms_pricing_menu() {
   $items  =  array();
 
-  $items['admin/rooms/units/unit/%pricing_unit/pricing'] = array(
+  $items['admin/rooms/units/unit/%rooms_unit/pricing'] = array(
     'title' => 'Manage Pricing',
     'page callback' =>  'rooms_pricing_page',
     'page arguments' => array(4, 6, 7),
@@ -76,7 +76,7 @@ function rooms_pricing_menu() {
     'weight' => '30',
   );
 
-  $items['admin/rooms/units/unit/%pricing_unit/pricing/json/%/%'] = array(
+  $items['admin/rooms/units/unit/%rooms_unit/pricing/json/%/%'] = array(
     'title' =>  'Pricing Info',
     'page callback' => 'rooms_pricing_json',
     'page arguments' => array(4, 7, 8, 9, 10, 11, 12),
@@ -95,22 +95,7 @@ function rooms_pricing_menu() {
     'weight' => 10,
   );
 
-  $items['admin/rooms/select-all-pages-pr'] = array(
-    'title' => 'AJAX Select all pricing pages callback',
-    'type' => MENU_CALLBACK,
-    'page callback' => 'rooms_pricing_pr_ajax_callback',
-    'access arguments' => array('manage booking unit pricing'),
-  );
-
   return $items;
-}
-
-/**
- * Menu load for units - calls the actual rooms_unit_load implemented in rooms_unit.module
- */
-function pricing_unit_load($unit_id) {
-  $unit = rooms_unit_load($unit_id);
-  return $unit;
 }
 
 /**
@@ -470,13 +455,13 @@ function rooms_pricing_update_form($form, &$form_state, $month, $year, $type, $r
     $form['rooms_data']['select-all'] = array(
       '#type' => 'select',
       '#prefix' => '<thead><tr><th class="unit-bulk-select">',
-      '#options' => array(t('- Select -'), t('All (this page)'), t('All (all pages)'), t('None')),
+      '#options' => array(
+        ROOMS_THIS_PAGE => t('All (this page)'),
+        ROOMS_ALL_PAGES => t('All (all pages)'),
+        ROOMS_NONE => t('None')),
+      '#empty_option' => t('- Select -'),
       '#suffix' => '</th><th class="month-name"><div class="fc-header-title"><h2>' . format_date($date->getTimestamp(), 'custom', 'F Y') . '</h2></div></th></tr></thead><tbody>',
     );
-
-    if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'true') {
-      $form['rooms_data']['select-all']['#default_value'] = '2';
-    }
   }
 
   foreach ($rooms_units as $key => $value) {
@@ -486,10 +471,6 @@ function rooms_pricing_update_form($form, &$form_state, $month, $year, $type, $r
       '#prefix' => '<tr><th class="unit-name">',
       '#suffix' => '</th><td class="unit-days"><div id="calendar' . $key . '"></div></td></tr>',
     );
-
-    if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'true') {
-      $form['rooms_data']['rooms-' . $value->unit_id]['#default_value'] = '1';
-    }
   }
 
   return $form;
@@ -517,7 +498,7 @@ function rooms_pricing_update_form_submit(&$form, &$form_state) {
   $amount = $form_state['values']['amount'];
   $days = array_filter($form_state['values']['day_options']);
 
-  if (variable_get('ROOMS_SELECT_ALL_PAGES_PR') == 'true') {
+  if ($form_state['values']['select-all'] == ROOMS_ALL_PAGES) {
     $query = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
     if ($type != 'all') {
       $query->condition('type', $type , '=');
@@ -576,14 +557,4 @@ function rooms_pricing_update_form_submit(&$form, &$form_state) {
     }
   }
 
-  variable_set('ROOMS_SELECT_ALL_PAGES_PR', 'false');
-}
-
-function rooms_pricing_pr_ajax_callback() {
-  if ($_POST['select-all'] == '1') {
-    variable_set('ROOMS_SELECT_ALL_PAGES_PR', 'true');
-  }
-  else {
-    variable_set('ROOMS_SELECT_ALL_PAGES_PR', 'false');
-  }
 }

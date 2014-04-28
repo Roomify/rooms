@@ -1,46 +1,27 @@
 (function ($) {
 
-$(document).ready(function()
-{
-  $("form#rooms-availability-filter-month-form select").change(function() {
-    $("form#rooms-availability-filter-month-form").submit();
-  });
+Drupal.behaviors.roomsAvailabilityPrepareForm = {
+  attach: function(context) {
+    $("form#rooms-filter-month-form select").once('select').change(function() {
+      $("form#rooms-filter-month-form").submit();
+    });
 
-  $('#edit-select-all').change(function() {
-    if (this.options.selectedIndex == 1) {
+    $('#edit-select-all').once('select').change(function() {
       var table = $(this).closest('table')[0];
-      $('input[id^="edit-rooms"]:not(:disabled)', table).attr('checked', true);
+      if (this.options.selectedIndex == 1) {
+        $('input[id^="edit-rooms"]:not(:disabled)', table).attr('checked', true);
+      }
+      else if (this.options.selectedIndex == 2) {
+        $('input[id^="edit-rooms"]:not(:disabled)', table).attr('checked', true);
+      }
+      else if (this.options.selectedIndex == 3) {
+        $('input[id^="edit-rooms"]:not(:disabled)', table).attr('checked', false);
+      }
+    });
+  }
+};
 
-      jQuery.ajax({
-        type: 'POST',
-        url: Drupal.settings.basePath + '?q=admin/rooms/select-all-pages-pr',
-        data: {'select-all': '0'},
-      });
-    }
-    else if (this.options.selectedIndex == 2) {
-      jQuery.ajax({
-        type: 'POST',
-        url: Drupal.settings.basePath + '?q=admin/rooms/select-all-pages-pr',
-        data: {'select-all': '1'},
-      });
-
-      var table = $(this).closest('table')[0];
-      $('input[id^="edit-rooms"]:not(:disabled)', table).attr('checked', true);
-    }
-    else if (this.options.selectedIndex == 3) {
-      var table = $(this).closest('table')[0];
-      $('input[id^="edit-rooms"]:not(:disabled)', table).attr('checked', false);
-
-      jQuery.ajax({
-        type: 'POST',
-        url: Drupal.settings.basePath + '?q=admin/rooms/select-all-pages-pr',
-        data: {'select-all': '0'},
-      });
-    }
-  });
-});
-
-Drupal.behaviors.rooms_availability = {
+Drupal.behaviors.roomsPricing = {
   attach: function(context) {
 
     // Current month is whatever comes through -1 since js counts months starting from 0
