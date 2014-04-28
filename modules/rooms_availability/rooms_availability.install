@@ -265,14 +265,6 @@ function rooms_availability_schema() {
 }
 
 /**
- * Deletes unused variable 'ROOMS_SELECT_ALL_PAGES_AV'.
- */
-function rooms_availability_update_7001() {
-  variable_del('ROOMS_SELECT_ALL_PAGES_AV');
-  return t('Removed stale variable');
-}
-
-/**
  * Renames permissions.
  */
 function rooms_availability_update_7001() {
@@ -286,4 +278,12 @@ function rooms_availability_update_7001() {
   rooms_update_rename_permissions($map);
 
   return t('Permissions renamed');
+}
+
+/**
+ * Deletes unused variable 'ROOMS_SELECT_ALL_PAGES_AV'.
+ */
+function rooms_availability_update_7002() {
+  variable_del('ROOMS_SELECT_ALL_PAGES_AV');
+  return t('Removed stale variable');
 }
