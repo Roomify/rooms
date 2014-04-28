@@ -1882,7 +1882,8 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
     }
   }
 
-  // Send user to cart
+  // Refresh line items price and redirect to bookings page.
+  commerce_cart_order_refresh(commerce_cart_order_load($user->uid));
   $form_state['redirect'] = 'bookings';
 }
 
