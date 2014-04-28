@@ -2032,6 +2032,7 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
         $booking->price = $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'];
 
         $booking->booking_status = 1;
+        $booking->uid = $unit->uid;
         $booking->save();
 
         // Line item 'Entity Reference field' that points to the relevant booking
