@@ -820,7 +820,7 @@ function rooms_availability_ajax_event_status_change($form, $form_state) {
 
 
 /**
- * Implement hook_theme().
+ * Implements hook_theme().
  */
 function rooms_availability_theme() {
   return array(

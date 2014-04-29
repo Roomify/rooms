@@ -144,7 +144,7 @@ function rooms_availability_reference_field_settings_form($field, $instance, $ha
 }
 
 /**
- * Implement hook_field_validate().
+ * Implements hook_field_validate().
  */
 function rooms_availability_reference_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
   // Extract unit ids to check

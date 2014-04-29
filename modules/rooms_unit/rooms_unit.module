@@ -40,7 +40,7 @@ function rooms_unit_menu() {
 }
 
 /**
- * Implement hook_entity_info().
+ * Implements hook_entity_info().
  */
 function rooms_unit_entity_info() {
   $return['rooms_unit'] = array(
