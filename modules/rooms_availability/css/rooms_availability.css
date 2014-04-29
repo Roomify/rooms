@@ -1,5 +1,4 @@
 /* Hide header on single-row month form display */
-.rooms-bulk-pricing-form .fc-header,
 .rooms-bulk-availability-form .fc-header {
   display: none;
 }
@@ -16,20 +15,4 @@
 .rooms-filter-month-form .form-item-type label {
   display: inline;
   margin-right: 4px;
-}
-
-/* Bulk pricing form */
-.rooms-bulk-pricing-form .form-item-day-options {
-  float: left;
-  margin-right: 20px;
-}
-.rooms-bulk-pricing-form .form-item-day-options .form-type-checkbox {
-  display: inline;
-}
-.rooms-bulk-pricing-form .form-item-day-options .form-checkboxes:after {
-  content: ".";
-  display: block;
-  height: 0;
-  clear: both;
-  visibility: hidden;
 }

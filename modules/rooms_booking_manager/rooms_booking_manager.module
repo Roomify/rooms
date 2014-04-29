@@ -70,7 +70,7 @@ function rooms_booking_manager_menu() {
   $items['bookings'] = array(
     'title' => 'Review your reservation',
     'page callback' => 'rooms_booking_manager_cart_view',
-    'access arguments' => array('access content'),
+    'access arguments' => array('access checkout'),
   );
 
   $items['enquiry-confirmation'] = array(
@@ -2032,6 +2032,7 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
         $booking->price = $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'];
 
         $booking->booking_status = 1;
+        $booking->uid = $unit->uid;
         $booking->save();
 
         // Line item 'Entity Reference field' that points to the relevant booking

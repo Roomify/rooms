@@ -144,7 +144,7 @@ function rooms_availability_reference_field_settings_form($field, $instance, $ha
 }
 
 /**
- * Implement hook_field_validate().
+ * Implements hook_field_validate().
  */
 function rooms_availability_reference_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
   // Extract unit ids to check
@@ -403,8 +403,9 @@ function rooms_availability_reference_autocomplete_validate($element, &$form_sta
       }
     }
     else {
-      // No explicit unit_id (the submitted value was not populated by autocomplete
-      // selection). Get the unit_id of a referencable node from the entered title.
+      // No explicit unit_id (the submitted value was not populated by
+      // autocomplete selection). Get the unit_id of a referenceable node from
+      // the entered title.
       $options = array(
         'string' => $value,
         'match' => 'equals',

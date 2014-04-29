@@ -100,7 +100,7 @@ Drupal.RoomsAvailability.Modal = function(element, eid, sd, ed) {
   var element_settings = {
     url : base + Drupal.settings.roomsAvailability.roomID + '/event/' + eid + '/' + sd + '/' + ed,
     event : 'getResponse',
-    progress : { type: 'throbber' },
+    progress : { type: 'throbber' }
   };
   // To made all calendars trigger correctly the getResponse event we need to
   // initialize the ajax instance with the global calendar table element.

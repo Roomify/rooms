@@ -37,8 +37,7 @@
   margin-right: 20px;
 }
 
-.rooms-unit-edit-form #edit-guest-capacity,
-.rooms-unit-edit-form #edit-availability {
+.rooms-unit-edit-form #edit-guest-capacity {
   clear: left;
 }
 
@@ -57,11 +56,6 @@
 .rooms-unit-edit-form .form-item-base-price .form-text {
   width: 6em;
   text-align: right;
-}
-
-.rooms-unit-edit-form #edit-availability {
-  width: 28em;
-  clear: both;
 }
 
 .rooms-unit-edit-form #edit-actions {

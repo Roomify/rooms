@@ -6,7 +6,6 @@
  * the entity types.
  */
 
-
 /**
  * Implements hook_install().
  */
@@ -14,7 +13,6 @@ function rooms_booking_install() {
   // Create a basic booking type
   rooms_booking_create_booking_type();
 }
-
 
 /**
  * Implements hook_schema().
@@ -66,6 +64,12 @@ function rooms_booking_schema() {
       ),
       'customer_id' => array(
         'description' => 'The customer_id this booking is tied to.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'uid' => array(
+        'description' => 'The {users}.uid that owns this booking.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -126,6 +130,7 @@ function rooms_booking_schema() {
       'booking_id' => array('booking_id'),
       'type' => array('type'),
       'customer_id' => array('customer_id'),
+      'uid' => array('uid'),
     ),
   );
 
@@ -185,7 +190,6 @@ function rooms_booking_schema() {
     ),
   );
 
-
   // Stores the customer name and potentially relates it to a Commerce
   // customer profile.
   $schema['rooms_customers'] = array(
@@ -217,12 +221,10 @@ function rooms_booking_schema() {
   return $schema;
 }
 
-
 function rooms_booking_create_booking_type() {
   $booking = new RoomsBookingType(array('label' => 'Standard Booking', 'type' => 'standard_booking'));
   rooms_booking_type_save($booking);
 }
-
 
 /**
  * Create booking_status field in rooms_booking table
@@ -240,7 +242,6 @@ function rooms_booking_update_7001() {
 
   return t('Add field booking_status in Rooms Booking table.');
 }
-
 
 /**
  * Create customers table
@@ -275,7 +276,6 @@ function rooms_booking_update_7002() {
   db_create_table('rooms_customers', $schema['rooms_customers']);
 }
 
-
 /**
  * Create price field in rooms_booking table
  */
@@ -291,4 +291,42 @@ function rooms_booking_update_7003() {
   db_add_field('rooms_bookings', 'price', $price);
 
   return t('Add field price in Rooms Booking table.');
+}
+
+/**
+ * Create owner field in rooms_booking table.
+ */
+function rooms_booking_update_7004() {
+  db_add_field('rooms_bookings', 'uid', array(
+    'description' => 'The {users}.uid that owns this booking.',
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+  ));
+
+  db_add_index('rooms_bookings', 'uid', array('uid'));
+
+  return t('Add field uid in Rooms Booking table.');
+}
+
+/**
+ * Update permission names for rooms_booking entity management.
+ */
+function rooms_booking_update_7005() {
+  // Load utility functions.
+  module_load_install('rooms');
+
+  $map = array(
+    'administer booking types' => 'administer rooms_booking_type entities',
+    'administer bookings' => 'bypass rooms_booking entities access',
+  );
+  $entity_info = entity_get_info('rooms_booking');
+  foreach ($entity_info['bundles'] as $bundle_name => $bundle_info) {
+    $map['view any ' . $bundle_name . ' booking'] = 'view any rooms_booking entity of bundle ' . $bundle_name;
+    $map['edit any ' . $bundle_name . ' booking'] = 'update any rooms_booking entity of bundle ' . $bundle_name;
+  }
+
+  commerce_update_rename_permissions($map);
+
+  return t('Role and custom View permissions updated for order entity management. Access checks in modules and permissions on default Views must be updated manually.');
 }

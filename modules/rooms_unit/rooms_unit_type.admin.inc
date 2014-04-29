@@ -15,6 +15,10 @@ class RoomsUnitTypeUIController extends EntityDefaultUIController {
    */
   public function hook_menu() {
     $items = parent::hook_menu();
+    foreach($items as &$item) {
+      unset($item['access callback']);
+      $item['access arguments'] = array('administer rooms_unit_type entities');
+    }
     $items[$this->path]['description'] = 'Manage unit types, including adding and removing fields and the display of fields.';
     $items[$this->path]['weight'] = '3';
     $items[$this->path]['type'] = MENU_LOCAL_TASK;
@@ -104,6 +108,12 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#field_prefix' => t('Maximum') . ':',
   );
 
+  $form['data']['status'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Published by default'),
+    '#default_value' => 1,
+  );
+
   $form['data']['rooms_description_source'] = array(
     '#type' => 'textfield',
     '#title' => t('Select Unit Description source'),
@@ -119,6 +129,7 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#type' => 'actions',
     '#tree' => FALSE,
   );
+
   $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save unit type'),

@@ -10,7 +10,6 @@ files[] = includes/rooms_pricing.pricing_event.inc
 
 
 dependencies[] = rooms_unit
-dependencies[] = rooms_availability
 dependencies[] = commerce
 
 files[] = test/rooms_pricing_test.test

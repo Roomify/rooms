@@ -40,8 +40,7 @@ class RoomsBookingUIController extends EntityDefaultUIController {
       'title' => 'Add a Booking',
       'description' => 'Add a new Booking',
       'page callback'  => 'rooms_booking_add_page',
-      'access callback'  => 'rooms_booking_access',
-      'access arguments' => array('edit'),
+      'access callback'  => '_rooms_booking_add_access',
       'type' => MENU_NORMAL_ITEM,
       'weight' => 20,
       'file' => 'rooms_booking.admin.inc',
@@ -57,7 +56,7 @@ class RoomsBookingUIController extends EntityDefaultUIController {
         'page callback' => 'rooms_booking_create_form_wrapper',
         'page arguments' => array($type->type),
         'access callback' => 'rooms_booking_access',
-        'access arguments' => array('edit', 'edit ' . $type->type),
+        'access arguments' => array('create', rooms_booking_create(array('type' => $type->type, 'uid' => 0))),
         'file' => 'rooms_booking.admin.inc',
         'file path' => drupal_get_path('module', $this->entityInfo['module'])
       );
@@ -68,7 +67,7 @@ class RoomsBookingUIController extends EntityDefaultUIController {
       'page callback' => 'rooms_booking_form_wrapper',
       'page arguments' => array($id_count + 1),
       'access callback' => 'rooms_booking_access',
-      'access arguments' => array('edit', $id_count + 1),
+      'access arguments' => array('update', $id_count + 1),
       'weight' => 0,
       'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
       'file' => 'rooms_booking.admin.inc',
@@ -86,7 +85,7 @@ class RoomsBookingUIController extends EntityDefaultUIController {
       'page callback' => 'rooms_booking_delete_form_wrapper',
       'page arguments' => array($id_count + 1),
       'access callback' => 'rooms_booking_access',
-      'access arguments' => array('edit', $id_count + 1),
+      'access arguments' => array('delete', $id_count + 1),
       'type' => MENU_LOCAL_TASK,
       'context' => MENU_CONTEXT_INLINE,
       'weight' => 10,
@@ -145,6 +144,9 @@ function rooms_booking_form_wrapper($booking) {
   // Set the page title.
   $type = rooms_booking_get_types($booking->type);
   drupal_set_title( t('#@booking_id - @booking_type', array('@booking_type' => $type->label, '@booking_id' => $booking->booking_id)));
+  $booking->date = format_date($booking->created, 'custom', 'Y-m-d H:i:s O');
+  $account = user_load($booking->uid);
+  $booking->owner_name = $account->name;
 
   return drupal_get_form('rooms_booking_edit_form', $booking);
 }
@@ -158,12 +160,13 @@ function rooms_booking_form_wrapper($booking) {
  * @see rooms_booking_edit_form()
  */
 function rooms_booking_create_form_wrapper($type) {
+  global $user;
   // Add the breadcrumb for the form's location.
   rooms_booking_set_breadcrumb();
-  // Add the js for the improved popup handling
-  drupal_add_js(drupal_get_path('module', 'rooms') . '/js/rooms_date_popup.js');
   // Create a booking object
   $booking = rooms_booking_create(array('type' => $type));
+  $booking->created = REQUEST_TIME;
+  $booking->owner_name = $user->name;
   return drupal_get_form('rooms_booking_edit_form', $booking);
 }
 
@@ -222,7 +225,10 @@ function rooms_booking_edit_profile_callback(&$form, $form_state) {
  */
 function rooms_booking_edit_form($form, &$form_state, $booking) {
   $form['#attributes']['class'][] = 'rooms-management-form rooms-booking-form';
-  $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking') . '/css/rooms_booking.css');
+  $form['#attached'] = array(
+    'css' => array(drupal_get_path('module', 'rooms_booking') . '/css/rooms_booking.css'),
+    'js' => array(drupal_get_path('module', 'rooms') . '/js/rooms_date_popup.js'),
+  );
 
   $client = '';
 
@@ -312,7 +318,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#suffix' => '</div>',
   );
 
-  // If price calculation is setted to 'Price per person per night'
+  // If price calculation is set to 'Price per person per night'
   if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
     // Show fields for enter children ages
     $form['data']['group_size_children']['#ajax'] = array(
@@ -363,7 +369,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#type' => 'fieldset',
   );
 
-  $form['rooms_date_range'] = rooms_date_range_fields($form['rooms_date_range']);
+  $form['rooms_date_range'] += rooms_date_range_fields();
 
   // Unset the default for max days away for bookings since we are on the admin side here
   drupal_add_js(array('rooms' => array('roomsBookingStartDay' => 0)), 'setting');
@@ -480,11 +486,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
   // If submit above pressed and we have dates we can process to assign a unit
   if (isset($form_state['show_availability_options']) || $unitid != '') {
-    $room_types = rooms_unit_get_types();
-    $types = array('' => t('- Select -'));
-    foreach ($room_types as $type) {
-      $types[$type->type] = $type->label;
-    }
+    $types = rooms_booking_edit_form_get_room_types();
 
     // Figure out which is the current unit and mark that as selected
     $selected = '';
@@ -513,12 +515,13 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       $form_state['show_availability_options'] = TRUE;
     }
 
-    // Set the unit types - everytme a different type is chosen the available
+    // Set the unit types - everytime a different type is chosen the available
     // units for that type pop-up.
     $form['availability_fieldset']['unit_type'] = array(
       '#type' => 'select',
       '#title' => t('Unit Type'),
       '#options' => $types,
+      '#empty_option' =>  t('- Select -'),
       '#default_value' => $selected,
       '#ajax' => array(
         'callback' => 'rooms_booking_edit_form_unit_type_callback',
@@ -630,7 +633,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
                   ),
                 );
 
-                // Show quantity field selector if an option quantity is setted
+                // Show quantity field selector if an option quantity is set.
                 if (is_numeric($option['quantity'])) {
                   if (isset($form_state['values'][$option_name])) {
                     if ($form_state['values'][$option_name] == 1 && $option['quantity'] > 1) {
@@ -743,6 +746,71 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     );
   }
 
+  // Management vertical tabs.
+  $form['additional_settings'] = array(
+    '#type' => 'vertical_tabs',
+    '#weight' => 99,
+  );
+
+  // Add the user account and e-mail fields.
+  $form['user'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('User information'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#access' => user_access('administer bookings'),
+    '#group' => 'additional_settings',
+    '#attached' => array(
+      'js' => array(
+        drupal_get_path('module', 'rooms_booking') . '/js/rooms_booking.js',
+        array(
+          'type' => 'setting',
+          'data' => array('anonymous' => variable_get('anonymous', t('Anonymous'))),
+        ),
+      ),
+    ),
+    '#weight' => 30,
+  );
+  $form['user']['owner_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Owned by'),
+    '#description' => t('Leave blank for %anonymous.', array('%anonymous' => variable_get('anonymous', t('Anonymous')))),
+    '#maxlength' => 60,
+    '#autocomplete_path' => 'user/autocomplete',
+    '#default_value' => !empty($booking->owner_name) ? $booking->owner_name : '',
+    '#weight' => -1,
+  );
+
+  // Add a log checkbox and timestamp field to a history tab.
+  $form['booking_history'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Booking history'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#group' => 'additional_settings',
+    '#attached' => array(
+      'js' => array(drupal_get_path('module', 'rooms_booking') . '/js/rooms_booking.js'),
+    ),
+    '#weight' => 40,
+  );
+  $form['booking_history']['date'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Created on'),
+    '#description' => t('Format: %time. The date format is YYYY-MM-DD and %timezone is the time zone offset from UTC. Leave blank to use the time of form submission.', array('%time' => !empty($booking->date) ? date_format(date_create($booking->date), 'Y-m-d H:i:s O') : format_date($booking->created, 'custom', 'Y-m-d H:i:s O'), '%timezone' => !empty($booking->date) ? date_format(date_create($booking->date), 'O') : format_date($booking->created, 'custom', 'O'))),
+    '#maxlength' => 25,
+    '#default_value' => !empty($booking->created) ? format_date($booking->created, 'custom', 'Y-m-d H:i:s O') : '',
+  );
+  $form['booking_history']['created'] = array(
+    '#type' => 'hidden',
+    '#value' => !empty($booking->created) ? format_date($booking->created, 'short') : '',
+    '#attributes' => array('id' => 'edit-created'),
+  );
+  $form['booking_history']['changed'] = array(
+    '#type' => 'hidden',
+    '#value' => !empty($booking->changed) ? format_date($booking->changed, 'short') : '',
+    '#attributes' => array('id' => 'edit-changed'),
+  );
+
   $form['actions'] = array(
     '#type' => 'container',
     '#attributes' => array('class' => array('form-actions')),
@@ -769,7 +837,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#submit' => $submit + array('rooms_booking_edit_form_submit'),
   );
 
-  if (!empty($booking->name)) {
+  if (!empty($booking->name) && rooms_booking_access('delete', $booking)) {
     $form['actions']['delete'] = array(
       '#type' => 'submit',
       '#value' => t('Delete Booking'),
@@ -869,7 +937,25 @@ function rooms_booking_edit_form_unit_type_callback(&$form, $form_state) {
   return $form['availability_fieldset']['unit_fieldset'];
 }
 
-
+/**
+ * Returns a list of room types user can edit.
+ */
+function rooms_booking_edit_form_get_room_types() {
+  $efq = new EntityFieldQuery();
+  $efq->entityCondition('entity_type', 'rooms_unit');
+  $efq->addTag('rooms_availability_access');
+  $result = $efq->execute();
+  $entities = entity_load('rooms_unit', array_keys($result['rooms_unit']));
+  $types = array();
+  $all_types = rooms_unit_get_types();
+  foreach ($entities as $entity) {
+    if (!isset($types[$entity->type])) {
+      $current_type = $all_types[$entity->type];
+      $types[$entity->type] = $current_type->label;
+    }
+  }
+  return $types;
+}
 /**
  * Returns a set of available units given a unit type, start and end dates.
  *
@@ -892,7 +978,7 @@ function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date =
   // Set the unit types,
   $unit_types = array($select);
 
-  $available_units = array();
+  $bookable_units = array();
 
   // The current unit for this booking should also return as available
   if (isset($current_booking->booking_status)) {
@@ -916,7 +1002,19 @@ function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date =
   }
   $available_units = $ac->checkAvailability(TRUE);
 
-  return $available_units;
+  if (is_array($available_units)) {
+    foreach ($available_units as $type => $units_per_price) {
+      foreach ($units_per_price as $price => $units) {
+        foreach ($units as $unit_id => $unit) {
+          if (rooms_unit_access('update availability', $unit['unit'])) {
+            $bookable_units[$type][$price][$unit_id] = $unit;
+          }
+        }
+      }
+    }
+  }
+
+  return empty($bookable_units) ? ROOMS_NO_ROOMS : $bookable_units;
 }
 
 
@@ -940,7 +1038,6 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
       }
     }
   }
-
 
   // Check if unit assigned
   if ((!isset($form_state['values']['unit_id'])) || ($form_state['values']['unit_id'] == '')) {
@@ -1019,8 +1116,8 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
 
     $query = new EntityFieldQuery();
     $orders = $query->entityCondition('entity_type', 'commerce_order')
-                    ->fieldCondition('commerce_customer_billing', 'profile_id', $commerce_customer_id)
-                    ->execute();
+      ->fieldCondition('commerce_customer_billing', 'profile_id', $commerce_customer_id)
+      ->execute();
 
     // in case of pending orders alert the admin
     if ($orders) {
@@ -1096,22 +1193,28 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
 
     $booking = entity_ui_controller('rooms_booking')->entityFormSubmitBuildEntity($form, $form_state);
 
-    // Add in created and changed times.
-    if ($booking->is_new = isset($booking->is_new) ? $booking->is_new : 0) {
-      $booking->created = time();
-    }
-    $booking->changed = time();
+    $booking->is_new = isset($booking->is_new) ? $booking->is_new : 0;
   }
   else {
-    $booking = $form_state['rooms_booking'];
-
     $booking = entity_ui_controller('rooms_booking')->entityFormSubmitBuildEntity($form, $form_state);
-    $booking->changed = time();
 
     // Get the unit id from the booking to be used further down as it is not in the form_values because
     // of how unit ids are assigned
     $unit = $booking->unit_id;
   }
+
+  // Add in created and changed times.
+  $booking->created = !empty($booking->date) ? strtotime($booking->date) : REQUEST_TIME;
+  $booking->changed = time();
+  
+  // Add in the booking owner.
+  if ($account = user_load_by_name($booking->owner_name)) {
+    $booking->uid = $account->uid;
+  }
+  else {
+    $booking->uid = 0;
+  }
+
 
   if (isset($form_state['input']['price'])) {
     $booking->price = $form_state['input']['price'] * 100;
@@ -1211,7 +1314,9 @@ function rooms_booking_create_order($start_date, $end_date, $booking_parameters,
 
   module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.commerce');
 
-  $order = commerce_order_new($user->uid, 'pending');
+  $uid = isset($booking->uid) ? $booking->uid : $user->uid;
+
+  $order = commerce_order_new($uid, 'pending');
   commerce_order_save($order);
 
   $price_modifiers = array();
