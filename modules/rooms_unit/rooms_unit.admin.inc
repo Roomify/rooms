@@ -188,7 +188,9 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
 
   $form['#attributes']['class'][] = 'rooms-management-form rooms-unit-edit-form';
 
-  drupal_add_css(drupal_get_path('module', 'rooms_unit') . '/css/rooms_unit.css');
+  $form['#attached']['css'] = array(
+    drupal_get_path('module', 'rooms_unit') . '/css/rooms_unit.css',
+  );
 
   // Add the default field elements.
   $form['name'] = array(

@@ -92,8 +92,11 @@ function rooms_booking_edit_customer_profile($customer_id) {
 
 function rooms_booking_children_discount($form, &$form_state) {
 
-  drupal_add_css(drupal_get_path('module', 'rooms_booking') . '/css/rooms_booking.css');
   $form['#attributes']['class'][] = 'rooms-management-form children-discount-form';
+
+  $form['#attached']['css'] = array(
+    drupal_get_path('module', 'rooms_booking') . '/css/rooms_booking.css',
+  );
 
   $form['#tree'] = TRUE;
 
