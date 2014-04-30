@@ -46,7 +46,7 @@ function rooms_booking_manager_menu() {
   $items['booking'] = array(
     'title' => 'Create your booking',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('rooms_booking_availability_search_form'),
+    'page arguments' => array('rooms_booking_availability_search_form_page'),
     'file' => 'rooms_booking_manager.availability_search.inc',
     'access arguments' => array('book units'),
     'type' => MENU_NORMAL_ITEM,
@@ -784,13 +784,17 @@ function rooms_booking_manager_forms($form_id, $args) {
 
   $forms = array();
 
-  if (0 !== strpos($form_id, 'book_unit_form_')) {
-    return $forms;
+  if (strpos($form_id, 'book_unit_form_') === 0) {
+    $forms[$form_id] = array(
+      'callback' => 'book_unit_form_builder',
+    );
+  }
+  elseif (strpos($form_id, 'rooms_booking_availability_search_form_') === 0) {
+    $forms[$form_id] = array(
+      'callback' => 'rooms_booking_availability_search_form',
+    );
   }
 
-  $forms[$form_id] = array(
-    'callback' => 'book_unit_form_builder',
-  );
 
   return $forms;
 }
@@ -2590,7 +2594,7 @@ function rooms_booking_manager_block_view($block_name = '') {
     $form_state['build_info']['args'] = array();
     form_load_include($form_state, 'inc', 'rooms_booking_manager', 'rooms_booking_manager.availability_search');
 
-    $form = drupal_build_form('rooms_booking_availability_search_form', $form_state);
+    $form = drupal_get_form('rooms_booking_availability_search_form_block', $form_state);
 
     $block = array(
       'subject' => t('Availability Search'),
