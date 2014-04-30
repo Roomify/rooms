@@ -791,7 +791,7 @@ function rooms_booking_manager_forms($form_id, $args) {
   }
   elseif (strpos($form_id, 'rooms_booking_availability_search_form_') === 0) {
     $forms[$form_id] = array(
-      'callback' => 'rooms_booking_availability_search_form',
+      'callback' => 'rooms_booking_availability_search_form_builder',
     );
   }
 

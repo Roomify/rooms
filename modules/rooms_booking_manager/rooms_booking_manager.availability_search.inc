@@ -1,6 +1,6 @@
 <?php
 
-function rooms_booking_availability_search_form($form, $form_state) {
+function rooms_booking_availability_search_form_builder($form, $form_state) {
   $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
   $form['#attributes']['class'][] = 'rooms-management-form rooms-availability-search';
 
@@ -12,8 +12,9 @@ function rooms_booking_availability_search_form($form, $form_state) {
 
   if (isset($_GET['rooms_b_units'])) {
     $b_units = check_plain($_GET['rooms_b_units']);
-    if ($b_units != '') $rooms_number = $b_units;
-
+    if ($b_units != '') {
+      $rooms_number = $b_units;
+    }
     $booking_parameters = rooms_booking_manager_retrieve_booking_parameters($b_units, $_GET);
   }
 
@@ -35,7 +36,8 @@ function rooms_booking_availability_search_form($form, $form_state) {
     '#default_value' =>  $rooms_number,
   );
 
-  $ajax_wrapper_id = 'rooms-group-' . substr($form_state['build_info']['form_id'], strlen('rooms_booking_availability_search_form') + 1);
+  // Create an AJAX wrapper id depending on the form caller to avoid duplicates.
+  $ajax_wrapper_id = 'rooms-group-' . substr($form_state['build_info']['form_id'], strlen('rooms_booking_availability_search_form_'));
   $form['rooms_fieldset'] = array(
     '#prefix' => '<div class="form-wrapper rooms-group" id="' . $ajax_wrapper_id . '">',
     '#suffix' => '</div>',
