@@ -1,11 +1,5 @@
 <?php
 
-function rooms_booking_manager_search_availability() {
-  $output = drupal_get_form('rooms_booking_availability_search_form');
-  return $output;
-}
-
-
 function rooms_booking_availability_search_form($form, $form_state) {
   $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
   $form['#attributes']['class'][] = 'rooms-management-form rooms-availability-search';
@@ -34,22 +28,14 @@ function rooms_booking_availability_search_form($form, $form_state) {
     }
   }
 
-
   $form['conditions']['rooms'] = array(
     '#type' => 'select',
     '#title' => t('Units'),
-    '#options' => array(
-      '1' => '1',
-      '2' => '2',
-      '3' => '3',
-      '4' => '4',
-      '5' => '5',
-      '6' => '6',
-    ),
+    '#options' => rooms_booking_manager_get_range(1, variable_get('rooms_booking_manager_search_form_units', 6)),
     '#default_value' =>  $rooms_number,
   );
 
-  $ajax_wrapper_id = drupal_html_id('rooms-group');
+  $ajax_wrapper_id = 'rooms-group-' . substr($form_state['build_info']['form_id'], strlen('rooms_booking_availability_search_form') + 1);
   $form['rooms_fieldset'] = array(
     '#prefix' => '<div class="form-wrapper rooms-group" id="' . $ajax_wrapper_id . '">',
     '#suffix' => '</div>',
@@ -86,16 +72,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
 
       $form['rooms_fieldset']['group_size_adults:' . $i] = array(
         '#type' => 'select',
-        '#options' => array(
-          '1' => '1',
-          '2' => '2',
-          '3' => '3',
-          '4' => '4',
-          '5' => '5',
-          '6' => '6',
-          '7' => '7',
-          '8' => '8',
-        ),
+        '#options' => rooms_booking_manager_get_range(1, 8),
         '#default_value' => isset($booking_parameters[$i]['adults']) ? $booking_parameters[$i]['adults'] : '2',
         '#prefix' => '<td class="rooms-group-size__people">',
         '#suffix' => '</td>',
@@ -104,12 +81,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
       if (variable_get('rooms_display_children', ROOMS_DISPLAY_CHILDREN_NO) == ROOMS_DISPLAY_CHILDREN) {
         $form['rooms_fieldset']['group_size_children:' . $i] = array(
           '#type' => 'select',
-          '#options' => array(
-            '0' => '0',
-            '1' => '1',
-            '2' => '2',
-            '3' => '3',
-          ),
+          '#options' => rooms_booking_manager_get_range(0, 3),
           '#default_value' =>  isset($booking_parameters[$i]['children']) ? $booking_parameters[$i]['children'] : '0',
           '#prefix' => '<td class="rooms-group-size__children">',
           '#suffix' => '</td>',
@@ -128,16 +100,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
     $form['rooms_fieldset']['group_size_adults:1'] = array(
       '#type' => 'select',
       '#title' => t('Group size'),
-      '#options' => array(
-        '1' => '1',
-        '2' => '2',
-        '3' => '3',
-        '4' => '4',
-        '5' => '5',
-        '6' => '6',
-        '7' => '7',
-        '8' => '8',
-      ),
+      '#options' => rooms_booking_manager_get_range(1, 8),
       '#default_value' => isset($booking_parameters[1]['adults']) ? $booking_parameters[1]['adults'] : 2,
     );
 
@@ -145,12 +108,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
       $form['rooms_fieldset']['group_size_children:1'] = array(
         '#type' => 'select',
         '#title' => t('Children'),
-        '#options' => array(
-          '0' => '0',
-          '1' => '1',
-          '2' => '2',
-          '3' => '3',
-        ),
+        '#options' => rooms_booking_manager_get_range(0, 3),
         '#default_value' =>  isset($booking_parameters[1]['children']) ? $booking_parameters[1]['children'] : 0,
       );
     }
@@ -203,7 +161,6 @@ function rooms_booking_availability_search_form($form, $form_state) {
   return $form;
 
 }
-
 
 function rooms_booking_availability_search_form_callback(&$form, $form_state) {
   return $form['rooms_fieldset'];

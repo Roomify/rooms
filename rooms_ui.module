@@ -54,9 +54,27 @@ function rooms_ui_init() {
 /**
  * Main booking settings form.
  */
-function rooms_booking_settings() {
+function rooms_booking_settings($form, &$form_state) {
+  // Management vertical tabs.
+  $form['rooms_settings'] = array(
+    '#type' => 'vertical_tabs',
+    '#weight' => 99,
+    '#attached' => array(
+      'css' => array(
+        array(
+          'data' => '#rooms-booking-settings .vertical-tabs .form-type-textfield input { width: auto; }',
+          'type' => 'inline',
+        )
+      ),
+    ),
+  );
 
-  $form = array();
+  $form['rooms_booking_settings'] = array(
+    '#type' => 'fieldset',
+    '#group' => 'rooms_settings',
+    '#title' => t('Rooms booking settings'),
+  );
+
   $form['rooms_booking_settings']['rooms_booking_start_date'] = array(
     '#type' => 'select',
     '#title' => t('How soon a booking can start'),
