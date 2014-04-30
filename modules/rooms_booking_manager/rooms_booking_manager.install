@@ -5,13 +5,36 @@
  * Install for Rooms Booking Manager module
  */
 
-
 /**
- * Implements hook_install().
+ * Implements hook_enable().
+ *
+ * Creates a product that can be referenced from line items.
  */
-function rooms_booking_manager_install() {
-}
+function rooms_booking_manager_enable() {
+  // Reset product types cache to have our rooms_product available
+  commerce_product_types_reset();
+  commerce_product_configure_product_type('rooms_product');
 
+  $types = commerce_product_types();
+  if (isset($types['rooms_product']) && !empty($types['rooms_product'])) {
+    $previous_product_id = variable_get('rooms_booking_manager_booking_product_id', 0);
+    if (!($previous_product_id && commerce_product_load($previous_product_id))) {
+      $product = commerce_product_new('rooms_product');
+      $product->sku = 'ROOMS-BASIC-BOOKING';
+      $product->title = t('Rooms Basic Booking');
+      // We will change the price later, but for now set the price to 100 (=$1)
+      // to give tax module something to work with
+      $product->commerce_price[LANGUAGE_NONE][0]['amount'] = 100;
+      $product->commerce_price[LANGUAGE_NONE][0]['currency_code'] = commerce_default_currency();
+
+      commerce_product_save($product);
+      variable_set('rooms_booking_manager_booking_product_id', $product->product_id);
+    }
+  }
+  else {
+    drupal_set_message(t('There was an error creating the rooms product to handle bookings.'));
+  }
+}
 
 /**
  * Implements hook_uninstall().
@@ -36,7 +59,6 @@ function rooms_booking_manager_uninstall() {
   }
   field_purge_batch(20);
 }
-
 
 /**
  * Add "Booking Number People" field to the rooms_booking_manager_line_item
