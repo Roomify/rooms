@@ -874,9 +874,8 @@ function rooms_availability_return_id($id) {
 function rooms_availability_form_rooms_booking_settings_alter(&$form, &$form_state, $form_id) {
   $form['label_settings'] = array(
     '#type' => 'fieldset',
+    '#group' => 'rooms_settings',
     '#title' => t('Calendar Color Codes & Labels'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
   );
 
   $form['label_settings']['rooms_not_available_color'] = array(

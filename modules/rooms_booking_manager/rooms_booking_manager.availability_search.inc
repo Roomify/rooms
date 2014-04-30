@@ -31,7 +31,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
   $form['conditions']['rooms'] = array(
     '#type' => 'select',
     '#title' => t('Units'),
-    '#options' => rooms_booking_manager_get_range(1, 6),
+    '#options' => rooms_booking_manager_get_range(1, variable_get('rooms_booking_manager_search_form_units', 6)),
     '#default_value' =>  $rooms_number,
   );
 
@@ -218,17 +218,4 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
       'query' => $rooms_query,
     )
   );
-}
-
-/**
- * Returns a range aray keyed by value.
- * @param int $start
- *   First value of the sequence.
- * @param int $end
- *   The sequence is ended upon reaching the end value.
- * @return array
- *   An array of elements from start to end, inclusive keyed by values.
- */
-function rooms_booking_manager_get_range($start, $end) {
-  return drupal_map_assoc(range($start, $end));
 }

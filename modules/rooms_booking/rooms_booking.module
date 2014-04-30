@@ -404,7 +404,14 @@ function rooms_booking_ctools_plugin_type() {
  */
 function rooms_booking_form_rooms_booking_settings_alter(&$form, &$form_state, $form_id) {
   form_load_include($form_state, 'inc', 'rules', 'ui/ui.forms');
-  $form['rooms_booking_expiration_time'] = array(
+
+  $form['rooms_admin_settings'] = array(
+    '#type' => 'fieldset',
+    '#group' => 'rooms_settings',
+    '#title' => t('Administrative settings'),
+  );
+
+  $form['rooms_admin_settings']['rooms_booking_expiration_time'] = array(
     '#title' => t('Cart expiration time'),
     '#type' => 'rules_duration',
     '#default_value' => variable_get('rooms_booking_expiration_time', 172800),
