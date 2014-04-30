@@ -306,6 +306,15 @@ function rooms_booking_update_7004() {
 
   db_add_index('rooms_bookings', 'uid', array('uid'));
 
+  // Set all the bookings owned by admin user.
+  db_update('rooms_bookings')
+    ->fields(array(
+      'uid' => 1,
+    ))
+    ->execute();
+
+  return t('New columns added to rooms_units table');
+
   return t('Add field uid in Rooms Booking table.');
 }
 

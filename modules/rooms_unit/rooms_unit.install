@@ -550,6 +550,16 @@ function rooms_unit_update_7009() {
     'not null' => TRUE,
     'default' => 0,
   ));
+
+  // Set all the units published and owned by admin user.
+  db_update('rooms_units')
+    ->fields(array(
+      'status' => 1,
+      'uid' => 1,
+    ))
+    ->execute();
+
+  return t('New columns added to rooms_units table');
 }
 
 /**
