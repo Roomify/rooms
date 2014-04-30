@@ -311,8 +311,8 @@ class AvailabilityAgent {
   }
 
   protected static function compareByOptionals($a, $b) {
-    $a_items = is_array(field_get_items('rooms_unit', $a['unit'],'rooms_booking_unit_options')) ? field_get_items('rooms_unit', $a['unit'],'rooms_booking_unit_options') : array();
-    $b_items = is_array(field_get_items('rooms_unit', $b['unit'],'rooms_booking_unit_options')) ? field_get_items('rooms_unit', $b['unit'],'rooms_booking_unit_options') : array();
+    $a_items = rooms_unit_get_unit_options($a['unit']);
+    $b_items = rooms_unit_get_unit_options($b['unit']);
 
     if (count($a_items) == count($b_items)) {
       return $a['unit']->unit_id < $b['unit']->unit_id ? 1 : -1;

@@ -90,7 +90,7 @@ function rooms_unit_entity_info() {
     'entity class' => 'RoomsUnitType',
     'controller class' => 'RoomsUnitTypeController',
     'base table' => 'rooms_unit_type',
-    'fieldable' => FALSE,
+    'fieldable' => TRUE,
     'bundle of' => 'rooms_unit',
     'exportable' => TRUE,
     'entity keys' => array(
@@ -535,15 +535,34 @@ function rooms_unit_state_options() {
 }
 
 /**
- * Retrieves the available operations for bookable units.
+ * Returns tha available room options given a bookable unit.
+ *
+ * @param $unit
+ *   The bookable unit to get options.
+ *
+ * @return $options
+ *   The available options for the given bookable unit.
  */
-function rooms_unit_available_operations() {
-  $operations = &drupal_static(__FUNCTION__);
-  if (!$operations) {
-    $operations =  array('view', 'update', 'delete', 'create');
-    $operations = array_merge($operations, module_invoke_all('rooms_unit_operations'));
+function rooms_unit_get_unit_options($unit) {
+  $options = &drupal_static(__FUNCTION__);
+
+  if (isset($options['units'][$unit->unit_id])) {
+    return $options['units'][$unit->unit_id];
   }
-  return $operations;
+
+  if (isset($options['unit_types'][$unit->type]) ) {
+    $unit_type_options = $options['unit_types'][$unit->type];
+  }
+  else {
+    $unit_type = rooms_unit_type_load($unit->type);
+    $unit_type_options = is_array(field_get_items('rooms_unit_type', $unit_type,'rooms_booking_unit_options')) ? field_get_items('rooms_unit_type', $unit_type,'rooms_booking_unit_options') : array();
+    $options['unit_types'][$unit->type] = $unit_type_options;
+  }
+
+  $unit_options = is_array(field_get_items('rooms_unit', $unit,'rooms_booking_unit_options')) ? field_get_items('rooms_unit', $unit,'rooms_booking_unit_options') : array();
+  $options['units'][$unit->unit_id] = array_merge($unit_type_options, $unit_options);
+
+  return $options['units'][$unit->unit_id];
 }
 
 /**
