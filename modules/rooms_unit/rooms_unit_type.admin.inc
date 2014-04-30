@@ -32,7 +32,11 @@ class RoomsUnitTypeUIController extends EntityDefaultUIController {
  */
 function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
 
-  $form['#attributes']['class'][] = 'rooms-management-form unit-type-form';
+  $form['#attributes']['class'][] = 'rooms-management-form rooms-unit-type-edit-form';
+
+  $form['#attached']['css'] = array(
+    drupal_get_path('module', 'rooms_unit') . '/css/rooms_unit_type.css',
+  );
 
   if ($op == 'clone') {
     $unit_type->label .= ' (cloned)';
@@ -40,7 +44,7 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
   }
 
   $form['label'] = array(
-    '#title' => t('Label'),
+    '#title' => t('Unit type name'),
     '#type' => 'textfield',
     '#default_value' => $unit_type->label,
     '#description' => t('The human-readable name of this unit type.'),
@@ -60,69 +64,86 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#description' => t('A unique machine-readable name for this unit type. It must only contain lowercase letters, numbers, and underscores.'),
   );
 
-  $form['data']['#tree'] = TRUE;
+  $form['unit_defaults'] = array(
+    '#type' => 'fieldset',
+    '#description' => '<strong>' . t('Unit defaults') . '</strong> - ' . t('Values specified below will be pre-populated as the defaults when creating units of this type.'),
+    '#tree' => FALSE,
+  );
 
-  $form['data']['base_price'] = array(
+  $form['unit_defaults']['data']['#tree'] = TRUE;
+
+  $form['unit_defaults']['data']['base_price'] = array(
     '#type' => 'textfield',
-    '#title' => t('Unit base price'),
+    '#title' => t('Default base price'),
     '#default_value' => isset($unit_type->data['base_price']) ? $unit_type->data['base_price'] : '',
-    '#size' => '5',
+    '#size' => 5,
     '#field_suffix' => t('Per unit per night'),
-    '#description' => t('The price you set here will be the default price for all units of this type. You may then change the default base price on a per unit basis.'),
+    '#description' => t('The default base price is used for all units of this type and may be changed on the edit form of each unit individually.'),
     '#maxlength' => 10,
   );
 
-  $form['data']['min_sleeps'] = array(
+  $form['unit_defaults']['guest_capacity'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Default sleeping capacity'),
+    '#tree' => FALSE,
+  );
+
+  $form['unit_defaults']['guest_capacity']['data']['#tree'] = TRUE;
+
+  $form['unit_defaults']['guest_capacity']['data']['min_sleeps'] = array(
     '#type' => 'textfield',
-    '#title' => t('Sleeping capacity'),
+    '#size' => 5,
     '#default_value' => isset($unit_type->data['min_sleeps']) ? $unit_type->data['min_sleeps'] : '',
-    '#size' => '5',
-    '#maxlength' => 2,
-    '#field_prefix' => t('Minimum') . ':',
+    '#field_suffix' => t('Person minimum'),
   );
 
-  $form['data']['max_sleeps'] = array(
+  $form['unit_defaults']['guest_capacity']['data']['max_sleeps'] = array(
     '#type' => 'textfield',
+    '#size' => 5,
     '#default_value' => isset($unit_type->data['max_sleeps']) ? $unit_type->data['max_sleeps'] : '',
-    '#size' => '5',
-    '#description' => t('The default number of people (including adults and children) for each unit of this type.'),
-    '#maxlength' => 2,
-    '#field_prefix' => t('Maximum') . ':',
+    '#description' => t('The default number of guests (including adults and children) for each unit of this type.'),
+    '#field_suffix' => t('Person maximum'),
   );
 
-  $form['data']['min_children'] = array(
+  $form['unit_defaults']['child_capacity'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Default child capacity'),
+    '#tree' => FALSE,
+  );
+
+  $form['unit_defaults']['child_capacity']['data']['#tree'] = TRUE;
+
+  $form['unit_defaults']['child_capacity']['data']['min_children'] = array(
     '#type' => 'textfield',
-    '#title' => t('Child capacity'),
+    '#size' => 5,
     '#default_value' => isset($unit_type->data['min_children']) ? $unit_type->data['min_children'] : '',
-    '#size' => '5',
-    '#maxlength' => 2,
-    '#field_prefix' => t('Minimum') . ':',
+    '#field_suffix' => t('Child minimum'),
   );
 
-  $form['data']['max_children'] = array(
+  $form['unit_defaults']['child_capacity']['data']['max_children'] = array(
     '#type' => 'textfield',
+    '#size' => 5,
     '#default_value' => isset($unit_type->data['max_children']) ? $unit_type->data['max_children'] : '',
-    '#size' => '5',
     '#description' => t('The default number of children per unit of this type.'),
-    '#maxlength' => 2,
-    '#field_prefix' => t('Maximum') . ':',
+    '#field_suffix' => t('Child maximum'),
   );
 
-  $form['data']['status'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Published by default'),
-    '#default_value' => 1,
+  $form['reference'] = array(
+    '#type' => 'fieldset',
+    '#tree' => FALSE,
   );
 
-  $form['data']['rooms_description_source'] = array(
+  $form['reference']['data']['#tree'] = TRUE;
+
+  $form['reference']['data']['rooms_description_source'] = array(
     '#type' => 'textfield',
-    '#title' => t('Select Unit Description source'),
+    '#title' => t('Unit type description source'),
     '#description' => t('The node you choose here will be rendered in the booking results.'),
     '#size' => 30,
     '#maxlength' => 60,
     '#autocomplete_path' => 'admin/rooms/unit-type/description-source',
     '#default_value' => isset($unit_type->data['rooms_description_source']) ? $unit_type->data['rooms_description_source'] : '',
-    '#weight' => 3,
+    '#weight' => 99,
   );
 
   // Add the field related form elements.
@@ -137,7 +158,7 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
   $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save unit type'),
-    '#weight' => 40,
+    '#weight' => 100,
   );
 
   //Locking not supported yet
