@@ -125,6 +125,10 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#weight' => 3,
   );
 
+  // Add the field related form elements.
+  $form_state['rooms_unit_type'] = $unit_type;
+  field_attach_form('rooms_unit_type', $unit_type, $form, $form_state);
+
   $form['actions'] = array(
     '#type' => 'actions',
     '#tree' => FALSE,
@@ -180,6 +184,9 @@ function rooms_unit_type_form_validate(&$form, &$form_state) {
     }
   }
 
+  $unit_type = $form_state['rooms_unit_type'];
+  field_attach_form_validate('rooms_unit_type', $unit_type, $form, $form_state);
+
 }
 
 
@@ -201,22 +208,22 @@ function rooms_unit_type_form_submit(&$form, &$form_state) {
       );
       field_create_field($field);
     }
+  }
 
-    if (field_read_instance('rooms_unit', 'rooms_booking_unit_options', $unit_type->type) === FALSE) {
-      // Create the instance on the bundle.
-      $instance = array(
-        'field_name' => 'rooms_booking_unit_options',
-        'entity_type' => 'rooms_unit',
-        'label' => 'Options',
-        'bundle' => $unit_type->type,
-        // If you don't set the "required" property then the field wont be required by default.
-        'required' => FALSE,
-        'widget' => array(
-          'type' => 'rooms_options',
-        ),
-      );
-      field_create_instance($instance);
-    }
+  if (field_read_instance('rooms_unit', 'rooms_booking_unit_options', $unit_type->type) === FALSE) {
+    // Create the instance on the bundle.
+    $instance = array(
+      'field_name' => 'rooms_booking_unit_options',
+      'entity_type' => 'rooms_unit',
+      'label' => 'Options',
+      'bundle' => $unit_type->type,
+      // If you don't set the "required" property then the field wont be required by default.
+      'required' => FALSE,
+      'widget' => array(
+        'type' => 'rooms_options',
+      ),
+    );
+    field_create_instance($instance);
   }
 
   $form_state['redirect'] = 'admin/rooms/units/unit-types';

@@ -11,6 +11,7 @@
  */
 function rooms_unit_install() {
   rooms_description_content_type_install();
+  rooms_unit_install_create_options_field();
 }
 
 /**
@@ -242,6 +243,39 @@ function rooms_description_content_type_install() {
   }
 
   node_type_save($content_type);
+}
+
+/**
+ * Creates rooms_booking_unit_options field for bookable unit type entities.
+ */
+function rooms_unit_install_create_options_field() {
+  if (field_read_field('rooms_booking_unit_options') === FALSE) {
+    // Create field 'rooms_booking_unit_options'
+    $field = array(
+      'field_name' => 'rooms_booking_unit_options',
+      'type' => 'rooms_options',
+      'cardinality' => -1,
+    );
+    field_create_field($field);
+  }
+
+  cache_clear_all();
+  field_cache_clear();
+
+  // Attach field 'rooms_booking_unit_options' to any instance of rooms_unit.
+  if (field_info_instance('rooms_unit_type', 'rooms_booking_unit_options', 'rooms_unit_type') === NULL) {
+    $instance = array(
+      'field_name' => 'rooms_booking_unit_options',
+      'entity_type' => 'rooms_unit_type',
+      'label' => 'Options',
+      'bundle' => 'rooms_unit_type',
+      'required' => FALSE,
+      'widget' => array(
+        'type' => 'rooms_options',
+      ),
+    );
+    field_create_instance($instance);
+  }
 }
 
 /**
@@ -582,4 +616,11 @@ function rooms_unit_update_7010() {
   commerce_update_rename_permissions($map);
 
   return t('Role and custom View permissions updated for order entity management. Access checks in modules and permissions on default Views must be updated manually.');
+}
+
+/**
+ * Add options field to Rooms unit type entity.
+ */
+function rooms_unit_update_7011() {
+  rooms_unit_install_create_options_field();
 }

@@ -45,6 +45,13 @@
 .rooms-booking-form #availability-wrapper fieldset {
   background: none;
 }
+.rooms-booking-form #options-wrapper .form-type-select {
+  float: none;
+}
+.rooms-booking-form #options-wrapper .form-type-select label{
+    display: inline;
+    font-weight: normal;
+}
 
 /* Children discount form */
 .children-discount-form .child-discount {
