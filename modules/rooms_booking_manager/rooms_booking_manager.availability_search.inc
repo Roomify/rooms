@@ -1,6 +1,12 @@
 <?php
 
-function rooms_booking_availability_search_form_builder($form, $form_state) {
+function rooms_booking_availability_search_form_builder($form, &$form_state) {
+  // Use form_load_include() instead of module_load_include() as it ensures that
+  // the include file is loaded whenever the form is processed. In contrast to
+  // using module_load_include() directly, form_load_include() makes sure the
+  // include file is correctly loaded also if the form is cached.
+  form_load_include($form_state, 'inc', 'rooms_booking_manager', 'rooms_booking_manager.availability_search');
+
   $form['#attributes']['class'][] = 'rooms-management-form rooms-availability-search';
   $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
 
