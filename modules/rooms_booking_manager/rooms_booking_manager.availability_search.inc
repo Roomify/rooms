@@ -1,8 +1,8 @@
 <?php
 
 function rooms_booking_availability_search_form_builder($form, $form_state) {
-  $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
   $form['#attributes']['class'][] = 'rooms-management-form rooms-availability-search';
+  $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
 
   $rooms_number = 1;
 
@@ -157,11 +157,7 @@ function rooms_booking_availability_search_form_builder($form, $form_state) {
   $form['#validate'][] = 'rooms_booking_availability_search_form_validate';
   $form['#validate'][] = 'rooms_form_start_end_dates_validate';
 
-  // Attach the CSS stylesheets.
-  $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
-
   return $form;
-
 }
 
 function rooms_booking_availability_search_form_callback(&$form, $form_state) {
