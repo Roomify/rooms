@@ -1152,12 +1152,12 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
  * @todo remove hard-coded link
  */
 function rooms_booking_edit_form_submit(&$form, &$form_state) {
-  // Get the client name and client id
+  // Get the client name and client id.
   $client = explode(':', $form_state['values']['client']);
   $client_name = $client[0];
   $commerce_customer_id = rooms_booking_find_customer_by_name($client_name);
 
-  // Save customer in rooms_customers table
+  // Save customer in rooms_customers table.
   db_merge('rooms_customers')
     ->key(array('name' => $client_name))
     ->fields(array(
@@ -1166,28 +1166,27 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
     ))
     ->execute();
 
-  // Get customer id from rooms_customers table
+  // Get customer id from rooms_customers table.
   $client_id = db_select('rooms_customers')
     ->fields('rooms_customers', array('id'))
     ->condition('name', $client_name, '=')
     ->execute()->fetchField();
 
-  // Put them back in $form_state so the entity controller builds the entity
+  // Put them back in $form_state so the entity controller builds the entity.
   $form_state['values']['name'] = $client_name;
   $form_state['values']['customer_id'] = $client_id;
 
-  // We also need appropriate named variables for start and end date
-  // It's simpler to do this than change all the other code for now
+  // We also need appropriate named variables for start and end date.
+  // It's simpler to do this than change all the other code for now.
   $form_state['values']['start_date'] = $form_state['values']['rooms_start_date'];
   $form_state['values']['end_date'] = $form_state['values']['rooms_end_date'];
-  list($start_date, $end_date) = rooms_form_values_get_start_end_dates($form_state);
 
   $unit_id = 0;
   if (isset($form_state['values']['unit_id'])) {
     $unit_id = $form_state['values']['unit_id'];
   }
 
-  // If we are dealing with a new booking
+  // If we are dealing with a new booking.
   if ($form_state['rooms_booking']->booking_id == '') {
 
     $booking = rooms_booking_create(array('type' => $form_state['rooms_booking']->type));
@@ -1200,8 +1199,8 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
   else {
     $booking = entity_ui_controller('rooms_booking')->entityFormSubmitBuildEntity($form, $form_state);
 
-    // Get the unit id from the booking to be used further down as it is not in the form_values because
-    // of how unit ids are assigned
+    // Get the unit id from the booking to be used further down as it is not in
+    // the form_values because of how unit ids are assigned.
     $unit_id = $booking->unit_id;
   }
 
@@ -1224,7 +1223,7 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
 
   $unit = rooms_unit_load($unit_id);
 
-  // Store selected unit options
+  // Store selected unit options.
   foreach (rooms_unit_get_unit_options($unit) as $option) {
     $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
     if (isset($form_state['values'][$option_name])) {
@@ -1235,44 +1234,16 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
     }
   }
 
-  // Store children ages in booking's data field
+  // Store children ages in booking's data field.
   if (isset($form_state['values']['data']['childrens_age'])) {
     $booking->data['childrens_age'] = $form_state['values']['data']['childrens_age'];
   }
 
-  $booking_original = entity_load_unchanged('rooms_booking', $booking->booking_id);
-
-  if ($booking->order_id != '') {
-    if (($order = commerce_order_load($booking->order_id)) !== FALSE) {
-      if ($booking_original->unit_id != $booking->unit_id || $booking_original->start_date != $booking->start_date ||
-          $booking_original->end_date != $booking->end_date || $booking_original->price != $booking->price ||
-          $booking_original->data['group_size'] != $booking->data['group_size'] ||
-          $booking_original->data['group_size_children'] != $booking->data['group_size_children']) {
-
-        $order->status = 'canceled';
-
-        commerce_order_save($order);
-
-        $booking->order_id = '';
-      }
-    }
-  }
-
-  // Save booking
+  // Save booking.
   $booking->save();
 
-  if ($booking->order_id == '') {
-    if (variable_get('rooms_manually_booking_create_order', '1') == '1') {
-      $booking_parameters = array('adults' => $form_state['values']['data']['group_size'], 'children' => $form_state['values']['data']['group_size_children']);
-
-      $order = rooms_booking_create_order($start_date, $end_date, $booking_parameters, $unit, $booking, $commerce_customer_id);
-
-      $booking->order_id = $order->order_number;
-
-      // Resave booking to store order reference
-      $booking->save();
-    }
-  }
+  // Add the booking to $form_state to be altered by other submit handlers.
+  $form_state['booking'] = $booking;
 
   // We have a unit defined so lets block availability there
   if ($unit_id != 0) {
@@ -1295,89 +1266,6 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
 function rooms_booking_form_submit_delete(&$form, &$form_state) {
   $form_state['redirect'] = 'admin/rooms/bookings/booking/' . $form_state['rooms_booking']->booking_id . '/delete';
 }
-
-/**
- * Create a Commerce Order for a booking.
- *
- * @param DateTime $start_date
- *   start date.
- * @param DateTime $end_date
- *   end date.
- * @param array $booking_parameters
- *   Specify the people we are looking to accommodate.
- * @param $unit
- * @param $booking
- * @param $profile_id
- * @return mixed
- */
-function rooms_booking_create_order($start_date, $end_date, $booking_parameters, $unit, $booking, $profile_id) {
-  global $user;
-
-  module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.commerce');
-
-  $uid = isset($booking->uid) ? $booking->uid : $user->uid;
-
-  $order = commerce_order_new($uid, 'pending');
-  commerce_order_save($order);
-
-  $price_modifiers = array();
-  // Convert Price options to Price modifiers
-  foreach (rooms_unit_get_unit_options($unit) as $option) {
-    $opt_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
-    if (isset($booking->$opt_name) && $booking->$opt_name) {
-      $price_modifiers[$opt_name] = array(
-        '#name' => $option['name'],
-        '#type' => ROOMS_DYNAMIC_MODIFIER,
-        '#op_type' => $option['operation'],
-        '#amount' => $option['value'],
-        '#quantity' => $option['quantity'],
-      );
-    }
-  }
-
-  $agent = new AvailabilityAgent($start_date, $end_date, $booking_parameters, 1, array());
-  $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
-
-  // Create line item
-  $line_item = rooms_create_line_item(array('unit' => $unit, 'state' => ROOMS_AVAILABLE), $agent, $booking_parameters, $price_modifiers);
-
-  $line_item->rooms_booking_reference['und'][0]['target_id'] = $booking->booking_id;
-
-  $line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
-
-  $line_item_wrapper->commerce_unit_price->amount = $booking->price;
-  $data = $line_item_wrapper->commerce_unit_price->data->value();
-  $data['components'][0]['price']['amount'] = $booking->price;
-
-  $line_item_wrapper->commerce_unit_price->data = $data;
-
-  commerce_line_item_save($line_item);
-
-  // Add the line item to the order
-  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
-  $order_wrapper->commerce_line_items[] = $line_item;
-
-  // Add customer profile id to store billing information
-  $profile_object = array(
-    'und' => array(
-      array('profile_id' => $profile_id,
-      ),
-    ),
-  );
-
-  $order->commerce_customer_billing = $profile_object;
-
-  // Save the order again to update its line item reference field
-  commerce_order_save($order);
-
-  $line_item_wrapper->order_id = $order->order_id;
-  commerce_line_item_save($line_item);
-
-  commerce_cart_order_refresh($order);
-
-  return $order;
-}
-
 
 /**
  * Form callback: confirmation form for deleting a booking.
