@@ -313,11 +313,11 @@ function rooms_entity_access_permissions($entity_type) {
         'restrict access' => TRUE,
       );
       if (!empty($entity_info['access arguments']['user key'])) {
-        $permissions['edit own ' . $entity_type . ' entities of bundle ' . $bundle_name] = array(
+        $permissions['update own ' . $entity_type . ' entities of bundle ' . $bundle_name] = array(
           'title' => t('Edit own %bundle @entity_type', array('@entity_type' => $labels['plural'], '%bundle' => $bundle_info['label'])),
         );
       }
-      $permissions['edit any ' . $entity_type . ' entity of bundle ' . $bundle_name] = array(
+      $permissions['update any ' . $entity_type . ' entity of bundle ' . $bundle_name] = array(
         'title' => t('Edit any %bundle @entity_type', array('@entity_type' => $labels['singular'], '%bundle' => $bundle_info['label'])),
         'restrict access' => TRUE,
       );
