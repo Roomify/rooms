@@ -148,8 +148,31 @@ function rooms_unit_permission() {
       'description' => t('Allows users to add bookable unit types and configure their fields.'),
       'restrict access' => TRUE,
     ),
+    'view any rooms_unit unpublished entity' => array(
+      'title' => t('View any unpublished bookable unit'),
+      'description' => t('Allows users to view any unpublished bookable unit.'),
+      'restrict access' => TRUE,
+    ),
+    'view own rooms_unit unpublished entities' => array(
+      'title' => t('View any unpublished bookable unit'),
+      'description' => t('Allows users to view own unpublished bookable units.'),
+    ),
   );
-  return $permissions + rooms_entity_access_permissions('rooms_unit');
+
+  $permissions += rooms_entity_access_permissions('rooms_unit');
+
+  // Override view permissions.
+  $entity_info = entity_get_info('rooms_unit');
+  foreach ($entity_info['bundles'] as $bundle_name => $bundle_info) {
+    $permissions['view own rooms_unit entities of bundle ' . $bundle_name] = array(
+      'title' => t('View own published %bundle @entity_type', array('@entity_type' => 'bookable units', '%bundle' => $bundle_info['label'])),
+    );
+    $permissions['view any rooms_unit entity of bundle ' . $bundle_name] = array(
+      'title' => t('View any published %bundle @entity_type', array('@entity_type' => 'bookable unit', '%bundle' => $bundle_info['label'])),
+    );
+  }
+
+  return $permissions;
 }
 
 /**
@@ -209,6 +232,27 @@ function rooms_unit_query_rooms_unit_access_alter(QueryAlterableInterface $query
       break;
     }
   }
+}
+
+/**
+ * Implements hook_rooms_entity_access_OP_condition_ENTITY_TYPE_alter().
+ */
+function rooms_unit_rooms_entity_access_view_condition_rooms_unit_alter(&$conditions, $context) {
+  $account = $context['account'];
+
+  if (user_access('view any rooms_unit unpublished entity', $account)) {
+    $conditions->condition($context['base_table'] . '.status', 1);
+  }
+  elseif ($account->uid && user_access('view own rooms_unit unpublished entities', $account)) {
+    $conditions->condition(db_and()
+      ->condition($context['base_table'] . '.status', 1)
+      ->condition($context['base_table'] . '.uid', $account->uid)
+    );
+  }
+  else {
+    $conditions = db_or();
+  }
+  return $conditions;
 }
 
 /**
