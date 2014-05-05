@@ -459,6 +459,7 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
       $content['booking_results'] = 0;
 
       // Add the search availability form.
+      module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.availability_search');
       $booking_search_form = drupal_get_form('rooms_booking_availability_search_form_page');
 
       // Alter the page title.
