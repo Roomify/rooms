@@ -37,7 +37,7 @@ function rooms_availability_reference_menu() {
 function rooms_availability_reference_field_info() {
   return array(
     'rooms_availability_reference' => array(
-      'label' => t('Availability Reference'),
+      'label' => t('Rooms Availability Reference'),
       'description' => t('Display availability information embedded from other fieldable content.'),
       'settings' => array(
         'referenceable_booking_unit_types' => array(),
@@ -62,12 +62,21 @@ function rooms_availability_reference_field_is_empty($item, $field) {
 function rooms_availability_reference_field_formatter_info() {
   $ret = array(
     'rooms_availability_reference_default' => array(
-      'label'       => t('Availability Calendar'),
+      'label'       => t('Rooms Availability Calendar'),
       'description' => t('Displays availability information on a calendar.'),
-      'field types' => array('rooms_availability_reference'),
+      'field types' => array('rooms_availability_reference', 'entityreference'),
     ),
   );
   return $ret;
+}
+
+/**
+ * Implements hook_field_formatter_prepare_view().
+ */
+function rooms_availability_reference_field_formatter_prepare_view($entity_type, $entities, $field, $instances, $langcode, &$items, $displays) {
+  if ($field['type'] == 'entityreference') {
+    entityreference_field_formatter_prepare_view($entity_type, $entities, $field, $instances, $langcode, $items, $displays);
+  }
 }
 
 /**
@@ -81,10 +90,11 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
   $result = array();
   $element = array();
 
-
   switch ($display['type']) {
     case 'rooms_availability_reference_default':
-
+      if ($field['type'] == 'entityreference' && $field['settings']['target_type'] != 'rooms_unit') {
+        return $element;
+      }
       rooms_fullcalendar_loaded();
       drupal_add_js(drupal_get_path('module', 'rooms_availability_reference') . '/js/rooms_availability_reference.js');
 
@@ -92,17 +102,25 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
       $unit_ids = array();
 
       foreach ($items as $delta => $item) {
-        $unit = rooms_unit_load($item['unit_id']);
+        if ($field['type'] == 'entityreference') {
+          if (empty($item['access'])) {
+            continue;
+          }
+          $unit = ($item['entity']);
+        }
+        else {
+          $unit = rooms_unit_load($item['unit_id']);
+        }
 
         $unit_names[] = $unit->name;
         $unit_ids[] = $unit->unit_id;
-      }
 
-      // Inject settings in javascript that we will use
-      $js_settings['roomsAvailabilityRef'][] = array(
-        'unitID' => implode(',', $unit_ids),
-        'style' => ROOMS_AVAILABILITY_GENERIC_STYLE,
-      );
+        // Inject settings in javascript that we will use
+        $js_settings['roomsAvailabilityRef'][] = array(
+          'unitID' => $unit->unit_id,
+          'style' => ROOMS_AVAILABILITY_GENERIC_STYLE,
+        );
+      }
 
       drupal_add_js($js_settings, 'setting');
 
@@ -115,11 +133,13 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
       break;
   }
 
-  $element[] = array(
-    '#theme' => 'rooms_availability_field_calendar',
-    '#attributes' => array('class' => 'cal'),
-    'calendar' => $result,
-  );
+  if (!empty($result)) {
+    $element[] = array(
+      '#theme' => 'rooms_availability_field_calendar',
+      '#attributes' => array('class' => 'cal'),
+      'calendar' => $result,
+    );
+  }
 
   return $element;
 }
