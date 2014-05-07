@@ -17,7 +17,10 @@ class UnitCalendar {
     $this->unit_id = $unit_id;
     // Load the booking unit
     $unit = rooms_unit_load($unit_id);
-    $this->default_state = $unit->default_state;
+
+    // When deleting booking which unit was deleted before we don't have unit.
+    $default_state = (is_object($unit)) ? $unit->default_state : ROOMS_AVAILABLE;
+    $this->default_state = $default_state;
   }
 
 

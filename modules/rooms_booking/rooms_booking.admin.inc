@@ -426,7 +426,8 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
         }
 
         if (!isset($form_state['values'][$option_name . ':quantity'])) {
-          $form_state['values'][$option_name . ':quantity'] = $booking->data[$option_name . ':quantity'];
+          $quantity = (isset($booking->data[$option_name . ':quantity'])) ? $booking->data[$option_name . ':quantity'] : 1;
+          $form_state['values'][$option_name . ':quantity'] = $quantity;
         }
         $quantity = 1;
         if (isset($form_state['values'][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
