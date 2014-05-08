@@ -5,33 +5,34 @@ Drupal.behaviors.rooms_availability = {
 
     // Current month is whatever comes through -1 since js counts months starting
     // from 0
-    currentmonth = parseInt(Drupal.settings.roomsCalendar.currentMonth) - 1;
-    currentyear = parseInt(Drupal.settings.roomsCalendar.currentYear);
+    currentMonth = Drupal.settings.roomsCalendar.currentMonth - 1;
+    currentYear = Drupal.settings.roomsCalendar.currentYear;
+    firstDay = Drupal.settings.roomsCalendar.firstDay;
 
     // The first month on the calendar
-    month1 = currentmonth;
-    year1 = currentyear;
+    month1 = currentMonth;
+    year1 = currentYear;
 
     // Second month is the next one obviously unless it is 11 in
     // which case we need to move a year ahead
-    if (currentmonth == 11) {
+    if (currentMonth == 11) {
       month2 = 0;
       year2 = year1 + 1;
     }
     else{
-      month2 = currentmonth+1;
-      year2 = currentyear;
+      month2 = currentMonth+1;
+      year2 = currentYear;
     }
 
-    currentmonth = month2;
+    currentMonth = month2;
     // And finally the last month where we do the same as above
     // worth streamlining this probably
-    if (currentmonth == 11) {
+    if (currentMonth == 11) {
       month3 = 0;
       year3 = year2 + 1;
     }
     else{
-      month3 = currentmonth+1;
+      month3 = currentMonth+1;
       year3 = year2;
     }
 
@@ -44,6 +45,9 @@ Drupal.behaviors.rooms_availability = {
       phpmonth = value[1]+1;
       $(value[0]).once().fullCalendar({
         editable:false,
+        dayNamesShort:[Drupal.t("Sun"), Drupal.t("Mon"), Drupal.t("Tue"), Drupal.t("Wed"), Drupal.t("Thu"), Drupal.t("Fri"), Drupal.t("Sat")],
+        monthNames:[Drupal.t("January"), Drupal.t("February"), Drupal.t("March"), Drupal.t("April"), Drupal.t("May"), Drupal.t("June"), Drupal.t("July"), Drupal.t("August"), Drupal.t("September"), Drupal.t("October"), Drupal.t("November"), Drupal.t("December")],
+        firstDay: firstDay,
         month:value[1],
         year:value[2],
         header:{

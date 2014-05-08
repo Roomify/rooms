@@ -25,12 +25,12 @@ Drupal.behaviors.roomsPricing = {
   attach: function(context) {
 
     // Current month is whatever comes through -1 since js counts months starting from 0
-    currentmonth = parseInt(Drupal.settings.roomsUnitManagement.currentMonth)-1;
-    currentyear = parseInt(Drupal.settings.roomsUnitManagement.currentYear);
+    currentMonth = Drupal.settings.roomsUnitManagement.currentMonth - 1;
+    currentYear = Drupal.settings.roomsUnitManagement.currentYear;
 
     // The first month on the calendar
-    month1 = currentmonth;
-    year1 = currentyear;
+    month1 = currentMonth;
+    year1 = currentYear;
 
     var calendars = new Array();
     var i = 0;
@@ -43,6 +43,8 @@ Drupal.behaviors.roomsPricing = {
       phpmonth = value[1]+1;
       $(value[0]).once().fullCalendar({
         editable:false,
+        dayNamesShort:[Drupal.t("Sun"), Drupal.t("Mon"), Drupal.t("Tue"), Drupal.t("Wed"), Drupal.t("Thu"), Drupal.t("Fri"), Drupal.t("Sat")],
+        monthNames:[Drupal.t("January"), Drupal.t("February"), Drupal.t("March"), Drupal.t("April"), Drupal.t("May"), Drupal.t("June"), Drupal.t("July"), Drupal.t("August"), Drupal.t("September"), Drupal.t("October"), Drupal.t("November"), Drupal.t("December")],
         defaultView:'singleRowMonth',
         month:value[1],
         year:value[2],

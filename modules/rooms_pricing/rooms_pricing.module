@@ -349,7 +349,7 @@ function rooms_pricing_bulk_pricing_management($year = '', $month = '', $type = 
               'roomsNumber' => count($rooms_id),
               'currentMonth' => $month,
               'currentYear' => $year,
-              'roomsId' => $rooms_id
+              'roomsId' => $rooms_id,
             ),
           ),
           'type' => 'setting',
