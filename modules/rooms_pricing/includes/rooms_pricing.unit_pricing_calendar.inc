@@ -97,7 +97,7 @@ class UnitPricingCalendar {
       }
     }
 
-    $price = $this->applyPriceModifiers($price);
+    $price = $this->applyPriceModifiers($price, $days);
 
     $payment_option = variable_get('rooms_payment_options', FULL_PAYMENT);
     switch ($payment_option) {
@@ -116,14 +116,16 @@ class UnitPricingCalendar {
   }
 
   /**
-   * Apply price modifiers to base price
+   * Apply price modifiers to base price.
    * @param $base_price
-   * The price to modify
+   *   The price to modify.
+   * @param $days
+   *   The event duration.
    *
    * @return
-   * The modified price
+   * The modified price.
    */
-  public function applyPriceModifiers($base_price) {
+  public function applyPriceModifiers($base_price, $days) {
     $price = $base_price;
     if (!empty($this->price_modifiers)) {
       foreach ($this->price_modifiers as $modifier) {
@@ -135,8 +137,14 @@ class UnitPricingCalendar {
             case ROOMS_ADD:
               $price += $modifier['#amount'] * $modifier['#quantity'];
               break;
+            case ROOMS_ADD_DAILY:
+              $price += $modifier['#amount'] * $modifier['#quantity'] * $days;
+              break;
             case ROOMS_SUB:
               $price -= $modifier['#amount'] * $modifier['#quantity'];
+              break;
+            case ROOMS_SUB_DAILY:
+              $price -= $modifier['#amount'] * $modifier['#quantity'] * $days;
               break;
             case ROOMS_REPLACE:
               $price = $modifier['#amount'];
@@ -413,8 +421,10 @@ class UnitPricingCalendar {
         $monthly_events = array();
 
         foreach ($affected_events as $a_event) {
+          $days = $event->diff()->days + 1;
+
           //Apply the operation
-          $a_event->applyOperation($event->amount, $event->operation);
+          $a_event->applyOperation($event->amount, $event->operation, $days);
 
           // If the event is in the same month span just queue to be added
           if ($a_event->sameMonth()) {
@@ -423,7 +433,6 @@ class UnitPricingCalendar {
           else {
             // Check if multi-year - if not just create monthly events
             if ($a_event->sameYear()) {
-              $monthly_events_tmp = array();
               $monthly_events_tmp = $a_event->transformToMonthlyEvents();
               $monthly_events =  array_merge($monthly_events, $monthly_events_tmp);
             }
@@ -431,7 +440,6 @@ class UnitPricingCalendar {
               // else transform to single years and then to monthly
               $yearly_events = $a_event->transformToYearlyEvents();
               foreach ($yearly_events as $ye) {
-                $monthly_events_tmp = array();
                 $monthly_events_tmp = $ye->transformToMonthlyEvents();
                 $monthly_events =  array_merge($monthly_events, $monthly_events_tmp);
               }

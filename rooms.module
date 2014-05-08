@@ -9,7 +9,9 @@
 define('ROOMS_CHILDREN_FEATURES', 'children_features');
 
 define('ROOMS_ADD', 'add');
+define('ROOMS_ADD_DAILY', 'add-daily');
 define('ROOMS_SUB', 'sub');
+define('ROOMS_SUB_DAILY', 'sub-daily');
 define('ROOMS_REPLACE', 'replace');
 define('ROOMS_INCREASE', 'increase');
 define('ROOMS_DECREASE', 'decrease');
@@ -593,7 +595,9 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
 function rooms_price_options_options() {
   return array(
     ROOMS_ADD => t('Add to price'),
+    ROOMS_ADD_DAILY => t('Add to price per night'),
     ROOMS_SUB => t('Subtract from price'),
+    ROOMS_SUB_DAILY => t('Subtract from price per night'),
     ROOMS_REPLACE => t('Replace price'),
     ROOMS_INCREASE => t('Increase price by % amount'),
     ROOMS_DECREASE => t('Decrease price by % amount'),
