@@ -351,7 +351,7 @@ function rooms_entity_access_query_alter($query, $entity_type, $base_table = NUL
 
   // Do not apply any conditions for users with administrative view permissions.
   if (user_access('bypass ' . $entity_type . ' access', $account)
-    || user_access($op . ' any ' . $entity_type, $account)) {
+    || user_access($op . ' any ' . $entity_type . ' entity', $account)) {
     return;
   }
 
@@ -407,27 +407,13 @@ function rooms_entity_access_query_alter($query, $entity_type, $base_table = NUL
       $conditions->condition($base_table . '.' . $entity_info['entity keys']['bundle'], $bundle_name);
     }
     elseif ($account->uid && !empty($entity_info['access arguments']['user key']) && user_access($op  . ' own ' . $entity_type . ' entities of bundle ' . $bundle_name, $account)) {
-      // Otherwise if an authenticated user has access to view his own entities
-      // of the current bundle and the given entity type has a user ownership key...
-      $really_restricted = TRUE;
-
       // Add an AND condition group that grants access if the entity specified
       // by the view query matches the same bundle and belongs to the user.
       $conditions->condition(db_and()
-          ->condition($base_table . '.' . $entity_info['entity keys']['bundle'], $bundle_name)
-          ->condition($base_table . '.' . $entity_info['access arguments']['user key'], $account->uid)
+        ->condition($base_table . '.' . $entity_info['entity keys']['bundle'], $bundle_name)
+        ->condition($base_table . '.' . $entity_info['access arguments']['user key'], $account->uid)
       );
     }
-    else {
-      $really_restricted = TRUE;
-    }
-  }
-
-  // No further conditions need to be added to the query if we determined above
-  // that the user has an administrative view permission for any entity of the
-  // type and bundles represented by the query.
-  if (!$really_restricted) {
-    return;
   }
 
   // If the given entity type has a user ownership key...
@@ -442,8 +428,8 @@ function rooms_entity_access_query_alter($query, $entity_type, $base_table = NUL
   // Prepare an array of condition alter hooks to invoke and an array of context
   // data for the current query.
   $hooks = array(
-    'rooms_entity_access_' . $op . 'condition_' . $entity_type,
-    'rooms_entity_access_' . $op . 'condition'
+    'rooms_entity_access_' . $op . '_condition_' . $entity_type,
+    'rooms_entity_access_' . $op . '_condition'
   );
 
   $context = array(
