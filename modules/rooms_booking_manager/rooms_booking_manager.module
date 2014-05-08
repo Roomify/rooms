@@ -1555,6 +1555,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
           $price_modifiers = array();
           foreach (rooms_unit_get_unit_options($units[$units_keys[$c - 1]]['unit']) as $option) {
+            $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
             if (isset($form_state['values'][$type][$price]['fieldset'][$c][$option_name])) {
 
               $quantity = 1;

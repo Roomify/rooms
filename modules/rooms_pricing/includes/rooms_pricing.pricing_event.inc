@@ -81,7 +81,7 @@ class PricingEvent {
   }
 
 
-  public function applyOperation($amount, $operation) {
+  public function applyOperation($amount, $operation, $days) {
     switch ($operation) {
       case ROOMS_REPLACE:
         $this->amount = $amount;
@@ -89,8 +89,14 @@ class PricingEvent {
       case ROOMS_ADD:
         $this->amount = $this->amount + $amount;
         break;
+      case ROOMS_ADD_DAILY:
+        $this->amount = $this->amount + $amount * $days;
+        break;
       case ROOMS_SUB:
         $this->amount = $this->amount - $amount;
+        break;
+      case ROOMS_SUB_DAILY:
+        $this->amount = $this->amount - $amount * $days;
         break;
       case ROOMS_INCREASE:
         $this->amount = $this->amount + (($this->amount) * ($amount/100));
