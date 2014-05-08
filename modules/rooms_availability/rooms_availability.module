@@ -839,7 +839,7 @@ function rooms_availability_theme() {
 
 
 /**
- * Sets event ids
+ * Sets event ids.
  *
  * @todo - Make this depend on a parameter
  */

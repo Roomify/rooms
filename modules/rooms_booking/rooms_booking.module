@@ -942,6 +942,8 @@ class RoomsBookingController extends EntityAPIController {
 
   public function save($entity) {
     $entity->original = entity_load_unchanged($this->entityType, $entity->{$this->idKey});
+    $corrected_end_date = new DateTime($entity->end_date);
+    $corrected_end_date->sub(new DateInterval('P1D'));
 
     // We are going to be updating the event - so the first step is to remove the old event unless this
     // is a booking we are deleting - in which case we have already removed the event
@@ -951,7 +953,7 @@ class RoomsBookingController extends EntityAPIController {
       $uc = new UnitCalendar($entity->original->unit_id);
       $event_id = rooms_availability_assign_id($entity->booking_id, $entity->booking_status);
       // Create an event representing the event to remove
-      $be = new BookingEvent($entity->original->unit_id, $event_id, new DateTime($entity->original->start_date), new DateTime($entity->original->end_date));
+      $be = new BookingEvent($entity->original->unit_id, $event_id, new DateTime($entity->original->start_date), $corrected_end_date);
       $uc->removeEvents(array($be));
     }
 
@@ -961,8 +963,6 @@ class RoomsBookingController extends EntityAPIController {
     if (($entity->unit_id != 0) && ($entity->type != ROOMS_BOOKING_DELETED)) {
       // Set the event_id
       $event_id = rooms_availability_assign_id($entity->booking_id, $entity->booking_status);
-      $corrected_end_date = new DateTime($entity->end_date);
-      $corrected_end_date->sub(new DateInterval('P1D'));
       // Create an event
       $be = new BookingEvent($entity->unit_id, $event_id, new DateTime($entity->start_date), $corrected_end_date);
 
