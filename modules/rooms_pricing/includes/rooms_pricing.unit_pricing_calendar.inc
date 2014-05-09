@@ -1,27 +1,37 @@
 <?php
 
 /**
- * Handles quering and updating the pricing information
+ * Handles querying and updating the pricing information
  * relative to a single bookable unit.
  */
-class UnitPricingCalendar {
+class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarInterface {
 
-  // The bookable unit the Calendar is relevant to
-  protected $unit_id;
-
-  // The actual unit relevant to this Calendar
+  /**
+   * The actual unit relevant to this Calendar.
+   */
   protected $unit;
 
-  // The default state for the room if it has no specific booking
-  protected $default_state;
-
-  // The default price for the room
+  /**
+   * The default price for the room
+   *
+   * @var float
+   */
   protected $default_price;
 
-  // Price modfiers - an array of operations to be performed to the price. Operations
-  // are performed in the sequence they are found in the array
+  /**
+   * Price modfiers - an array of operations to be performed to the price.
+   * Operations are performed in the sequence they are found in the array
+   *
+   * @var array
+   */
   protected $price_modifiers;
 
+  /**
+   * @param int $unit_id
+   *   The unit ID.
+   * @param array $price_modifiers
+   *   The price modifiers to apply.
+   */
   public function __construct($unit_id, $price_modifiers = array()) {
     $this->unit_id = $unit_id;
     // Load the booking unit
@@ -30,41 +40,12 @@ class UnitPricingCalendar {
     $this->default_price = $this->unit->base_price;
 
     $this->price_modifiers = $price_modifiers;
+
+    $this->base_table = 'rooms_pricing';
   }
 
-
   /**
-   * Given an array of events removes events from the calendar
-   *
-   * @param $events
-   *    The events to remove from the database - an array of Booking Events
-   *
-   * @return
-   *   The array of ids of events that were found and removed
-   */
-  public function removeEvents($events) {}
-
-
-  /**
-   * Given a date range determine the cost of the room over that period
-   *
-   * @param DateTime $start_date
-   * The starting date for the search
-   *
-   * @param DateTime $end_date
-   * The end date for the search
-   *
-   * @param $persons
-   * The number of persons staying in this room
-   *
-   * @param $children
-   * The number of children staying in this room
-   *
-   * @param $children_ages
-   * Children ages
-   *
-   * @return
-   * The array holding full price and booking price of the room for that period
+   * {@inheritdoc}
    */
   public function calculatePrice(DateTime $start_date, DateTime $end_date, $persons = 0, $children = 0, $children_ages = array()) {
 
@@ -116,14 +97,7 @@ class UnitPricingCalendar {
   }
 
   /**
-   * Apply price modifiers to base price.
-   * @param $base_price
-   *   The price to modify.
-   * @param $days
-   *   The event duration.
-   *
-   * @return
-   * The modified price.
+   * {@inheritdoc}
    */
   public function applyPriceModifiers($base_price, $days) {
     $price = $base_price;
@@ -162,25 +136,10 @@ class UnitPricingCalendar {
     return $price;
   }
 
-
   /**
-   * Given a date range returns an array of PricingEvents. The heavy lifting really takes place in
-   * the getRawDayData function - here we are simply acting as a factory for price event objects
-   *
-   * @param $start_date
-   * The starting date
-   *
-   * @param $end_date
-   * The end date of our range
-   *
-   * @return
-   * An array of PricingEvent objects
+   * {@inheritdoc}
    */
   public function getEvents(DateTime $start_date, DateTime $end_date) {
-
-    $start_day = $start_date->format('j');
-    $end_day = $end_date->format('j');
-
     // Get the raw day results
     $results = $this->getRawDayData($start_date, $end_date);
     $events = array();
@@ -197,9 +156,9 @@ class UnitPricingCalendar {
           $ed = new DateTime("$year-$mid-$end");
           $amount = commerce_currency_amount_to_decimal($state['state'], commerce_default_currency());
           $event = new PricingEvent($this->unit_id,
-                                    $amount,
-                                    $sd,
-                                    $ed);
+            $amount,
+            $sd,
+            $ed);
           $events[] = $event;
         }
       }
@@ -207,20 +166,8 @@ class UnitPricingCalendar {
     return $events;
   }
 
-
   /**
-   * Given a date range it returns all data within that range including the start and
-   * end dates of states. The MySQL queries are kept simple and then the data is cleared up
-   *
-   * @param $start_date
-   * The starting date
-   *
-   * @param $end_date
-   * The end date of our range
-   *
-   * @return
-   * An array of the structure data[unitid][year][month][days][d1]..[d31]
-   * as wekk as data[unitid][year][month][unique_states]
+   * {@inheritdoc}
    */
   public function getRawDayData(DateTime $start_date, DateTime $end_date) {
 
@@ -318,9 +265,9 @@ class UnitPricingCalendar {
           if (!isset($results[$this->unit_id][$j][$i])) {
             $last_day = $eod[$i];
             $month = $this->prepareFullMonthArray(new PricingEvent($this->unit_id,
-                                                                   $this->default_price,
-                                                                   new DateTime("$j-$i-1"),
-                                                                   new DateTime("$j-$i-$last_day")));
+              $this->default_price,
+              new DateTime("$j-$i-1"),
+              new DateTime("$j-$i-$last_day")));
             // Add the month in its rightful position
             $results[$this->unit_id][$j][$i]['days'] = $month;
             // And sort months
@@ -360,7 +307,7 @@ class UnitPricingCalendar {
         }
         if (($year == $s->endYear()) && ($mid == $s->endMonth())) {
           // and from the end of the month back to the actual end day
-          for ($i = $s->endDay()+1; $i <= $eod[$mid]; $i++) {
+          for ($i = $s->endDay() + 1; $i <= $eod[$mid]; $i++) {
             unset($results[$this->unit_id][$year][$mid]['days']['d' . $i]);
           }
         }
@@ -385,8 +332,8 @@ class UnitPricingCalendar {
           $state = $days['days']['d' . $i];
           if ($state != $old_state) {
             $unique_states[] = array('state' => $old_state,
-                                               'start_day' => $start_day,
-                                               'end_day' => $i-1);
+              'start_day' => $start_day,
+              'end_day' => $i-1);
             $end_day = $i - 1;
             $start_day = $i;
             $old_state = $state;
@@ -396,8 +343,8 @@ class UnitPricingCalendar {
         }
         // Get the last event in
         $unique_states[] = array('state' => $state,
-                                   'start_day' => isset($end_day) ? $end_day+1 : $start_day,
-                                   'end_day' => $i-1);
+          'start_day' => isset($end_day) ? $end_day+1 : $start_day,
+          'end_day' => $i-1);
         $results[$this->unit_id][$year][$mid]['states'] = $unique_states;
       }
     }
@@ -405,12 +352,10 @@ class UnitPricingCalendar {
     return $results;
   }
 
-
   /**
-   * Given an array of PricingEvents the calendar is updated with regards to the
-   * events that are relevant to the Unit this calendar refers to
+   * {@inheritdoc}
    */
-  public function updateCalendar(array $events) {
+  public function updateCalendar($events) {
 
     foreach ($events as $event) {
       // Make sure event refers to the unit for this calendar
@@ -454,52 +399,10 @@ class UnitPricingCalendar {
     }
   }
 
-
   /**
-   * Adds an event to the calendar
-   *
-   * @param $event
-   *   An an event of type BookingEvent
-   *
-   * @return
-   *   TRUE if events added, FALSE if some event failed
+   * {@inheritdoc}
    */
-  public function addMonthEvent($event) {
-    // First check if the month exists and do an update if so
-    if ($this->monthDefined($event->startMonth(), $event->startYear())) {
-      // Do the update
-      $partial_month_row = $this->preparePartialMonthArray($event);
-      $update = db_update('rooms_pricing')
-        ->condition('unit_id', $this->unit_id)
-        ->condition('month', $event->startMonth())
-        ->condition('year', $event->startYear())
-        ->fields($partial_month_row)
-        ->execute();
-    }
-    // Do an insert for a new month
-    else {
-      // Prepare the days array
-      $days = $this->prepareFullMonthArray($event);
-      $month_row = array(
-        'unit_id' => $this->unit_id,
-        'year' => $event->startYear(),
-        'month' => $event->startMonth(),
-      );
-      $month_row = array_merge($month_row, $days);
-
-      $insert = db_insert('rooms_pricing')->fields($month_row);
-      $insert->execute();
-    }
-  }
-
-
-  /**
-   * Given an event it prepares the entire month array for it
-   * assuming no other events in the month and days where there
-   * is no event get set to the default state;
-   */
-  protected function prepareFullMonthArray($event) {
-
+  protected function prepareFullMonthArray(RoomsEventInterface $event) {
     $days = array();
     $eod = rooms_end_of_month_dates($event->startYear());
     $last_day = $eod[$event->startMonth()];
@@ -515,52 +418,27 @@ class UnitPricingCalendar {
     return $days;
   }
 
-
   /**
-   * Given an event it prepares a partial array covering just the days
-   * for which the event is involved
+   * {@inheritdoc}
    */
-  protected function preparePartialMonthArray($event) {
+  protected function preparePartialMonthArray(RoomsEventInterface $event) {
     $days = array();
-    for ($i = $event->startDay(); $i<=$event->endDay(); $i++) {
+    for ($i = $event->startDay(); $i<= $event->endDay(); $i++) {
         $days['d' . $i] = commerce_currency_decimal_to_amount($event->amount, commerce_default_currency());
     }
     return $days;
   }
 
   /**
-   * Check if a month exists
-   *
-   * @return true - if the month is defined
+   * {@inheritdoc}
    */
-  public function monthDefined($month, $year) {
-    $query = db_select('rooms_pricing', 'a');
-    $query->addField('a', 'unit_id');
-    $query->addField('a', 'year');
-    $query->addField('a', 'month');
-    $query->condition('a.unit_id', $this->unit_id);
-    $query->condition('a.year', $year);
-    $query->condition('a.month', $month);
-    $result = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
-    if (count($result) > 0) {
-      return TRUE;
-    }
-    return FALSE;
-  }
-
-  /**
-   * Get a sets of PricingEvent between start_date and end_date filter by days of the week
-   *
-   * @return array of PricingEvent
-   */
-  public function calculatePricingEvents($unit_id, $amount, $start_date, $end_date, $operation, $days) {
+  public function calculatePricingEvents($unit_id, $amount, DateTime $start_date, DateTime $end_date, $operation, $days) {
     $s_timestamp = $start_date->getTimestamp();
     $e_timestamp = $end_date->getTimestamp();
 
     $events = array();
 
     do {
-
       $s_date = getdate($s_timestamp);
       $wday_start = $s_date['wday'];
 
@@ -574,6 +452,5 @@ class UnitPricingCalendar {
 
     return $events;
   }
-
 
 }

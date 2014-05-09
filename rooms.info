@@ -4,7 +4,10 @@ core = 7.x
 version = 1.x-dev
 php = 5.3
 
-files[] = test/rooms_test.test
+files[] = includes/rooms.calendar.inc
+files[] = includes/rooms.calendar_interface.inc
+files[] = includes/rooms.event.inc
+files[] = includes/rooms.event_interface.inc
 
 package = Rooms
 
