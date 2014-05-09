@@ -546,7 +546,7 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
       '#title' => t('Quantity'),
       '#options' => array('None', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'),
       '#default_value' => isset($items[$delta]['quantity']) ? $items[$delta]['quantity'] : NULL,
-      '#description' => 'How many of this option should be available',
+      '#description' => t('How many of this option should be available'),
     );
     $price_options = rooms_price_options_options();
     $element['operation'] = array(

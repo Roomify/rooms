@@ -26,6 +26,11 @@
   margin-right: 0;
   clear: both;
 }
+.rooms-unit-type-edit-form .field-widget-rooms-availability-constraints-range {
+  max-width: inherit;
+  margin-right: 0;
+  clear: both;
+}
 .rooms-unit-type-edit-form .form-actions {
   clear: both;
 }

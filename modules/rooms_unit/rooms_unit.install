@@ -254,7 +254,7 @@ function rooms_unit_install_create_options_field() {
     $field = array(
       'field_name' => 'rooms_booking_unit_options',
       'type' => 'rooms_options',
-      'cardinality' => -1,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
     );
     field_create_field($field);
   }
@@ -262,7 +262,7 @@ function rooms_unit_install_create_options_field() {
   cache_clear_all();
   field_cache_clear();
 
-  // Attach field 'rooms_booking_unit_options' to any instance of rooms_unit.
+  // Attach field 'rooms_booking_unit_options' to any instance of rooms_unit_type.
   if (field_info_instance('rooms_unit_type', 'rooms_booking_unit_options', 'rooms_unit_type') === NULL) {
     $instance = array(
       'field_name' => 'rooms_booking_unit_options',

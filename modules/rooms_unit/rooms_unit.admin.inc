@@ -47,7 +47,6 @@ class RoomsUnitUIController extends EntityDefaultUIController {
 
     );
 
-
     // Add menu items to add each different type of room.
     foreach (rooms_unit_get_types() as $type) {
       $items[$this->path . '/add/' . $type->type] = array(
@@ -229,6 +228,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#type' => 'fieldset',
     '#title' => t('Sleeping capacity'),
     '#tree' => FALSE,
+    '#weight' => -97,
   );
 
   $form['guest_capacity']['min_sleeps'] = array(
@@ -250,6 +250,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#type' => 'fieldset',
     '#title' => t('Child capacity'),
     '#tree' => FALSE,
+    '#weight' => -96,
   );
 
   $form['child_capacity']['min_children'] = array(
@@ -267,7 +268,10 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#description' => t('The number of children allowed in this unit.'),
   );
 
-  $form['data']['#tree'] = TRUE;
+  $form['data'] = array(
+    '#tree' => TRUE,
+    '#weight' => -95,
+  );
 
   $form['data']['bed_arrangement'] = array(
     '#type' => 'fieldset',

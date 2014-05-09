@@ -50,24 +50,26 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#description' => t('The human-readable name of this unit type.'),
     '#required' => TRUE,
     '#size' => 30,
+    '#weight' => -100,
   );
   // Machine-readable type name.
   $form['type'] = array(
     '#type' => 'machine_name',
     '#default_value' => isset($unit_type->type) ? $unit_type->type : '',
     '#maxlength' => 32,
-//    '#disabled' => $unit_type->isLocked() && $op != 'clone',
     '#machine_name' => array(
       'exists' => 'rooms_unit_get_types',
       'source' => array('label'),
     ),
     '#description' => t('A unique machine-readable name for this unit type. It must only contain lowercase letters, numbers, and underscores.'),
+    '#weight' => -99,
   );
 
   $form['unit_defaults'] = array(
     '#type' => 'fieldset',
     '#description' => '<strong>' . t('Unit defaults') . '</strong> - ' . t('Values specified below will be pre-populated as the defaults when creating units of this type.'),
     '#tree' => FALSE,
+    '#weight' => -98,
   );
 
   $form['unit_defaults']['data']['#tree'] = TRUE;
@@ -131,6 +133,7 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
   $form['reference'] = array(
     '#type' => 'fieldset',
     '#tree' => FALSE,
+    '#weight' => -97,
   );
 
   $form['reference']['data']['#tree'] = TRUE;
@@ -143,12 +146,16 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#maxlength' => 60,
     '#autocomplete_path' => 'admin/rooms/unit-type/description-source',
     '#default_value' => isset($unit_type->data['rooms_description_source']) ? $unit_type->data['rooms_description_source'] : '',
-    '#weight' => 99,
   );
 
   // Add the field related form elements.
   $form_state['rooms_unit_type'] = $unit_type;
   field_attach_form('rooms_unit_type', $unit_type, $form, $form_state);
+
+  $form['additional_settings'] = array(
+    '#type' => 'vertical_tabs',
+    '#weight' => 99,
+  );
 
   $form['actions'] = array(
     '#type' => 'actions',
@@ -161,16 +168,6 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#weight' => 100,
   );
 
-  //Locking not supported yet
-  /*if (!$unit_type->isLocked() && $op != 'add') {
-    $form['actions']['delete'] = array(
-      '#type' => 'submit',
-      '#value' => t('Delete unit type'),
-      '#weight' => 45,
-      '#limit_validation_errors' => array(),
-      '#submit' => array('rooms_unit_type_form_submit_delete')
-    );
-  }*/
   return $form;
 }
 
@@ -192,12 +189,12 @@ function rooms_unit_type_form_validate(&$form, &$form_state) {
     }
     else {
       $result = db_select('node', 'n')
-                  ->fields('n', array('title', 'nid'))
-                  ->condition('title', $source_ref[0])
-                  ->condition('n.type', 'unit_description')
-                  ->range(0, 1)
-                  ->execute()
-                  ->fetchField();
+        ->fields('n', array('title', 'nid'))
+        ->condition('title', $source_ref[0])
+        ->condition('n.type', 'unit_description')
+        ->range(0, 1)
+        ->execute()
+        ->fetchField();
 
       if (empty($result)) {
         form_set_error('data][rooms_description_source', t('You must enter a valid node.'));
@@ -207,28 +204,26 @@ function rooms_unit_type_form_validate(&$form, &$form_state) {
 
   $unit_type = $form_state['rooms_unit_type'];
   field_attach_form_validate('rooms_unit_type', $unit_type, $form, $form_state);
-
 }
-
 
 /**
  * Form API submit callback for the type form.
  */
-function rooms_unit_type_form_submit(&$form, &$form_state) {
+function rooms_unit_type_form_submit($form, &$form_state) {
   $unit_type = entity_ui_form_submit_build_entity($form, $form_state);
   // Save and go back.
   $unit_type->save();
 
-  if (!isset($unit_type->rooms_booking_unit_options)) {
-    // Create field ('rooms_booking_unit_options') if not exist
-    if (field_read_field('rooms_booking_unit_options') === FALSE) {
-      $field = array(
-        'field_name' => 'rooms_booking_unit_options',
-        'type' => 'rooms_options',
-        'cardinality' => -1,
-      );
-      field_create_field($field);
-    }
+  $form_state['unit_type'] = $unit_type;
+
+  // Create field ('rooms_booking_unit_options') if not exist
+  if (field_read_field('rooms_booking_unit_options') === FALSE) {
+    $field = array(
+      'field_name' => 'rooms_booking_unit_options',
+      'type' => 'rooms_options',
+      'cardinality' => -1,
+    );
+    field_create_field($field);
   }
 
   if (field_read_instance('rooms_unit', 'rooms_booking_unit_options', $unit_type->type) === FALSE) {

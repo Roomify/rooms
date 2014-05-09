@@ -6,10 +6,8 @@
  * plugin
  */
 
-
 define('ROOMS_AVAILABILITY_ADMIN_STYLE', 1);
 define('ROOMS_AVAILABILITY_GENERIC_STYLE', 2);
-
 
 /**
  * Implements hook_permission().

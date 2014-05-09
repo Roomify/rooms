@@ -27,6 +27,12 @@
   clear: both;
 }
 
+.rooms-unit-edit-form .field-widget-rooms-availability-constraints-range {
+  max-width: inherit;
+  margin-right: 0;
+  clear: both;
+}
+
 .rooms-unit-edit-form .form-item-name,
 .rooms-unit-edit-form .form-item-base-price,
 .rooms-unit-edit-form #edit-guest-capacity,
