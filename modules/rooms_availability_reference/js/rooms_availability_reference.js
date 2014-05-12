@@ -24,9 +24,12 @@ Drupal.behaviors.rooms_availability_reference = {
         },
         viewDisplay: function(view) {
           if (view.name == 'month') {
-            view.calendar.removeEventSource(lastSource);
+            for (var url in lastSource) {
+              view.calendar.removeEventSource(url);
+            }
             view.calendar.refetchEvents();
 
+            lastSource = [];
             for (var index = 0; index < Drupal.settings.roomsAvailabilityRef.length; index++) {
               url = '?q=rooms/units/unit/' + Drupal.settings.roomsAvailabilityRef[index].unitID + '/availability/json/'
                 + view.start.getFullYear() + '/' + (view.start.getMonth() + 1) + '/1/' //start day
@@ -35,7 +38,7 @@ Drupal.behaviors.rooms_availability_reference = {
 
                 view.calendar.addEventSource(url);
 
-                lastSource = url;
+                lastSource[index] = url;
             }
 
           }
