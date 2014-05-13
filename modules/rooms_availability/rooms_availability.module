@@ -285,7 +285,7 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
  * Validate callback for rooms_availability_update_status_form form.
  */
 function rooms_availability_update_status_form_validate(&$form, &$form_state) {
-  if (!$form_state['values']['change_event_status']) {
+  if ($form_state['values']['change_event_status']== '') {
     form_set_error('change_event_status', t('Select a valid status.'));
   }
   // validate that a rooms is selected
