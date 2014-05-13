@@ -58,6 +58,7 @@ function rooms_availability_constraints_field_schema($field) {
  * Implements hook_install().
  */
 function rooms_availability_constraints_install() {
+  field_info_cache_clear();
   rooms_availability_constraints_add_availability_range_field('rooms_unit_type', 'rooms_unit_type');
 }
 
