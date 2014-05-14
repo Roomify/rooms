@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * @file
+ * Hooks and main functions for Rooms Package module.
+ */
+
+/**
+ * Implements hook_commerce_product_type_info().
+ */
+function rooms_package_commerce_product_type_info() {
+  return array(
+    'rooms_package' => array(
+      'type' => 'rooms_package',
+      'name' => t('Rooms package'),
+      'description' => t('Vacational packages provided by Rooms.'),
+      'revision' => '1',
+    ),
+  );
+}

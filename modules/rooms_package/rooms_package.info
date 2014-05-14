@@ -1,0 +1,9 @@
+name = Rooms Package
+description = Create and administer vacational packages for Rooms.
+core = 7.x
+
+package = Rooms
+
+dependencies[] = commerce_stock
+dependencies[] = entityreference
+dependencies[] = rooms_booking_manager

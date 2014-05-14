@@ -1,0 +1,349 @@
+<?php
+
+/**
+ * @file
+ * Install hooks and update functions for Rooms Package module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function rooms_package_install() {
+  rooms_package_create_date_field();
+  rooms_package_create_reference_fields();
+  rooms_package_create_content_type();
+}
+
+/**
+ * Creates the date field for package products.
+ */
+function rooms_package_create_date_field() {
+  if (field_read_field('rooms_package_dates') === FALSE) {
+    $field = array(
+      'active' => 1,
+      'cardinality' => 1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'rooms_package_dates',
+      'foreign keys' => array(),
+      'indexes' => array(),
+      'locked' => 0,
+      'module' => 'date',
+      'settings' => array(
+        'cache_count' => 4,
+        'cache_enabled' => 0,
+        'granularity' => array(
+          'day' => 'day',
+          'hour' => 0,
+          'minute' => 0,
+          'month' => 'month',
+          'second' => 0,
+          'year' => 'year',
+        ),
+        'timezone_db' => '',
+        'todate' => 'required',
+        'tz_handling' => 'none',
+      ),
+      'translatable' => 0,
+      'type' => 'date',
+    );
+    field_create_field($field);
+  }
+
+  field_cache_clear();
+
+  if (field_read_instance('commerce_product', 'rooms_package_dates', 'rooms_package') === FALSE) {
+    // Create the instance on the bundle.
+    $instance = array(
+      'field_name' => 'rooms_package_dates',
+      'entity_type' => 'commerce_product',
+      'label' => 'Package dates',
+      'bundle' => 'rooms_package',
+      'required' => TRUE,
+      'widget' => array(
+        'type' => 'date_popup',
+      ),
+    );
+
+    field_create_instance($instance);
+  }
+}
+
+/**
+ * Creates the reference fields for package products.
+ */
+function rooms_package_create_reference_fields() {
+  if (field_read_field('rooms_package_all_units') === FALSE) {
+    $field = array(
+      'active' => 1,
+      'cardinality' => 1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'rooms_package_all_units',
+      'foreign keys' => array(),
+      'indexes' => array(
+        'value' => array(
+          0 => 'value',
+        ),
+      ),
+      'locked' => 0,
+      'module' => 'list',
+      'settings' => array(
+        'allowed_values' => array(
+          0 => '',
+          1 => '',
+        ),
+        'allowed_values_function' => '',
+      ),
+      'translatable' => 0,
+      'type' => 'list_boolean',
+    );
+
+    field_create_field($field);
+  }
+
+  if (field_read_field('rooms_package_unit_types') === FALSE) {
+    $field = array(
+      'active' => 1,
+      'cardinality' => -1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'rooms_package_unit_types',
+      'foreign keys' => array(
+        'rooms_unit_type' => array(
+          'columns' => array(
+            'target_id' => 'id',
+          ),
+          'table' => 'rooms_unit_type',
+        ),
+      ),
+      'indexes' => array(
+        'target_id' => array(
+          0 => 'target_id',
+        ),
+      ),
+      'locked' => 0,
+      'module' => 'entityreference',
+      'settings' => array(
+        'handler' => 'base',
+        'handler_settings' => array(
+          'behaviors' => array(
+            'views-select-list' => array(
+              'status' => 0,
+            ),
+          ),
+          'sort' => array(
+            'type' => 'none',
+          ),
+          'target_bundles' => array(),
+        ),
+        'target_type' => 'rooms_unit_type',
+      ),
+      'translatable' => 0,
+      'type' => 'entityreference',
+    );
+
+    field_create_field($field);
+  }
+
+  if (field_read_field('rooms_package_units') === FALSE) {
+    $field = array(
+      'active' => 1,
+      'cardinality' => -1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'rooms_package_units',
+      'foreign keys' => array(
+        'rooms_units' => array(
+          'columns' => array(
+            'target_id' => 'unit_id',
+          ),
+          'table' => 'rooms_units',
+        ),
+      ),
+      'indexes' => array(
+        'target_id' => array(
+          0 => 'target_id',
+        ),
+      ),
+      'locked' => 0,
+      'module' => 'entityreference',
+      'settings' => array(
+        'handler' => 'base',
+        'handler_settings' => array(
+          'behaviors' => array(
+            'views-select-list' => array(
+              'status' => 0,
+            ),
+          ),
+          'sort' => array(
+            'type' => 'none',
+          ),
+          'target_bundles' => array(),
+        ),
+        'target_type' => 'rooms_unit',
+      ),
+      'translatable' => 0,
+      'type' => 'entityreference',
+    );
+    field_create_field($field);
+  }
+
+  field_cache_clear();
+
+  if (field_read_instance('commerce_product', 'rooms_package_all_units', 'rooms_package') === FALSE) {
+    // Create the instance on the bundle.
+    $instance = array(
+      'entity_type' => 'commerce_product',
+      'field_name' => 'rooms_package_all_units',
+      'label' => 'Apply to all units',
+      'bundle' => 'rooms_package',
+      'required' => 0,
+      'widget' => array(
+        'active' => 1,
+        'module' => 'options',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+        'type' => 'options_onoff',
+      ),
+    );
+
+    field_create_instance($instance);
+  }
+
+  if (field_read_instance('commerce_product', 'rooms_package_unit_types', 'rooms_package') === FALSE) {
+    $instance = array(
+      'entity_type' => 'commerce_product',
+      'field_name' => 'rooms_package_unit_types',
+      'label' => 'Room unit types',
+      'bundle' => 'rooms_package',
+      'required' => 0,
+      'widget' => array(
+        'active' => 1,
+        'module' => 'options',
+        'settings' => array(),
+        'type' => 'options_buttons',
+      ),
+    );
+
+    field_create_instance($instance);
+  }
+
+  if (field_read_instance('commerce_product', 'rooms_package_units', 'rooms_package') === FALSE) {
+    $instance = array(
+      'entity_type' => 'commerce_product',
+      'field_name' => 'rooms_package_units',
+      'label' => 'Room units',
+      'bundle' => 'rooms_package',
+      'required' => 0,
+      'widget' => array(
+        'active' => 1,
+        'module' => 'entityreference',
+        'settings' => array(
+          'match_operator' => 'CONTAINS',
+          'path' => '',
+          'size' => 60,
+        ),
+        'type' => 'entityreference_autocomplete',
+      ),
+    );
+
+    field_create_instance($instance);
+  }
+}
+
+/**
+ * Creates the default content for rooms_package.
+ */
+function rooms_package_create_content_type() {
+  // Make sure a testimonial content type doesn't already exist.
+  if (!in_array('rooms_package', node_type_get_names())) {
+    $type = array(
+      'type' => 'rooms_package',
+      'name' => st('Rooms package'),
+      'description' => st('Rooms package product display'),
+      'base' => 'node_content',
+      'custom' => 1,
+      'modified' => 1,
+      'locked' => 0,
+    );
+
+    $type = node_type_set_defaults($type);
+    node_type_save($type);
+    node_add_body_field($type);
+    rooms_package_add_product_field($type);
+  }
+}
+
+/**
+ * Adds default product field to a node type.
+ *
+ * @param $type
+ *   A node type object.
+ *
+ * @return
+ *   Product field instance.
+ */
+function rooms_package_add_product_field($type) {
+  // Add or remove the body field, as needed.
+  $field = field_info_field('rooms_package_product');
+  $instance = field_info_instance('node', 'rooms_package_product', $type->type);
+  if (empty($field)) {
+    $field = array(
+      'field_name' => 'rooms_package_product',
+      'type' => 'commerce_product_reference',
+      'entity_types' => array('node'),
+    );
+    $field = field_create_field($field);
+  }
+  if (empty($instance)) {
+    $instance = array(
+      'field_name' => 'rooms_package_product',
+      'entity_type' => 'node',
+      'bundle' => $type->type,
+      'label' => 'Rooms packages',
+      'widget' => array(
+        'active' => 1,
+        'module' => 'options',
+        'settings' => array(),
+        'type' => 'options_select',
+        'weight' => -3,
+      ),
+      'settings' => array(
+        'field_injection' => 1,
+        'referenceable_types' => array(
+          'product' => 0,
+          'rooms_package' => 'rooms_package',
+          'rooms_product' => 0,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'settings' => array(
+            'combine' => 1,
+            'default_quantity' => 1,
+            'line_item_type' => 'rooms_booking',
+            'show_quantity' => 0,
+            'show_single_product_attributes' => 0,
+          ),
+          'type' => 'commerce_cart_add_to_cart_form',
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(
+            'combine' => 1,
+            'default_quantity' => 1,
+            'line_item_type' => 'rooms_booking',
+            'show_quantity' => 0,
+            'show_single_product_attributes' => 0,
+          ),
+          'type' => 'commerce_cart_add_to_cart_form',
+        ),
+      ),
+    );
+    $instance = field_create_instance($instance);
+  }
+  return $instance;
+}
