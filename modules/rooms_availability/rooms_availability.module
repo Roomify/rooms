@@ -77,7 +77,7 @@ function rooms_availability_menu() {
     'page callback' => 'rooms_availability_event',
     'page arguments' => array(3, 6, 7, 8, 9, 10, 11, 12),
     'access callback' => 'rooms_unit_access',
-    'access arguments' => array('update availability', 3),
+    'access arguments' => array('view', 3),
     'type' => MENU_CALLBACK,
     'weight' => 30,
   );

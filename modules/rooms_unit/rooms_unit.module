@@ -241,18 +241,27 @@ function rooms_unit_rooms_entity_access_view_condition_rooms_unit_alter(&$condit
   $account = $context['account'];
 
   if (user_access('view any rooms_unit unpublished entity', $account)) {
-    $conditions->condition($context['base_table'] . '.status', 1);
+    return;
   }
-  elseif ($account->uid && user_access('view own rooms_unit unpublished entities', $account)) {
-    $conditions->condition(db_and()
+
+  $old_conditions = $conditions;
+  $conditions = db_and();
+
+  if (TRUE){//$account->uid && user_access('view own rooms_unit unpublished entities', $account)) {
+    $or = db_and()
+      ->condition($context['base_table'] . '.status', 0)
+      ->condition($context['base_table'] . '.uid', $account->uid);
+    $conditions->condition(db_or()
+      ->condition($or)
       ->condition($context['base_table'] . '.status', 1)
-      ->condition($context['base_table'] . '.uid', $account->uid)
     );
+
   }
   else {
-    $conditions = db_or();
+    $conditions->condition($context['base_table'] . '.status', 1);
   }
-  return $conditions;
+
+  $conditions->condition($old_conditions);
 }
 
 /**
