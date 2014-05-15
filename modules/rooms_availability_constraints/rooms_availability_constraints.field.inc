@@ -6,7 +6,7 @@
 function rooms_availability_constraints_field_info() {
   return array(
     'rooms_availability_constraints_range' => array(
-      'label' => t('Availability ranges'),
+      'label' => t('Rooms availability ranges'),
       'description' => t('Bookable unit availability options.'),
       'settings' => array(),
       'default_widget' => 'rooms_availability_constraints_range',

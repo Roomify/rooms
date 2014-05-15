@@ -1,4 +1,4 @@
-name = Rooms availability constraints
+name = Rooms Availability Constraints
 description = Manages availability constraints for Rooms.
 core = 7.x
 
