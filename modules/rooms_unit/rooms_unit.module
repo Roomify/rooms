@@ -410,6 +410,13 @@ function rooms_unit_save(RoomsUnit $unit) {
 }
 
 /**
+ * Create a room object.
+ */
+function rooms_unit_type_create($values = array()) {
+  return entity_get_controller('rooms_unit_type')->create($values);
+}
+
+/**
  * Saves a unit type to the db.
  */
 function rooms_unit_type_save(RoomsUnitType $type) {
@@ -672,14 +679,6 @@ class RoomsUnitController extends EntityAPIController {
    */
   public function create(array $values = array()) {
     $unit_type = rooms_unit_type_load($values['type'], TRUE);
-    $values['base_price'] = (isset($unit_type->data['base_price'])) ? $unit_type->data['base_price'] : 0;
-    $values['data']['cot_surcharge'] = (isset($unit_type->data['cot_surcharge'])) ? $unit_type->data['cot_surcharge'] : 0;
-    $values['min_children'] = (isset($unit_type->data['min_children'])) ? $unit_type->data['min_children'] : 0;
-    $values['max_children'] = (isset($unit_type->data['max_children'])) ? $unit_type->data['max_children'] : 0;
-    $values['min_sleeps'] = (isset($unit_type->data['min_sleeps'])) ? $unit_type->data['min_sleeps'] : 0;
-    $values['max_sleeps'] = (isset($unit_type->data['max_sleeps'])) ? $unit_type->data['max_sleeps'] : 0;
-    $values['status'] = (isset($unit_type->data['status'])) ? $unit_type->data['status'] : 0;
-
     // Add values that are specific to our Room
     $values += array(
       'unit_id' => '',
@@ -688,6 +687,14 @@ class RoomsUnitController extends EntityAPIController {
       'title' => '',
       'created' => '',
       'changed' => '',
+      'base_price' => (isset($unit_type->data['base_price'])) ? $unit_type->data['base_price'] : 0,
+      'min_sleeps' => (isset($unit_type->data['min_sleeps'])) ? $unit_type->data['min_sleeps'] : 0,
+      'max_sleeps' => (isset($unit_type->data['max_sleeps'])) ? $unit_type->data['max_sleeps'] : 0,
+      'min_children' => (isset($unit_type->data['min_children'])) ? $unit_type->data['min_children'] : 0,
+      'max_children' => (isset($unit_type->data['max_children'])) ? $unit_type->data['max_children'] : 0,
+      'data' => array(
+        'cot_surcharge' => (isset($unit_type->data['cot_surcharge'])) ? $unit_type->data['cot_surcharge'] : 0,
+      ),
     );
 
     $unit = parent::create($values);
