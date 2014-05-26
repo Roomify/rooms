@@ -76,12 +76,12 @@ function rooms_pricing_menu() {
     'weight' => '30',
   );
 
-  $items['admin/rooms/units/unit/%rooms_unit/pricing/json/%/%'] = array(
+  $items['rooms/units/unit/%rooms_unit/pricing/json/%/%'] = array(
     'title' =>  'Pricing Info',
     'page callback' => 'rooms_pricing_json',
-    'page arguments' => array(4, 7, 8, 9, 10, 11, 12),
+    'page arguments' => array(3, 6, 7),
     'access callback' => 'rooms_unit_access',
-    'access arguments' => array('update pricing', 4),
+    'access arguments' => array('update pricing', 3),
     'type' => MENU_CALLBACK,
     'weight' => '30',
   );

@@ -53,7 +53,7 @@ Drupal.behaviors.roomsPricing = {
           center: '',
           right: ''
         },
-        events: Drupal.settings.basePath + '?q=admin/rooms/units/unit/' + Drupal.settings.roomsUnitManagement.roomsId[c] + '/pricing/json/' + value[2] + '/' + phpmonth
+        events: Drupal.settings.basePath + '?q=rooms/units/unit/' + Drupal.settings.roomsUnitManagement.roomsId[c] + '/pricing/json/' + value[2] + '/' + phpmonth
       });
 
       c++;
