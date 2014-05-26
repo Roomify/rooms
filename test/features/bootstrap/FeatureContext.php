@@ -90,6 +90,13 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
   }
 
   /**
+   * @When /^I am managing the "([^"]*)" unit pricing$/
+   */
+  public function iAmManagingTheUnitPricing($unit_name) {
+    $this->iAmDoingOnTheUnit('pricing', $unit_name);
+  }
+
+  /**
    * Returns a unit_id from its name.
    *
    * @param $unit_name
@@ -160,6 +167,25 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
    * @Then /^the state for "([^"]*)" between "([^"]*)" and "([^"]*)" should be "([^"]*)"$/
    */
   public function theStateForBetweenAndShouldBe($unit_name, $start_date, $end_date, $state) {
+    $this->checkUnitPropertyRange($unit_name, $start_date, $end_date, $state, 'availability');
+  }
+
+  /**
+   * @Then /^the price for "([^"]*)" between "([^"]*)" and "([^"]*)" should be "([^"]*)"$/
+   */
+  public function thePriceForBetweenAndShouldBe($unit_name, $start_date, $end_date, $state) {
+    $this->checkUnitPropertyRange($unit_name, $start_date, $end_date, $state, 'pricing');
+  }
+
+  /**
+   * @param $unit_name
+   * @param $start_date
+   * @param $end_date
+   * @param $state
+   * @param $type
+   * @throws RuntimeException
+   */
+  protected function checkUnitPropertyRange($unit_name, $start_date, $end_date, $state, $type) {
     $unit_id = $this->findBookableUnitByName($unit_name);
     $start = new DateTime($start_date);
     $start_format = $start->format('Y-m-d');
@@ -167,9 +193,10 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
     $end_format = $end->format('Y-m-d');
 
     foreach ($this->monthsBetweenDates($start, $end) as $month) {
-      $path = "rooms/units/unit/$unit_id/availability/json/{$month->format('Y/m')}";
+      $path = "rooms/units/unit/$unit_id/$type/json/{$month->format('Y/m')}";
       $this->getSession()->visit($this->locatePath($path));
-      $content = $this->getSession()->getPage()->find('xpath','/body')->getHtml();
+      $content = $this->getSession()->getPage()->find('xpath', '/body')
+        ->getHtml();
       $events = json_decode($content);
 
       foreach ($events as $event) {
@@ -181,8 +208,8 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
           continue;
         }
         // Throw exception if the event id is not the desired.
-        if ( $event->id != $state) {
-          throw new RuntimeException("The state for unit $unit_name between $start_date and $end_date is not always $state");
+        if ($event->id != $state) {
+          throw new RuntimeException("The $type for unit $unit_name between $start_date and $end_date is not always $state");
         }
       }
     }
