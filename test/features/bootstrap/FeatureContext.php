@@ -83,6 +83,13 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
   }
 
   /**
+   * @When /^I am managing the "([^"]*)" unit availability$/
+   */
+  public function iAmManagingTheUnitAvailability($unit_name) {
+    $this->iAmDoingOnTheUnit('availability', $unit_name);
+  }
+
+  /**
    * Returns a unit_id from its name.
    *
    * @param $unit_name
@@ -147,6 +154,49 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
       $unit_type->save();
       $this->unitTypes[] = $unit_type;
     }
+  }
+
+  /**
+   * @Then /^the state for "([^"]*)" between "([^"]*)" and "([^"]*)" should be "([^"]*)"$/
+   */
+  public function theStateForBetweenAndShouldBe($unit_name, $start_date, $end_date, $state) {
+    $unit_id = $this->findBookableUnitByName($unit_name);
+    $start = new DateTime($start_date);
+    $start_format = $start->format('Y-m-d');
+    $end = new DateTime($end_date);
+    $end_format = $end->format('Y-m-d');
+
+    foreach ($this->monthsBetweenDates($start, $end) as $month) {
+      $path = "rooms/units/unit/$unit_id/availability/json/{$month->format('Y/m')}";
+      $this->getSession()->visit($this->locatePath($path));
+      $content = $this->getSession()->getPage()->find('xpath','/body')->getHtml();
+      $events = json_decode($content);
+
+      foreach ($events as $event) {
+        $event_start = new DateTime($event->start);
+        $event_end = new DateTime($event->end);
+
+        // Discard events out of the range to check.
+        if (($start_format > $event_end->format('Y-m-d')) || ($end_format < $event_start->format('Y-m-d'))) {
+          continue;
+        }
+        // Throw exception if the event id is not the desired.
+        if ( $event->id != $state) {
+          throw new RuntimeException("The state for unit $unit_name between $start_date and $end_date is not always $state");
+        }
+      }
+    }
+  }
+
+  protected function monthsBetweenDates($start, $end) {
+    $period_start = clone($start);
+    $period_end = clone($end);
+    $period_start->modify('first day of this month');
+    $period_end->modify('first day of next month');
+    $interval = DateInterval::createFromDateString('1 month');
+    $period = new DatePeriod($period_start, $interval, $period_end);
+
+    return $period;
   }
 
 }

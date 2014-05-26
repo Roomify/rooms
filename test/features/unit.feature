@@ -1,7 +1,6 @@
 Feature: Once rooms_unit is installed
   In order to create bookable units
   As a site administrator
-  As a site administrator
   I should be able to access the unit type and unit edition pages
 
 @api @javascript
@@ -138,5 +137,3 @@ Scenario: Creating a bunch of units for testing purposing.
   Then I should see the text "test1"
   When I am on the "test2" unit
   Then I should see the text "test2"
-
-
