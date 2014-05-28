@@ -28,11 +28,32 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
   public $units = array();
 
   /**
-   * Keep track of bookable units so they can be cleaned up.
+   * Keep track of bookable unit types so they can be cleaned up.
    *
    * @var array
    */
   public $unitTypes = array();
+
+  /**
+   * Keep track of bookings so they can be cleaned up.
+   *
+   * @var array
+   */
+  public $bookings = array();
+
+  /**
+   * Keep track of booking types so they can be cleaned up.
+   *
+   * @var array
+   */
+  public $bookingTypes = array();
+
+  /**
+   * Keep track of customer profiles so they can be cleaned up.
+   *
+   * @var array
+   */
+  public $customerProfiles = array();
 
   /**
    * Initializes context.
@@ -57,6 +78,23 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
       foreach ($this->unitTypes as $unit_type) {
         $unit_type->delete();
       }
+    }
+
+    if (!empty($this->bookingTypes)) {
+      foreach ($this->bookingTypes as $booking_type) {
+        $booking_type->delete();
+      }
+    }
+
+    if (!empty($this->bookings)) {
+      rooms_booking_delete_multiple($this->bookings);
+    }
+
+    if (!empty($this->customerProfiles)) {
+      commerce_customer_profile_delete_multiple($this->customerProfiles);
+      db_delete('rooms_customers')
+        ->condition('commerce_customer_id', $this->customerProfiles)
+        ->execute();
     }
 
   }
@@ -134,7 +172,13 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
   public function createUnits($type, TableNode $nodesTable) {
     foreach ($nodesTable->getHash() as $nodeHash) {
       $nodeHash['type'] = $type;
+      $nodeHash += array(
+        'default_state' => 1,
+      );
       $unit = rooms_unit_create($nodeHash);
+      if (isset($this->user->uid)) {
+        $unit->uid = $this->user->uid;
+      }
       $unit->save();
       $this->units[] = $unit;
     }
@@ -178,14 +222,22 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
   }
 
   /**
+   * Checks the state of a unit for a given range of dates.
+   *
    * @param $unit_name
+   *   The name of the unit actions be performed.
    * @param $start_date
+   *   The range start date.
    * @param $end_date
-   * @param $state
+   *   The range end date.
+   * @param $expected_value
+   *   The id that the event should have.
    * @param $type
+   *   The operation to perform type. Can be pricing or availability.
+   *
    * @throws RuntimeException
    */
-  protected function checkUnitPropertyRange($unit_name, $start_date, $end_date, $state, $type) {
+  protected function checkUnitPropertyRange($unit_name, $start_date, $end_date, $expected_value, $type) {
     $unit_id = $this->findBookableUnitByName($unit_name);
     $start = new DateTime($start_date);
     $start_format = $start->format('Y-m-d');
@@ -208,13 +260,24 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
           continue;
         }
         // Throw exception if the event id is not the desired.
-        if ($event->id != $state) {
-          throw new RuntimeException("The $type for unit $unit_name between $start_date and $end_date is not always $state");
+        if ($event->id != $expected_value) {
+          throw new RuntimeException("The $type for unit $unit_name between $start_date and $end_date is not always $expected_value");
         }
       }
     }
   }
 
+  /**
+   * Helper function that returns a period between two dates.
+   *
+   * @param DateTime $start
+   *   The start date.
+   * @param DateTime $end
+   *   The end date.
+   *
+   * @return DatePeriod
+   *   The period between two dates
+   */
   protected function monthsBetweenDates($start, $end) {
     $period_start = clone($start);
     $period_end = clone($end);
@@ -224,6 +287,151 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
     $period = new DatePeriod($period_start, $interval, $period_end);
 
     return $period;
+  }
+
+  /**
+   * @Given /^"(?P<type>[^"]*)" bookings:$/
+   */
+  public function createBookings($type, TableNode $nodesTable) {
+    foreach ($nodesTable->getHash() as $nodeHash) {
+      $profile_id = $this->customerProfiles[$nodeHash['profile_id']];
+
+      $profile = commerce_customer_profile_load($profile_id);
+      $client_name = isset($profile->commerce_customer_address['und'][0]['name_line']) ? $profile->commerce_customer_address['und'][0]['name_line'] : $nodeHash['profile_id'];
+
+      // Save customer in rooms_customers table.
+      db_merge('rooms_customers')
+        ->key(array('name' => $client_name))
+        ->fields(array(
+          'name' => $client_name,
+          'commerce_customer_id' => $profile_id,
+        ))
+        ->execute();
+
+      // Get customer id from rooms_customers table.
+      $client_id = db_select('rooms_customers')
+        ->fields('rooms_customers', array('id'))
+        ->condition('name', $client_name, '=')
+        ->execute()->fetchField();
+
+      $unit_id = $this->findBookableUnitByName($nodeHash['unit']);
+      $unit = rooms_unit_load($unit_id);
+      $unit_type = $unit->type;
+      $data = array(
+        'type' => $type,
+        'name' => $client_name,
+        'customer_id' => $client_id,
+        'unit_id' => $unit_id,
+        'unit_type' => $unit_type,
+        'start_date' => $nodeHash['start_date'],
+        'end_date' => $nodeHash['end_date'],
+        'booking_status' => $nodeHash['status'],
+        'data' => array(
+          'group_size' => $nodeHash['guests'],
+          'group_size_children' => $nodeHash['children'],
+        ),
+      );
+      $booking = rooms_booking_create($data);
+      $booking->save();
+      $this->bookings[] = $booking->booking_id;
+    }
+  }
+
+  /**
+   * @Given /^customer profiles:$/
+   */
+  public function createCustomerProfiles(TableNode $nodesTable) {
+    foreach ($nodesTable->getHash() as $nodeHash) {
+      $profile = commerce_customer_profile_new('billing', isset($this->user->uid) ? $this->user->uid : 0);
+      $wrapper = entity_metadata_wrapper('commerce_customer_profile', $profile);
+      if (isset($nodeHash['country'])) {
+        $wrapper->commerce_customer_address->country = $nodeHash['country'];
+      }
+      if (isset($nodeHash['name'])) {
+        $wrapper->commerce_customer_address->name_line = $nodeHash['name'];
+      }
+      if (isset($nodeHash['address'])) {
+        $wrapper->commerce_customer_address->thoroughfare = $nodeHash['address'];
+      }
+      if (isset($nodeHash['locality'])) {
+        $wrapper->commerce_customer_address->locality = $nodeHash['locality'];
+      }
+      if (isset($nodeHash['postal_code'])) {
+        $wrapper->commerce_customer_address->postal_code = $nodeHash['postal_code'];
+      }
+      $wrapper->save();
+      if (isset($nodeHash['profile_id'])) {
+        $this->customerProfiles[$nodeHash['profile_id']] = $wrapper->profile_id->value();
+      }
+      else {
+        $this->customerProfiles[] = $wrapper->profile_id->value();
+      }
+    }
+  }
+
+  /**
+   * @Given /^booking types:$/
+   */
+  public function createBookingTypes(TableNode $nodesTable) {
+    foreach ($nodesTable->getHash() as $nodeHash) {
+      $booking_type_definition = array();
+
+      $booking_type_definition['type'] = isset($nodeHash['type']) ? $nodeHash['type'] :drupal_strtolower($this->getDrupal()->random->name(8));
+      $booking_type_definition['label'] = isset($nodeHash['label']) ? $nodeHash['label'] : $this->getDrupal()->random->name(8);
+
+      $booking_type = rooms_boking_type_create($booking_type_definition);
+      $booking_type->save();
+      $this->bookingTypes[] = $booking_type;
+    }
+  }
+
+  /**
+   * @Then /^the "([^"]*)" unit should be Unconfirmed by the last booking between "([^"]*)" and "([^"]*)"$/
+   */
+  public function theUnitShouldBeUnconfirmedBetweenAnd($unit_name, $start_date, $end_date) {
+    $this->checkUnitLockedByLastBooking($unit_name, $start_date, $end_date, 0);
+  }
+
+  /**
+   * @Then /^the "([^"]*)" unit should be Confirmed by the last booking between "([^"]*)" and "([^"]*)"$/
+   */
+  public function theUnitShouldBeConfirmedBetweenAnd($unit_name, $start_date, $end_date) {
+    $this->checkUnitLockedByLastBooking($unit_name, $start_date, $end_date, 1);
+  }
+
+  /**
+   * Retrieves the last booking ID.
+   *
+   * @return int
+   *   The last booking ID.
+   *
+   * @throws RuntimeException
+   */
+  protected function getLastBooking() {
+    $efq = new EntityFieldQuery();
+    $efq->entityCondition('entity_type', 'rooms_booking')
+      ->entityOrderBy('entity_id', 'DESC')
+      ->range(0, 1);
+    $result = $efq->execute();
+    if (isset($result['rooms_booking'])) {
+      $return = key($result['rooms_booking']);
+      return $return;
+    }
+    else {
+      throw new RuntimeException('Unable to find the last booking');
+    }
+  }
+
+  /**
+   * @param $unit_name
+   * @param $start_date
+   * @param $end_date
+   * @param $status
+   */
+  protected function checkUnitLockedByLastBooking($unit_name, $start_date, $end_date, $status) {
+    $booking_id = $this->getLastBooking();
+    $expected_value = rooms_availability_assign_id($booking_id, $status);
+    $this->checkUnitPropertyRange($unit_name, $start_date, $end_date, $expected_value, 'availability');
   }
 
 }
