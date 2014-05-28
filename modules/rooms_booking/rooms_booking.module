@@ -9,6 +9,7 @@
 // deleted bookings directly or deleting them because we deleted
 // a line item or an order.
 define('ROOMS_BOOKING_DELETED', 'rooms_booking_deleted');
+define ('ROOMS_NO_ROOMS', 2);
 
 /**
  * Implements hook_menu().
@@ -19,21 +20,21 @@ function rooms_booking_menu() {
   $items['admin/rooms/bookings/customers'] = array(
     'title' => 'Customers',
     'page callback' => 'rooms_booking_get_client_profiles',
-    'access arguments' => array('administer rooms_booking customer profiles'),
+    'access arguments' => array('administer rooms_booking entities'),
     'type' => MENU_CALLBACK,
   );
 
   $items['admin/rooms/bookings/room_types'] = array(
     // This is a json request to list booking room_types.
     'page callback' => 'rooms_booking_get_room_types',
-    'access arguments' => array('administer rooms_booking customer profiles'),
+    'access arguments' => array('administer rooms_booking entities'),
     'type' => MENU_CALLBACK,
   );
 
   $items['admin/rooms/add_customers'] = array(
     'title' => 'Add customer profile',
     'page callback' => 'rooms_booking_add_customer_profile',
-    'access arguments' => array('administer rooms_booking customer profiles'),
+    'access arguments' => array('administer rooms_booking entities'),
     'type' => MENU_CALLBACK,
   );
 
@@ -41,7 +42,7 @@ function rooms_booking_menu() {
     'title' => 'Edit customer profile',
     'page callback' => 'rooms_booking_edit_customer_profile',
     'page arguments' => array(3),
-    'access arguments' => array('administer rooms_booking customer profiles'),
+    'access arguments' => array('administer rooms_booking entities'),
     'type' => MENU_CALLBACK,
   );
 
@@ -363,7 +364,7 @@ function rooms_booking_entity_info_alter(&$entity_info) {
         'path' => 'admin/rooms/bookings/booking-types/manage/%rooms_booking_type',
         'real path' => 'admin/rooms/bookings/booking-types/manage/' . $type,
         'bundle argument' => 5,
-        'access arguments' => array('administer rooms_booking customer profiles'),
+        'access arguments' => array('administer rooms_booking_type entities'),
       ),
     );
   }
@@ -381,14 +382,9 @@ function rooms_booking_entity_property_info_alter(&$info) {
  */
 function rooms_booking_permission() {
   $permissions = array(
-    'administer rooms_booking types' => array(
+    'administer rooms_booking_type entities' => array(
       'title' => t('Administer booking types'),
       'description' => t('Allows users to add booking types and configure their fields.'),
-      'restrict access' => TRUE,
-    ),
-    'administer rooms_booking customer profiles' => array(
-      'title' => t('Add Customer profiles'),
-      'description' => t('Allows users to add customer profiles.'),
       'restrict access' => TRUE,
     ),
   );
@@ -690,6 +686,13 @@ function rooms_booking_create($values = array()) {
  */
 function rooms_booking_save(RoomsBooking $booking) {
   return $booking->save();
+}
+
+/**
+ * Create a booking object.
+ */
+function rooms_booking_type_create($values = array()) {
+  return entity_get_controller('rooms_booking_type')->create($values);
 }
 
 /**

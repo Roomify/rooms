@@ -8,7 +8,6 @@
 
 define ('ROOMS_SIZE_FAILURE', 0);
 define ('ROOMS_AVAILABILITY_FAILURE', 1);
-define ('ROOMS_NO_ROOMS', 2);
 define ('ROOMS_PER_TYPE', 'rooms_per_type');
 define ('ROOMS_INDIVIDUAL', 'rooms_individual');
 define ('ROOMS_ENQ_CHECKOUT', 'rooms_enq_checkout');
