@@ -8,7 +8,6 @@
 
 define ('ROOMS_SIZE_FAILURE', 0);
 define ('ROOMS_AVAILABILITY_FAILURE', 1);
-define ('ROOMS_NO_ROOMS', 2);
 define ('ROOMS_PER_TYPE', 'rooms_per_type');
 define ('ROOMS_INDIVIDUAL', 'rooms_individual');
 define ('ROOMS_ENQ_CHECKOUT', 'rooms_enq_checkout');
@@ -2669,6 +2668,7 @@ function rooms_booking_manager_block_info() {
  */
 function rooms_booking_manager_block_view($block_name = '') {
   if ($block_name == 'rooms_availability_search') {
+    module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.availability_search');
     $form = drupal_get_form('rooms_booking_availability_search_form_block');
     $block = array(
       'subject' => t('Availability Search'),

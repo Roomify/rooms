@@ -15,6 +15,10 @@ class RoomsBookingTypeUIController extends EntityDefaultUIController {
    */
   public function hook_menu() {
     $items = parent::hook_menu();
+    foreach($items as &$item) {
+      unset($item['access callback']);
+      $item['access arguments'] = array('administer rooms_booking_type entities');
+    }
     $items[$this->path]['description'] = 'Manage booking types, including adding and removing fields and the display of fields.';
     $items[$this->path]['weight'] = '3';
     $items[$this->path]['type'] = MENU_LOCAL_TASK;
