@@ -904,6 +904,19 @@ function rooms_range($start, $end) {
 }
 
 /**
+ * Returns a range array keyed by value.
+ * @param int $start
+ *   First value of the sequence.
+ * @param int $end
+ *   The sequence is ended upon reaching the end value.
+ * @return array
+ *   An array of elements from start to end, inclusive keyed by values.
+ */
+function rooms_assoc_range($start, $end) {
+  return drupal_map_assoc(rooms_range($start, $end));
+}
+
+/**
  * Helper validate function to ensure that at least one room is selected.
  */
 function _rooms_select_rooms_validation($form_state) {

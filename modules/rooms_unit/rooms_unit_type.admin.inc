@@ -216,32 +216,6 @@ function rooms_unit_type_form_submit($form, &$form_state) {
 
   $form_state['unit_type'] = $unit_type;
 
-  // Create field ('rooms_booking_unit_options') if not exist
-  if (field_read_field('rooms_booking_unit_options') === FALSE) {
-    $field = array(
-      'field_name' => 'rooms_booking_unit_options',
-      'type' => 'rooms_options',
-      'cardinality' => -1,
-    );
-    field_create_field($field);
-  }
-
-  if (field_read_instance('rooms_unit', 'rooms_booking_unit_options', $unit_type->type) === FALSE) {
-    // Create the instance on the bundle.
-    $instance = array(
-      'field_name' => 'rooms_booking_unit_options',
-      'entity_type' => 'rooms_unit',
-      'label' => 'Options',
-      'bundle' => $unit_type->type,
-      // If you don't set the "required" property then the field wont be required by default.
-      'required' => FALSE,
-      'widget' => array(
-        'type' => 'rooms_options',
-      ),
-    );
-    field_create_instance($instance);
-  }
-
   $form_state['redirect'] = 'admin/rooms/units/unit-types';
 }
 
