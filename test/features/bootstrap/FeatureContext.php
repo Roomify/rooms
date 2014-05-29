@@ -96,7 +96,6 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
         ->condition('commerce_customer_id', $this->customerProfiles)
         ->execute();
     }
-
   }
 
   /**
@@ -400,6 +399,23 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
   }
 
   /**
+   * @Given /^options for "([^"]*)" unit type:$/
+   */
+  public function optionsForUnitType($unit_type, TableNode $table) {
+    $unit_type = rooms_unit_type_load($unit_type);
+    $this->addOptionsToEntity($table, $unit_type);
+  }
+
+  /**
+   * @Given /^options for "([^"]*)" unit:$/
+   */
+  public function optionsForUnit($unit_name, TableNode $table) {
+    $unit_id = $this->findBookableUnitByName($unit_name);
+    $unit = rooms_unit_load($unit_id);
+    $this->addOptionsToEntity($table, $unit);
+  }
+
+  /**
    * Retrieves the last booking ID.
    *
    * @return int
@@ -423,6 +439,7 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
   }
 
   /**
+   * Checks if one unit is being locked by a booking in a date range.
    * @param $unit_name
    * @param $start_date
    * @param $end_date
@@ -432,6 +449,27 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
     $booking_id = $this->getLastBooking();
     $expected_value = rooms_availability_assign_id($booking_id, $status);
     $this->checkUnitPropertyRange($unit_name, $start_date, $end_date, $expected_value, 'availability');
+  }
+
+  /**
+   * Adds options field to any room_unit or room_unit_type entity.
+   *
+   * @param TableNode $table
+   *   Table containing options definitions.
+   * @param $entity
+   *   The entity to attach the options.
+   */
+  protected function addOptionsToEntity(TableNode $table, $entity) {
+    $delta = 0;
+    if (isset($entity->rooms_booking_unit_options['und'])) {
+      $delta = count($entity->rooms_booking_unit_options['und']);
+    }
+
+    foreach ($table->getHash() as $entityHash) {
+      $entity->rooms_booking_unit_options['und'][$delta] = $entityHash;
+      $delta++;
+    }
+    $entity->save();
   }
 
 }

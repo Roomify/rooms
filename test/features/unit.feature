@@ -120,7 +120,7 @@ Scenario: Unit type manager creates two unit types and two unit admin creates an
   Then I should see the message "The unit Deluxe one edited has been deleted."
 
 @api @javascript
-Scenario: Creating a bunch of units for testing purposing.
+Scenario: Creating a bunch of units for testing purposes.
   #Creating a unit type programmatically.
   Given unit types:
   |type     |label    |base_price|min_sleeps|max_sleeps|min_children|max_children|
