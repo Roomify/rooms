@@ -15,9 +15,9 @@ Scenario: I can create a booking
 
   # Creating a bunch of units programmatically.
   Given "standard" units:
-  |name       |base_price|
-  |Normal     |120       |
-  |Special    |130       |
+  |name       |base_price|min_sleeps|max_sleeps|
+  |Normal     |120       |1         |2         |
+  |Special    |130       |2         |3         |
 
   # Checking that Standard booking type exists.
   When I am on "admin/rooms/bookings/booking-types"
@@ -52,6 +52,29 @@ Scenario: I can create a booking
   Then select "Standard" from "unit_type"
   And I wait for AJAX to finish
 
+  Then I should see the text "Normal - Cost: \$ 480"
+  And I should see the text "Special - Cost: \$ 520"
+
+  #Playing with the number of guests to check restrictions.
+  Then select "1" from "data[group_size]"
+  And I wait for AJAX to finish
+
+  Then I should see the text "Normal - Cost: \$ 480"
+  And I should see the text "Special - Cost: \$ 520"
+
+  Then select "3" from "data[group_size]"
+  And I wait for AJAX to finish
+
+  Then I should not see the text "Normal - Cost: \$ 480"
+  And I should see the text "Special - Cost: \$ 520"
+
+  Then select "2" from "data[group_size]"
+  And I wait for AJAX to finish
+
+  Then I should see the text "Normal - Cost: \$ 480"
+  And I should see the text "Special - Cost: \$ 520"
+
+  # Selecting the desired unit.
   Then I select the radio button "Normal - Cost: $ 480"
   And I wait for AJAX to finish
 
@@ -97,7 +120,7 @@ Scenario: I can create a booking
   Then the "Special" unit should be Confirmed by the last booking between "2015-06-29" and "2015-06-22"
   And the state for "Normal" between "2015-06-19" and "2015-06-23" should be "1"
 
-  # Deleting Booking and customer profile to keep installation clean.
+  # Deleting created entities to keep installation clean.
   When I am on "admin/rooms/bookings"
   And I click "Delete"
   Then I press the "Delete" button
