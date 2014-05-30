@@ -324,6 +324,40 @@ function rooms_unit_types_ids() {
 }
 
 /**
+ * Implements hook_entity_insert().
+ */
+function rooms_unit_entity_insert($entity, $type) {
+  if ($type == 'rooms_unit_type') {
+
+    // Create field ('rooms_booking_unit_options') if not exist
+    if (field_read_field('rooms_booking_unit_options') === FALSE) {
+      $field = array(
+        'field_name' => 'rooms_booking_unit_options',
+        'type' => 'rooms_options',
+        'cardinality' => -1,
+      );
+      field_create_field($field);
+    }
+
+    if (field_read_instance('rooms_unit', 'rooms_booking_unit_options', $entity->type) === FALSE) {
+      // Create the instance on the bundle.
+      $instance = array(
+        'field_name' => 'rooms_booking_unit_options',
+        'entity_type' => 'rooms_unit',
+        'label' => 'Options',
+        'bundle' => $entity->type,
+        // If you don't set the "required" property then the field wont be required by default.
+        'required' => FALSE,
+        'widget' => array(
+          'type' => 'rooms_options',
+        ),
+      );
+      field_create_instance($instance);
+    }
+  }
+}
+
+/**
  * Menu argument loader; Load a unit type by string.
  *
  * @param $type

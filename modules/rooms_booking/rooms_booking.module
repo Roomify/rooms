@@ -9,7 +9,6 @@
 // deleted bookings directly or deleting them because we deleted
 // a line item or an order.
 define('ROOMS_BOOKING_DELETED', 'rooms_booking_deleted');
-define ('ROOMS_NO_ROOMS', 2);
 
 /**
  * Implements hook_menu().

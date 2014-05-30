@@ -283,18 +283,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   $form['data']['group_size'] = array(
     '#type' => 'select',
     '#title' => t('Guests'),
-    '#options' => array(
-      '1' => '1',
-      '2' => '2',
-      '3' => '3',
-      '4' => '4',
-      '5' => '5',
-      '6' => '6',
-      '7' => '7',
-      '8' => '8',
-      '9' => '9',
-      '10' => '10',
-    ),
+    '#options' => rooms_assoc_range(1,10),
     '#default_value' =>  isset($booking->data['group_size']) ? $booking->data['group_size'] : '2',
     '#description' => t('The total number of people staying in this unit (including adults and children).'),
     '#ajax' => array(
@@ -423,15 +412,23 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       if (isset($booking->data[$option_name])) {
         if (!isset($form_state['values'][$option_name])) {
           $form_state['values'][$option_name] = isset($booking->data[$option_name]);
+          $form['data'][$option_name] = array(
+            '#type' => 'hidden',
+            '#value' => isset($booking->data[$option_name]),
+          );
         }
 
-        if (!isset($form_state['values'][$option_name . ':quantity'])) {
-          $quantity = (isset($booking->data[$option_name . ':quantity'])) ? $booking->data[$option_name . ':quantity'] : 1;
-          $form_state['values'][$option_name . ':quantity'] = $quantity;
-        }
         $quantity = 1;
-        if (isset($form_state['values'][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
-          $quantity = $form_state['values'][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] + 1;
+        if (!isset($form_state['values'][$option_name . ':quantity']) && isset($booking->data[$option_name . ':quantity'])) {
+          $form_state['values'][$option_name . ':quantity'] = $booking->data[$option_name . ':quantity'];
+          $form['data'][$option_name . ':quantity'] = array(
+            '#type' => 'hidden',
+            '#value' => $booking->data[$option_name . ':quantity'],
+          );
+        }
+
+        if (isset($form_state['values'][$option_name . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
+          $quantity = $form_state['values'][$option_name . ':quantity'] + 1;
         }
         $options_list .= $option['name'] . ' : ' . $quantity . ', ';
       }
@@ -623,7 +620,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
             );
 
             // If a unit is selected
-            if (isset($form_state['values']['unit_id']) || isset($booking->unit_id) || $unitid != '') {
+            if (!empty($form_state['values']['unit_id']) || isset($booking->unit_id) || $unitid != '') {
               if ($unitid != '') {
                 $unit_id = $unitid;
               }
@@ -855,11 +852,15 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     $form['actions']['delete'] = array(
       '#type' => 'submit',
       '#value' => t('Delete Booking'),
-      '#suffix' => l(t('Cancel'), 'admin/rooms/bookings'),
       '#submit' => $submit + array('rooms_booking_form_submit_delete'),
       '#weight' => 45,
+
     );
   }
+  $form['actions']['cancel'] = array(
+    '#markup' => l(t('Cancel'), 'admin/rooms/bookings', array('attributes' => array('class' => array('ctools-close-modal')))),
+    '#weight' => 50,
+  );
 
   // We append the validate handler to #validate in case a form callback_wrapper
   // is used to add validate handlers earlier.
@@ -982,12 +983,13 @@ function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date =
 
   // Set the unit types,
   $unit_types = array($select);
+  $current_booking_state = '';
 
   $bookable_units = array();
 
   // The current unit for this booking should also return as available
-  if (isset($current_booking->booking_status)) {
-    $current_booking_state = isset($current_booking->booking_id) ? rooms_availability_assign_id($current_booking->booking_id, $current_booking->booking_status) : '';
+  if (isset($current_booking->booking_status) && isset($current_booking->booking_id)) {
+    $current_booking_state = rooms_availability_assign_id($current_booking->booking_id, $current_booking->booking_status);
   }
 
   $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST))));
@@ -1144,7 +1146,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
     form_set_error('client', t('Enter a valid customer.'));
   }
 
-  //Notify field widgets to validate their data.
+  // Notify field widgets to validate their data.
   field_attach_form_validate('rooms_booking', $booking, $form, $form_state);
 }
 
@@ -1232,7 +1234,9 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
     if (isset($form_state['values'][$option_name])) {
       if ($form_state['values'][$option_name] == '1') {
         $booking->data[$option_name] = 1;
-        $booking->data[$option_name . ':quantity'] = $form_state['values'][$option_name . ':quantity'];
+        if (isset($form_state['values'][$option_name . ':quantity'])) {
+          $booking->data[$option_name . ':quantity'] = $form_state['values'][$option_name . ':quantity'];
+        }
       }
     }
   }
@@ -1263,11 +1267,16 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
 
 /**
  * Form API submit callback for the delete button.
- *
- * @todo Remove hard-coded path
  */
-function rooms_booking_form_submit_delete(&$form, &$form_state) {
-  $form_state['redirect'] = 'admin/rooms/bookings/booking/' . $form_state['rooms_booking']->booking_id . '/delete';
+function rooms_booking_form_submit_delete($form, &$form_state) {
+  if (isset($form_state['ajax'])) {
+    rooms_booking_delete($form_state['rooms_booking']);
+    drupal_set_message(t('The booking has been removed'));
+    $form_state['booking_deleted'] = TRUE;
+  }
+  else {
+    $form_state['redirect'] = 'admin/rooms/bookings/booking/' . $form_state['rooms_booking']->booking_id . '/delete';
+  }
 }
 
 /**
