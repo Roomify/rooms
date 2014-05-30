@@ -402,8 +402,8 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
    * @Given /^options for "([^"]*)" unit type:$/
    */
   public function optionsForUnitType($unit_type, TableNode $table) {
-    $unit_type = rooms_unit_type_load($unit_type);
-    $this->addOptionsToEntity($table, $unit_type);
+    $wrapper = entity_metadata_wrapper('rooms_unit_type', $unit_type);
+    $this->addOptionsToEntity($table, $wrapper);
   }
 
   /**
@@ -411,8 +411,8 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
    */
   public function optionsForUnit($unit_name, TableNode $table) {
     $unit_id = $this->findBookableUnitByName($unit_name);
-    $unit = rooms_unit_load($unit_id);
-    $this->addOptionsToEntity($table, $unit);
+    $wrapper = entity_metadata_wrapper('rooms_unit', $unit_id);
+    $this->addOptionsToEntity($table, $wrapper);
   }
 
   /**
@@ -456,20 +456,20 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
    *
    * @param TableNode $table
    *   Table containing options definitions.
-   * @param $entity
-   *   The entity to attach the options.
+   * @param $wrapper
+   *   The entity wrapper to attach the options.
    */
-  protected function addOptionsToEntity(TableNode $table, $entity) {
+  protected function addOptionsToEntity(TableNode $table, $wrapper) {
     $delta = 0;
-    if (isset($entity->rooms_booking_unit_options['und'])) {
-      $delta = count($entity->rooms_booking_unit_options['und']);
+    if (isset($wrapper->rooms_booking_unit_options)) {
+      $delta = count($wrapper->rooms_booking_unit_options);
     }
 
     foreach ($table->getHash() as $entityHash) {
-      $entity->rooms_booking_unit_options['und'][$delta] = $entityHash;
+      $wrapper->rooms_booking_unit_options[$delta] = $entityHash;
       $delta++;
     }
-    $entity->save();
+    $wrapper->save();
   }
 
 }
