@@ -598,7 +598,17 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
     // Wrap the form via ctools modal.
     $output = ctools_modal_form_wrapper('rooms_booking_edit_form', $form_state);
     if ($form_state['executed']) {
-      $output = array(ctools_modal_command_dismiss());
+      if (!empty($form_state['booking_deleted'])) {
+        // If there are messages for the form, render them.
+        $messages = theme('status_messages');
+
+        $output = array();
+        // If the form has not yet been rendered, render it.
+        $output[] = ctools_modal_command_display(t('Booking deleted'), $messages);
+      }
+      else {
+        $output = array(ctools_modal_command_dismiss());
+      }
     }
     print ajax_render($output);
     exit();

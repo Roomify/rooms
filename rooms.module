@@ -26,6 +26,24 @@ define('ROOMS_THIS_PAGE', 'this');
 define('ROOMS_ALL_PAGES', 'all');
 define('ROOMS_NONE', 'none');
 
+define ('ROOMS_SIZE_FAILURE', 0);
+define ('ROOMS_AVAILABILITY_FAILURE', 1);
+define ('ROOMS_NO_ROOMS', 2);
+define ('ROOMS_PER_TYPE', 'rooms_per_type');
+define ('ROOMS_INDIVIDUAL', 'rooms_individual');
+define ('ROOMS_ENQ_CHECKOUT', 'rooms_enq_checkout');
+define ('ROOMS_COMMERCE_CHECKOUT', 'rooms_commerce_checkout');
+
+define ('ROOMS_DISPLAY_CHILDREN', 1);
+define ('ROOMS_DISPLAY_CHILDREN_NO', 0);
+
+define ('FULL_PAYMENT', 10);
+define ('PERCENT_PAYMENT', 11);
+define ('FIRST_NIGHT_PAYMENT', 12);
+
+define ('ROOMS_DISPLAY_TYPE_SELECTOR', 1);
+define ('ROOMS_DISPLAY_TYPE_SELECTOR_NO', 0);
+
 /**
  * Implements hook_permission().
  */

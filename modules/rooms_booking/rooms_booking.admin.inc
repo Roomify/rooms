@@ -852,11 +852,15 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     $form['actions']['delete'] = array(
       '#type' => 'submit',
       '#value' => t('Delete Booking'),
-      '#suffix' => l(t('Cancel'), 'admin/rooms/bookings'),
       '#submit' => $submit + array('rooms_booking_form_submit_delete'),
       '#weight' => 45,
+
     );
   }
+  $form['actions']['cancel'] = array(
+    '#markup' => l(t('Cancel'), 'admin/rooms/bookings', array('attributes' => array('class' => array('ctools-close-modal')))),
+    '#weight' => 50,
+  );
 
   // We append the validate handler to #validate in case a form callback_wrapper
   // is used to add validate handlers earlier.
@@ -979,12 +983,13 @@ function rooms_booking_edit_form_get_rooms($select, $start_date = 0, $end_date =
 
   // Set the unit types,
   $unit_types = array($select);
+  $current_booking_state = '';
 
   $bookable_units = array();
 
   // The current unit for this booking should also return as available
-  if (isset($current_booking->booking_status)) {
-    $current_booking_state = isset($current_booking->booking_id) ? rooms_availability_assign_id($current_booking->booking_id, $current_booking->booking_status) : '';
+  if (isset($current_booking->booking_status) && isset($current_booking->booking_id)) {
+    $current_booking_state = rooms_availability_assign_id($current_booking->booking_id, $current_booking->booking_status);
   }
 
   $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST))));
@@ -1262,11 +1267,16 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
 
 /**
  * Form API submit callback for the delete button.
- *
- * @todo Remove hard-coded path
  */
-function rooms_booking_form_submit_delete(&$form, &$form_state) {
-  $form_state['redirect'] = 'admin/rooms/bookings/booking/' . $form_state['rooms_booking']->booking_id . '/delete';
+function rooms_booking_form_submit_delete($form, &$form_state) {
+  if (isset($form_state['ajax'])) {
+    rooms_booking_delete($form_state['rooms_booking']);
+    drupal_set_message(t('The booking has been removed'));
+    $form_state['booking_deleted'] = TRUE;
+  }
+  else {
+    $form_state['redirect'] = 'admin/rooms/bookings/booking/' . $form_state['rooms_booking']->booking_id . '/delete';
+  }
 }
 
 /**
