@@ -500,8 +500,68 @@ function rooms_field_info() {
       'settings' => array(),
       'default_widget' => 'rooms_options_combined',
       'default_formatter' => 'rooms_options_default',
+      'property_type' => 'rooms_options',
+      'property_callbacks' => array('rooms_options_property_info_callback'),
     ),
   );
+}
+
+/**
+ * Property callback for the Entity Metadata framework.
+ */
+function rooms_options_property_info_callback(&$info, $entity_type, $field, $instance, $field_type) {
+  // Apply the default.
+  entity_metadata_field_default_property_callback($info, $entity_type, $field, $instance, $field_type);
+
+  // Finally add in instance specific property info.
+  $name = $field['field_name'];
+  $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$name];
+  $property['type'] = ($field['cardinality'] != 1) ? 'list<rooms_options>' : 'rooms_options';
+  $property['property info'] = rooms_options_data_property_info('Rooms options');
+  $property['getter callback'] = 'entity_metadata_field_verbatim_get';
+  $property['setter callback'] = 'entity_metadata_field_verbatim_set';
+}
+
+/**
+ * Defines info for the properties of the video_embed_field data structure.
+ */
+function rooms_options_data_property_info($name = NULL) {
+  // Build an array of basic property information for video_embed_field.
+  $properties = array(
+    'name' => array(
+      'label' => 'Name',
+      'type' => 'text',
+      'getter callback' => 'entity_property_verbatim_get',
+      'setter callback' => 'entity_property_verbatim_set',
+    ),
+    'quantity' => array(
+      'label' => 'Quantity',
+      'type' => 'integer',
+      'getter callback' => 'entity_property_verbatim_get',
+      'setter callback' => 'entity_property_verbatim_set',
+    ),
+    'operation' => array(
+      'label' => 'Operation',
+      'type' => 'text',
+      'getter callback' => 'entity_property_verbatim_get',
+      'setter callback' => 'entity_property_verbatim_set',
+    ),
+    'value' => array(
+      'label' => 'Value',
+      'type' => 'integer',
+      'getter callback' => 'entity_property_verbatim_get',
+      'setter callback' => 'entity_property_verbatim_set',
+    ),
+  );
+
+  // Add the default values for each of the video_embed_field properties.
+  foreach ($properties as &$value) {
+    $value += array(
+      'description' => !empty($name) ? t('!label of field %name', array('!label' => $value['label'], '%name' => $name)) : '',
+    );
+  }
+
+  return $properties;
 }
 
 /**
