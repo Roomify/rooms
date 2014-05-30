@@ -45,7 +45,7 @@ class AvailabilityAgentDurationFilter extends AvailabilityAgentCommonFilter {
     parent::__construct($units, $parameters);
     $this->start_date = $this->parameters['start_date'];
 
-    $this->end_date = $this->parameters['end_date'];
+    $this->end_date = clone($this->parameters['end_date']);
     $this->end_date = $this->end_date->modify('+1 days');
 
     $this->interval = date_diff($this->start_date, $this->end_date);

@@ -80,6 +80,7 @@ function rooms_availability_constraints_rooms_unit_type_form_submit($form, &$for
  * Adds the default Availability range field to certain bundle.
  */
 function rooms_availability_constraints_add_availability_range_field($entity_type, $bundle) {
+  field_info_cache_clear();
   // Create field ('rooms_constraint_range') if not exist
   if (field_read_field('rooms_constraints_range') === FALSE) {
     $field = array(
