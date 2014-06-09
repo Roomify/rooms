@@ -633,7 +633,7 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
       '#title' => t('Name'),
       '#default_value' => isset($items[$delta]['name']) ? $items[$delta]['name'] : NULL,
       '#attributes' => array(
-        'class' => array('booking-option-name')
+        'class' => array('rooms-option--name')
       ),
     );
     $element['quantity'] = array(
@@ -642,6 +642,9 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
       '#options' => array('None', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'),
       '#default_value' => isset($items[$delta]['quantity']) ? $items[$delta]['quantity'] : NULL,
       '#description' => t('How many of this option should be available'),
+      '#attributes' => array(
+        'class' => array('rooms-option--quantity')
+      ),
     );
     $price_options = rooms_price_options_options();
     $element['operation'] = array(
@@ -649,22 +652,29 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
       '#title' => t('Operation'),
       '#options' => $price_options,
       '#default_value' => isset($items[$delta]['operation']) ? $items[$delta]['operation'] : NULL,
+      '#attributes' => array(
+        'class' => array('rooms-option--operation')
+      ),
     );
     $element['value'] = array(
       '#type' => 'textfield',
       '#title' => t('Value'),
       '#size' => 10,
       '#default_value' => isset($items[$delta]['value']) ? $items[$delta]['value'] : NULL,
+      '#attributes' => array(
+        'class' => array('rooms-option--value')
+      ),
     );
 
     $element['remove'] = array(
       '#type' => 'submit',
       '#value' => t('Remove'),
       '#attributes' => array(
-        'class' => array('remove-booking-option'),
+        'class' => array('rooms-option--remove-button'),
       ),
     );
     $element['#attached']['js'] = array(drupal_get_path('module', 'rooms') . '/js/rooms_options_widget.js');
+    $element['#attached']['css'] = array(drupal_get_path('module', 'rooms') . '/css/rooms_options_widget.css');
 
     return $element;
   }
