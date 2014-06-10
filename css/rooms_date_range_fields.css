@@ -25,7 +25,8 @@
 .rooms-date-range .form-type-textfield label {
   display: none;
 }
-.rooms-date-range .date-padding {
+.rooms-date-range .date-padding,
+.rooms-date-range .container-inline-date .date-padding {
   padding: 0;
   float: none;
 }
