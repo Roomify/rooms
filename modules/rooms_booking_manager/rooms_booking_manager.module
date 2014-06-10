@@ -1109,13 +1109,19 @@ function book_unit_form_submit(&$form, &$form_state) {
       if (isset($form_state['values']['options'])) {
         // Convert Price options in Price modifiers
         foreach (rooms_unit_get_unit_options($unit['unit']) as $option) {
-          if (isset($form_state['values']['options'][strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
-            if ($form_state['values']['options'][strtolower(str_replace(array(':', ' '), '_', $option['name']))] == 1) {
-              $price_modifiers[strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
+          $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
+          if (isset($form_state['values']['options'][$option_name])) {
+            if ($form_state['values']['options'][$option_name] == 1) {
+              $quantity = 1;
+              if (isset($form_state['values']['options'][$option_name . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
+                $quantity = $form_state['values']['options'][$option_name . ':quantity'] + 1;
+              }
+              $price_modifiers[$option_name] = array(
                 '#name' => $option['name'],
                 '#type' => ROOMS_DYNAMIC_MODIFIER,
                 '#op_type' => $option['operation'],
-                '#amount' => $option['value'] * $option['quantity'],
+                '#amount' => $option['value'],
+                '#quantity' => $quantity,
               );
             }
           }
