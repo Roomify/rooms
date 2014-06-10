@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * @file
+ * Manage Settings - Settings that can be configured
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function rooms_terminology_menu() {
+  $items  =  array();
+	$items['admin/rooms/config/terminology'] = array(
+    'title' => 'Rooms Terminology',
+    'description' => 'Change Rooms Terminology',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('variable_group_form', 'rooms_booking_manager'),
+    'access arguments' => array('configure room settings'),
+    );
+ 
+  return $items;
+}
+

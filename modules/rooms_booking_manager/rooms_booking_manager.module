@@ -26,7 +26,7 @@ function rooms_booking_manager_menu() {
   $items  =  array();
 
   $items['booking'] = array(
-    'title' => 'Create your booking',
+    'title' => variable_get_value('create_your_booking'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('rooms_booking_availability_search_form_page'),
     'file' => 'rooms_booking_manager.availability_search.inc',
@@ -51,7 +51,7 @@ function rooms_booking_manager_menu() {
   );
 
   $items['bookings'] = array(
-    'title' => 'Review your reservation',
+    'title' => variable_get_value('review_your_reservation'),
     'page callback' => 'rooms_booking_manager_cart_view',
     'access arguments' => array('access checkout'),
   );
@@ -69,6 +69,7 @@ function rooms_booking_manager_menu() {
 /**
  * implements hook_variable_group_info().
  */
+/*
 function rooms_booking_manager_variable_group_info() {
   $groups['rooms'] = array(
     'title' => t('Rooms'),
@@ -77,12 +78,12 @@ function rooms_booking_manager_variable_group_info() {
     'path' => array('admin/rooms/config/bookings'),
   );
   return $groups;
-}
+}*/
 
 /**
  * implements hook_variable_info().
  */
-function rooms_booking_manager_variable_info($options) {
+/*function rooms_booking_manager_variable_info($options) {
   $variables['rooms_enquiry_form_confirmation'] = array(
     'type' => 'string',
     'title' => t('Enquiry form confirmation', array(), $options),
@@ -92,7 +93,7 @@ function rooms_booking_manager_variable_info($options) {
     'required' => TRUE,
   );
   return $variables;
-}
+}*/
 
 /**
  * Implements hook_mail().
@@ -445,7 +446,7 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
       $booking_search_form = drupal_get_form('rooms_booking_availability_search_form_page');
 
       // Alter the page title.
-      drupal_set_title(t('Create your booking'));
+      drupal_set_title(t(variable_get_value('create_your_booking')));
 
       // Store and clean old messages.
       $old_messages = drupal_get_messages();
