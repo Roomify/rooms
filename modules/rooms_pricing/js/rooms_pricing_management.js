@@ -32,7 +32,7 @@ Drupal.behaviors.roomsPricing = {
     month1 = currentMonth;
     year1 = currentYear;
 
-    var calendars = new Array();
+    var calendars = [];
     var i = 0;
     for (i=0;i<Drupal.settings.roomsUnitManagement.roomsNumber;i++) {
       calendars[i] = new Array('#calendar' + i, month1, year1);
