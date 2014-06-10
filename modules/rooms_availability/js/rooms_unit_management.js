@@ -3,56 +3,37 @@
 Drupal.RoomsAvailability = Drupal.RoomsAvailability || {};
 Drupal.RoomsAvailability.Modal = Drupal.RoomsAvailability.Modal || {};
 
-$(document).ready(function()
-{
-  $("form#rooms-availability-filter-month-form select").change(function() {
-    $("form#rooms-availability-filter-month-form").submit();
-  });
+Drupal.behaviors.roomsAvailabilityPrepareForm = {
+  attach: function(context) {
+    $("form#rooms-filter-month-form select").once('select').change(function() {
+      $("form#rooms-filter-month-form").submit();
+    });
 
-  $('#edit-select-all').change(function() {
-    if (this.options.selectedIndex == 1) {
+    $('#edit-select-all').once('select').change(function() {
       var table = $(this).closest('table')[0];
-      $('input[id^="edit-rooms"]:not(:disabled)', table).attr('checked', true);
+      if (this.options.selectedIndex == 1) {
+        $('input[id^="edit-rooms"]:not(:disabled)', table).attr('checked', true);
+      }
+      else if (this.options.selectedIndex == 2) {
+        $('input[id^="edit-rooms"]:not(:disabled)', table).attr('checked', true);
+      }
+      else if (this.options.selectedIndex == 3) {
+        $('input[id^="edit-rooms"]:not(:disabled)', table).attr('checked', false);
+      }
+    });
+  }
+};
 
-      jQuery.ajax({
-        type: 'POST',
-        url: Drupal.settings.basePath + '?q=admin/rooms/select-all-pages-av',
-        data: {'select-all': '0'},
-      });
-    }
-    else if (this.options.selectedIndex == 2) {
-      jQuery.ajax({
-        type: 'POST',
-        url: Drupal.settings.basePath + '?q=admin/rooms/select-all-pages-av',
-        data: {'select-all': '1'},
-      });
-
-      var table = $(this).closest('table')[0];
-      $('input[id^="edit-rooms"]:not(:disabled)', table).attr('checked', true);
-    }
-    else if (this.options.selectedIndex == 3) {
-      var table = $(this).closest('table')[0];
-      $('input[id^="edit-rooms"]:not(:disabled)', table).attr('checked', false);
-
-      jQuery.ajax({
-        type: 'POST',
-        url: Drupal.settings.basePath + '?q=admin/rooms/select-all-pages-av',
-        data: {'select-all': '0'},
-      });
-    }
-  });
-});
-
-Drupal.behaviors.rooms_availability = {
+Drupal.behaviors.roomsAvailability = {
   attach: function(context) {
 
     // Current month is whatever comes through -1 since js counts months starting from 0
-    currentmonth = parseInt(Drupal.settings.roomsUnitManagement.currentMonth)-1;
-    currentyear = parseInt(Drupal.settings.roomsUnitManagement.currentYear);
+    currentMonth = parseInt(Drupal.settings.roomsUnitManagement.currentMonth)-1;
+    currentYear = parseInt(Drupal.settings.roomsUnitManagement.currentYear);
 
     // The first month on the calendar
-    month1 = currentmonth;
-    year1 = currentyear;
+    month1 = currentMonth;
+    year1 = currentYear;
 
     var calendars = new Array();
     var i = 0;
@@ -79,6 +60,8 @@ Drupal.behaviors.rooms_availability = {
         ignoreTimezone:false,
         editable:false,
         selectable: true,
+        dayNamesShort:[Drupal.t("Sun"), Drupal.t("Mon"), Drupal.t("Tue"), Drupal.t("Wed"), Drupal.t("Thu"), Drupal.t("Fri"), Drupal.t("Sat")],
+        monthNames:[Drupal.t("January"), Drupal.t("February"), Drupal.t("March"), Drupal.t("April"), Drupal.t("May"), Drupal.t("June"), Drupal.t("July"), Drupal.t("August"), Drupal.t("September"), Drupal.t("October"), Drupal.t("November"), Drupal.t("December")],
         defaultView:'singleRowMonth',
         month:value[1],
         year:value[2],

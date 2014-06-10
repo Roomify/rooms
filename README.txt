@@ -11,7 +11,8 @@ INSTALLATION
 Follow the steps below to install Rooms.
 
 1. Download the FullCalendar library from [1] and unpack in `sites/all/libraries`
-so that you end up with `sites/all/libraries/fullcalendar/fullcalendar`.
+so that you end up with
+`sites/all/libraries/rooms_fullcalendar/fullcalendar/fullcalendar.js`.
 
 Rooms uses FullCalendar to display room availability and prices by date in an
 easily comprehensible manner.
@@ -41,20 +42,18 @@ double room).
 3. Set availability and pricing - clicking on events or date ranges in the
 calendars will bring up a pop-up dialog and allow you to interact with them.
 
-4. Visit `admin/commerce/customer-profiles` and create a Customer Profile in
-Drupal Commerce.
+4. To manually create a Booking go to `admin/rooms/bookings/add`. This will also
+ create a Commerce order and line item for that booking.
 
-5. Create a Booking at `admin/rooms/bookings/add`.
+5. Potential guests can go to `/booking` to do an availability search.
 
-6. Go to `/booking` and do an availability search.
-
-7. If you wish to display availability information on an embedded calendar
+6. If you wish to display availability information on an embedded calendar
 in a node (as vacation rentals properties often do) activate the Rooms
 Availability Reference Module.
 
-7a. This will give you a new field type called "Availability Reference".
+6a. This will give you a new field type called "Availability Reference".
 
-7b. Add the field to any entity and you may reference specific Booking Units
+6b. Add the field to any entity and you may reference specific Booking Units
 to have the availability information rendered on the node display (or any
 other entity).
 
@@ -77,13 +76,9 @@ ensure that it is enabled in your PHP setup. We may scale back on this
 to make things more usable for a wider range of configurations.
 
 
-UPGRADING FROM PREVIOUS BETA VERSIONS
+UPGRADING FROM PREVIOUS VERSIONS
 -------------------------------------
-If you are upgrading from Beta 4 make sure that your Rooms Product in
-Commerce has a price set, the price is not actually used to calculate the cost
-of the room but we need a price in order for Commerce to properly add the
-product to the cart and do tax calculations.
-
+Please make sure you test extensively on a test site before upgrading!
 
 UNINSTALLATION
 -------------------------------------

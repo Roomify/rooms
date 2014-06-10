@@ -1,18 +1,14 @@
 <?php
 
-function rooms_booking_manager_search_availability() {
-
-  // Stylesheet improves basic search layout.
-  drupal_add_css(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
-
-  $output = drupal_get_form('rooms_booking_availability_search_form');
-  return $output;
-}
-
-
-function rooms_booking_availability_search_form($form, $form_state) {
+function rooms_booking_availability_search_form_builder($form, &$form_state) {
+  // Use form_load_include() instead of module_load_include() as it ensures that
+  // the include file is loaded whenever the form is processed. In contrast to
+  // using module_load_include() directly, form_load_include() makes sure the
+  // include file is correctly loaded also if the form is cached.
+  form_load_include($form_state, 'inc', 'rooms_booking_manager', 'rooms_booking_manager.availability_search');
 
   $form['#attributes']['class'][] = 'rooms-management-form rooms-availability-search';
+  $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
 
   $rooms_number = 1;
 
@@ -22,8 +18,9 @@ function rooms_booking_availability_search_form($form, $form_state) {
 
   if (isset($_GET['rooms_b_units'])) {
     $b_units = check_plain($_GET['rooms_b_units']);
-    if ($b_units != '') $rooms_number = $b_units;
-
+    if ($b_units != '') {
+      $rooms_number = $b_units;
+    }
     $booking_parameters = rooms_booking_manager_retrieve_booking_parameters($b_units, $_GET);
   }
 
@@ -38,22 +35,15 @@ function rooms_booking_availability_search_form($form, $form_state) {
     }
   }
 
-
   $form['conditions']['rooms'] = array(
     '#type' => 'select',
     '#title' => t('Units'),
-    '#options' => array(
-      '1' => '1',
-      '2' => '2',
-      '3' => '3',
-      '4' => '4',
-      '5' => '5',
-      '6' => '6',
-    ),
+    '#options' => rooms_assoc_range(1, variable_get('rooms_booking_manager_search_form_units', 6)),
     '#default_value' =>  $rooms_number,
   );
 
-  $ajax_wrapper_id = drupal_html_id('rooms-group');
+  // Create an AJAX wrapper id depending on the form caller to avoid duplicates.
+  $ajax_wrapper_id = 'rooms-group-' . substr($form_state['build_info']['form_id'], strlen('rooms_booking_availability_search_form_'));
   $form['rooms_fieldset'] = array(
     '#prefix' => '<div class="form-wrapper rooms-group" id="' . $ajax_wrapper_id . '">',
     '#suffix' => '</div>',
@@ -90,16 +80,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
 
       $form['rooms_fieldset']['group_size_adults:' . $i] = array(
         '#type' => 'select',
-        '#options' => array(
-          '1' => '1',
-          '2' => '2',
-          '3' => '3',
-          '4' => '4',
-          '5' => '5',
-          '6' => '6',
-          '7' => '7',
-          '8' => '8',
-        ),
+        '#options' => rooms_assoc_range(1, 8),
         '#default_value' => isset($booking_parameters[$i]['adults']) ? $booking_parameters[$i]['adults'] : '2',
         '#prefix' => '<td class="rooms-group-size__people">',
         '#suffix' => '</td>',
@@ -108,12 +89,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
       if (variable_get('rooms_display_children', ROOMS_DISPLAY_CHILDREN_NO) == ROOMS_DISPLAY_CHILDREN) {
         $form['rooms_fieldset']['group_size_children:' . $i] = array(
           '#type' => 'select',
-          '#options' => array(
-            '0' => '0',
-            '1' => '1',
-            '2' => '2',
-            '3' => '3',
-          ),
+          '#options' => rooms_assoc_range(0, 3),
           '#default_value' =>  isset($booking_parameters[$i]['children']) ? $booking_parameters[$i]['children'] : '0',
           '#prefix' => '<td class="rooms-group-size__children">',
           '#suffix' => '</td>',
@@ -132,16 +108,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
     $form['rooms_fieldset']['group_size_adults:1'] = array(
       '#type' => 'select',
       '#title' => t('Group size'),
-      '#options' => array(
-        '1' => '1',
-        '2' => '2',
-        '3' => '3',
-        '4' => '4',
-        '5' => '5',
-        '6' => '6',
-        '7' => '7',
-        '8' => '8',
-      ),
+      '#options' => rooms_assoc_range(1, 8),
       '#default_value' => isset($booking_parameters[1]['adults']) ? $booking_parameters[1]['adults'] : 2,
     );
 
@@ -149,12 +116,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
       $form['rooms_fieldset']['group_size_children:1'] = array(
         '#type' => 'select',
         '#title' => t('Children'),
-        '#options' => array(
-          '0' => '0',
-          '1' => '1',
-          '2' => '2',
-          '3' => '3',
-        ),
+        '#options' => rooms_assoc_range(0, 3),
         '#default_value' =>  isset($booking_parameters[1]['children']) ? $booking_parameters[1]['children'] : 0,
       );
     }
@@ -202,9 +164,7 @@ function rooms_booking_availability_search_form($form, $form_state) {
   $form['#validate'][] = 'rooms_form_start_end_dates_validate';
 
   return $form;
-
 }
-
 
 function rooms_booking_availability_search_form_callback(&$form, $form_state) {
   return $form['rooms_fieldset'];
@@ -238,11 +198,11 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
 
   $units = $form_state['values']['rooms'];
 
-  $rooms_parameters = array();
+  $rooms_query = array();
 
   if (isset($form_state['values']['unit_type'])) {
     if ($form_state['values']['unit_type'] != '') {
-      $rooms_parameters['type'] = $form_state['values']['unit_type'];
+      $rooms_query['type'] = $form_state['values']['unit_type'];
     }
   }
 
@@ -251,10 +211,15 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
     $keys = explode(':', $key);
 
     if (count($keys) == 2) {
-      if ($keys[0] == 'group_size_adults') $rooms_parameters['rooms_group_size' . $keys[1]] = $value;
-      if ($keys[0] == 'group_size_children') $rooms_parameters['rooms_children' . $keys[1]] = $value;
+      if ($keys[0] == 'group_size_adults') $rooms_query['rooms_group_size' . $keys[1]] = $value;
+      if ($keys[0] == 'group_size_children') $rooms_query['rooms_children' . $keys[1]] = $value;
     }
   }
 
-  drupal_goto('booking/' . $start_date->format('Y-m-d') . '/' . $end_date->format('Y-m-d') . '/' . $units, array('query' => $rooms_parameters));
+  $form_state['redirect'] = array(
+    'booking/' . $start_date->format('Y-m-d') . '/' . $end_date->format('Y-m-d') . '/' . $units,
+    array(
+      'query' => $rooms_query,
+    )
+  );
 }

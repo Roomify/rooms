@@ -12,8 +12,6 @@
 <p></p>
 
 <h2><?php print t('Enquiry'); ?></h2>
-<?php
-  foreach ($booking_request as $request) {
-    print render($request);
-  }
-?>
+<?php foreach ($booking_request as $request): ?>
+  <p><?php print render($request); ?></p>
+<?php endforeach; ?>

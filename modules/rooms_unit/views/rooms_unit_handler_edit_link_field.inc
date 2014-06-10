@@ -19,7 +19,7 @@ class rooms_unit_handler_edit_link_field extends rooms_unit_handler_link_field {
 
     //Creating a dummy unit to check access against
     $dummy_unit = (object) array('type' => $type);
-    if (!rooms_unit_access('edit', $dummy_unit)) {
+    if (!rooms_unit_access('update', $dummy_unit)) {
       return;
     }
     $text = !empty($this->options['text']) ? $this->options['text'] : t('edit');

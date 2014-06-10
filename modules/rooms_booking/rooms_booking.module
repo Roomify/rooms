@@ -5,10 +5,13 @@
  * Manage Bookings - Bookings are tied to a customer profile and possible a Unit ID and Order ID
  */
 
-
+// This is a special booking type used to avoid confusion between
+// deleted bookings directly or deleting them because we deleted
+// a line item or an order.
+define('ROOMS_BOOKING_DELETED', 'rooms_booking_deleted');
 
 /**
- * Implement hook_menu()
+ * Implements hook_menu().
  */
 function rooms_booking_menu() {
   $items  =  array();
@@ -16,21 +19,21 @@ function rooms_booking_menu() {
   $items['admin/rooms/bookings/customers'] = array(
     'title' => 'Customers',
     'page callback' => 'rooms_booking_get_client_profiles',
-    'access arguments' => array('administer bookings'),
+    'access arguments' => array('administer rooms_booking entities'),
     'type' => MENU_CALLBACK,
   );
 
   $items['admin/rooms/bookings/room_types'] = array(
-    // This is a json request to list booking room_types
+    // This is a json request to list booking room_types.
     'page callback' => 'rooms_booking_get_room_types',
-    'access arguments' => array('administer bookings'),
+    'access arguments' => array('administer rooms_booking entities'),
     'type' => MENU_CALLBACK,
   );
 
   $items['admin/rooms/add_customers'] = array(
     'title' => 'Add customer profile',
     'page callback' => 'rooms_booking_add_customer_profile',
-    'access arguments' => array('administer bookings'),
+    'access arguments' => array('administer rooms_booking entities'),
     'type' => MENU_CALLBACK,
   );
 
@@ -38,7 +41,7 @@ function rooms_booking_menu() {
     'title' => 'Edit customer profile',
     'page callback' => 'rooms_booking_edit_customer_profile',
     'page arguments' => array(3),
-    'access arguments' => array('administer bookings'),
+    'access arguments' => array('administer rooms_booking entities'),
     'type' => MENU_CALLBACK,
   );
 
@@ -53,7 +56,6 @@ function rooms_booking_menu() {
 
   return $items;
 }
-
 
 function rooms_booking_edit_customer_profile($customer_id) {
   ctools_include('modal');
@@ -74,7 +76,7 @@ function rooms_booking_edit_customer_profile($customer_id) {
     ),
   );
 
-  // wrap the form via ctools modal
+  // Wrap the form via ctools modal.
   $output = ctools_modal_form_wrapper('commerce_customer_ui_customer_profile_form', $form_state);
 
   if ($form_state['executed']) {
@@ -85,11 +87,12 @@ function rooms_booking_edit_customer_profile($customer_id) {
   exit();
 }
 
-
 function rooms_booking_children_discount($form, &$form_state) {
-
-  drupal_add_css(drupal_get_path('module', 'rooms_booking') . '/css/rooms_booking.css');
   $form['#attributes']['class'][] = 'rooms-management-form children-discount-form';
+
+  $form['#attached']['css'] = array(
+    drupal_get_path('module', 'rooms_booking') . '/css/rooms_booking.css',
+  );
 
   $form['#tree'] = TRUE;
 
@@ -181,7 +184,6 @@ function rooms_booking_children_discount($form, &$form_state) {
   return $form;
 }
 
-
 function rooms_booking_children_discount_validate($form, &$form_state) {
   foreach ($form_state['values']['option'] as $key => $value) {
     if ($value['start'] != '' || $value['end'] != '' || $value['discount'] != '') {
@@ -191,7 +193,6 @@ function rooms_booking_children_discount_validate($form, &$form_state) {
     }
   }
 }
-
 
 function rooms_booking_children_discount_submit($form, &$form_state) {
   $options = array();
@@ -207,13 +208,11 @@ function rooms_booking_children_discount_submit($form, &$form_state) {
   variable_set('rooms_children_discount_options', $options);
 }
 
-
 function rooms_booking_children_discount_add_option($form, &$form_state) {
   $form_state['num_options']++;
 
   $form_state['rebuild'] = TRUE;
 }
-
 
 function rooms_booking_children_discount_remove_option($form, &$form_state) {
   if ($form_state['num_options'] > 1) {
@@ -222,7 +221,6 @@ function rooms_booking_children_discount_remove_option($form, &$form_state) {
 
   $form_state['rebuild'] = TRUE;
 }
-
 
 function rooms_booking_add_customer_profile() {
   ctools_include('modal');
@@ -243,7 +241,7 @@ function rooms_booking_add_customer_profile() {
     ),
   );
 
-  // wrap the form via ctools modal
+  // Wrap the form via ctools modal.
   $output = ctools_modal_form_wrapper('commerce_customer_customer_profile_form', $form_state);
 
   if ($form_state['executed']) {
@@ -279,9 +277,8 @@ function rooms_booking_add_customer_profile() {
   exit();
 }
 
-
 /**
- * Implement hook_entity_info().
+ * Implements hook_entity_info().
  */
 function rooms_booking_entity_info() {
   $return['rooms_booking'] = array(
@@ -306,6 +303,14 @@ function rooms_booking_entity_info() {
     'uri callback' => 'entity_class_uri',
     'creation callback' => 'rooms_booking_create',
     'access callback' => 'rooms_booking_access',
+    'access arguments' => array(
+      'user key' => 'uid',
+      'access tag' => 'rooms_booking_access',
+    ),
+    'permission labels' => array(
+      'singular' => t('booking'),
+      'plural' => t('bookings'),
+    ),
     'module' => 'rooms_booking',
     // The information below is used by the RoomsRoomUIController (which extends the EntityDefaultUIController)
     'admin ui' => array(
@@ -342,7 +347,6 @@ function rooms_booking_entity_info() {
   return $return;
 }
 
-
 /**
  * Implements hook_entity_info_alter().
  *
@@ -359,12 +363,11 @@ function rooms_booking_entity_info_alter(&$entity_info) {
         'path' => 'admin/rooms/bookings/booking-types/manage/%rooms_booking_type',
         'real path' => 'admin/rooms/bookings/booking-types/manage/' . $type,
         'bundle argument' => 5,
-        'access arguments' => array('administer bookings'),
+        'access arguments' => array('administer rooms_booking_type entities'),
       ),
     );
   }
 }
-
 
 /**
  * Implements hook_entity_property_info_alter().
@@ -373,39 +376,19 @@ function rooms_booking_entity_property_info_alter(&$info) {
   $info['rooms_booking']['properties']['booking_status']['setter callback'] = 'entity_property_verbatim_set';
 }
 
-
 /**
  * Implements hook_permission().
  */
 function rooms_booking_permission() {
-  // We set up permisssions to manage entity types, manage all entities and the
-  // permissions for each individual entity
   $permissions = array(
-    'administer booking types' => array(
+    'administer rooms_booking_type entities' => array(
       'title' => t('Administer booking types'),
-      'description' => t('Create and delete fields for booking types, and set their permissions.'),
-    ),
-    'administer bookings' => array(
-      'title' => t('Administer bookings'),
-      'description' => t('Edit and delete all bookings'),
+      'description' => t('Allows users to add booking types and configure their fields.'),
+      'restrict access' => TRUE,
     ),
   );
-
-  //Generate permissions per room
-  foreach (rooms_booking_get_types() as $type) {
-    $type_name = check_plain($type->type);
-    $permissions += array(
-      "edit any $type_name booking" => array(
-        'title' => t('%type_name: Edit any booking', array('%type_name' => $type->label)),
-      ),
-      "view any $type_name booking" => array(
-        'title' => t('%type_name: View any booking', array('%type_name' => $type->label)),
-      ),
-    );
-  }
-  return $permissions;
+  return $permissions + rooms_entity_access_permissions('rooms_booking');
 }
-
 
 /**
  * Implements hook_ctools_plugin_type().
@@ -418,44 +401,107 @@ function rooms_booking_ctools_plugin_type() {
   );
 }
 
-
 /**
- * Determines whether the given user has access to a booking.
- *
- * @param $op
- *   The operation being performed. One of 'view', 'update', 'create', 'delete'
- *   or just 'edit' (being the same as 'create' or 'update').
- * @param $booking
- *   Optionally a booking to check access for. If nothing is
- *   given, access for all bookings is determined.
- * @param $account
- *   The user to check for. Leave it to NULL to check for the global user.
- * @return boolean
- *   Whether access is allowed or not.
+ * Implements hook_form_FORM_ID_alter()-
+ * FORM_ID = rooms_booking_settings
  */
-function rooms_booking_access($op, $booking = NULL, $account = NULL) {
-  if (user_access('administer bookings', $account)) {
-    return TRUE;
-  }
-  if (is_object($booking)) {
-    if ($type_name = $booking->type) {
-      $op = ($op == 'view') ? 'view' : 'edit';
-      if (user_access("$op any $type_name booking", $account)) {
-        return TRUE;
-      }
-    }
-  }
-  return FALSE;
+function rooms_booking_form_rooms_booking_settings_alter(&$form, &$form_state, $form_id) {
+  form_load_include($form_state, 'inc', 'rules', 'ui/ui.forms');
+
+  $form['rooms_admin_settings'] = array(
+    '#type' => 'fieldset',
+    '#group' => 'rooms_settings',
+    '#title' => t('Administrative settings'),
+  );
+
+  $form['rooms_admin_settings']['rooms_booking_expiration_time'] = array(
+    '#title' => t('Cart expiration time'),
+    '#type' => 'rules_duration',
+    '#default_value' => variable_get('rooms_booking_expiration_time', 172800),
+    '#description' => t('Set the time after the carts will expire.'),
+    '#weight' => 50,
+  );
 }
 
+/**
+ * Implements hook_rules_action_info_alter().
+ */
+function rooms_booking_rules_action_info_alter(&$actions) {
+  unset($actions['commerce_cart_expiration_delete_orders']['parameter']['interval']);
+  $actions['commerce_cart_expiration_delete_orders']['callbacks']['execute'] = 'rooms_booking_expiration_delete_orders';
+}
+
+/**
+ * Rules action: deletes expired cart orders based on the provided limit.
+ */
+function rooms_booking_expiration_delete_orders($limit) {
+  module_load_include('inc', 'commerce_cart_expiration', 'commerce_cart_expiration.rules');
+  $interval = variable_get('rooms_booking_expiration_time', 172800);
+  commerce_cart_expiration_delete_orders($interval, $limit);
+}
+
+/**
+ * Checks order access for various operations.
+ *
+ * @param $op
+ *   The operation being performed. One of 'view', 'update', 'create' or
+ *   'delete'.
+ * @param $booking
+ *   Optionally an booking to check access for.
+ * @param $account
+ *   The user to check for. Leave it to NULL to check for the current user.
+ */
+function rooms_booking_access($op, $booking = NULL, $account = NULL) {
+  return rooms_entity_access($op, $booking, $account, 'rooms_booking');
+}
+
+/**
+ * Access callback: Checks whether the user has permission to add a booking.
+ *
+ * @return
+ *   TRUE if the user has add permission, otherwise FALSE.
+ *
+ * @see node_menu()
+ */
+function _rooms_booking_add_access() {
+  if (user_access('administer rooms_booking_type entities')) {
+    // There are no booking types defined that the user has permission to create,
+    // but the user does have the permission to administer the content types, so
+    // grant them access to the page anyway.
+    return TRUE;
+  }
+
+  $types = rooms_booking_get_types();
+  foreach ($types as $type) {
+    if (rooms_booking_access('create', rooms_booking_create(array('type' => $type->type, 'uid' => 0)))) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
 
 /**
  * Access callback for the entity API.
  */
 function rooms_booking_type_access($op, $type = NULL, $account = NULL) {
-  return user_access('administer booking types', $account);
+  return user_access('administer rooms_booking_type entities', $account);
 }
 
+/**
+ * Implements hook_query_TAG_alter().
+ */
+function rooms_booking_query_rooms_booking_access_alter(QueryAlterableInterface $query) {
+  // Look for a booking base table to pass to the query altering function or else
+  // assume we don't have the tables we need to establish order related altering
+  // right now.
+  foreach ($query->getTables() as $table) {
+    if ($table['table'] === 'rooms_bookings') {
+      rooms_entity_access_query_alter($query, 'rooms_booking', $table['alias']);
+      break;
+    }
+  }
+}
 
 /**
  * Gets an array of all booking types, keyed by the type name.
@@ -468,13 +514,11 @@ function rooms_booking_type_access($op, $type = NULL, $account = NULL) {
  *   Depending whether $type isset, an array of booking types or a single one.
  */
 function rooms_booking_get_types($type_name = NULL, $reset = FALSE) {
-  // entity_load will get the Entity controller for our booking entity and call the load
-  // function of that object.
+  // entity_load will get the Entity controller for our booking entity and call
+  // the load function of that object.
   $types = entity_load_multiple_by_name('rooms_booking_type', isset($type_name) ? array($type_name) : FALSE);
   return isset($type_name) ? reset($types) : $types;
 }
-
-
 
 /**
  * Menu argument loader; Load a booking type by string.
@@ -487,7 +531,6 @@ function rooms_booking_get_types($type_name = NULL, $reset = FALSE) {
 function rooms_booking_type_load($type, $reset = FALSE) {
   return rooms_booking_get_types($type, $reset);
 }
-
 
 /**
  * Fetch a booking object. Make sure that the wildcard you choose
@@ -506,7 +549,6 @@ function rooms_booking_load($booking_id, $reset = FALSE) {
   $bookings = rooms_booking_load_multiple(array($booking_id), array(), $reset);
   return reset($bookings);
 }
-
 
 /**
  * Load multiple bookings based on certain conditions.
@@ -527,7 +569,6 @@ function rooms_booking_load_multiple($booking_ids = array(), $conditions = array
   return entity_load('rooms_booking', $booking_ids, $conditions, $reset);
 }
 
-
 /**
  * Deletes a booking
  *
@@ -538,20 +579,29 @@ function rooms_booking_delete(RoomsBooking $booking, $delete_line_item = TRUE) {
   // Check if the booking had a unit associated with it and if so update the availability calendar
   if (isset($booking->unit_id) && isset($booking->start_date) && isset($booking->end_date)) {
       $uc = new UnitCalendar($booking->unit_id);
+      // We are not concerned with the state of the event id (confirmed or unconfirmed here)
+      // because we will unlock it no matter what (we look for absolute value)
       $event_id = rooms_availability_assign_id($booking->booking_id);
       // Create an event representing the event to remove
-      $be = new BookingEvent($booking->unit_id, $event_id, $booking->start_date_object, $booking->end_date_object);
+      $start_date = $booking->start_date_object;
+      $end_date = $booking->end_date_object;
+      // Remove a day from end date to represent the actual event
+      $end_date->sub(new DateInterval('P1D'));
+      $be = new BookingEvent($booking->unit_id, $event_id, $start_date, $end_date);
       $uc->removeEvents(array($be));
+      // We've updated the calendar so mark the booking as deleted.
+      $booking->type = ROOMS_BOOKING_DELETED;
+      $booking->save();
   }
 
   if ($booking->order_id != '' && $delete_line_item) {
     $order = commerce_order_load($booking->order_id);
 
-    if (isset($order->commerce_line_items['und'])) {
-      foreach ($order->commerce_line_items['und'] as $value) {
+    if (isset($order->commerce_line_items[LANGUAGE_NONE])) {
+      foreach ($order->commerce_line_items[LANGUAGE_NONE] as $value) {
         $line_item = commerce_line_item_load($value['line_item_id']);
 
-        if ($line_item->rooms_booking_reference['und'][0]['target_id'] == $booking->booking_id) {
+        if ($line_item->rooms_booking_reference[LANGUAGE_NONE][0]['target_id'] == $booking->booking_id) {
           commerce_line_item_delete($line_item->line_item_id);
           if (count($order->commerce_line_items) == 0) {
             commerce_order_delete($order->order_number);
@@ -563,100 +613,25 @@ function rooms_booking_delete(RoomsBooking $booking, $delete_line_item = TRUE) {
     }
   }
 
-  $booking->delete();
+  if ($booking->type = ROOMS_BOOKING_DELETED) {
+    $booking->delete();
+  }
 }
-
 
 /**
  * Implements hook_commerce_line_item_delete().
  */
 function rooms_booking_commerce_line_item_delete($line_item) {
-  if (isset($line_item->rooms_booking_reference['und'][0]['target_id'])) {
-    $booking = rooms_booking_load($line_item->rooms_booking_reference['und'][0]['target_id']);
+  if (isset($line_item->rooms_booking_reference[LANGUAGE_NONE][0]['target_id'])) {
+    $booking = rooms_booking_load($line_item->rooms_booking_reference[LANGUAGE_NONE][0]['target_id']);
 
     if ($booking !== FALSE) {
       if ($line_item->order_id == $booking->order_id) {
-        //Check if the booking had a unit associated with it and if so update the availability calendar
-        if (isset($booking->unit_id) && isset($booking->start_date) && isset($booking->end_date)) {
-          $uc = new UnitCalendar($booking->unit_id);
-          // Create an event representing the event to remove
-          $be = new BookingEvent($booking->unit_id,
-                                 rooms_availability_assign_id($booking->booking_id),
-                                 new DateTime($booking->start_date),
-                                 new DateTime($booking->end_date));
-          $uc->removeEvents(array($be));
-        }
-
         rooms_booking_delete($booking, FALSE);
       }
     }
   }
 }
-
-
-/**
- * Delete multiple bookings.
- *
- * @param $booking_ids
- *   An array of booking IDs.
- */
-function rooms_booking_delete_multiple(array $booking_ids) {
-  entity_get_controller('rooms_booking')->delete($booking_ids);
-}
-
-
-/**
- * Create a booking object.
- */
-function rooms_booking_create($values = array()) {
-  return entity_get_controller('rooms_booking')->create($values);
-}
-
-
-/**
- * Saves a booking to the database.
- *
- * @param RoomsBooking $booking
- *   The Booking object.
- */
-function rooms_booking_save(RoomsBooking $booking) {
-  return $booking->save();
-}
-
-
-/**
- * Saves a booking type to the db.
- */
-function rooms_booking_type_save(RoomsBookingType $type) {
-  $type->save();
-}
-
-
-/**
- * Deletes a booking type from the db.
- */
-function rooms_booking_type_delete(RoomsBookingType $type) {
-  $type->delete();
-}
-
-
-/**
- * URI callback for bookings
- */
-function rooms_booking_uri(RoomsBooking $booking) {
-  return array(
-    'path' => 'booking/' . $booking->booking_id,
-  );
-}
-
-
-/**
- * Menu title callback for showing individual entities
- */
-function rooms_booking_page_title(RoomsBooking $booking) {
-  return $booking->name;
-}
-
 
 /**
  * Implements hook_commerce_order_delete().
@@ -686,12 +661,75 @@ function rooms_booking_commerce_order_delete($order) {
 }
 
 /**
+ * Delete multiple bookings.
+ *
+ * @param $booking_ids
+ *   An array of booking IDs.
+ */
+function rooms_booking_delete_multiple(array $booking_ids) {
+  entity_get_controller('rooms_booking')->delete($booking_ids);
+}
+
+/**
+ * Create a booking object.
+ */
+function rooms_booking_create($values = array()) {
+  return entity_get_controller('rooms_booking')->create($values);
+}
+
+/**
+ * Saves a booking to the database.
+ *
+ * @param RoomsBooking $booking
+ *   The Booking object.
+ */
+function rooms_booking_save(RoomsBooking $booking) {
+  return $booking->save();
+}
+
+/**
+ * Create a booking object.
+ */
+function rooms_booking_type_create($values = array()) {
+  return entity_get_controller('rooms_booking_type')->create($values);
+}
+
+/**
+ * Saves a booking type to the db.
+ */
+function rooms_booking_type_save(RoomsBookingType $type) {
+  $type->save();
+}
+
+/**
+ * Deletes a booking type from the db.
+ */
+function rooms_booking_type_delete(RoomsBookingType $type) {
+  $type->delete();
+}
+
+/**
+ * URI callback for bookings
+ */
+function rooms_booking_uri(RoomsBooking $booking) {
+  return array(
+    'path' => 'booking/' . $booking->booking_id,
+  );
+}
+
+/**
+ * Menu title callback for showing individual entities
+ */
+function rooms_booking_page_title(RoomsBooking $booking) {
+  return $booking->name;
+}
+
+/**
  * Get a list of Booking keyed by id and name in value
  *
  * @todo - double check utility of this and perhaps use rooms_booking_load_multiple
  */
 function rooms_booking_ids($conditions = array()) {
-
   $bookings = array();
 
   $query = new EntityFieldQuery();
@@ -721,7 +759,6 @@ function rooms_booking_page_view($booking, $view_mode = 'full') {
   return $content;
 }
 
-
 /**
  * Implements hook_views_api().
  */
@@ -732,9 +769,8 @@ function rooms_booking_views_api() {
   );
 }
 
-
 /**
- * Implement hook_theme().
+ * Implements hook_theme().
  */
 function rooms_booking_theme() {
   return array(
@@ -753,7 +789,6 @@ function rooms_booking_theme() {
   );
 }
 
-
 /**
  * Implements hook_menu_local_tasks_alter().
  */
@@ -769,7 +804,6 @@ function rooms_booking_menu_local_tasks_alter(&$data, $router_item, $root_path) 
     }
   }
 }
-
 
 function rooms_booking_get_client_profiles($string = '') {
   $matches = array();
@@ -839,7 +873,6 @@ function rooms_booking_get_room_types($string = '') {
   drupal_json_output($matches);
 }
 
-
 /**
  * The class used for room entities
  */
@@ -865,7 +898,6 @@ class RoomsBooking extends Entity {
 
 }
 
-
 /**
  * The class used for room type entities
  */
@@ -880,15 +912,10 @@ class RoomsBookingType extends Entity {
 
 }
 
-
 /**
  * The Controller for RoomsBooking entities
  */
 class RoomsBookingController extends EntityAPIController {
-
-  public function __construct($entityType) {
-    parent::__construct($entityType);
-  }
 
   /**
    * Create a booking - we first set up the values that are specific
@@ -922,25 +949,27 @@ class RoomsBookingController extends EntityAPIController {
 
   public function save($entity) {
     $entity->original = entity_load_unchanged($this->entityType, $entity->{$this->idKey});
+    $corrected_end_date = new DateTime($entity->end_date);
+    $corrected_end_date->sub(new DateInterval('P1D'));
 
-    // We are going to be updating the event - so the first step is to remove the old event.
-    if ((!isset($entity->is_new)) && ($entity->unit_id != 0) && ($entity->original->start_date != '') && ($entity->original->end_date != '')) {
+    // We are going to be updating the event - so the first step is to remove the old event unless this
+    // is a booking we are deleting - in which case we have already removed the event
+    if ((!isset($entity->is_new)) && ($entity->unit_id != 0) && ($entity->original->start_date != '') &&
+      ($entity->original->end_date != '') && ($entity->type != ROOMS_BOOKING_DELETED)) {
       // Create a calendar
       $uc = new UnitCalendar($entity->original->unit_id);
       $event_id = rooms_availability_assign_id($entity->booking_id, $entity->booking_status);
       // Create an event representing the event to remove
-      $be = new BookingEvent($entity->original->unit_id, $event_id, new DateTime($entity->original->start_date), new DateTime($entity->original->end_date));
+      $be = new BookingEvent($entity->original->unit_id, $event_id, new DateTime($entity->original->start_date), $corrected_end_date);
       $uc->removeEvents(array($be));
     }
 
     parent::save($entity);
 
-    // We have a unit defined so lets block availability there
-    if ($entity->unit_id != 0) {
+    // We have a unit defined so lets block availability there unless its a booking that is to be deleted
+    if (($entity->unit_id != 0) && ($entity->type != ROOMS_BOOKING_DELETED)) {
       // Set the event_id
       $event_id = rooms_availability_assign_id($entity->booking_id, $entity->booking_status);
-      $corrected_end_date = new DateTime($entity->end_date);
-      $corrected_end_date->sub(new DateInterval('P1D'));
       // Create an event
       $be = new BookingEvent($entity->unit_id, $event_id, new DateTime($entity->start_date), $corrected_end_date);
 
@@ -965,16 +994,12 @@ class RoomsBookingController extends EntityAPIController {
 
 }
 
-
 /**
  * The Controller for Booking Type entities
  */
 class RoomsBookingTypeController extends EntityAPIControllerExportable {
-  public function __construct($entityType) {
-    parent::__construct($entityType);
-  }
 
-   /**
+  /**
    * Create a booking type - we first set up the values that are specific
    * to our booking type schema but then also go through the EntityAPIController
    * function.

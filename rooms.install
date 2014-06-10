@@ -1,0 +1,70 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the rooms module.
+ */
+/**
+ * Implements hook_field_schema().
+ */
+function rooms_field_schema($field) {
+  if ($field['type'] == 'rooms_options') {
+    return array(
+      'columns' => array(
+        'name' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ),
+        'quantity' => array(
+          'type' => 'int',
+          'not null' => FALSE,
+        ),
+        'operation' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => FALSE,
+        ),
+        'value' => array(
+          'type' => 'int',
+          'not null' => FALSE,
+        ),
+      ),
+    );
+  }
+}
+
+/**
+ * Utility function: rename a set of permissions.
+ */
+function rooms_update_rename_permissions($map) {
+  // Easy part: rename the permissions in {role_permission}.
+  foreach ($map as $old_name => $new_name) {
+    db_update('role_permission')
+      ->fields(array('permission' => $new_name))
+      ->condition('permission', $old_name)
+      ->execute();
+  }
+
+  // Trickier: rename the permission for the in-database Views.
+  foreach (views_get_all_views() as $view) {
+    if ($view->type == t('Default')) {
+      continue;
+    }
+
+    $save_view = FALSE;
+    foreach ($view->display as $display_name => $display) {
+      if (!empty($display->display_options['access']['type']) && $display->display_options['access']['type'] == 'perm') {
+        $permission_name = $display->display_options['access']['perm'];
+        if (isset($map[$permission_name])) {
+          $display->display_options['access']['perm'] = $map[$permission_name];
+          $save_view = TRUE;
+        }
+      }
+    }
+
+    if ($save_view) {
+      $view->save();
+    }
+  }
+}

@@ -1,0 +1,9 @@
+.field-widget-rooms-options-combined .field-multiple-table .form-item {
+  float: left;
+  margin-right: 20px;
+}
+
+.field-widget-rooms-options-combined .rooms-option--remove-button {
+  clear: both;
+  float: right;
+}

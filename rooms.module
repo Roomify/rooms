@@ -6,17 +6,43 @@
  * by all Rooms modules
  */
 
-
 define('ROOMS_CHILDREN_FEATURES', 'children_features');
 
 define('ROOMS_ADD', 'add');
+define('ROOMS_ADD_DAILY', 'add-daily');
 define('ROOMS_SUB', 'sub');
+define('ROOMS_SUB_DAILY', 'sub-daily');
 define('ROOMS_REPLACE', 'replace');
 define('ROOMS_INCREASE', 'increase');
 define('ROOMS_DECREASE', 'decrease');
 define('ROOMS_PRICE_SINGLE_OCCUPANCY', 'single_occupancy');
 define('ROOMS_DYNAMIC_MODIFIER', 'dynamic_modifier');
 
+define('ROOMS_ACCESS_ALLOW', 'allow');
+define('ROOMS_ACCESS_DENY', 'deny');
+define('ROOMS_ACCESS_IGNORE', NULL);
+
+define('ROOMS_THIS_PAGE', 'this');
+define('ROOMS_ALL_PAGES', 'all');
+define('ROOMS_NONE', 'none');
+
+define ('ROOMS_SIZE_FAILURE', 0);
+define ('ROOMS_AVAILABILITY_FAILURE', 1);
+define ('ROOMS_NO_ROOMS', 2);
+define ('ROOMS_PER_TYPE', 'rooms_per_type');
+define ('ROOMS_INDIVIDUAL', 'rooms_individual');
+define ('ROOMS_ENQ_CHECKOUT', 'rooms_enq_checkout');
+define ('ROOMS_COMMERCE_CHECKOUT', 'rooms_commerce_checkout');
+
+define ('ROOMS_DISPLAY_CHILDREN', 1);
+define ('ROOMS_DISPLAY_CHILDREN_NO', 0);
+
+define ('FULL_PAYMENT', 10);
+define ('PERCENT_PAYMENT', 11);
+define ('FIRST_NIGHT_PAYMENT', 12);
+
+define ('ROOMS_DISPLAY_TYPE_SELECTOR', 1);
+define ('ROOMS_DISPLAY_TYPE_SELECTOR_NO', 0);
 
 /**
  * Implements hook_permission().
@@ -34,7 +60,437 @@ function rooms_permission() {
 }
 
 /**
- * implements hook_field_info().
+ * Implements hook_libraries_info()
+ */
+function rooms_libraries_info() {
+  $libraries['rooms_fullcalendar'] = array(
+    'name' => 'Full Calendar',
+    'vendor url' => 'http://arshaw.com/fullcalendar/',
+    'download url' => 'http://www.drupalrooms.com/sites/default/files/fullcalendar-1.5.4.zip',
+    'version arguments' => array(
+      'file' => 'fullcalendar/fullcalendar.js',
+       //1.5.4
+      'pattern' => '/v(\d+\.\d+\.\d)/',
+      'lines' => 3,
+    ),
+    'path' => 'fullcalendar',
+    'files' => array(
+      'js' => array(
+        'fullcalendar.js',
+        'gcal.js',
+      ),
+      'css' => array(
+        'fullcalendar.css',
+      ),
+    ),
+  );
+  return $libraries;
+}
+
+/**
+ * Check if the FullCalendar Library is loaded
+ *
+ * @return bool
+ *   A boolean indicating the FullCalendar status.
+ */
+function rooms_fullcalendar_loaded() {
+  if (($library = libraries_load('rooms_fullcalendar')) && !empty($library['loaded'])) {
+    return TRUE;
+  }
+  else {
+    // Alert the authorized user/administrator to the abscence of the library.
+    drupal_set_message(t('The FullCalendar Library could not be found.
+                          Please check the installation instructions and the <a href="@status">Status Report</a>.',
+      array('@status' => url('admin/reports/status'))), 'warning');
+  }
+}
+
+/**
+ * Implements hook_requirements
+ */
+function rooms_requirements($phase) {
+  $requirements = array();
+
+  switch ($phase) {
+    case 'runtime':
+      if (!rooms_fullcalendar_loaded()) {
+        $requirements['Rooms FullCalendar Library'] = array(
+          'title' => t('Rooms FullCalendar'),
+          'description' => t('Could not load the FullCalendar Library'),
+          'value' => 'FullCalendar Missing',
+          'severity' => REQUIREMENT_ERROR,
+        );
+      } else {
+        $requirements['Rooms FullCalendar Library'] = array(
+          'title' => t('Rooms FullCalendar'),
+          'description' => t('The FullCalendar Library is installed'),
+          'value' => 'FullCalendar Installed',
+          'severity' => REQUIREMENT_OK,
+        );
+      }
+  }
+
+  return $requirements;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function rooms_theme() {
+  return array(
+    'rooms_three_month_calendar' => array(
+      'template' => 'rooms_three_month_calendar',
+      'variables' => array(
+        'url' => NULL,
+        'form' => NULL,
+        'year' => NULL,
+        'month' => NULL,
+      ),
+    ),
+  );
+}
+
+/**
+ * Generic access control for Rooms entities.
+ *
+ * @param $op
+ *   The operation being performed. One of 'view', 'update', 'create' or
+ *   'delete'.
+ * @param $entity
+ *   Optionally an entity to check access for. If no entity is given, it will be
+ *   determined whether access is allowed for all entities of the given type.
+ * @param $account
+ *   The user to check for. Leave it to NULL to check for the global user.
+ * @param $entity_type
+ *   The entity type of the entity to check for.
+ *
+ * @see entity_access()
+ */
+function rooms_entity_access($op, $entity, $account, $entity_type) {
+  $rights = &drupal_static(__FUNCTION__, array());
+  global $user;
+  $account = isset($account) ? $account : $user;
+  $entity_info = entity_get_info($entity_type);
+
+  // $entity may be either an object or a entity type. Since entity types cannot be
+  // an integer, use either nid or type as the static cache id.
+  $cid = is_object($entity) ? $entity->{$entity_info['entity keys']['id']} : $entity;
+
+  // If we've already checked access for this node, user and op, return from
+  // cache.
+  if (isset($rights[$account->uid][$cid][$op])) {
+    return $rights[$account->uid][$cid][$op];
+  }
+
+  // Grant generic administrator level access.
+  if (user_access('bypass ' . $entity_type . ' entities', $account)) {
+    $rights[$account->uid][$cid][$op] = TRUE;
+    return TRUE;
+  }
+
+  if ($op == 'view') {
+    if (isset($entity)) {
+      // When trying to figure out access to an entity, query the base table using
+      // our access control tag.
+      if (!empty($entity_info['access arguments']['access tag']) && module_implements('query_' . $entity_info['access arguments']['access tag'] . '_alter')) {
+        $query = db_select($entity_info['base table']);
+        $query->addExpression('1');
+        $result = (bool) $query
+          ->addTag($entity_info['access arguments']['access tag'])
+          ->addMetaData('account', $account)
+          ->condition($entity_info['entity keys']['id'], $entity->{$entity_info['entity keys']['id']})
+          ->range(0, 1)
+          ->execute()
+          ->fetchField();
+        $rights[$account->uid][$cid][$op] = $result;
+        return $result;
+      }
+      else {
+        $rights[$account->uid][$cid][$op] = TRUE;
+        return TRUE;
+      }
+    }
+    else {
+      $access = user_access('view any ' . $entity_type . ' entity', $account);
+      $rights[$account->uid][$cid][$op] = $access;
+      return $access;
+    }
+  }
+  else {
+    // First grant access to the entity for the specified operation if no other
+    // module denies it and at least one other module says to grant access.
+    $access_results = module_invoke_all('rooms_entity_access', $op, $entity, $account, $entity_type);
+
+    if (in_array(FALSE, $access_results, TRUE)) {
+      $rights[$account->uid][$cid][$op] = FALSE;
+      return FALSE;
+    }
+    elseif (in_array(TRUE, $access_results, TRUE)) {
+      $rights[$account->uid][$cid][$op] = TRUE;
+      return TRUE;
+    }
+
+    // Grant access based on entity type and bundle specific permissions with
+    // special handling for the create operation since the entity passed in will
+    // be initialized without ownership.
+    if ($op == 'create') {
+      // Assuming an entity was passed in and we know its bundle key, perform
+      // the entity type and bundle-level access checks.
+      if (isset($entity) && !empty($entity_info['entity keys']['bundle'])) {
+        $access = user_access('create ' . $entity_type . ' entities', $account) || user_access('create ' . $entity_type . ' entities of bundle ' . $entity->{$entity_info['entity keys']['bundle']}, $account);
+        $rights[$account->uid][$cid][$op] = $access;
+        return $access;
+      }
+      else {
+        // Otherwise perform an entity type-level access check.
+        $access =  user_access('create ' . $entity_type . ' entities', $account);
+        $rights[$account->uid][$cid][$op] = $access;
+        return $access;
+      }
+    }
+    else {
+      // Finally perform checks for the rest of operations. Begin by
+      // extracting the bundle name from the entity if available.
+      $bundle_name = '';
+
+      if (isset($entity) && !empty($entity_info['entity keys']['bundle'])) {
+        $bundle_name = $entity->{$entity_info['entity keys']['bundle']};
+      }
+
+      // For the delete and delete operations, first perform the entity type and
+      // bundle-level access check for any entity.
+      if (user_access($op . ' any ' . $entity_type . ' entity', $account) ||
+        user_access($op . ' any ' . $entity_type . ' entity of bundle ' . $bundle_name, $account)) {
+        $rights[$account->uid][$cid][$op] = TRUE;
+        return TRUE;
+      }
+
+      // Then check an authenticated user's access to delete his own entities.
+      if ($account->uid && !empty($entity_info['access arguments']['user key']) && isset($entity->{$entity_info['access arguments']['user key']}) && $entity->{$entity_info['access arguments']['user key']} == $account->uid) {
+        if (user_access($op . ' own ' . $entity_type . ' entities', $account) ||
+          user_access($op . ' own ' . $entity_type . ' entities of bundle ' . $bundle_name, $account)) {
+          $rights[$account->uid][$cid][$op] = TRUE;
+          return TRUE;
+        }
+      }
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Return permission names for a given entity type.
+ */
+function rooms_entity_access_permissions($entity_type) {
+  $entity_info = entity_get_info($entity_type);
+  $labels = $entity_info['permission labels'];
+
+  $permissions = array();
+
+  // General 'bypass' permission.
+  $permissions['bypass ' . $entity_type . ' entities access'] = array(
+    'title' => t('Bypass access to @entity_type', array('@entity_type' => $labels['plural'])),
+    'description' => t('Allows users to perform any action on @entity_type.', array('@entity_type' => $labels['plural'])),
+    'restrict access' => TRUE,
+  );
+
+  // General 'administer' permission.
+  $permissions['administer ' . $entity_type . ' entities'] = array(
+    'title' => t('Administer @entity_type', array('@entity_type' => $labels['plural'])),
+    'description' => t('Allows users to perform administrative tasks on @entity_type.', array('@entity_type' => $labels['plural'])),
+    'restrict access' => TRUE,
+  );
+
+  // Generic create and edit permissions.
+  $permissions['create ' . $entity_type . ' entities'] = array(
+    'title' => t('Create @entity_type of any type', array('@entity_type' => $labels['plural'])),
+  );
+  if (!empty($entity_info['access arguments']['user key'])) {
+    $permissions['view own ' . $entity_type . ' entities'] = array(
+      'title' => t('View own @entity_type of any type', array('@entity_type' => $labels['plural'])),
+    );
+  }
+  $permissions['view any ' . $entity_type . ' entity'] = array(
+    'title' => t('View any @entity_type of any type', array('@entity_type' => $labels['singular'])),
+    'restrict access' => TRUE,
+  );
+  if (!empty($entity_info['access arguments']['user key'])) {
+    $permissions['update own ' . $entity_type . ' entities'] = array(
+      'title' => t('Edit own @entity_type of any type', array('@entity_type' => $labels['plural'])),
+    );
+  }
+  $permissions['update any ' . $entity_type . ' entity'] = array(
+    'title' => t('Edit any @entity_type of any type', array('@entity_type' => $labels['singular'])),
+    'restrict access' => TRUE,
+  );
+  if (!empty($entity_info['access arguments']['user key'])) {
+    $permissions['delete own ' . $entity_type . ' entities'] = array(
+      'title' => t('Delete own @entity_type of any type', array('@entity_type' => $labels['plural'])),
+    );
+  }
+  $permissions['delete any ' . $entity_type . ' entity'] = array(
+    'title' => t('Delete any @entity_type of any type', array('@entity_type' => $labels['singular'])),
+    'restrict access' => TRUE,
+  );
+
+  // Per-bundle create and edit permissions.
+  if (!empty($entity_info['entity keys']['bundle'])) {
+    foreach ($entity_info['bundles'] as $bundle_name => $bundle_info) {
+      $permissions['create ' . $entity_type . ' entities of bundle ' . $bundle_name] = array(
+        'title' => t('Create %bundle @entity_type', array('@entity_type' => $labels['plural'], '%bundle' => $bundle_info['label'])),
+      );
+      if (!empty($entity_info['access arguments']['user key'])) {
+        $permissions['view own ' . $entity_type . ' entities of bundle ' . $bundle_name] = array(
+          'title' => t('View own %bundle @entity_type', array('@entity_type' => $labels['plural'], '%bundle' => $bundle_info['label'])),
+        );
+      }
+      $permissions['view any ' . $entity_type . ' entity of bundle ' . $bundle_name] = array(
+        'title' => t('View any %bundle @entity_type', array('@entity_type' => $labels['singular'], '%bundle' => $bundle_info['label'])),
+        'restrict access' => TRUE,
+      );
+      if (!empty($entity_info['access arguments']['user key'])) {
+        $permissions['update own ' . $entity_type . ' entities of bundle ' . $bundle_name] = array(
+          'title' => t('Edit own %bundle @entity_type', array('@entity_type' => $labels['plural'], '%bundle' => $bundle_info['label'])),
+        );
+      }
+      $permissions['update any ' . $entity_type . ' entity of bundle ' . $bundle_name] = array(
+        'title' => t('Edit any %bundle @entity_type', array('@entity_type' => $labels['singular'], '%bundle' => $bundle_info['label'])),
+        'restrict access' => TRUE,
+      );
+      if (!empty($entity_info['access arguments']['user key'])) {
+        $permissions['delete own ' . $entity_type . ' entities of bundle ' . $bundle_name] = array(
+          'title' => t('Delete own %bundle @entity_type', array('@entity_type' => $labels['plural'], '%bundle' => $bundle_info['label'])),
+        );
+      }
+      $permissions['delete any ' . $entity_type . ' entity of bundle ' . $bundle_name] = array(
+        'title' => t('Delete any %bundle @entity_type', array('@entity_type' => $labels['singular'], '%bundle' => $bundle_info['label'])),
+        'restrict access' => TRUE,
+      );
+    }
+  }
+
+  return $permissions;
+}
+
+/**
+ * Generic implementation of hook_query_alter() for Rooms entities.
+ */
+function rooms_entity_access_query_alter($query, $entity_type, $base_table = NULL, $account = NULL, $op = 'view') {
+  global $user;
+
+  // Read the account from the query if available or default to the current user.
+  if (!isset($account) && !$account = $query->getMetaData('account')) {
+    $account = $user;
+  }
+
+  // Do not apply any conditions for users with administrative view permissions.
+  if (user_access('bypass ' . $entity_type . ' access', $account)
+    || user_access($op . ' any ' . $entity_type . ' entity', $account)) {
+    return;
+  }
+
+  // Get the entity type info array for the current access check and prepare a
+  // conditions object.
+  $entity_info = entity_get_info($entity_type);
+
+  // If a base table wasn't specified, attempt to read it from the query if
+  // available, look for a table in the query's tables array that matches the
+  // base table of the given entity type, or just default to the first table.
+  if (!isset($base_table) && !$base_table = $query->getMetaData('base_table')) {
+    // Initialize the base table to the first table in the array. If a table can
+    // not be found that matches the entity type's base table, this will result
+    // in an invalid query if the first table is not the table we expect,
+    // forcing the caller to actually properly pass a base table in that case.
+    $tables = $query->getTables();
+    reset($tables);
+    $base_table = key($tables);
+
+    foreach ($tables as $table_info) {
+      if (!($table_info instanceof SelectQueryInterface)) {
+        // If this table matches the entity type's base table, use its table
+        // alias as the base table for the purposes of bundle and ownership
+        // access checks.
+        if ($table_info['table'] == $entity_info['base table']) {
+          $base_table = $table_info['alias'];
+        }
+      }
+    }
+  }
+
+  // Prepare an OR container for conditions. Conditions will be added that seek
+  // to grant access, meaning any particular type of permission check may grant
+  // access even if none of the others apply. At the end of this function, if no
+  // conditions have been added to the array, a condition will be added that
+  // always returns FALSE (1 = 0).
+  $conditions = db_or();
+
+  // Perform bundle specific permission checks for the specified entity type.
+  // In the event that the user has permission to view every bundle of the given
+  // entity type, $really_restricted will remain FALSE, indicating that it is
+  // safe to exit this function without applying any additional conditions. If
+  // the user only had such permission for a subset of the defined bundles,
+  // conditions representing those access checks would still be added.
+  $really_restricted = FALSE;
+
+  // Loop over every possible bundle for the given entity type.
+  foreach ($entity_info['bundles'] as $bundle_name => $bundle_info) {
+    // If the user has access to operation entities of the current bundle...
+    if (user_access($op  . ' any ' . $entity_type . ' entity of bundle ' . $bundle_name, $account)) {
+      // Add a condition granting access if the entity specified by the view
+      // query is of the same bundle.
+      $conditions->condition($base_table . '.' . $entity_info['entity keys']['bundle'], $bundle_name);
+    }
+    elseif ($account->uid && !empty($entity_info['access arguments']['user key']) && user_access($op  . ' own ' . $entity_type . ' entities of bundle ' . $bundle_name, $account)) {
+      // Add an AND condition group that grants access if the entity specified
+      // by the view query matches the same bundle and belongs to the user.
+      $conditions->condition(db_and()
+        ->condition($base_table . '.' . $entity_info['entity keys']['bundle'], $bundle_name)
+        ->condition($base_table . '.' . $entity_info['access arguments']['user key'], $account->uid)
+      );
+    }
+  }
+
+  // If the given entity type has a user ownership key...
+  if (!empty($entity_info['access arguments']['user key'])) {
+    // Perform 'operation own' access control for the entity in the query if the user
+    // is authenticated.
+    if ($account->uid && user_access($op  . ' own ' . $entity_type . ' entities', $account)) {
+      $conditions->condition($base_table . '.' . $entity_info['access arguments']['user key'], $account->uid);
+    }
+  }
+
+  // Prepare an array of condition alter hooks to invoke and an array of context
+  // data for the current query.
+  $hooks = array(
+    'rooms_entity_access_' . $op . '_condition_' . $entity_type,
+    'rooms_entity_access_' . $op . '_condition'
+  );
+
+  $context = array(
+    'account' => $account,
+    'entity_type' => $entity_type,
+    'base_table' => $base_table
+  );
+
+  // Allow other modules to add conditions to the array as necessary.
+  drupal_alter($hooks, $conditions, $context);
+
+  // If we have more than one condition based on the entity access permissions
+  // and any hook implementations...
+  if (count($conditions)) {
+    // Add the conditions to the query.
+    $query->condition($conditions);
+  }
+  else {
+    // Otherwise, since we don't have any possible conditions to match against,
+    // we falsify this query. View checks are access grants, not access denials.
+    $query->where('1 = 0');
+  }
+}
+
+/**
+ * Implements hook_field_info().
  */
 function rooms_field_info() {
   return array(
@@ -44,14 +500,68 @@ function rooms_field_info() {
       'settings' => array(),
       'default_widget' => 'rooms_options_combined',
       'default_formatter' => 'rooms_options_default',
+      'property_type' => 'rooms_options',
+      'property_callbacks' => array('rooms_options_property_info_callback'),
     ),
   );
 }
 
 /**
- * Implements hook_field_validate().
+ * Property callback for the Entity Metadata framework.
  */
-function rooms_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
+function rooms_options_property_info_callback(&$info, $entity_type, $field, $instance, $field_type) {
+  // Apply the default.
+  entity_metadata_field_default_property_callback($info, $entity_type, $field, $instance, $field_type);
+
+  // Finally add in instance specific property info.
+  $name = $field['field_name'];
+  $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$name];
+  $property['type'] = ($field['cardinality'] != 1) ? 'list<rooms_options>' : 'rooms_options';
+  $property['property info'] = rooms_options_data_property_info('Rooms options');
+  $property['getter callback'] = 'entity_metadata_field_verbatim_get';
+  $property['setter callback'] = 'entity_metadata_field_verbatim_set';
+}
+
+/**
+ * Defines info for the properties of the video_embed_field data structure.
+ */
+function rooms_options_data_property_info($name = NULL) {
+  // Build an array of basic property information for video_embed_field.
+  $properties = array(
+    'name' => array(
+      'label' => 'Name',
+      'type' => 'text',
+      'getter callback' => 'entity_property_verbatim_get',
+      'setter callback' => 'entity_property_verbatim_set',
+    ),
+    'quantity' => array(
+      'label' => 'Quantity',
+      'type' => 'integer',
+      'getter callback' => 'entity_property_verbatim_get',
+      'setter callback' => 'entity_property_verbatim_set',
+    ),
+    'operation' => array(
+      'label' => 'Operation',
+      'type' => 'text',
+      'getter callback' => 'entity_property_verbatim_get',
+      'setter callback' => 'entity_property_verbatim_set',
+    ),
+    'value' => array(
+      'label' => 'Value',
+      'type' => 'integer',
+      'getter callback' => 'entity_property_verbatim_get',
+      'setter callback' => 'entity_property_verbatim_set',
+    ),
+  );
+
+  // Add the default values for each of the video_embed_field properties.
+  foreach ($properties as &$value) {
+    $value += array(
+      'description' => !empty($name) ? t('!label of field %name', array('!label' => $value['label'], '%name' => $name)) : '',
+    );
+  }
+
+  return $properties;
 }
 
 /**
@@ -59,36 +569,6 @@ function rooms_field_validate($entity_type, $entity, $field, $instance, $langcod
  */
 function rooms_field_is_empty($item, $field) {
   return empty($item['name']);
-}
-
-/**
- * Implements hook_field_schema().
- */
-function rooms_field_schema($field) {
-  if ($field['type'] == 'rooms_options') {
-    return array(
-      'columns' => array(
-        'name' => array(
-          'type' => 'varchar',
-          'length' => 255,
-          'not null' => TRUE,
-        ),
-        'quantity' => array(
-          'type' => 'int',
-          'not null' => FALSE,
-        ),
-        'operation' => array(
-          'type' => 'varchar',
-          'length' => 255,
-          'not null' => FALSE,
-        ),
-        'value' => array(
-          'type' => 'int',
-          'not null' => FALSE,
-        ),
-      ),
-    );
-  }
 }
 
 /**
@@ -121,9 +601,11 @@ function rooms_field_formatter_info() {
   );
 }
 
+/**
+ * Implements hook_field_formatter_view
+ */
 function rooms_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
-  $settings = $display['settings'];
 
   switch ($display['type']) {
     case 'rooms_options_default':
@@ -150,34 +632,67 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
       '#type' => 'textfield',
       '#title' => t('Name'),
       '#default_value' => isset($items[$delta]['name']) ? $items[$delta]['name'] : NULL,
+      '#attributes' => array(
+        'class' => array('rooms-option--name')
+      ),
     );
     $element['quantity'] = array(
       '#type' => 'select',
       '#title' => t('Quantity'),
       '#options' => array('None', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'),
       '#default_value' => isset($items[$delta]['quantity']) ? $items[$delta]['quantity'] : NULL,
-      '#description' => 'How many of this option should be available',
+      '#description' => t('How many of this option should be available'),
+      '#attributes' => array(
+        'class' => array('rooms-option--quantity')
+      ),
     );
+    $price_options = rooms_price_options_options();
     $element['operation'] = array(
       '#type' => 'select',
       '#title' => t('Operation'),
-      '#options' => array(
-        ROOMS_ADD => t('Add to price'),
-        ROOMS_SUB => t('Subtract from price'),
-        ROOMS_REPLACE => t('Replace price'),
-        ROOMS_INCREASE => t('Increase price by % amount'),
-        ROOMS_DECREASE => t('Decrease price by % amount'),
-      ),
+      '#options' => $price_options,
       '#default_value' => isset($items[$delta]['operation']) ? $items[$delta]['operation'] : NULL,
+      '#attributes' => array(
+        'class' => array('rooms-option--operation')
+      ),
     );
     $element['value'] = array(
       '#type' => 'textfield',
       '#title' => t('Value'),
+      '#size' => 10,
       '#default_value' => isset($items[$delta]['value']) ? $items[$delta]['value'] : NULL,
+      '#attributes' => array(
+        'class' => array('rooms-option--value')
+      ),
     );
+
+    $element['remove'] = array(
+      '#type' => 'submit',
+      '#value' => t('Remove'),
+      '#attributes' => array(
+        'class' => array('rooms-option--remove-button'),
+      ),
+    );
+    $element['#attached']['js'] = array(drupal_get_path('module', 'rooms') . '/js/rooms_options_widget.js');
+    $element['#attached']['css'] = array(drupal_get_path('module', 'rooms') . '/css/rooms_options_widget.css');
 
     return $element;
   }
+}
+
+/**
+ * Returns the available price options for booking_unit options field.
+ */
+function rooms_price_options_options() {
+  return array(
+    ROOMS_ADD => t('Add to price'),
+    ROOMS_ADD_DAILY => t('Add to price per night'),
+    ROOMS_SUB => t('Subtract from price'),
+    ROOMS_SUB_DAILY => t('Subtract from price per night'),
+    ROOMS_REPLACE => t('Replace price'),
+    ROOMS_INCREASE => t('Increase price by % amount'),
+    ROOMS_DECREASE => t('Decrease price by % amount'),
+  );
 }
 
 /**
@@ -203,7 +718,6 @@ function rooms_end_of_month_dates($year) {
   return $end_of_month_dates;
 }
 
-
 /**
  * Utility function - we have a few forms that need a start and end date field and we need to apply
  * the same javascript to these forms in order to have a specific consistent behaviour and groups
@@ -214,7 +728,8 @@ function rooms_end_of_month_dates($year) {
  *
  * @return array The array holding the field definitions
  */
-function rooms_date_range_fields($date_range_fields = array()) {
+function rooms_date_range_fields($year = NULL, $month = NULL) {
+  $date_range_fields = array();
   $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
 
   // Create unique ids and selectors for each picker.
@@ -232,6 +747,26 @@ function rooms_date_range_fields($date_range_fields = array()) {
     // to one day in advance.
     'minDate' => '+' . variable_get('rooms_booking_start_date', 1) . 'd',
   );
+
+  if ($year && $month) {
+    // Calculate min and max dates of the specified year/month.
+    $date = new DateTime();
+    $date->setDate($year, $month, 01);
+    $min_date = $date->format($date_format);
+    $date->modify('last day of this month');
+    $max_date = $date->format($date_format);
+    $datepicker_options += array(
+      'minDate' => $min_date,
+      'maxDate' => $max_date,
+      'defaultDate' => $min_date,
+      'numberOfMonths' => 1,
+    );
+  }
+  else {
+    $datepicker_options += array(
+      'minDate' => '+' . variable_get('rooms_booking_start_date', 1) . 'd',
+    );
+  }
 
   $date_range_fields['rooms_start_date'] = array(
     '#prefix' => '<div class="form-wrapper rooms-date-range"><div class="start-date" id="' . $start_date_id . '">',
@@ -272,6 +807,8 @@ function rooms_date_range_fields($date_range_fields = array()) {
         array(
          'data' => array(
             'rooms' => array(
+              'roomsStartYear' => $year,
+              'roomsStartMonth' => $month,
               'roomsBookingStartDay' => variable_get('rooms_booking_start_date', 1),
               'roomsDateFormat' => rooms_dateFormatTojQueryUIDatePickerFormat($date_format),
 
@@ -293,7 +830,6 @@ function rooms_date_range_fields($date_range_fields = array()) {
 
   return $date_range_fields;
 }
-
 
 /**
  * Transfom from PHP conventions to jQueryUI conventions for dates
@@ -434,4 +970,188 @@ function rooms_check_dates_validity(DateTime $start_date, DateTime $end_date, $t
     }
   }
   return $errors;
+}
+
+/**
+ * Alternative numeric range generator considering users that use PHP < v5.3.6
+ * and experiment the bug: https://bugs.php.net/bug.php?id=51894
+ * @param int $start
+ * @param int $end
+ */
+function rooms_range($start, $end) {
+  if (version_compare(phpversion(), '5.3.6', '<')) {
+    $range = array();
+    for ($index = $start; $index <= $end; $index++) {
+      $range[] = $index;
+    }
+    return $range;
+  }
+  else {
+    return range($start, $end, 1);
+  }
+}
+
+/**
+ * Returns a range array keyed by value.
+ * @param int $start
+ *   First value of the sequence.
+ * @param int $end
+ *   The sequence is ended upon reaching the end value.
+ * @return array
+ *   An array of elements from start to end, inclusive keyed by values.
+ */
+function rooms_assoc_range($start, $end) {
+  return drupal_map_assoc(rooms_range($start, $end));
+}
+
+/**
+ * Helper validate function to ensure that at least one room is selected.
+ */
+function _rooms_select_rooms_validation($form_state) {
+  $select_rooms = FALSE;
+  if ($form_state['values']['select-all'] == ROOMS_ALL_PAGES || $form_state['values']['select-all'] == ROOMS_THIS_PAGE) {
+    $select_rooms = TRUE;
+  }
+  else {
+    foreach ($form_state['values'] as $key => $value) {
+      if (strpos($key, 'rooms-') === 0 && $value == '1') {
+        $select_rooms = TRUE;
+      }
+    }
+  }
+
+  if (!$select_rooms) {
+    form_set_error('select-all', t('You have to select at least one unit to update.'));
+  }
+}
+
+function rooms_filter_month_form($form, &$form_state, $month, $year) {
+
+  $form['#attributes']['class'][] = 'rooms-management-form rooms-filter-month-form';
+
+  $month_options = array(
+    1 => t('January'),
+    2 => t('February'),
+    3 => t('March'),
+    4 => t('April'),
+    5 => t('May'),
+    6 => t('June'),
+    7 => t('July'),
+    8 => t('August'),
+    9 => t('September'),
+    10 => t('October'),
+    11 => t('November'),
+    12 => t('December'),
+  );
+
+  $form['rooms_availability_filter_month']['month'] = array(
+    '#title' => t('Month'),
+    '#type' => 'select',
+    '#options' => $month_options,
+    '#default_value' => $month,
+  );
+
+  $year_options = range(date('Y', time()) - 2, date('Y', time()) + 5);
+
+  $form['rooms_availability_filter_month']['year'] = array(
+    '#title' => t('Year'),
+    '#type' => 'select',
+    '#options' => $year_options,
+    '#default_value' => $year - date('Y', time()) + 2,
+  );
+
+  $query = db_select('rooms_unit_type', 'n')->fields('n', array('type', 'label'));
+  $unit_type = $query->execute()->fetchAll();
+
+  $type_options['all'] = t('All types');
+  foreach ($unit_type as $unit) {
+    $type_options[$unit->type] = $unit->label;
+  }
+
+  $form['rooms_availability_filter_month']['type'] = array(
+    '#title' => t('Type'),
+    '#type' => 'select',
+    '#options' => $type_options,
+    '#default_value' => (arg(6) == '') ? 'all' : arg(6),
+  );
+
+  $form['rooms_availability_filter_month']['actions'] = array(
+    '#type' => 'container',
+    '#attributes' => array('class' => array('form-actions')),
+    '#weight' => 400,
+  );
+
+  $form['rooms_availability_filter_month']['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Filter'),
+  );
+
+  hide($form['rooms_availability_filter_month']['actions']['submit']);
+
+  return $form;
+}
+
+function rooms_filter_month_form_submit(&$form, &$form_state) {
+  $year = $form_state['values']['year'] + date('Y', time()) - 2;
+  $month = $form_state['values']['month'];
+  $type = $form_state['values']['type'];
+
+  $address = 'admin/rooms/units/' . arg(3) . '/' . $year . '/' . $month;
+  if ($type != 'all') {
+    $address .= '/' . $type;
+  }
+
+  if (arg(7) != '') {
+    if ($type == 'all') $address .= '/all/' . arg(7);
+    else $address .= $type . arg(7);
+  }
+
+  $form_state['redirect'] = $address;
+}
+
+/**
+ * Default implementation of hook_preprocess_rooms_three_month_calendar().
+ *
+ * Here we setup the three-month calendar based on a specified year,
+ * month, and url.
+ */
+function rooms_preprocess_rooms_three_month_calendar(&$vars) {
+
+  // Load FullCalendar
+  rooms_fullcalendar_loaded();
+
+  // Add css styles for three-month-calendar.
+  drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/rooms_three_month_calendar.css');
+  drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/fullcalendar.theme.css');
+
+  // If dates are not provided then use the current date.
+  $year = (empty($vars['year'])) ? date('Y', time()) : check_plain($vars['year']);
+  $month = (empty($vars['month'])) ? date('n', time()) : check_plain($vars['month']);
+
+  // Inject settings in javascript that will be used to setup the three months
+  // display.
+  drupal_add_js(array('roomsCalendar' => array('currentMonth' => intval($month))), 'setting');
+  drupal_add_js(array('roomsCalendar' => array('currentYear' => intval($year))), 'setting');
+  drupal_add_js(array('roomsCalendar' => array('firstDay' => intval(variable_get('date_first_day', 0)))), 'setting');
+
+  // Calculate forward and back dates for the 3-month view calendar.
+  $date1 = new DateTime("$year-$month-1");
+  $date2 = new DateTime("$year-$month-1");
+  $date_current = new DateTime("now");
+
+  $forward = $date1->add(new DateInterval('P3M'));
+  $backward = $date2->sub(new DateInterval('P3M'));
+
+  // Create the links based off the url variable passed in.
+  if (!isset($vars['url'])) {
+    $vars['url'] = '';
+  }
+
+  $forward_path = $vars['url'] . '/' . $forward->format('Y') . '/' . $forward->format('n');
+  $backward_path = $vars['url'] . '/' . $backward->format('Y') . '/' . $backward->format('n');
+  $current_path = $vars['url'] . '/' . $date_current->format('Y') . '/' . $date_current->format('n');
+
+  $vars['forward_link'] = l(t('Forward'), $forward_path);
+  $vars['backward_link'] = l(t('Back'), $backward_path);
+  $vars['current_link'] = l(t('Current'), $current_path);
 }

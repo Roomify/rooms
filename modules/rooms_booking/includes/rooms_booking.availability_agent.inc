@@ -4,7 +4,7 @@
  * An AvailabilityAgent provides access to the availability functionality of Rooms and
  * lets you query for availability, get pricing information and create products that can be bought.
  *
- * The Agent is essentially a factory cretaing the appropriate responses for us as needed based on the
+ * The Agent is essentially a factory creating the appropriate responses for us as needed based on the
  * requests and the current status of our bookable units.
  *
  * An Agent reasons over a single set of information regarding a booking which are exposed as public
@@ -74,33 +74,43 @@ class AvailabilityAgent {
     $rooms_results_keys = array_keys($rooms_results);
     $el_key = array_shift($rooms_results_keys);
 
-    if (!isset($rooms_results[$el_key]['rooms_unit'])) return 0;
+    if (!isset($rooms_results[$el_key])) {
+      return 0;
+    }
 
-    $candidate_keys = array_keys($rooms_results[$el_key]['rooms_unit']);
-    if (empty($candidate_keys)) return 0;
+    $candidate_keys = array_keys($rooms_results[$el_key]);
+    if (empty($candidate_keys)) {
+      return 0;
+    }
 
     foreach ($candidate_keys as $c_key) {
       $tmp_rooms_results = $rooms_results;
 
       foreach ($tmp_rooms_results as $key => $value) {
-        if (isset($tmp_rooms_results[$key]['rooms_unit'][$c_key]) && $key != $el_key) {
-          unset($tmp_rooms_results[$key]['rooms_unit'][$c_key]);
+        if (isset($tmp_rooms_results[$key][$c_key]) && $key != $el_key) {
+          unset($tmp_rooms_results[$key][$c_key]);
         }
       }
 
-      // Combination fails, roolback and try a new combination
-      if (empty($tmp_rooms_results[$el_key]['rooms_unit'])) return 0;
+      // Combination fails, rollback and try a new combination
+      if (empty($tmp_rooms_results[$el_key])) {
+        return 0;
+      }
 
-      $this->valid_rooms_combination[] = $tmp_rooms_results[$el_key]['rooms_unit'][$c_key];
+      $this->valid_rooms_combination[] = $tmp_rooms_results[$el_key][$c_key];
 
       unset($tmp_rooms_results[$el_key]);
 
-      if (empty($tmp_rooms_results)) return 1;
+      if (empty($tmp_rooms_results)) {
+        return 1;
+      }
 
       // Call recursively this function
       $return = $this->searchForAvailability($tmp_rooms_results);
 
-      if ($return == 1) return $return;
+      if ($return == 1) {
+        return $return;
+      }
     }
   }
 
@@ -149,10 +159,10 @@ class AvailabilityAgent {
 
         // If a valid combination exist for booking request
         if ($this->searchForAvailability($this->rooms_results) == 1) {
-          $results = array('rooms_unit' => array());
+          $results = array();
 
           foreach ($this->rooms_results as $result) {
-            $results['rooms_unit'] = $results['rooms_unit'] + $result['rooms_unit'];
+            $results = $results + $result;
           }
         }
         else {
@@ -188,7 +198,7 @@ class AvailabilityAgent {
     // Load the unit
     $unit = rooms_unit_load($unit_id);
 
-    $units = $this->getUnitsByPriceType(array('rooms_unit' => array($unit_id => $unit)), $price_modifiers);
+    $units = $this->getUnitsByPriceType(array($unit_id => $unit), $price_modifiers);
     $units = array_pop($units);
     $units = array_pop($units);
 
@@ -236,7 +246,7 @@ class AvailabilityAgent {
     $units = array();
 
     if (count($results) > 0) {
-      foreach ($results['rooms_unit'] as $unit) {
+      foreach ($results as $unit) {
         // Get the actual entity
         $unit = rooms_unit_load($unit->unit_id);
 
@@ -285,15 +295,24 @@ class AvailabilityAgent {
       }
     }
 
-    $units = $this->orderbyOptionals($units);
+    // We order units by optional items to ensure that units with options are the
+    // first to be picked by a user.
+    $units = $this->orderByOptionals($units);
 
     return $units;
   }
 
-  function orderbyOptionals($units) {
+
+  /**
+   * Ordering units by the optional items that are available.
+   *
+   * @param $units
+   * @return mixed
+   */
+  function orderByOptionals($units) {
     foreach ($units as $type => $v) {
       foreach ($v as $price => $value) {
-        uasort($value, 'comparebyOptionals');
+        uasort($value, array(get_class($this), 'compareByOptionals'));
         $units[$type][$price] = $value;
       }
     }
@@ -301,20 +320,16 @@ class AvailabilityAgent {
     return $units;
   }
 
-}
+  protected static function compareByOptionals($a, $b) {
+    $a_items = rooms_unit_get_unit_options($a['unit']);
+    $b_items = rooms_unit_get_unit_options($b['unit']);
 
-function comparebyOptionals($a, $b) {
-  if (!isset($b['unit']->rooms_booking_unit_options[LANGUAGE_NONE]) && !isset($a['unit']->rooms_booking_unit_options[LANGUAGE_NONE])) {
-    return 0;
+    if (count($a_items) == count($b_items)) {
+      return $a['unit']->unit_id < $b['unit']->unit_id ? 1 : -1;
+    }
+    else {
+      return count($a_items) < count($b_items) ? 1 : -1;
+    }
   }
 
-  if (!isset($b['unit']->rooms_booking_unit_options[LANGUAGE_NONE]) && isset($a['unit']->rooms_booking_unit_options[LANGUAGE_NONE])) {
-    return -1;
-  }
-
-  if (isset($b['unit']->rooms_booking_unit_options[LANGUAGE_NONE]) && !isset($a['unit']->rooms_booking_unit_options[LANGUAGE_NONE])) {
-    return 1;
-  }
-
-  return count($a['unit']->rooms_booking_unit_options[LANGUAGE_NONE]) < count($a['unit']->rooms_booking_unit_options[LANGUAGE_NONE]) ? -1 : 1;
 }

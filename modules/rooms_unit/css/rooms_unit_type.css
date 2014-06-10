@@ -1,0 +1,52 @@
+/* Bookable unit type edit form */
+.rooms-unit-type-edit-form .form-wrapper {
+  max-width: 400px;
+  margin: 0 20px 0.4em 0;
+}
+.rooms-unit-type-edit-form .form-item {
+  margin-bottom: 1em;
+}
+.rooms-unit-type-edit-form .form-item label,
+.rooms-unit-type-edit-form .form-wrapper legend {
+  margin-bottom: 0.2em;
+}
+.rooms-unit-type-edit-form .form-item label,
+.rooms-unit-type-edit-form .form-wrapper .fieldset-legend {
+  font-size: 1em;
+  font-weight: bold;
+}
+.rooms-unit-type-edit-form .form-checkbox + label {
+  font-weight: normal;
+}
+.rooms-unit-type-edit-form .form-checkbox:checked + label {
+  font-weight: bold;
+}
+.rooms-unit-type-edit-form .field-widget-rooms-options-combined {
+  max-width: inherit;
+  margin-right: 0;
+  clear: both;
+}
+.rooms-unit-type-edit-form .field-widget-rooms-availability-constraints-range {
+  max-width: inherit;
+  margin-right: 0;
+  clear: both;
+}
+.rooms-unit-type-edit-form .form-actions {
+  clear: both;
+}
+
+.rooms-unit-type-edit-form .form-item-name,
+.rooms-unit-type-edit-form .form-item-data-base-price,
+.rooms-unit-type-edit-form #edit-guest-capacity,
+.rooms-unit-type-edit-form #edit-child-capacity,
+.rooms-unit-type-edit-form #edit-data-bed-arrangement {
+  float: left;
+  width: 15em;
+  margin-right: 20px;
+}
+.rooms-unit-type-edit-form #edit-reference,
+.rooms-unit-type-edit-form #edit-unit-defaults {
+  float: none;
+  width: 100%;
+  max-width: 100%;
+}

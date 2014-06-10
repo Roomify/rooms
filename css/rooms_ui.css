@@ -73,6 +73,12 @@ tbody {
   padding: 15px 0;
 }
 
+/* Fix for floated fieldsets around vertical tabs */
+.rooms-management-form .vertical-tabs,
+.rooms-management-form .field-group-tab-wrapper {
+  clear: both;
+}
+
 /* Single-Row Month */
 .rooms-month-manager td {
   margin: 0;

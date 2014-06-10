@@ -1,0 +1,10 @@
+name = Rooms availability constraints
+description = Manages availability constraints for Rooms.
+core = 7.x
+
+package = Rooms
+
+dependencies[] = rooms_availability
+dependencies[] = rooms_booking
+
+files[] = includes/rooms_availability_constraints.availability_agent_range_filter.inc

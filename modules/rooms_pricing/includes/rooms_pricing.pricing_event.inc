@@ -1,28 +1,35 @@
 <?php
 
-/**
- * @file
- * A pricing event represent a price over a set of continious dates. As soon as the
- * price changes that is a different pricing event
- */
+class PricingEvent extends RoomsEvent implements PricingEventInterface {
 
-class PricingEvent {
-
-  // The room the event is relevant to
-  public $unit_id;
-
-  // The start date for the event
-  public $start_date;
-
-  // The end date for the event
-  public $end_date;
-
-  // The amount for this period
+  /**
+   * The amount for this period
+   *
+   * @var int
+   */
   public $amount;
 
-  // The operation to perform
+  /**
+   * The operation to perform
+   *
+   * @var string
+   */
   public $operation;
 
+  /**
+   * Constructs a BookingPrice item.
+   *
+   * @param int $unit_id
+   *  The unit ID,
+   * @param int $amount
+   *   The booking amount.
+   * @param DateTime $start_date
+   *   The start date of the event.
+   * @param DateTime $end_date
+   *   The start date of the event.
+   * @param string $operation
+   *
+   */
   public function __construct($unit_id, $amount, $start_date, $end_date, $operation = '') {
     $this->unit_id = $unit_id;
     $this->amount = $amount;
@@ -31,57 +38,17 @@ class PricingEvent {
     $this->operation = $operation;
   }
 
-  public function startDay($format = 'j') {
-    return $this->start_date->format($format);
-  }
-
-  public function startMonth($format = 'n') {
-    return $this->start_date->format($format);
-  }
-
-  public function startYear($format = 'Y') {
-    return $this->start_date->format($format);
-  }
-
-  public function endDay($format = 'j') {
-    return $this->end_date->format($format);
-  }
-
-  public function endMonth($format = 'n') {
-    return $this->end_date->format($format);
-  }
-
-  public function endYear($format = 'Y') {
-    return $this->end_date->format($format);
+  /**
+   * {@inheritdoc}
+   */
+  protected function createEvent(DateTime $start_date, DateTime $end_date) {
+    return new PricingEvent($this->unit_id, $this->amount, $start_date, $end_date, $this->operation);
   }
 
   /**
-   * Returns the months involved in the events
+   * {@inheritdoc}
    */
-  public function months() {
-  }
-
-  public function diff() {
-    $interval = $this->start_date->diff($this->end_date);
-    return $interval;
-  }
-
-  public function sameMonth() {
-    if (($this->startMonth() == $this->endMonth()) && ($this->startYear() == $this->endYear())) {
-      return TRUE;
-    }
-    return FALSE;
-  }
-
-  public function sameYear() {
-    if ($this->startYear() == $this->endYear()) {
-      return TRUE;
-    }
-    return FALSE;
-  }
-
-
-  public function applyOperation($amount, $operation) {
+  public function applyOperation($amount, $operation, $days) {
     switch ($operation) {
       case ROOMS_REPLACE:
         $this->amount = $amount;
@@ -89,8 +56,14 @@ class PricingEvent {
       case ROOMS_ADD:
         $this->amount = $this->amount + $amount;
         break;
+      case ROOMS_ADD_DAILY:
+        $this->amount = $this->amount + $amount * $days;
+        break;
       case ROOMS_SUB:
         $this->amount = $this->amount - $amount;
+        break;
+      case ROOMS_SUB_DAILY:
+        $this->amount = $this->amount - $amount * $days;
         break;
       case ROOMS_INCREASE:
         $this->amount = $this->amount + (($this->amount) * ($amount/100));
@@ -105,104 +78,18 @@ class PricingEvent {
   }
 
   /**
-   * Takes a single event that spans several years and transforms it to
-   * yearly events
-   */
-  public function transformToYearlyEvents() {
-    // If same year return the event
-    if ($this->sameYear()) {
-      $sd = new DateTime();
-      $sd->setDate($this->startYear(), $this->startMonth(), $this->startDay());
-      $ed = new DateTime();
-      $ed->setDate($this->endYear(), $this->endMonth(), $this->endDay());
-      $be = new PricingEvent($this->unit_id, $this->amount, $sd, $ed, $this->operation);
-      return array($be);
-    }
-
-    // Else split into years
-    $events = array();
-    for ($i = $this->startYear(); $i <= $this->endYear(); $i++) {
-      $sd = new DateTime();
-      $ed = new DateTime();
-      if ($i == $this->startYear()) {
-        $sd->setDate($i, $this->startMonth(), $this->startDay());
-        $ed->setDate($i, 12, 31);
-        $events[$i] = new PricingEvent($this->unit_id, $this->amount, $sd, $ed, $this->operation);
-      }
-      elseif ($i == $this->endYear()) {
-        $sd->setDate($i, 1, 1);
-        $ed->setDate($i, $this->endMonth(), $this->endDay());
-        $events[$i] = new PricingEvent($this->unit_id, $this->amount, $sd, $ed, $this->operation);
-      }
-      else {
-        $sd->setDate($i, 1, 1);
-        $ed->setDate($i, 12, 31);
-        $events[$i] = new PricingEvent($this->unit_id, $this->amount, $sd, $ed, $this->operation);
-      }
-    }
-
-    return $events;
-  }
-
-  /**
-   * Takes a single event that spans several months and transforms it to
-   * monthly events - this assumes that the event is contained within a year
-   */
-  public function transformToMonthlyEvents() {
-    $events = array();
-    //First we need to split into events in separate years
-    if (!$this->sameYear()) {
-      return FALSE;
-    }
-    if ($this->sameMonth()) {
-      $sd = new DateTime();
-      $sd->setDate($this->startYear(), $this->startMonth(), $this->startDay());
-      $ed = new DateTime();
-      $ed->setDate($this->endYear(), $this->endMonth(), $this->endDay());
-      $be = new PricingEvent($this->unit_id, $this->amount, $sd, $ed, $this->operation);
-      return array($be);
-    }
-    $months = rooms_end_of_month_dates($this->startYear());
-
-    for ($i = $this->startMonth(); $i <= $this->endMonth(); $i++) {
-      $sd = new DateTime();
-      $ed = new DateTime();
-      if ($i == $this->startMonth()) {
-        $sd->setDate($this->startYear() , $i, $this->startDay());
-        $ed->setDate($this->startYear(), $i, $months[$i]);
-        $events[$i] = new PricingEvent($this->unit_id, $this->amount, $sd, $ed, $this->operation);
-      }
-      elseif ($i == $this->endMonth()) {
-        $sd->setDate($this->startYear(), $i, 1);
-        $ed->setDate($this->startYear(), $i, $this->endDay());
-        $events[$i] = new PricingEvent($this->unit_id, $this->amount, $sd, $ed, $this->operation);
-      }
-      else{
-        $sd->setDate($this->startYear(), $i, 1);
-        $ed->setDate($this->startYear(), $i, $months[$i]);
-        $events[$i] = new PricingEvent($this->unit_id, $this->amount, $sd, $ed, $this->operation);
-      }
-    }
-    return $events;
-  }
-
-
-  /**
-   * Return event in a format amenable to FullCalendar display or generally
-   * sensible json
+   * {@inheritdoc}
    */
   public function formatJson() {
-    //print $this->amount;
     $amount = $this->amount;
 
     $event = array(
       "id" => $amount,
-      //'title' => 'Event ID: ' . $this->amount . ' - Unit ID: ' . $this->unit_id,
       "start" => $this->startYear() . '-' . $this->startMonth('m') . '-' . $this->startDay('d'),
       "end" => $this->endYear() . '-' . $this->endMonth('m') . '-' . $this->endDay('d'),
     );
 
-    //set the color
+    // Set the color.
     if ($this->amount < 100) {
       $event['color']  = "orange";
       $event['title'] = "$this->amount";

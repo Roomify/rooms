@@ -51,8 +51,30 @@ function rooms_ui_init() {
   drupal_add_css(drupal_get_path('module', 'rooms_ui') . '/css/rooms_ui.css');
 }
 
-function rooms_booking_settings() {
-  $form = array();
+/**
+ * Main booking settings form.
+ */
+function rooms_booking_settings($form, &$form_state) {
+  // Management vertical tabs.
+  $form['rooms_settings'] = array(
+    '#type' => 'vertical_tabs',
+    '#weight' => 99,
+    '#attached' => array(
+      'css' => array(
+        array(
+          'data' => '#rooms-booking-settings .vertical-tabs .form-type-textfield input { width: auto; }',
+          'type' => 'inline',
+        )
+      ),
+    ),
+  );
+
+  $form['rooms_booking_settings'] = array(
+    '#type' => 'fieldset',
+    '#group' => 'rooms_settings',
+    '#title' => t('Rooms booking settings'),
+  );
+
   $form['rooms_booking_settings']['rooms_booking_start_date'] = array(
     '#type' => 'select',
     '#title' => t('How soon a booking can start'),

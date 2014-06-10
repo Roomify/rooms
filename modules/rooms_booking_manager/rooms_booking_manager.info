@@ -5,9 +5,7 @@ version = 1.x-dev
 
 package = Rooms
 
-files[] = rooms_booking_manager.commerce.inc
 files[] = views/rooms_booking_manager.views.inc
-files[] = test/rooms_booking_manager_test.test
 
 dependencies[] = number
 

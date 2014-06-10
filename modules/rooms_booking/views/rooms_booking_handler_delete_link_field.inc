@@ -19,7 +19,7 @@ class rooms_booking_handler_delete_link_field extends rooms_booking_handler_link
 
     //Creating a dummy room to check access against
     $dummy_booking = (object) array('type' => $type);
-    if (!rooms_booking_access('edit', $dummy_booking)) {
+    if (!rooms_booking_access('delete', $dummy_booking)) {
       return;
     }
 

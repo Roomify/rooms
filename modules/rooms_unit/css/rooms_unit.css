@@ -27,6 +27,12 @@
   clear: both;
 }
 
+.rooms-unit-edit-form .field-widget-rooms-availability-constraints-range {
+  max-width: inherit;
+  margin-right: 0;
+  clear: both;
+}
+
 .rooms-unit-edit-form .form-item-name,
 .rooms-unit-edit-form .form-item-base-price,
 .rooms-unit-edit-form #edit-guest-capacity,
@@ -37,8 +43,7 @@
   margin-right: 20px;
 }
 
-.rooms-unit-edit-form #edit-guest-capacity,
-.rooms-unit-edit-form #edit-availability {
+.rooms-unit-edit-form #edit-guest-capacity {
   clear: left;
 }
 
@@ -49,19 +54,9 @@
   text-align: right;
 }
 
-.rooms-unit-edit-form .field-type-rooms-options .field-multiple-table .form-item {
-  float: left;
-  margin-right: 20px;
-}
-
 .rooms-unit-edit-form .form-item-base-price .form-text {
   width: 6em;
   text-align: right;
-}
-
-.rooms-unit-edit-form #edit-availability {
-  width: 28em;
-  clear: both;
 }
 
 .rooms-unit-edit-form #edit-actions {

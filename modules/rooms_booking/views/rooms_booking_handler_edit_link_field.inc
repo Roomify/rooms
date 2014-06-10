@@ -19,7 +19,7 @@ class rooms_booking_handler_edit_link_field extends rooms_booking_handler_link_f
 
     //Creating a dummy booking to check access against
     $dummy_booking = (object) array('type' => $type);
-    if (!rooms_booking_access('edit', $dummy_booking)) {
+    if (!rooms_booking_access('update', $dummy_booking)) {
       return;
     }
     $text = !empty($this->options['text']) ? $this->options['text'] : t('edit');

@@ -14,10 +14,11 @@ dependencies[] = commerce_ui
 dependencies[] = commerce_customer
 dependencies[] = commerce_customer_ui
 dependencies[] = commerce_cart
+dependencies[] = commerce_cart_expiration
+dependencies[] = commerce_order
 
 files[] = rooms_booking.admin.inc
 files[] = rooms_booking_type.admin.inc
-files[] = test/rooms_booking_test.test
 files[] = includes/rooms_booking.availability_agent.inc
 files[] = includes/rooms_booking.availability_agent_filter.inc
 files[] = views/rooms_booking.views.inc

@@ -6,7 +6,9 @@ version = 1.x-dev
 package = Rooms
 
 files[] = includes/rooms_availability.booking_event.inc
+files[] = includes/rooms_availability.booking_event_interface.inc
 files[] = includes/rooms_availability.unit_calendar.inc
+files[] = includes/rooms_availability.unit_calendar_interface.inc
 
 
 dependencies[] = rooms_unit
@@ -16,5 +18,3 @@ dependencies[] = date
 dependencies[] = date_api
 dependencies[] = date_popup
 dependencies[] = ctools
-
-files[] = test/rooms_availability_test.test
