@@ -1,6 +1,6 @@
 (function ($) {
   $(document).ready(function () {
-    if ($('.booking_legend').offset() != null) {
+    if ($('.booking_legend').offset() !== null) {
       var top = $('.booking_legend').offset().top - parseFloat($('.booking_legend').css('marginTop').replace(/auto/,0));
     }
 
@@ -10,7 +10,7 @@
   });
 
   $(document).ready(function () {
-    if ($('.booking_legend').offset() != null) {
+    if ($('.booking_legend').offset() !== null) {
       var top = $('.booking_legend').offset().top - parseFloat($('.booking_legend').css('marginTop').replace(/auto/, 0));
       $(window).scroll(function (event) {
         // what the y position of the scroll is
