@@ -22,6 +22,17 @@
 .rooms-date-range .form-item {
   margin-right: 0;
 }
+.rooms-date-range .container-inline-date > .form-item {
+  margin-right: 0;
+  display: block;
+}
+.rooms-date-range .container-inline-date .form-item .form-item {
+  float: none;
+}
+.rooms-date-range .container-inline-date .form-item input {
+  margin-right: 0;
+  width: 10em;
+}
 .rooms-date-range .form-type-textfield label {
   display: none;
 }
