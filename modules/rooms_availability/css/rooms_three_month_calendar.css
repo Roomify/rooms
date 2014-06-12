@@ -2,6 +2,14 @@
   margin-bottom: 20px;
   position: relative;
 }
+.rooms-three-month-calendar ::-moz-selection {
+  color: inherit;
+  background: inherit;
+}
+.rooms-three-month-calendar ::selection {
+  color: inherit;
+  background: inherit;
+}
 .rooms-three-month-calendar .ajax-progress {
   position: absolute;
   top: 0;

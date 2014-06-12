@@ -126,6 +126,7 @@
 .fc-grid .fc-day-number {
   text-align: right;
   padding: 1px 8% 0;
+  cursor: default;
 }
 .fc-grid .fc-day-content {
   padding: 0 5% 0;
@@ -139,6 +140,11 @@
   border-left-width: 0;
 }
 
+.fc-cell-overlay {
+  background: rgb(0, 122, 255);
+  opacity: .7;
+  filter: alpha(opacity=70);
+}
 
 /* Hide plain text events when javascript is enabled */
 html.js .fullcalendar-content {

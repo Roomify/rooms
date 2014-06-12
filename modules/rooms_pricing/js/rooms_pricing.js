@@ -36,7 +36,7 @@ Drupal.behaviors.rooms_availability = {
       year3 = year2;
     }
 
-    var calendars = new Array();
+    var calendars = [];
     calendars[0] = new Array('#calendar', month1, year1);
     calendars[1] = new Array('#calendar1', month2, year2);
     calendars[2] = new Array('#calendar2', month3, year3);

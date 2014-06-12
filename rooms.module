@@ -145,6 +145,7 @@ function rooms_theme() {
         'form' => NULL,
         'year' => NULL,
         'month' => NULL,
+        'link_options' => NULL,
       ),
     ),
   );
@@ -1151,7 +1152,10 @@ function rooms_preprocess_rooms_three_month_calendar(&$vars) {
   $backward_path = $vars['url'] . '/' . $backward->format('Y') . '/' . $backward->format('n');
   $current_path = $vars['url'] . '/' . $date_current->format('Y') . '/' . $date_current->format('n');
 
-  $vars['forward_link'] = l(t('Forward'), $forward_path);
-  $vars['backward_link'] = l(t('Back'), $backward_path);
-  $vars['current_link'] = l(t('Current'), $current_path);
+  if (!is_array($vars['link_options']) || empty($vars['link_options'])) {
+    $vars['link_options'] = array();
+  }
+  $vars['forward_link'] = l(t('Forward'), $forward_path, $vars['link_options']);
+  $vars['backward_link'] = l(t('Back'), $backward_path, $vars['link_options']);
+  $vars['current_link'] = l(t('Current'), $current_path, $vars['link_options']);
 }
