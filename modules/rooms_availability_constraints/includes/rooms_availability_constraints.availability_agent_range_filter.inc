@@ -271,6 +271,9 @@ class AvailabilityAgentDurationFilter extends AvailabilityAgentCommonFilter {
    */
   protected function applyRangeFilter($entity_type, $duration_filter = self::MINIMUM_DURATION_FILTER) {
     $query = $this->durationFilter($entity_type, $duration_filter);
+
+    $query->fieldCondition('rooms_constraints_range', 'constraint_type', 'if', '!=', 'rooms_availability_constraints');
+
     $this->filterResults($entity_type, $query);
   }
 
