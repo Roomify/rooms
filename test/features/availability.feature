@@ -18,7 +18,7 @@ Scenario: Availability manager user should be able to modify the availability st
   |On Request |2            |
   |An. Booking|3            |
 
-  # Check the initial conditions.
+  # Checking the initial conditions.
   Given the cache has been cleared
   And I am logged in as a user with the "access administration pages,view any rooms_unit entity of bundle standard,administer rooms_unit availability,update availability any rooms_unit entity of bundle standard" permission
   Then the state for "Unavailable" between "2014-05-05" and "2014-07-07" should be "0"
@@ -39,7 +39,7 @@ Scenario: Availability manager user should be able to modify the availability st
   And the state for "On Request" between "2014-05-19" and "2014-05-23" should be "2"
   And the state for "An. Booking" between "2014-05-19" and "2014-05-23" should be "2"
 
-  #Check the single unit availability management page.
+  # Checking the single unit availability management page.
   Given I am managing the "Unavailable" unit availability
   Then I click "Update Unit Availability"
   And I fill in "rooms_start_date[date]" with "29/05/2014"

@@ -416,6 +416,38 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
   }
 
   /**
+   * @Given /^I add a constraint from "(?P<start>[^"]*)" to "(?P<end>[^"]*)" "(?P<constraint_type>[^"]*)" start on "(?P<start_day>[^"]*)" and the minimum is "(?P<minimum>[^"]*)" and the maximum is "(?P<maximum>[^"]*)"$/
+   */
+  public function iAddAConstraintFromToMustStartOnAndTheMinimumIsAndTheMaximumIs($start, $end, $constraint_type, $start_day, $minimum, $maximum) {
+    $this->addAvailabilityConstraint($minimum, $maximum, $constraint_type, $start_day, $start, $end);
+  }
+
+  /**
+   * @Given /^I add an always constraint where "(?P<constraint_type>[^"]*)" start on "(?P<start_day>[^"]*)" and the minimum is "(?P<minimum>[^"]*)" and the maximum is "(?P<maximum>[^"]*)"$/
+   */
+  public function iAddAnAlwaysConstraintWhereTheMinimumIsAndTheMaximumIs($minimum, $maximum, $constraint_type, $start_day) {
+    $this->addAvailabilityConstraint($minimum, $maximum, $constraint_type, $start_day);
+  }
+
+  /**
+   * @Then /^I will be able to make a booking for "(?P<unit_name>[^"]*)" unit from "(?P<start>[^"]*)" to "(?P<end>[^"]*)"$/
+   */
+  public function iWillBeAbleToMakeABookingForUnitFromTo($unit_name, $start, $end) {
+    if (!$this->findUnitAvailability($unit_name, $start, $end)) {
+      throw new RuntimeException('Unable to book unit ' . $unit_name);
+    }
+  }
+
+  /**
+   * @Then /^I won\'t be able to make a booking for "(?P<unit_name>[^"]*)" unit from "(?P<start>[^"]*)" to "(?P<end>[^"]*)"$/
+   */
+  public function iWonTBeAbleToMakeABookingForUnitFromTo($unit_name, $start, $end) {
+    if ($this->findUnitAvailability($unit_name, $start, $end)) {
+      throw new RuntimeException('Able to book unit ' . $unit_name);
+    }
+  }
+
+  /**
    * Retrieves the last booking ID.
    *
    * @return int
@@ -470,6 +502,73 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
       $delta++;
     }
     $wrapper->save();
+  }
+
+  /**
+   * Fills the constraint range field form.
+   *
+   * @param $minimum
+   * @param $maximum
+   * @param $constraint_type
+   * @param $start_day
+   * @param $start
+   * @param $end
+   */
+  protected function addAvailabilityConstraint($minimum = NULL, $maximum = NULL, $constraint_type = NULL, $start_day = NULL, $start = NULL, $end = NULL) {
+    $items = $this->getSession()->getPage()->findAll('css', 'table[id^="rooms-constraints-range-values"] tbody tr');
+    $delta = count($items) - 1;
+
+    if (!isset($start) || !isset($end)) {
+      $this->checkOption('rooms_constraints_range[und][' . $delta . '][always]');
+    }
+    else {
+      $start_date = new DateTime($start);
+      $end_date = new DateTime($end);
+      $this->fillField('rooms_constraints_range[und][' . $delta . '][start_date][date]', $start_date->format('d/m/Y'));
+      $this->fillField('rooms_constraints_range[und][' . $delta . '][end_date][date]', $end_date->format('d/m/Y'));
+    }
+    if (isset($constraint_type)){
+      $this->selectOption('rooms_constraints_range[und][' . $delta . '][constraint_type]', $constraint_type);
+    }
+    if (isset($start_day)){
+      $this->selectOption('rooms_constraints_range[und][' . $delta . '][start_day]', $start_day);
+    }
+    if (isset($minimum)){
+      $this->fillField('rooms_constraints_range[und][' . $delta . '][minimum_stay]', $minimum);
+    }
+    if (isset($maximum)){
+      $this->fillField('rooms_constraints_range[und][' . $delta . '][maximum_stay]', $maximum);
+    }
+    $this->pressButton('rooms_constraints_range_add_more');
+    $this->iWaitForAjaxToFinish();
+  }
+
+  /**
+   * @param $unit_name
+   * @param $start
+   * @param $end
+   * @return bool
+   */
+  protected function findUnitAvailability($unit_name, $start, $end) {
+    $unit_id = $this->findBookableUnitByName($unit_name);
+    $start_date = new DateTime($start);
+    $end_date = new DateTime($end);
+
+    $agent = new AvailabilityAgent($start_date, $end_date);
+    $units = $agent->checkAvailability();
+
+    if (is_array($units)) {
+      foreach ($units as $units_per_type) {
+        foreach ($units_per_type as $units) {
+          foreach ($units as $id => $unit) {
+            if ($id == $unit_id) {
+              return TRUE;
+            }
+          }
+        }
+      }
+    }
+    return FALSE;
   }
 
 }
