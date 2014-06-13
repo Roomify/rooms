@@ -1992,8 +1992,10 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
           }
         }
 
-        $booking->data['group_size'] = $line_item->rooms_booking_number_people[LANGUAGE_NONE][0]['value'];
-        $booking->data['group_size_children'] = $line_item->rooms_booking_number_people[LANGUAGE_NONE][1]['value'];
+        if (isset( $line_item->rooms_booking_number_people[LANGUAGE_NONE])) {
+          $booking->data['group_size'] = $line_item->rooms_booking_number_people[LANGUAGE_NONE][0]['value'];
+          $booking->data['group_size_children'] = $line_item->rooms_booking_number_people[LANGUAGE_NONE][1]['value'];
+        }
         if (isset($line_item->rooms_booking_children_ages[LANGUAGE_NONE])) {
           $booking->data['childrens_age'] = $line_item->rooms_booking_children_ages[LANGUAGE_NONE];
         }
@@ -2500,45 +2502,6 @@ function rooms_booking_manager_create_order($start_date, $end_date, $booking_par
   return $order;
 }
 
-/**
- * Implements hook_rules_action_info()
- *
- * Rules to set Order Status
- */
-function rooms_booking_manager_rules_action_info() {
-  $actions = array();
-
-  $actions['rooms_booking_cancel_order'] = array(
-    'label' => t('Cancel the booking related to an order'),
-    'parameter' => array(
-      'commerce_order' => array(
-        'type' => 'commerce_order',
-        'label' => t('Order from which to extract info for booking cancellation'),
-      ),
-    ),
-    'group' => t('Rooms'),
-    'callbacks' => array(
-      'execute' => 'rooms_booking_cancel_order_booking',
-    ),
-  );
-
-  $actions['rooms_booking_manager_price_apply'] = array(
-    'label' => t('Apply price to a booking line item'),
-    'parameter' => array(
-      'commerce_line_item' => array(
-        'type' => 'commerce_line_item',
-        'label' => t('Line item'),
-      ),
-    ),
-    'group' => t('Rooms'),
-    'callbacks' => array(
-      'execute' => 'rooms_booking_manager_price_apply',
-    ),
-  );
-
-  return $actions;
-}
-
 function rooms_booking_cancel_order_booking() {
 
 }
@@ -2602,28 +2565,6 @@ function rooms_booking_manager_price_apply($line_item, $name) {
       $line_item->commerce_unit_price[LANGUAGE_NONE][0]['data']['components'][$key]['price']['amount'] = $full_price / $amount * $component['price']['amount'];
     }
   }
-}
-
-/**
- * Implements hook_default_rules_configuration().
- */
-function rooms_booking_manager_default_rules_configuration() {
-  $rules = array();
-
-  $rule = rules_reaction_rule();
-  $rule->label = 'Rooms';
-  $rule->active = TRUE;
-  $rule->weight = -100;
-
-  $rule
-    ->event('commerce_product_calculate_sell_price')
-    ->action('rooms_booking_manager_price_apply', array(
-        'commerce_line_item:select' => 'commerce-line-item',
-      ));
-
-  $rules['rooms'] = $rule;
-
-  return $rules;
 }
 
 /**

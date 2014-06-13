@@ -4,6 +4,7 @@ module_load_include('inc', 'rooms_availability_constraints', 'rooms_availability
 
 define('ROOMS_AVAILABILITY_CONSTRAINT_MUST_START', 'must');
 define('ROOMS_AVAILABILITY_CONSTRAINT_IF_STARTS', 'if');
+define('ROOMS_AVAILABILITY_CONSTRAINT_NO_DAY', 'none');
 
 /**
  * Implements hook_form_FORM_ID_alter().
@@ -150,6 +151,7 @@ function rooms_availability_range_process($element, $form_state, $complete_form)
   $range = rooms_date_range_fields();
 
   $always_id = drupal_html_id('rooms-constraints-range-always');
+  $constraint_type_id =  drupal_html_id('rooms-constraints-range-type');
   $element['always'] = array(
     '#type' =>  'checkbox',
     '#title' => t('Always'),
@@ -184,10 +186,14 @@ function rooms_availability_range_process($element, $form_state, $complete_form)
   $element['constraint_type'] = array(
     '#type' => 'select',
     '#options' => array(
+      ROOMS_AVAILABILITY_CONSTRAINT_NO_DAY => t('No day of the week related constraint'),
       ROOMS_AVAILABILITY_CONSTRAINT_IF_STARTS => t('If booking starts on'),
       ROOMS_AVAILABILITY_CONSTRAINT_MUST_START => t('booking must start on'),
     ),
     '#default_value' =>  isset($element['#value']['constraint_type']) ? $element['#value']['constraint_type'] : '',
+    '#attributes' => array(
+      'id' => $constraint_type_id,
+    ),
     '#prefix' => '<div class="container-inline">',
   );
 
@@ -196,6 +202,11 @@ function rooms_availability_range_process($element, $form_state, $complete_form)
     '#options' => array(1 => t('Monday'), 2 => t('Tuesday'), 3 => t('Wednesday'), 4 => t('Thursday'), 5 => t('Friday'), 6 => t('Saturday'),7 => t('Sunday')),
     '#empty_option' => t('No constraint'),
     '#default_value' => isset($element['#value']['start_day']) ? $element['#value']['start_day'] : '',
+    '#states' => array(
+      'invisible' => array(
+        ':input[id="' . $constraint_type_id . '"]' => array('value' => ROOMS_AVAILABILITY_CONSTRAINT_NO_DAY),
+      ),
+    ),
     '#suffix' => '</div>'
   );
 
