@@ -154,7 +154,7 @@ function rooms_unit_permission() {
       'restrict access' => TRUE,
     ),
     'view own rooms_unit unpublished entities' => array(
-      'title' => t('View any unpublished bookable unit'),
+      'title' => t('View own unpublished bookable units'),
       'description' => t('Allows users to view own unpublished bookable units.'),
     ),
   );

@@ -36,7 +36,7 @@ Drupal.behaviors.rooms_availability = {
       year3 = year2;
     }
 
-    var calendars = new Array();
+    var calendars = [];
     calendars[0] = new Array('#calendar', month1, year1);
     calendars[1] = new Array('#calendar1', month2, year2);
     calendars[2] = new Array('#calendar2', month3, year3);
@@ -69,7 +69,7 @@ Drupal.behaviors.rooms_availability = {
         events: Drupal.settings.basePath + '?q=rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/availability/json/' + value[2] + '/' + phpmonth,
         eventClick: function(calEvent, jsEvent, view) {
           // Getting the Unix timestamp - JS will only give us milliseconds
-          if (calEvent.end == null) {
+          if (calEvent.end === null) {
             //We are probably dealing with a single day event
             calEvent.end = calEvent.start;
           }

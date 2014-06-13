@@ -22,5 +22,5 @@
         }).setColor(edit_field.value);
       });
     }
-  }
+  };
 })(jQuery);

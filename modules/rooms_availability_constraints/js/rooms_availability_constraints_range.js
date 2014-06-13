@@ -8,7 +8,7 @@
         $(this).parent().find('input[type=text]').val('');
         $(this).parents('tr').hide();
         e.preventDefault();
-      })
+      });
     }
   };
 })(jQuery);

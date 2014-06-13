@@ -45,7 +45,7 @@ class AvailabilityAgentDurationFilter extends AvailabilityAgentCommonFilter {
     parent::__construct($units, $parameters);
     $this->start_date = $this->parameters['start_date'];
 
-    $this->end_date = $this->parameters['end_date'];
+    $this->end_date = clone($this->parameters['end_date']);
     $this->end_date = $this->end_date->modify('+1 days');
 
     $this->interval = date_diff($this->start_date, $this->end_date);
@@ -271,7 +271,9 @@ class AvailabilityAgentDurationFilter extends AvailabilityAgentCommonFilter {
    */
   protected function applyRangeFilter($entity_type, $duration_filter = self::MINIMUM_DURATION_FILTER) {
     $query = $this->durationFilter($entity_type, $duration_filter);
-    $query->fieldCondition('rooms_constraints_range', 'start_day', 0, '<', 'rooms_availability_constraints');
+
+    $query->fieldCondition('rooms_constraints_range', 'constraint_type', 'if', '!=', 'rooms_availability_constraints');
+
     $this->filterResults($entity_type, $query);
   }
 

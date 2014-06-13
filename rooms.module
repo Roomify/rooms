@@ -145,6 +145,7 @@ function rooms_theme() {
         'form' => NULL,
         'year' => NULL,
         'month' => NULL,
+        'link_options' => NULL,
       ),
     ),
   );
@@ -500,8 +501,68 @@ function rooms_field_info() {
       'settings' => array(),
       'default_widget' => 'rooms_options_combined',
       'default_formatter' => 'rooms_options_default',
+      'property_type' => 'rooms_options',
+      'property_callbacks' => array('rooms_options_property_info_callback'),
     ),
   );
+}
+
+/**
+ * Property callback for the Entity Metadata framework.
+ */
+function rooms_options_property_info_callback(&$info, $entity_type, $field, $instance, $field_type) {
+  // Apply the default.
+  entity_metadata_field_default_property_callback($info, $entity_type, $field, $instance, $field_type);
+
+  // Finally add in instance specific property info.
+  $name = $field['field_name'];
+  $property = &$info[$entity_type]['bundles'][$instance['bundle']]['properties'][$name];
+  $property['type'] = ($field['cardinality'] != 1) ? 'list<rooms_options>' : 'rooms_options';
+  $property['property info'] = rooms_options_data_property_info('Rooms options');
+  $property['getter callback'] = 'entity_metadata_field_verbatim_get';
+  $property['setter callback'] = 'entity_metadata_field_verbatim_set';
+}
+
+/**
+ * Defines info for the properties of the video_embed_field data structure.
+ */
+function rooms_options_data_property_info($name = NULL) {
+  // Build an array of basic property information for video_embed_field.
+  $properties = array(
+    'name' => array(
+      'label' => 'Name',
+      'type' => 'text',
+      'getter callback' => 'entity_property_verbatim_get',
+      'setter callback' => 'entity_property_verbatim_set',
+    ),
+    'quantity' => array(
+      'label' => 'Quantity',
+      'type' => 'integer',
+      'getter callback' => 'entity_property_verbatim_get',
+      'setter callback' => 'entity_property_verbatim_set',
+    ),
+    'operation' => array(
+      'label' => 'Operation',
+      'type' => 'text',
+      'getter callback' => 'entity_property_verbatim_get',
+      'setter callback' => 'entity_property_verbatim_set',
+    ),
+    'value' => array(
+      'label' => 'Value',
+      'type' => 'integer',
+      'getter callback' => 'entity_property_verbatim_get',
+      'setter callback' => 'entity_property_verbatim_set',
+    ),
+  );
+
+  // Add the default values for each of the video_embed_field properties.
+  foreach ($properties as &$value) {
+    $value += array(
+      'description' => !empty($name) ? t('!label of field %name', array('!label' => $value['label'], '%name' => $name)) : '',
+    );
+  }
+
+  return $properties;
 }
 
 /**
@@ -573,7 +634,7 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
       '#title' => t('Name'),
       '#default_value' => isset($items[$delta]['name']) ? $items[$delta]['name'] : NULL,
       '#attributes' => array(
-        'class' => array('booking-option-name')
+        'class' => array('rooms-option--name')
       ),
     );
     $element['quantity'] = array(
@@ -582,6 +643,9 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
       '#options' => array('None', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'),
       '#default_value' => isset($items[$delta]['quantity']) ? $items[$delta]['quantity'] : NULL,
       '#description' => t('How many of this option should be available'),
+      '#attributes' => array(
+        'class' => array('rooms-option--quantity')
+      ),
     );
     $price_options = rooms_price_options_options();
     $element['operation'] = array(
@@ -589,22 +653,29 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
       '#title' => t('Operation'),
       '#options' => $price_options,
       '#default_value' => isset($items[$delta]['operation']) ? $items[$delta]['operation'] : NULL,
+      '#attributes' => array(
+        'class' => array('rooms-option--operation')
+      ),
     );
     $element['value'] = array(
       '#type' => 'textfield',
       '#title' => t('Value'),
       '#size' => 10,
       '#default_value' => isset($items[$delta]['value']) ? $items[$delta]['value'] : NULL,
+      '#attributes' => array(
+        'class' => array('rooms-option--value')
+      ),
     );
 
     $element['remove'] = array(
       '#type' => 'submit',
       '#value' => t('Remove'),
       '#attributes' => array(
-        'class' => array('remove-booking-option'),
+        'class' => array('rooms-option--remove-button'),
       ),
     );
     $element['#attached']['js'] = array(drupal_get_path('module', 'rooms') . '/js/rooms_options_widget.js');
+    $element['#attached']['css'] = array(drupal_get_path('module', 'rooms') . '/css/rooms_options_widget.css');
 
     return $element;
   }
@@ -1081,7 +1152,10 @@ function rooms_preprocess_rooms_three_month_calendar(&$vars) {
   $backward_path = $vars['url'] . '/' . $backward->format('Y') . '/' . $backward->format('n');
   $current_path = $vars['url'] . '/' . $date_current->format('Y') . '/' . $date_current->format('n');
 
-  $vars['forward_link'] = l(t('Forward'), $forward_path);
-  $vars['backward_link'] = l(t('Back'), $backward_path);
-  $vars['current_link'] = l(t('Current'), $current_path);
+  if (!is_array($vars['link_options']) || empty($vars['link_options'])) {
+    $vars['link_options'] = array();
+  }
+  $vars['forward_link'] = l(t('Forward'), $forward_path, $vars['link_options']);
+  $vars['backward_link'] = l(t('Back'), $backward_path, $vars['link_options']);
+  $vars['current_link'] = l(t('Current'), $current_path, $vars['link_options']);
 }

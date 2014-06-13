@@ -19,7 +19,7 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
   protected $default_price;
 
   /**
-   * Price modfiers - an array of operations to be performed to the price.
+   * Price modifiers - an array of operations to be performed to the price.
    * Operations are performed in the sequence they are found in the array
    *
    * @var array
@@ -155,10 +155,7 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
           $sd = new DateTime("$year-$mid-$start");
           $ed = new DateTime("$year-$mid-$end");
           $amount = commerce_currency_amount_to_decimal($state['state'], commerce_default_currency());
-          $event = new PricingEvent($this->unit_id,
-            $amount,
-            $sd,
-            $ed);
+          $event = new PricingEvent($this->unit_id, $amount, $sd, $ed);
           $events[] = $event;
         }
       }
