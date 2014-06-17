@@ -82,7 +82,7 @@ function rooms_availability_constraints_rooms_unit_type_form_submit($form, &$for
  */
 function rooms_availability_constraints_add_availability_range_field($entity_type, $bundle) {
   field_info_cache_clear();
-  // Create field ('rooms_constraint_range') if not exist
+  // Create field ('rooms_constraint_range') if not exists.
   if (field_read_field('rooms_constraints_range') === FALSE) {
     $field = array(
       'field_name' => 'rooms_constraints_range',
@@ -101,7 +101,6 @@ function rooms_availability_constraints_add_availability_range_field($entity_typ
       'entity_type' => $entity_type,
       'label' => 'Availability ranges',
       'bundle' => $bundle,
-      // If you don't set the "required" property then the field wont be required by default.
       'required' => FALSE,
       'widget' => array(
         'type' => 'rooms_availability_constraints_range',

@@ -261,7 +261,9 @@ function rooms_unit_rooms_entity_access_view_condition_rooms_unit_alter(&$condit
     $conditions->condition($context['base_table'] . '.status', 1);
   }
 
-  $conditions->condition($old_conditions);
+  if ($old_conditions->count()) {
+    $conditions->condition($old_conditions);
+  }
 }
 
 /**
