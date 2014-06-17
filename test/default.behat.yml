@@ -1,0 +1,20 @@
+default:
+  paths:
+    features: 'features'
+  extensions:
+    Behat\MinkExtension\Extension:
+      goutte: ~
+      selenium2:
+        capabilities: {"browser": "firefox"}
+      base_url: http://roomsdemo.local
+    Drupal\DrupalExtension\Extension:
+      blackbox: ~
+      api_driver: 'drupal'
+      drush:
+        alias: 'rooms.local'
+      drupal:
+        drupal_root: '/path/to/rooms'
+      selectors:
+        message_selector: '.messages'
+        error_message_selector: '.messages.error'
+        success_message_selector: '.messages.status'
