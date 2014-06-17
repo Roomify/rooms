@@ -1,9 +1,15 @@
 <?php
 
+use Drupal\DrupalExtension\Context\DrupalContext,
+  Drupal\Component\Utility\Random;
+
 use Behat\Behat\Context\ClosuredContextInterface,
+    Behat\Behat\Context\Step\Given,
+    Behat\Behat\Context\Step\Then,
     Behat\Behat\Context\TranslatedContextInterface,
     Behat\Behat\Context\BehatContext,
-    Behat\Behat\Exception\PendingException;
+    Behat\Behat\Exception\PendingException
+  ;
 use Behat\Gherkin\Node\PyStringNode,
     Behat\Gherkin\Node\TableNode;
 
@@ -17,7 +23,7 @@ use Behat\Gherkin\Node\PyStringNode,
 /**
  * Features context.
  */
-class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
+class FeatureContext extends DrupalContext
 {
 
   /**
@@ -56,6 +62,13 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
   public $customerProfiles = array();
 
   /**
+   * Keep track of commerce products so they can be cleaned up.
+   *
+   * @var array
+   */
+  public $products = array();
+
+  /**
    * Initializes context.
    * Every scenario gets its own context object.
    *
@@ -66,6 +79,25 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
   }
 
   public function afterScenario($event) {
+    foreach ($this->users as $user) {
+      $query = new EntityFieldQuery();
+      $query->entityCondition('entity_type', 'commerce_order')
+        ->propertyCondition('uid', $user->uid);
+      $result = $query->execute();
+      if (isset($result['commerce_order'])) {
+        $order_ids = array_keys($result['commerce_order']);
+        commerce_order_delete_multiple($order_ids);
+      }
+      $query2 = new EntityFieldQuery();
+      $query2->entityCondition('entity_type', 'rooms_booking')
+        ->propertyCondition('uid', $user->uid);
+      $result = $query2->execute();
+      if (isset($result['rooms_booking'])) {
+        $booking_ids = array_keys($result['rooms_booking']);
+        rooms_booking_delete_multiple($booking_ids);
+      }
+    }
+
     parent::afterScenario($event);
 
     if (!empty($this->units)) {
@@ -96,6 +128,15 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
         ->condition('commerce_customer_id', $this->customerProfiles)
         ->execute();
     }
+
+    if (!empty($this->products)) {
+      $product_ids = array();
+      foreach ($this->products as $product) {
+        $product_ids[] = $product->product_id;
+      }
+      commerce_product_delete_multiple($product_ids);
+    }
+
   }
 
   /**
@@ -150,6 +191,28 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
     }
     else {
       throw new RuntimeException('Unable to find that bookable unit');
+    }
+  }
+
+  /**
+   * Returns a nid from its content_type and title.
+   *
+   * @param $content_type
+   * @param $title
+   * @return int
+   * @throws RuntimeException
+   */
+  protected function findNodeByTypeAndTitle($content_type, $title) {
+    $efq = new EntityFieldQuery();
+    $efq->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', $content_type)
+      ->propertyCondition('title', $title);
+    $results = $efq->execute();
+    if ($results && isset($results['node'])) {
+      return key($results['node']);
+    }
+    else {
+      throw new RuntimeException('Unable to find that node');
     }
   }
 
@@ -448,6 +511,178 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
   }
 
   /**
+   * @Given /^I select the "(?P<unit_name>[^"]*)" room for package$/
+   */
+  public function iSelectTheRoomForPackage($unit_name) {
+    $unit_id = $this->findBookableUnitByName($unit_name);
+
+    $text = $unit_name . ' (' . $unit_id . ')';
+    $items = $this->getSession()->getPage()->findAll('css', 'table[id^="rooms-package-units-values"] tbody tr');
+    $delta = count($items) - 1;
+    $element_name = 'rooms_package_units[und][' . $delta . '][target_id]';
+    $this->fillFieldByJS($element_name, $text);
+
+    $this->pressButton('rooms_package_units_add_more');
+    $this->iWaitForAjaxToFinish();
+  }
+
+  /**
+   * @Then /^I should see the button "(?<button>[^"]*)"$/
+   */
+  public function iShouldSeeTheButton($button) {
+    $element = $this->getSession()->getPage();
+    $submit = $element->findButton($button);
+    if (empty($submit)) {
+      throw new \Exception(sprintf("No submit button at %s", $this->getSession()->getCurrentUrl()));
+    }
+  }
+
+  /**
+   * @Given /^I am viewing the package "(?<package_name>[^"]*)"$/
+   */
+  public function iAmViewingThePackage($package_name) {
+    $nid = $this->findNodeByTypeAndTitle('rooms_package', $package_name);
+    $this->getSession()->visit($this->locatePath('node/' . $nid));
+  }
+
+
+  /**
+   * Fill the commerce shipping address form fields in a single step.
+   *
+   * @When /^I fill shipping address with "(?P<address>[^"]*)", "(?P<city>[^"]*)", "(?P<state>[^"]*)", "(?P<zip>[^"]*)", "(?P<country>[^"]*)"$/
+   */
+  public function fillShippingCommerceAddress($address, $city, $state, $zip, $country) {
+    $args = func_get_args();
+    return $this->fillCommerceAddress($args, 'customer_profile_shipping');
+  }
+
+  /**
+   * Fill the commerce billing address form fields in a single step.
+   *
+   * @When /^I fill billing address with "(?P<address>[^"]*)", "(?P<city>[^"]*)", "(?P<state>[^"]*)", "(?P<zip>[^"]*)", "(?P<country>[^"]*)"$/
+   */
+  public function fillBillingCommerceAddress($address, $city, $state, $zip, $country) {
+    $args = func_get_args();
+    return $this->fillCommerceAddress($args, 'customer_profile_billing');
+  }
+
+  /**
+   * Checks, that form button, field, radio with specified id|name|label|value is disabled.
+   *
+   * @Then /^the "(?P<select>(?:[^"]|\\")*)" (?P<type>(button)) is disabled$/
+   * @Then /^the "(?P<select>(?:[^"]|\\")*)" (?P<type>(field)) is disabled$/
+   * @Then /^the "(?P<select>(?:[^"]|\\")*)" (?P<type>(radio)) is disabled$/
+   */
+  public function assertFieldIsDisabled($select, $type) {
+    switch ($type) {
+      case 'button' :
+        $element = $this->getSession()->getPage()->findButton($select);
+        break;
+      case 'field' :
+        $element = $this->getSession()->getPage()->findField($select);
+        break;
+      case 'radio' :
+        $element = $this->getSession()->getPage()->find('named', array(
+          'radio', $this->getSession()->getSelectorsHandler()->xpathLiteral($select)
+        ));
+        break;
+    }
+
+    if (!isset($element) || !$element) {
+      throw new \RuntimeException(sprintf("The %s '%s' was not found", $type, $select));
+    }
+
+    $disabled = $element->getAttribute('disabled');
+    if (!$disabled) {
+      throw new \RuntimeException(sprintf('The %s "%s" is enabled, but disabled expected.', $type, $select));
+    }
+  }
+
+  /**
+   * @Then /^I should see values in row table:$/
+   */
+  public function iShouldSeeValuesInTable(TableNode $nodesTable) {
+    $page = $this->getSession()->getPage();
+    $rows = $page->findAll('css', 'tr');
+    if (!$rows) {
+      throw new \Exception(sprintf('No rows found on the page %s', $this->getSession()->getCurrentUrl()));
+    }
+
+    foreach ($nodesTable->getHash() as $row_texts) {
+      $found = TRUE;
+      foreach ($rows as $row) {
+        $found = TRUE;
+        foreach ($row_texts as $row_text) {
+          if (!empty($row_text) && strpos($row->getText(), $row_text) === FALSE) {
+            $found = FALSE;
+          }
+        }
+        if ($found) {
+          break;
+        }
+      }
+      if (!$found) {
+        throw new \Exception(sprintf('Not found a row containing the desired texts'));
+      }
+    }
+  }
+
+  /**
+   * Asserts that a given commerce_product type is editable.
+   *
+   * @Then /^I should be able to edit (?:a|an) "([^"]*)" product$/
+   */
+  public function assertEditProductOfType($type) {
+    $product = commerce_product_new($type);
+    $random = new Random();
+    $product->title = $random->name();
+    $product->sku = $random->name();
+    commerce_product_save($product);
+    $this->products[] = $product;
+
+    // Set internal browser on the node edit page.
+    $this->getSession()->visit($this->locatePath('/admin/commerce/products/' . $product->product_id . '/edit'));
+  }
+
+  /**
+   * Asserts that a given node type is editable.
+   */
+  public function assertEditNodeOfType($type) {
+    $node = (object) array('type' => $type);
+    $saved = $this->getDriver()->createNode($node);
+    $this->nodes[] = $saved;
+
+    // Set internal browser on the node edit page.
+    $this->getSession()->visit($this->locatePath('/node/' . $saved->nid . '/edit'));
+  }
+
+    /**
+   * Fill commerce address form fields in a single step.
+   */
+  private function fillCommerceAddress($args, $type) {
+    // Replace <random> or member <property> token if is set for any field
+    foreach ($args as $delta => $arg) {
+      if (preg_match("/^<random>$/", $arg, $matches)) {
+        $random = new Random();
+        $args[$delta] = $random->name();
+      }
+    }
+
+    // Need to manually fill country to trigger the AJAX refresh of fields for given country
+    $country_field = $this->fixStepArgument("{$type}[commerce_customer_address][und][0][country]");
+    $country_value = $this->fixStepArgument($args[4]);
+    $this->getSession()->getPage()->fillField($country_field, $country_value);
+    $this->iWaitForAjaxToFinish();
+
+    return array(
+      new Given("I fill in \"{$type}[commerce_customer_address][und][0][locality]\" with \"$args[1]\""),
+      new Given("I fill in \"{$type}[commerce_customer_address][und][0][administrative_area]\" with \"$args[2]\""),
+      new Given("I fill in \"{$type}[commerce_customer_address][und][0][postal_code]\" with \"$args[3]\""),
+      new Given("I fill in \"{$type}[commerce_customer_address][und][0][thoroughfare]\" with \"$args[0]\""),
+    );
+  }
+
+  /**
    * Retrieves the last booking ID.
    *
    * @return int
@@ -569,6 +804,27 @@ class FeatureContext extends Drupal\DrupalExtension\Context\DrupalContext
       }
     }
     return FALSE;
+  }
+
+  /**
+   * Fills a field using JS to avoid event firing.
+   * @param string $field
+   * @param string$value
+   *
+   */
+  protected function fillFieldByJS($field, $value) {
+    $field = $this->fixStepArgument($field);
+    $value = $this->fixStepArgument($value);
+    $xpath = $this->getSession()->getPage()->findField($field)->getXpath();
+
+    $element = $this->getSession()->getDriver()->getWebDriverSession()->element('xpath', $xpath);
+    $elementID = $element->getID();
+    $subscript = "arguments[0]";
+    $script = str_replace('{{ELEMENT}}', $subscript, '{{ELEMENT}}.value = "' . $value . '"');
+    return $this->getSession()->getDriver()->getWebDriverSession()->execute(array(
+      'script' => $script,
+      'args' => array(array('ELEMENT' => $elementID))
+    ));
   }
 
 }
