@@ -6,7 +6,7 @@
  */
 
 /**
- * Implements hook_rules_action_info()
+ * Implements hook_rules_action_info().
  */
 function rooms_booking_manager_rules_action_info() {
   $actions = array();

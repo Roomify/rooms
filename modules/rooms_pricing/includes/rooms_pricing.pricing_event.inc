@@ -1,16 +1,21 @@
 <?php
 
+/**
+ * @file
+ * contains PricingEvent.
+ */
+
 class PricingEvent extends RoomsEvent implements PricingEventInterface {
 
   /**
-   * The amount for this period
+   * The amount for this period.
    *
    * @var int
    */
   public $amount;
 
   /**
-   * The operation to perform
+   * The operation to perform.
    *
    * @var string
    */
@@ -20,7 +25,7 @@ class PricingEvent extends RoomsEvent implements PricingEventInterface {
    * Constructs a BookingPrice item.
    *
    * @param int $unit_id
-   *  The unit ID,
+   *   The unit ID.
    * @param int $amount
    *   The booking amount.
    * @param DateTime $start_date
@@ -28,7 +33,7 @@ class PricingEvent extends RoomsEvent implements PricingEventInterface {
    * @param DateTime $end_date
    *   The start date of the event.
    * @param string $operation
-   *
+   *   The operation to perform.
    */
   public function __construct($unit_id, $amount, $start_date, $end_date, $operation = '') {
     $this->unit_id = $unit_id;
@@ -53,24 +58,31 @@ class PricingEvent extends RoomsEvent implements PricingEventInterface {
       case ROOMS_REPLACE:
         $this->amount = $amount;
         break;
+
       case ROOMS_ADD:
         $this->amount = $this->amount + $amount;
         break;
+
       case ROOMS_ADD_DAILY:
         $this->amount = $this->amount + $amount * $days;
         break;
+
       case ROOMS_SUB:
         $this->amount = $this->amount - $amount;
         break;
+
       case ROOMS_SUB_DAILY:
         $this->amount = $this->amount - $amount * $days;
         break;
+
       case ROOMS_INCREASE:
-        $this->amount = $this->amount + (($this->amount) * ($amount/100));
+        $this->amount = $this->amount + (($this->amount) * ($amount / 100));
         break;
+
       case ROOMS_DECREASE:
-        $this->amount = $this->amount - (($this->amount) * ($amount/100));
+        $this->amount = $this->amount - (($this->amount) * ($amount / 100));
         break;
+
       default:
         break;
     }

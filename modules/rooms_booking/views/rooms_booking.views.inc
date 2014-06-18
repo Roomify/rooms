@@ -31,7 +31,7 @@ function rooms_booking_views_data_alter(&$data) {
     ),
   );
   // This content of this field are decided based on the menu structure that
-  // follows rooms/booking/%booking_id/op
+  // follows rooms/booking/%booking_id/op.
   $data['rooms_bookings']['operations'] = array(
     'field' => array(
       'title' => t('Operations links'),
@@ -41,7 +41,7 @@ function rooms_booking_views_data_alter(&$data) {
   );
   $data['rooms_bookings']['start_date'] = array(
     'title' => t('Start Date'),
-    'help' => t('A booking\'s arrival date.'),
+    'help' => t("A booking's arrival date."),
     'field' => array(
       'float' => TRUE,
       'handler' => 'rooms_booking_handler_date_field',
@@ -50,7 +50,7 @@ function rooms_booking_views_data_alter(&$data) {
   );
   $data['rooms_bookings']['end_date'] = array(
     'title' => t('End Date'),
-    'help' => t('A booking\'s departure date.'),
+    'help' => t("A booking's departure date."),
     'field' => array(
       'float' => TRUE,
       'handler' => 'rooms_booking_handler_date_field',
@@ -80,7 +80,7 @@ function rooms_booking_views_data_alter(&$data) {
     ),
     'argument' => array(
       'handler' => 'views_handler_argument_user_uid',
-      'name field' => 'name', // display this field in the summary
+      'name field' => 'name',
     ),
     'filter' => array(
       'title' => t('Name'),

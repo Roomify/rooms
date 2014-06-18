@@ -12,7 +12,6 @@ class rooms_booking_handler_unit_field extends views_handler_field {
     parent::construct();
 
     $this->additional_fields['unit_id'] = 'unit_id';
-    //$this->additional_fields['type'] = 'type';
   }
 
   function option_definition() {

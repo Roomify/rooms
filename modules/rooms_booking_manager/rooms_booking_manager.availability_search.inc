@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * @file
+ * Contains the rooms_booking_availability_search_form builder.
+ */
+
+/**
+ * Form callback for rooms_booking_availability_search_form_builder.
+ */
 function rooms_booking_availability_search_form_builder($form, &$form_state) {
   // Use form_load_include() instead of module_load_include() as it ensures that
   // the include file is loaded whenever the form is processed. In contrast to
@@ -39,7 +47,7 @@ function rooms_booking_availability_search_form_builder($form, &$form_state) {
     '#type' => 'select',
     '#title' => t('Units'),
     '#options' => rooms_assoc_range(1, variable_get('rooms_booking_manager_search_form_units', 6)),
-    '#default_value' =>  $rooms_number,
+    '#default_value' => $rooms_number,
   );
 
   // Create an AJAX wrapper id depending on the form caller to avoid duplicates.
@@ -56,7 +64,7 @@ function rooms_booking_availability_search_form_builder($form, &$form_state) {
     );
 
     $classes = 'rooms-group-size ';
-    $classes .= ($rooms_number > 1) ? 'rooms-group-size-multiple-units': 'rooms-group-size-one-unit';
+    $classes .= ($rooms_number > 1) ? 'rooms-group-size-multiple-units' : 'rooms-group-size-one-unit';
     $form['rooms_fieldset']['table_header'] = array(
       '#prefix' => '<table class="' . $classes . '"><thead>',
       '#markup' => '<th class="rooms-group-size__people" colspan="2">' . t('Group size') . '</th>',
@@ -74,7 +82,7 @@ function rooms_booking_availability_search_form_builder($form, &$form_state) {
     for ($i = 1; $i <= $rooms_number; $i++) {
       $form['rooms_fieldset']['rooms_label:' . $i] = array(
         '#prefix' => '<tr><th class="rooms-group-size__unit">',
-        '#markup' =>  ($rooms_number > 1) ? '<label>' . t('Unit') . ' ' . $i . ':&nbsp;</label>' : '',
+        '#markup' => ($rooms_number > 1) ? '<label>' . t('Unit') . ' ' . $i . ':&nbsp;</label>' : '',
         '#suffix' => '</th>',
       );
 
@@ -90,7 +98,7 @@ function rooms_booking_availability_search_form_builder($form, &$form_state) {
         $form['rooms_fieldset']['group_size_children:' . $i] = array(
           '#type' => 'select',
           '#options' => rooms_assoc_range(0, 3),
-          '#default_value' =>  isset($booking_parameters[$i]['children']) ? $booking_parameters[$i]['children'] : '0',
+          '#default_value' => isset($booking_parameters[$i]['children']) ? $booking_parameters[$i]['children'] : '0',
           '#prefix' => '<td class="rooms-group-size__children">',
           '#suffix' => '</td>',
         );
@@ -117,7 +125,7 @@ function rooms_booking_availability_search_form_builder($form, &$form_state) {
         '#type' => 'select',
         '#title' => t('Children'),
         '#options' => rooms_assoc_range(0, 3),
-        '#default_value' =>  isset($booking_parameters[1]['children']) ? $booking_parameters[1]['children'] : 0,
+        '#default_value' => isset($booking_parameters[1]['children']) ? $booking_parameters[1]['children'] : 0,
       );
     }
   }
@@ -178,19 +186,22 @@ function rooms_booking_availability_search_form_validate(&$form, &$form_state) {
   if (empty($start_date)) {
     return;
   }
-  // this indicate to the rooms_form_start_end_dates_validate handler to
+  // This indicate to the rooms_form_start_end_dates_validate handler to
   // enable today greater validation.
   $form_state['today_greater_validation'] = TRUE;
-  // Ensure start date is appropriate based on the rooms_booking_start_date variable
+  // Ensure start date is good based on the rooms_booking_start_date variable.
   $now = new DateTime();
   $diff1 = $now->setTime(0, 0, 0)->diff($start_date);
   $rooms_booking_start_date = variable_get('rooms_booking_start_date', 1);
-  // Check the difference in number of days
+  // Check the difference in number of days.
   if ($diff1->days < $rooms_booking_start_date) {
     form_set_error('rooms_date_range', t('Bookings must be made at least @count_days in advance.', array('@count_days' => format_plural($rooms_booking_start_date, '1 day', '@count days'))));
   }
 }
 
+/**
+ * Submit callback for rooms_booking_availability_search_form form.
+ */
 function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
 
   $start_date = new DateTime($form_state['values']['rooms_start_date']);
@@ -206,13 +217,17 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
     }
   }
 
-  // Collect the values for booking parameters
+  // Collect the values for booking parameters.
   foreach ($form_state['values'] as $key => $value) {
     $keys = explode(':', $key);
 
     if (count($keys) == 2) {
-      if ($keys[0] == 'group_size_adults') $rooms_query['rooms_group_size' . $keys[1]] = $value;
-      if ($keys[0] == 'group_size_children') $rooms_query['rooms_children' . $keys[1]] = $value;
+      if ($keys[0] == 'group_size_adults') {
+        $rooms_query['rooms_group_size' . $keys[1]] = $value;
+      }
+      if ($keys[0] == 'group_size_children') {
+        $rooms_query['rooms_children' . $keys[1]] = $value;
+      }
     }
   }
 
@@ -220,6 +235,6 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
     'booking/' . $start_date->format('Y-m-d') . '/' . $end_date->format('Y-m-d') . '/' . $units,
     array(
       'query' => $rooms_query,
-    )
+    ),
   );
 }

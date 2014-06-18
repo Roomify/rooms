@@ -2,8 +2,8 @@
 
 /**
  * @file
- * Manages availability for Bookable Units and displaying dates on the jquery FullCalendar
- * plugin
+ * Manages availability for Bookable Units and displaying dates on the jquery
+ * FullCalendar plugin.
  */
 
 define('ROOMS_AVAILABILITY_ADMIN_STYLE', 1);
@@ -120,27 +120,38 @@ function rooms_availability_query_rooms_availability_access_alter(QueryAlterable
 }
 
 /**
- * Form for the Bulk Availability Management. Could receive date params for the
- * interested interval to edit.
+ * Form for the Bulk Availability Management.
+ *
+ * Could receive date params for the interested interval to edit.
+ *
+ * @param string $year
+ *   Year to perform the operations.
+ * @param string $month
+ *   Month to perform the operations.
+ * @param string $type
+ *   Bookable unit type to perform the operation.
+ *
+ * @return array
+ *   Bulk availability management page render array.
  */
-function rooms_availability_bulk_unit_management($year = '', $month = '', $type = 'all', $action = '', $start = '', $end = '') {
-  // Load FullCalendar
+function rooms_availability_bulk_unit_management($year = '', $month = '', $type = 'all') {
+  // Load FullCalendar.
   rooms_fullcalendar_loaded();
 
-  // modal includes and style
+  // Modal includes and style.
   rooms_availability_modal_style();
 
-  // If year is not set then give it the current date
+  // If year is not set then give it the current date.
   $year = ($year != '' && is_numeric($year)) ? $year : date('Y', time());
   $month = ($month != '' && is_numeric($month)) ? $month : date('n', time());
   $type = ($type == '') ? 'all' : $type;
 
-  // It's not a valid unit type
+  // It's not a valid unit type.
   if (rooms_unit_get_types($type) == FALSE) {
     $type = 'all';
   }
 
-  // It's not a valid month
+  // It's not a valid month.
   if ($month < 1 || $month > 12) {
     $month = 1;
   }
@@ -185,9 +196,9 @@ function rooms_availability_bulk_unit_management($year = '', $month = '', $type 
             ),
           ),
           'type' => 'setting',
-        )
-      )
-    )
+        ),
+      ),
+    ),
   );
 }
 
@@ -285,13 +296,16 @@ function rooms_availability_update_status_form($form, &$form_state, $month, $yea
  * Validate callback for rooms_availability_update_status_form form.
  */
 function rooms_availability_update_status_form_validate(&$form, &$form_state) {
-  if ($form_state['values']['change_event_status']== '') {
+  if ($form_state['values']['change_event_status'] == '') {
     form_set_error('change_event_status', t('Select a valid status.'));
   }
-  // validate that a rooms is selected
+  // Validate that a rooms is selected.
   _rooms_select_rooms_validation($form_state);
 }
 
+/**
+ * Submit callback for rooms_availability_update_status_form form.
+ */
 function rooms_availability_update_status_form_submit(&$form, &$form_state) {
   list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
   $type = $form_state['values']['curr_type'];
@@ -300,14 +314,14 @@ function rooms_availability_update_status_form_submit(&$form, &$form_state) {
   if ($form_state['values']['select-all'] == ROOMS_ALL_PAGES) {
     $query = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
     if ($type != 'all') {
-      $query->condition('type', $type , '=');
+      $query->condition('type', $type, '=');
     }
     $rooms_units = $query->execute()->fetchAll();
 
     foreach ($rooms_units as $room) {
-      $unit_id = $room->unit_id ;
+      $unit_id = $room->unit_id;
 
-      // Create a new Booking Event
+      // Create a new Booking Event.
       $be = new BookingEvent($unit_id, $event_id, $start_date, $end_date);
       $events = array($be);
       $rc = new UnitCalendar($unit_id);
@@ -325,7 +339,7 @@ function rooms_availability_update_status_form_submit(&$form, &$form_state) {
       if (strpos($key, 'rooms-') === 0 && $value == '1') {
         $unit_id = str_replace('rooms-', '', $key);
 
-        // Create a new Booking Event
+        // Create a new Booking Event.
         $be = new BookingEvent($unit_id, $event_id, $start_date, $end_date);
         $events = array($be);
         $rc = new UnitCalendar($unit_id);
@@ -344,9 +358,8 @@ function rooms_availability_update_status_form_submit(&$form, &$form_state) {
 /**
  * Callback for admin/rooms/units/unit/%unit/availability - builds availability
  * page by adding calendar and pulling events from availability table.
- *
  */
-function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
+function rooms_availability_page(RoomsUnit $rooms_unit, $year = '', $month = '') {
   // Set the page title.
   drupal_set_title(t('Edit @unit_name Availability', array('@unit_name' => $rooms_unit->name)));
 
@@ -372,7 +385,7 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
         drupal_get_path('module', 'rooms_availability') . '/js/rooms_availability.js',
         array(
           'data' => array('roomsAvailability' => array('roomID' => $rooms_unit->unit_id)),
-          'type' =>'setting',
+          'type' => 'setting',
         ),
       ),
     ),
@@ -380,7 +393,7 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year='', $month='') {
 }
 
 /**
- * A basic form that allows us to update the state of the calendar
+ * A basic form that allows us to update the state of the calendar.
  */
 function update_availability_calendar_form($form, &$form_state, $unit_id, $year, $month) {
 
@@ -400,7 +413,7 @@ function update_availability_calendar_form($form, &$form_state, $unit_id, $year,
   );
 
   $form['rooms_update_availability']['rooms_date_range'] = rooms_date_range_fields();
-  // Unset a js setting
+  // Unset a js setting.
   drupal_add_js(array('rooms' => array('roomsBookingStartDay' => 0)), 'setting');
 
   $state_options = rooms_unit_state_options();
@@ -437,16 +450,15 @@ function update_availability_calendar_form($form, &$form_state, $unit_id, $year,
   return $form;
 }
 
-
 /**
- *@todo Need to figure out what to do when we cancel an existing booking
+ * @todo Need to figure out what to do when we cancel an existing booking.
  */
 function update_availability_calendar_form_submit(&$form, &$form_state) {
   list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
   $event_id = $form_state['values']['unit_state'];
   $unit_id = $form_state['values']['unit_id'];
 
-  // Create a new Booking Event
+  // Create a new Booking Event.
   $be = new BookingEvent($unit_id, $event_id, $start_date, $end_date);
   $events = array($be);
   $rc = new UnitCalendar($unit_id);
@@ -459,31 +471,29 @@ function update_availability_calendar_form_submit(&$form, &$form_state) {
   }
 }
 
-
-
 /**
- * Creates the necessary json for the date range provided - needs at least start year and month at which point it will
- * return the entire month.
+ * Creates the necessary json for the date range provided - needs at least start
+ * year and month at which point it will return the entire month.
  */
 function rooms_availability_event($units, $start_year = '', $start_month = '', $start_day = '', $end_year = '', $end_month = '', $end_day = '', $event_style = ROOMS_AVAILABILITY_ADMIN_STYLE) {
 
-  // Check if units is array and if not place in array
+  // Check if units is array and if not place in array.
   if (!is_array($units)) {
     $units = array($units);
   }
-  $start_year = (int)$start_year;
-  $start_month = (int)$start_month;
-  $start_day = (int)$start_day;
+  $start_year = (int) $start_year;
+  $start_month = (int) $start_month;
+  $start_day = (int) $start_day;
 
-  $end_year = (int)$end_year;
-  $end_month = (int)$end_month;
-  $end_day = (int)$end_day;
+  $end_year = (int) $end_year;
+  $end_month = (int) $end_month;
+  $end_day = (int) $end_day;
 
   $today = new DateTime();
   $month_start = new DateTime("$start_year-$start_month-1");
   $previous_month = $today >= $month_start;
 
-  if (!user_access('view past availability information') && $previous_month ) {
+  if (!user_access('view past availability information') && $previous_month) {
     $start_day = date('j');
     $start_month = date('n');
     $start_year = date('Y');
@@ -515,7 +525,7 @@ function rooms_availability_event($units, $start_year = '', $start_month = '', $
     $rc = new UnitCalendar($unit->unit_id, $unit->default_state);
 
     $events = $rc->getEvents($start_date, $end_date);
-    $event_style =rooms_availability_get_style($event_style, $unit);
+    $event_style = rooms_availability_get_style($event_style, $unit);
     foreach ($events as $event) {
       $json_events[] = $event->formatJson($event_style, $unit->name);
     }
@@ -528,15 +538,14 @@ function rooms_availability_event($units, $start_year = '', $start_month = '', $
  * Helper function to determine the $event style depending on permissions.
  */
 function rooms_availability_get_style($event_style, $unit) {
-  if (is_numeric($event_style)) $event_style = (int)$event_style;
-  else $event_style = (int)ROOMS_AVAILABILITY_ADMIN_STYLE;
+  $event_style = is_numeric($event_style) ? (int) $event_style : (int) ROOMS_AVAILABILITY_ADMIN_STYLE;
 
-  // If user don't have 'view named availability information' permission
+  // If user don't have 'view named availability information' permission.
   if (!(user_access('view named availability information') || rooms_unit_access('update availability', $unit))
     && $event_style == ROOMS_AVAILABILITY_ADMIN_STYLE) {
-    $event_style = (int)ROOMS_AVAILABILITY_GENERIC_STYLE;
+    $event_style = (int) ROOMS_AVAILABILITY_GENERIC_STYLE;
   }
-  // If user don't have 'view anonymous availability information' permission
+  // If user don't have 'view anonymous availability information' permission.
   if (!(user_access('view anonymous availability information') || rooms_unit_access('update availability', $unit))
     && $event_style == ROOMS_AVAILABILITY_GENERIC_STYLE) {
     echo drupal_json_encode(array());
@@ -550,7 +559,7 @@ function rooms_availability_get_style($event_style, $unit) {
  * calendar - will allow a user to manipulate that event.
  */
 function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_date = 0, $end_date = 0) {
-  // include modal library
+  // Include modal library.
   ctools_include('modal');
 
   // If any info missing we cannot load the event.
@@ -628,15 +637,15 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
 }
 
 /**
- * Define modal JS style and dependencies
+ * Define modal JS style and dependencies.
  */
 function rooms_availability_modal_style() {
-  // include libraries
+  // Include libraries.
   ctools_include('modal');
   ctools_include('ajax');
   ctools_modal_add_js();
 
-  // styles to use for the modal
+  // Styles to use for the modal.
   $modal_style = array(
     'rooms-modal-style' => array(
       'modalSize' => array(
@@ -654,16 +663,16 @@ function rooms_availability_modal_style() {
     ),
   );
 
-  // add the ctool modal configuration to settings
+  // Add the ctool modal configuration to settings.
   drupal_add_js($modal_style, 'setting');
 
-  // add the ctools modal stylesheet.
+  // Add the ctools modal stylesheet.
   drupal_add_css(drupal_get_path('module', 'rooms') . '/css/rooms_modal.css');
 }
 
 
 /**
- * The Event Manager Form - will eventually change based on the type of event we are manipulating
+ * The Event Manager Form.
  */
 function rooms_availability_event_manager_form($form, $form_state, $unit, $event_id, $start_date, $end_date) {
   $form = array();
@@ -705,14 +714,14 @@ function rooms_availability_event_manager_form($form, $form_state, $unit, $event
     $form['event_title'] = array(
       '#prefix' => '<h2>',
       '#markup' => check_plain($unit->name),
-      '#suffix' => '</h2>'
+      '#suffix' => '</h2>',
     );
   }
   else {
     $form['event_title'] = array(
       '#prefix' => '<h2>',
       '#markup' => t('@unit_name is @status', array('@unit_name' => $unit->name, '@status' => $state_options[$new_event_id])),
-      '#suffix' => '</h2>'
+      '#suffix' => '</h2>',
     );
   }
 
@@ -720,7 +729,7 @@ function rooms_availability_event_manager_form($form, $form_state, $unit, $event
   $form['event_details'] = array(
     '#prefix' => '<div class="event-details">',
     '#markup' => t('Duration: @startdate to @enddate', array('@startdate' => $start_date->format($date_format), '@enddate' => $end_date->format($date_format))),
-    '#suffix' => '</div>'
+    '#suffix' => '</div>',
   );
 
   unset($state_options[$new_event_id]);
@@ -752,7 +761,7 @@ function rooms_availability_event_manager_form($form, $form_state, $unit, $event
 
 
 /**
- * The callback for the change_event_status widget of the event manager form
+ * The callback for the change_event_status widget of the event manager form.
  */
 function rooms_availability_ajax_event_status_change($form, $form_state) {
   $start_date = $form_state['values']['rooms_start_date'];
@@ -761,7 +770,7 @@ function rooms_availability_ajax_event_status_change($form, $form_state) {
   $event_id = $form_state['values']['event_id'];
   $new_event_id = $form_state['values']['change_event_status'];
 
-  // If we have a new event id go ahead and update event
+  // If we have a new event id go ahead and update event.
   if (($event_id != $new_event_id) && $new_event_id != -1) {
     $event = new BookingEvent($unit_id, $new_event_id, $start_date, $end_date);
     $uc = new UnitCalendar($unit_id);
@@ -786,7 +795,7 @@ function rooms_availability_ajax_event_status_change($form, $form_state) {
  */
 function rooms_availability_assign_id($id, $status = '1') {
   // Add eleven for now - this allows for 10 states that do not
-  // refer to a specific booking
+  // refer to a specific booking.
   $id = $id + 11;
 
   if ($status == '0') {
@@ -798,7 +807,7 @@ function rooms_availability_assign_id($id, $status = '1') {
 }
 
 /**
- * Given an event state it returns the valid booking id
+ * Given an event state it returns the valid booking id.
  */
 function rooms_availability_return_id($id) {
   // Make sure we are not looking for negative ids;
@@ -811,6 +820,7 @@ function rooms_availability_return_id($id) {
 
 /**
  * Implements hook_form__FORM_ID_alter().
+ *
  * FORM_ID = rooms_booking_settings
  */
 function rooms_availability_form_rooms_booking_settings_alter(&$form, &$form_state, $form_id) {
@@ -975,7 +985,7 @@ function rooms_availability_form_rooms_booking_settings_alter(&$form, &$form_sta
 }
 
 /**
- * Utility function to validate hex color numbers
+ * Utility function to validate hex color numbers.
  */
 function rooms_availability_validate_hex_color($element, &$form_state) {
   if (!preg_match('/^#[a-f0-9]{6}$/i', $element['#value'])) {

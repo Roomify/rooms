@@ -1,15 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: plopesc
- * Date: 5/9/14
- * Time: 10:57 AM
- */
 
 /**
+ * @file
  * Handles querying and updating the availability information
  * relative to a single bookable unit.
  */
+
 interface UnitCalendarInterface extends RoomsCalendarInterface {
   /**
    * Given a date range returns all states in that range - useful when we are
@@ -69,11 +65,12 @@ interface UnitCalendarInterface extends RoomsCalendarInterface {
   public function getDefaultState();
 
   /**
-   * Given an array of events removes events from the calendar setting the value to the default
+   * Given an array of events removes events from the calendar setting the value
+   * to the default.
    *
    * @param BookingEventInterface[] $events
    *   The events to remove from the database - an array of Booking Events
-   *
    */
   public function removeEvents($events);
+
 }

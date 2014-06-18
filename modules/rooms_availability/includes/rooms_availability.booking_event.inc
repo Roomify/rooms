@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Class BookingEvent
+ */
+
 class BookingEvent extends RoomsEvent implements BookingEventInterface {
 
   /**
@@ -35,8 +40,11 @@ class BookingEvent extends RoomsEvent implements BookingEventInterface {
     return new BookingEvent($this->unit_id, $this->id, $start_date, $end_date);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function lock() {
-    // Check that the event is not already locked
+    // Check that the event is not already locked.
     $query = db_select('rooms_booking_locks', 'l');
     $query->addField('l', 'unit_id');
     $query->addField('l', 'state');
@@ -61,12 +69,18 @@ class BookingEvent extends RoomsEvent implements BookingEventInterface {
     return TRUE;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function unlock() {
     db_delete('rooms_booking_locks')
     ->condition(db_or()->condition('state', $this->id)->condition('state', -($this->id)))
     ->execute();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function formatJson($style = ROOMS_AVAILABILITY_ADMIN_STYLE, $unit_name = '') {
     $event = array(
       'id' => $this->id,
@@ -75,16 +89,16 @@ class BookingEvent extends RoomsEvent implements BookingEventInterface {
       'title' => $this->id,
     );
 
-    // Check if we are dealing with a booking
+    // Check if we are dealing with a booking.
     if ($this->id > 10 || $this->id < -10) {
-      // Get the actual booking id
+      // Get the actual booking id.
       $booking_id = rooms_availability_return_id($this->id);
       $booking = rooms_booking_load($booking_id);
       if ($style == ROOMS_AVAILABILITY_ADMIN_STYLE) {
         $name = (isset($booking->name) && !empty($booking->name)) ? $booking->name : t('Booking') . ': ' . $booking->booking_id;
         $interval = $this->diff();
         if ((strlen($name) > 7) && ($interval->d < 1)) {
-          $event['title'] = substr($name, 0 , 6) . '...';
+          $event['title'] = substr($name, 0, 6) . '...';
         }
         else {
           $event['title'] = $name;
@@ -97,25 +111,29 @@ class BookingEvent extends RoomsEvent implements BookingEventInterface {
 
     $view_unit_name = array_filter(variable_get('rooms_view_unit_name', array('')));
 
-    //set the color
+    // Set the color.
     switch ($this->id) {
       case ROOMS_NOT_AVAILABLE:
         $event['color']  = variable_get('rooms_not_available_color', 'red');
         $event['title'] = variable_get('rooms_not_available_text', 'N/A');
         break;
+
       case ROOMS_AVAILABLE:
         $event['color'] = variable_get('rooms_available_color', '#8CBF62');
         $event['borderColor'] = '#04711B';
         $event['title'] = variable_get('rooms_available_text', 'AV');
         break;
+
       case ROOMS_ON_REQUEST:
         $event['color'] = variable_get('rooms_on_request_color', '#C5C5C5');
         $event['title'] = variable_get('rooms_on_request_text', 'ON-REQ');
         break;
+
       case ($this->id < 0):
         $event['color'] = variable_get('rooms_unconfirmed_booking_color', '#8CBF62');
         $event['title'] = variable_get('rooms_unconfirmed_booking_text', 'UNCONF');
         break;
+
       case ROOMS_ANON_BOOKED:
         if ($style == ROOMS_AVAILABILITY_ADMIN_STYLE) {
           $event['color'] = variable_get('rooms_anon_booking_color', '#481600');
@@ -126,6 +144,7 @@ class BookingEvent extends RoomsEvent implements BookingEventInterface {
           $event['title'] = variable_get('rooms_not_available_text', 'N/A');
         }
         break;
+
       default:
         $event['color'] = 'blue';
         break;

@@ -15,7 +15,7 @@ class RoomsUnitTypeUIController extends EntityDefaultUIController {
    */
   public function hook_menu() {
     $items = parent::hook_menu();
-    foreach($items as &$item) {
+    foreach ($items as &$item) {
       unset($item['access callback']);
       $item['access arguments'] = array('administer rooms_unit_type entities');
     }
@@ -28,7 +28,6 @@ class RoomsUnitTypeUIController extends EntityDefaultUIController {
 
 /**
  * Generates the unit type editing form.
- *
  */
 function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
 
@@ -171,14 +170,19 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
   return $form;
 }
 
+/**
+ * Validate callback for rooms_unit_type_form form.
+ *
+ * @see rooms_unit_type_form()
+ */
 function rooms_unit_type_form_validate(&$form, &$form_state) {
 
-  // Validate price field
+  // Validate price field.
   if (!empty($form_state['values']['data']['base_price']) && !is_numeric($form_state['values']['data']['base_price'])) {
     form_set_error('data][base_price', t('%name: you must enter a numeric value for the price.', array('%name' => t('Base price'))));
   }
 
-  // Validate room unit description
+  // Validate room unit description.
   if (!empty($form_state['values']['data']['rooms_description_source'])) {
     $source_ref = explode(':', $form_state['values']['data']['rooms_description_source']);
     if (isset($source_ref[1])) {

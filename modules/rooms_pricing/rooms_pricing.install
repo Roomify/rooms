@@ -226,7 +226,7 @@ function rooms_pricing_schema() {
       'year' => array('year'),
       'month' => array('month'),
     ),
-    'unique keys' =>  array(
+    'unique keys' => array(
       'month_key' => array('unit_id', 'year', 'month'),
     ),
     'foreign keys' => array(
@@ -236,7 +236,6 @@ function rooms_pricing_schema() {
       ),
     ),
   );
-
 
   return $schema;
 }
@@ -256,7 +255,7 @@ function rooms_pricing_update_7001() {
   module_load_install('rooms');
 
   $map = array(
-    'manage booking unit pricing' => 'administer rooms_unit pricing'
+    'manage booking unit pricing' => 'administer rooms_unit pricing',
   );
 
   rooms_update_rename_permissions($map);

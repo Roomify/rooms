@@ -3,9 +3,8 @@
 /**
  * @file
  * Contains a Views field handler to take care of displaying deletes links
- * as fields
+ * as fields.
  */
-
 
 class rooms_unit_handler_delete_link_field extends rooms_unit_handler_link_field {
   function construct() {
@@ -17,7 +16,7 @@ class rooms_unit_handler_delete_link_field extends rooms_unit_handler_link_field
   function render($values) {
     $type = $values->{$this->aliases['type']};
 
-    //Creating a dummy room to check access against
+    // Creating a dummy room to check access against.
     $dummy_unit = (object) array('type' => $type);
     if (!rooms_unit_access('delete', $dummy_unit)) {
       return;

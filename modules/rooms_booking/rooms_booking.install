@@ -10,8 +10,8 @@
  * Implements hook_install().
  */
 function rooms_booking_install() {
-  // Create a basic booking type
-  rooms_booking_create_booking_type();
+  // Create a basic booking type.
+  rooms_booking_create_standard_booking_type();
 }
 
 /**
@@ -169,7 +169,6 @@ function rooms_booking_schema() {
         'serialize' => TRUE,
         'description' => 'A serialized array of additional data related to this unit type.',
       ),
-      // These two fields provide exportable support and come from Entity module definitions
       'status' => array(
         'type' => 'int',
         'not null' => TRUE,
@@ -221,13 +220,19 @@ function rooms_booking_schema() {
   return $schema;
 }
 
-function rooms_booking_create_booking_type() {
-  $booking = new RoomsBookingType(array('label' => 'Standard Booking', 'type' => 'standard_booking'));
+/**
+ * Creates the default standard booking type.
+ */
+function rooms_booking_create_standard_booking_type() {
+  $booking = new RoomsBookingType(array(
+    'label' => 'Standard Booking',
+    'type' => 'standard_booking',
+  ));
   rooms_booking_type_save($booking);
 }
 
 /**
- * Create booking_status field in rooms_booking table
+ * Create booking_status field in rooms_booking table.
  */
 function rooms_booking_update_7001() {
   $booking_status = array(
@@ -244,7 +249,7 @@ function rooms_booking_update_7001() {
 }
 
 /**
- * Create customers table
+ * Create customers table.
  */
 function rooms_booking_update_7002() {
   $schema['rooms_customers'] = array(
@@ -277,7 +282,7 @@ function rooms_booking_update_7002() {
 }
 
 /**
- * Create price field in rooms_booking table
+ * Create price field in rooms_booking table.
  */
 function rooms_booking_update_7003() {
   $price = array(
@@ -314,8 +319,6 @@ function rooms_booking_update_7004() {
     ->execute();
 
   return t('New columns added to rooms_units table');
-
-  return t('Add field uid in Rooms Booking table.');
 }
 
 /**

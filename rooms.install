@@ -4,6 +4,7 @@
  * @file
  * Install, update and uninstall functions for the rooms module.
  */
+
 /**
  * Implements hook_field_schema().
  */
@@ -32,6 +33,35 @@ function rooms_field_schema($field) {
       ),
     );
   }
+}
+
+/**
+ * Implements hook_requirements().
+ */
+function rooms_requirements($phase) {
+  $requirements = array();
+  $t = get_t();
+  switch ($phase) {
+    case 'runtime':
+      if (!rooms_fullcalendar_loaded()) {
+        $requirements['Rooms FullCalendar Library'] = array(
+          'title' => $t('Rooms FullCalendar'),
+          'description' => $t('Could not load the FullCalendar Library'),
+          'value' => 'FullCalendar Missing',
+          'severity' => REQUIREMENT_ERROR,
+        );
+      }
+      else {
+        $requirements['Rooms FullCalendar Library'] = array(
+          'title' => $t('Rooms FullCalendar'),
+          'description' => $t('The FullCalendar Library is installed'),
+          'value' => 'FullCalendar Installed',
+          'severity' => REQUIREMENT_OK,
+        );
+      }
+  }
+
+  return $requirements;
 }
 
 /**

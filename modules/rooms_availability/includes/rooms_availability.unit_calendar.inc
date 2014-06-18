@@ -1,9 +1,12 @@
 <?php
 
 /**
+ * @file
+ * Class UnitCalendar
  * Handles querying and updating the availability information
  * relative to a single bookable unit.
  */
+
 class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
 
   /**
@@ -17,11 +20,11 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
    * Constructs a UnitCalendar instance.
    *
    * @param int $unit_id
-   *   The bookable unit_id .
+   *   The bookable unit_id.
    */
   public function __construct($unit_id) {
     $this->unit_id = $unit_id;
-    // Load the booking unit
+    // Load the booking unit.
     $unit = rooms_unit_load($unit_id);
 
     // When deleting booking which unit was deleted before we don't have unit.
@@ -36,9 +39,9 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
   public function removeEvents($events) {
     $events_to_delete = array();
     foreach ($events as $event) {
-      // Break any locks
+      // Break any locks.
       $event->unlock();
-      // Set the events to the default state
+      // Set the events to the default state.
       $event->id = $this->default_state;
 
       $events_to_delete[] = $event;
@@ -50,9 +53,9 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
    * {@inheritdoc}
    */
   public function stateAvailability(DateTime $start_date, DateTime $end_date, array $states = array()) {
-    // Get all states in the date range
+    // Get all states in the date range.
     $existing_states = $this->getStates($start_date, $end_date);
-    // Look at the difference between existing states and states to check against -
+    // Look at the difference between existing states and states to check.
     $diff = array_diff($existing_states, $states);
     $valid = (count($diff) > 0) ? FALSE : TRUE;
     return $valid;
@@ -64,7 +67,7 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
   public function getStates(DateTime $start_date, DateTime $end_date, $confirmed = FALSE) {
 
     $states = array();
-    // Get the raw day results
+    // Get the raw day results.
     $results = $this->getRawDayData($start_date, $end_date);
     foreach ($results[$this->unit_id] as $year => $months) {
       foreach ($months as $mid => $month) {
@@ -86,18 +89,17 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
    * {@inheritdoc}
    */
   public function getEvents(DateTime $start_date, DateTime $end_date) {
-    // Get the raw day results
+    // Get the raw day results.
     $results = $this->getRawDayData($start_date, $end_date);
     $events = array();
     foreach ($results[$this->unit_id] as $year => $months) {
-      $eod = rooms_end_of_month_dates($year);
       foreach ($months as $mid => $month) {
-        // The event array gives us the start days for each event within a month
+        // The event array returns the start days for each event within a month.
         $start_days = array_keys($month['states']);
         foreach ($month['states'] as $state) {
-          // Create a booking event
+          // Create a booking event.
           $start = $state['start_day'];
-          $end= $state['end_day'];
+          $end = $state['end_day'];
           $sd = new DateTime("$year-$mid-$start");
           $ed = new DateTime("$year-$mid-$end");
 
@@ -116,15 +118,13 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
    * {@inheritdoc}
    */
   public function getRawDayData(DateTime $start_date, DateTime $end_date) {
-    // Create a dummy BookingEvent to represent the range we are searching over
-    // This gives us access to handy functions that BookingEvents have
+    // Create a dummy BookingEvent to represent the range we are searching over.
+    // This gives us access to handy functions that BookingEvents have.
     $s = new BookingEvent($this->unit_id, 0, $start_date, $end_date);
-
     $results = array();
 
-    // Start by doing a query to the db to get any info stored there
-
-    // If search across the same year do a single query
+    // Start by doing a query to the db to get any info stored there.
+    // If search across the same year do a single query.
     if ($s->sameYear()) {
       $query = db_select('rooms_availability', 'a');
       $query->fields('a');
@@ -138,7 +138,7 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
           $m = $month['month'];
           $y = $month['year'];
           $id = $month['unit_id'];
-          // Remove the three first rows and just keep the days
+          // Remove the three first rows and just keep the days.
           unset($month['month']);
           unset($month['year']);
           unset($month['unit_id']);
@@ -146,7 +146,7 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
         }
       }
     }
-    // For multiple years do a query for each year
+    // For multiple years do a query for each year.
     else {
       for ($j = $s->startYear(); $j <= $s->endYear(); $j++) {
         $query = db_select('rooms_availability', 'a');
@@ -174,15 +174,14 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
       }
     }
 
-
     // With the results from the db in place fill in any missing months
-    // with the default state for the unit
+    // with the default state for the unit.
     for ($j = $s->startYear(); $j <= $s->endYear(); $j++) {
       $eod = rooms_end_of_month_dates($j);
 
-      // We start by setting the expected start and end months for each year
+      // We start by setting the expected start and end months for each year.
       if ($s->sameYear()) {
-        $expected_months = $s->endMonth() - $s->startMonth() +1;
+        $expected_months = $s->endMonth() - $s->startMonth() + 1;
         $sm = $s->startMonth();
         $em = $s->endMonth();
       }
@@ -192,7 +191,7 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
         $em = $s->endMonth();
       }
       elseif ($j == $s->startYear()) {
-        $expected_months = 12 - $s->startMonth() +1;
+        $expected_months = 12 - $s->startMonth() + 1;
         $em = 12;
         $sm = $s->startMonth();
       }
@@ -202,10 +201,10 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
         $em = 12;
       }
 
-      // We then check to see if the months we have already fit our expectations
-      $actual_months =  isset($result[$this->unit_id][$j]) ? count($results[$id][$j]) : 0;
-      if ($expected_months>$actual_months) {
-        // We have missing months so lets go fill them
+      // We check to see if the months we have already fit our expectations.
+      $actual_months = isset($result[$this->unit_id][$j]) ? count($results[$id][$j]) : 0;
+      if ($expected_months > $actual_months) {
+        // We have missing months so lets go fill them.
         for ($i = $sm; $i <= $em; $i++) {
           if (!isset($results[$this->unit_id][$j][$i])) {
             $last_day = $eod[$i];
@@ -213,32 +212,36 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
               $this->default_state,
               new DateTime("$j-$i-1"),
               new DateTime("$j-$i-$last_day")));
-            // Add the month in its rightful position
+            // Add the month in its rightful position.
             $results[$this->unit_id][$j][$i]['days'] = $month;
-            // And sort months
+            // And sort months.
             ksort($results[$this->unit_id][$j]);
           }
         }
       }
     }
 
-    // With all the months in place we now need to clean results to set the right start and end date
-    // for each month - this will save code downstream from having to worry about it
+    // With all the months in place we now need to clean results to set the
+    // right start and end date for each month - this will save code downstream
+    // from having to worry about it.
     foreach ($results[$this->unit_id] as $year => $months) {
       foreach ($months as $mid => $days) {
-        // Get the end of month values again to make sure we have the right year because it might change
-        // for queries spanning years
+        // Get the end of month values again to make sure we have the right year
+        // because it might change for queries spanning years.
         $eod = rooms_end_of_month_dates($year);
-        // There is undoubtetly a smarter way to do the clean up below - but will live with this for now
+        // There is undoubtetly a smarter way to do the clean up below - but
+        // will live with this for now.
         if (count($days['days']) != $eod[$mid]) {
           switch ($eod[$mid]) {
             case 30:
               unset($results[$this->unit_id][$year][$mid]['days']['d31']);
               break;
+
             case 29:
               unset($results[$this->unit_id][$year][$mid]['days']['d31']);
               unset($results[$this->unit_id][$year][$mid]['days']['d30']);
               break;
+
             case 28:
               unset($results[$this->unit_id][$year][$mid]['days']['d31']);
               unset($results[$this->unit_id][$year][$mid]['days']['d30']);
@@ -247,15 +250,15 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
           }
         }
         if (($year == $s->startYear()) && ($mid == $s->startMonth())) {
-          // We know we have the entire months over the range so we just unset all the dates
-          // from the start of the month to the actual start day
+          // We know we have the entire months over the range so we just unset
+          // all the dates from the start of the month to the actual start day.
           for ($i = 1; $i < $s->startDay(); $i++) {
             unset($results[$this->unit_id][$year][$mid]['days']['d' . $i]);
           }
         }
         if (($year == $s->endYear()) && ($mid == $s->endMonth())) {
-          // and from the end of the month back to the actual end day
-          for ($i = $s->endDay()+1; $i <= $eod[$mid]; $i++) {
+          // And from the end of the month back to the actual end day.
+          for ($i = $s->endDay() + 1; $i <= $eod[$mid]; $i++) {
             unset($results[$this->unit_id][$year][$mid]['days']['d' . $i]);
           }
         }
@@ -264,12 +267,12 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
     }
 
     // With the results in place we do a states array with the start and
-    // end dates of each event
+    // end dates of each event.
     foreach ($results[$this->unit_id] as $year => $months) {
       foreach ($months as $mid => $days) {
-        // The number of days in the month we are interested in eventing
+        // The number of days in the month we are interested in eventing.
         $j = count($days);
-        // The start date (in case we are not starting from the first day of the month)
+        // The start date.
         $i = substr(key($days['days']), 1);
         $start_day = $i;
         $end_day = NULL;
@@ -279,9 +282,11 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
         while ($j <= count($days['days'])) {
           $state = $days['days']['d' . $i];
           if ($state != $old_state) {
-            $unique_states[] = array('state' => $old_state,
+            $unique_states[] = array(
+              'state' => $old_state,
               'start_day' => $start_day,
-              'end_day' => $i-1);
+              'end_day' => $i - 1,
+            );
             $end_day = $i - 1;
             $start_day = $i;
             $old_state = $state;
@@ -289,10 +294,12 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
           $i++;
           $j++;
         }
-        // Get the last event in
-        $unique_states[] = array('state' => $state,
-          'start_day' => isset($end_day) ? $end_day+1 : $start_day,
-          'end_day' => $i-1);
+        // Get the last event in.
+        $unique_states[] = array(
+          'state' => $state,
+          'start_day' => isset($end_day) ? $end_day + 1 : $start_day,
+          'end_day' => $i - 1,
+        );
         $results[$this->unit_id][$year][$mid]['states'] = $unique_states;
       }
     }
@@ -308,7 +315,7 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
     $states = $this->getStates($event->start_date, $event->end_date);
     $blocked = FALSE;
 
-    // Query the locks table to see if event is blocked
+    // Query the locks table to see if event is blocked.
     $query = db_select('rooms_booking_locks', 'l');
     $query->addField('l', 'unit_id');
     $query->addField('l', 'state');
@@ -317,7 +324,7 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
     $query->condition('l.state', $states);
     $query->condition('l.locked', 1);
     $result = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
-    // Only block if we are trying to update an event that is not locked
+    // Only block if we are trying to update an event that is not locked.
     if ((count($result) > 0) && $result[0]['state'] != $event->id) {
       $blocked = TRUE;
     }
@@ -329,30 +336,31 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
    */
   public function updateCalendar($events) {
     $response = array();
-    // First check that none of the events supplied are blocked by an existing event with a locked status
+    // First check that none of the events supplied are blocked by an existing
+    // event with a locked status.
     $monthly_events = array();
 
     foreach ($events as $event) {
-      // Make sure event refers to the unit for this calendar
+      // Make sure event refers to the unit for this calendar.
       if ($event->unit_id == $this->unit_id) {
-        // Check if event is not blocked by a locked event
+        // Check if event is not blocked by a locked event.
         if (!$this->eventBlocked($event)) {
-          // If the event is in the same month span just queue to be added
+          // If the event is in the same month span just queue to be added.
           if ($event->sameMonth()) {
             $monthly_events[] = $event;
           }
           else {
-            // Check if multi-year - if not just create monthly events
+            // Check if multi-year - if not just create monthly events.
             if ($event->sameYear()) {
               $monthly_events_tmp = $event->transformToMonthlyEvents();
-              $monthly_events =  array_merge($monthly_events, $monthly_events_tmp);
+              $monthly_events = array_merge($monthly_events, $monthly_events_tmp);
             }
             else {
-              // else transform to single years and then to monthly
+              // Else transform to single years and then to monthly.
               $yearly_events = $event->transformToYearlyEvents();
               foreach ($yearly_events as $ye) {
                 $monthly_events_tmp = $ye->transformToMonthlyEvents();
-                $monthly_events =  array_merge($monthly_events, $monthly_events_tmp);
+                $monthly_events = array_merge($monthly_events, $monthly_events_tmp);
               }
             }
           }
@@ -382,12 +390,13 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
     $eod = rooms_end_of_month_dates($event->startYear());
     $last_day = $eod[$event->startMonth()];
 
-    for ($i = 1; $i<=$last_day; $i++) {
+    for ($i = 1; $i <= $last_day; $i++) {
       if (($i >= $event->startDay()) && ($i <= $event->endDay())) {
         $days['d' . $i] = $event->id;
       }
       else {
-        $days['d' . $i] = $this->default_state; //replace with default state
+        // Replace with default state.
+        $days['d' . $i] = $this->default_state;
       }
     }
     return $days;
@@ -398,8 +407,8 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
    */
   protected function preparePartialMonthArray(RoomsEventInterface $event) {
     $days = array();
-    for ($i = $event->startDay(); $i<=$event->endDay(); $i++) {
-        $days['d' . $i] = $event->id;
+    for ($i = $event->startDay(); $i <= $event->endDay(); $i++) {
+      $days['d' . $i] = $event->id;
     }
     return $days;
   }

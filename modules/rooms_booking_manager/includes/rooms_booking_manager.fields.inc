@@ -1,7 +1,8 @@
 <?php
 
 /**
- * @file field definitions for the Rooms Booking Manager.
+ * @file
+ * Field definitions for the Rooms Booking Manager.
  */
 
 /**
@@ -463,4 +464,3 @@ function _rooms_booking_manager_line_item_type_fields() {
 
   return $field_data;
 }
-

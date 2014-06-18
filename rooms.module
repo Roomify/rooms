@@ -26,23 +26,23 @@ define('ROOMS_THIS_PAGE', 'this');
 define('ROOMS_ALL_PAGES', 'all');
 define('ROOMS_NONE', 'none');
 
-define ('ROOMS_SIZE_FAILURE', 0);
-define ('ROOMS_AVAILABILITY_FAILURE', 1);
-define ('ROOMS_NO_ROOMS', 2);
-define ('ROOMS_PER_TYPE', 'rooms_per_type');
-define ('ROOMS_INDIVIDUAL', 'rooms_individual');
-define ('ROOMS_ENQ_CHECKOUT', 'rooms_enq_checkout');
-define ('ROOMS_COMMERCE_CHECKOUT', 'rooms_commerce_checkout');
+define('ROOMS_SIZE_FAILURE', 0);
+define('ROOMS_AVAILABILITY_FAILURE', 1);
+define('ROOMS_NO_ROOMS', 2);
+define('ROOMS_PER_TYPE', 'rooms_per_type');
+define('ROOMS_INDIVIDUAL', 'rooms_individual');
+define('ROOMS_ENQ_CHECKOUT', 'rooms_enq_checkout');
+define('ROOMS_COMMERCE_CHECKOUT', 'rooms_commerce_checkout');
 
-define ('ROOMS_DISPLAY_CHILDREN', 1);
-define ('ROOMS_DISPLAY_CHILDREN_NO', 0);
+define('ROOMS_DISPLAY_CHILDREN', 1);
+define('ROOMS_DISPLAY_CHILDREN_NO', 0);
 
-define ('FULL_PAYMENT', 10);
-define ('PERCENT_PAYMENT', 11);
-define ('FIRST_NIGHT_PAYMENT', 12);
+define('FULL_PAYMENT', 10);
+define('PERCENT_PAYMENT', 11);
+define('FIRST_NIGHT_PAYMENT', 12);
 
-define ('ROOMS_DISPLAY_TYPE_SELECTOR', 1);
-define ('ROOMS_DISPLAY_TYPE_SELECTOR_NO', 0);
+define('ROOMS_DISPLAY_TYPE_SELECTOR', 1);
+define('ROOMS_DISPLAY_TYPE_SELECTOR_NO', 0);
 
 /**
  * Implements hook_permission().
@@ -60,7 +60,7 @@ function rooms_permission() {
 }
 
 /**
- * Implements hook_libraries_info()
+ * Implements hook_libraries_info().
  */
 function rooms_libraries_info() {
   $libraries['rooms_fullcalendar'] = array(
@@ -69,7 +69,7 @@ function rooms_libraries_info() {
     'download url' => 'http://www.drupalrooms.com/sites/default/files/fullcalendar-1.5.4.zip',
     'version arguments' => array(
       'file' => 'fullcalendar/fullcalendar.js',
-       //1.5.4
+       // 1.5.4
       'pattern' => '/v(\d+\.\d+\.\d)/',
       'lines' => 3,
     ),
@@ -88,7 +88,7 @@ function rooms_libraries_info() {
 }
 
 /**
- * Check if the FullCalendar Library is loaded
+ * Checks if the FullCalendar Library is loaded.
  *
  * @return bool
  *   A boolean indicating the FullCalendar status.
@@ -103,34 +103,6 @@ function rooms_fullcalendar_loaded() {
                           Please check the installation instructions and the <a href="@status">Status Report</a>.',
       array('@status' => url('admin/reports/status'))), 'warning');
   }
-}
-
-/**
- * Implements hook_requirements
- */
-function rooms_requirements($phase) {
-  $requirements = array();
-
-  switch ($phase) {
-    case 'runtime':
-      if (!rooms_fullcalendar_loaded()) {
-        $requirements['Rooms FullCalendar Library'] = array(
-          'title' => t('Rooms FullCalendar'),
-          'description' => t('Could not load the FullCalendar Library'),
-          'value' => 'FullCalendar Missing',
-          'severity' => REQUIREMENT_ERROR,
-        );
-      } else {
-        $requirements['Rooms FullCalendar Library'] = array(
-          'title' => t('Rooms FullCalendar'),
-          'description' => t('The FullCalendar Library is installed'),
-          'value' => 'FullCalendar Installed',
-          'severity' => REQUIREMENT_OK,
-        );
-      }
-  }
-
-  return $requirements;
 }
 
 /**
@@ -154,16 +126,19 @@ function rooms_theme() {
 /**
  * Generic access control for Rooms entities.
  *
- * @param $op
+ * @param string $op
  *   The operation being performed. One of 'view', 'update', 'create' or
  *   'delete'.
- * @param $entity
+ * @param object $entity
  *   Optionally an entity to check access for. If no entity is given, it will be
  *   determined whether access is allowed for all entities of the given type.
- * @param $account
+ * @param object $account
  *   The user to check for. Leave it to NULL to check for the global user.
- * @param $entity_type
+ * @param string $entity_type
  *   The entity type of the entity to check for.
+ *
+ * @return bool
+ *   Boolean indicating whether the user is granted or not.
  *
  * @see entity_access()
  */
@@ -173,8 +148,8 @@ function rooms_entity_access($op, $entity, $account, $entity_type) {
   $account = isset($account) ? $account : $user;
   $entity_info = entity_get_info($entity_type);
 
-  // $entity may be either an object or a entity type. Since entity types cannot be
-  // an integer, use either nid or type as the static cache id.
+  // $entity may be either an object or a entity type. Since entity types cannot
+  // be an integer, use either nid or type as the static cache id.
   $cid = is_object($entity) ? $entity->{$entity_info['entity keys']['id']} : $entity;
 
   // If we've already checked access for this node, user and op, return from
@@ -191,8 +166,8 @@ function rooms_entity_access($op, $entity, $account, $entity_type) {
 
   if ($op == 'view') {
     if (isset($entity)) {
-      // When trying to figure out access to an entity, query the base table using
-      // our access control tag.
+      // When trying to figure out access to an entity, query the base table
+      // using our access control tag.
       if (!empty($entity_info['access arguments']['access tag']) && module_implements('query_' . $entity_info['access arguments']['access tag'] . '_alter')) {
         $query = db_select($entity_info['base table']);
         $query->addExpression('1');
@@ -244,7 +219,7 @@ function rooms_entity_access($op, $entity, $account, $entity_type) {
       }
       else {
         // Otherwise perform an entity type-level access check.
-        $access =  user_access('create ' . $entity_type . ' entities', $account);
+        $access = user_access('create ' . $entity_type . ' entities', $account);
         $rights[$account->uid][$cid][$op] = $access;
         return $access;
       }
@@ -380,7 +355,7 @@ function rooms_entity_access_permissions($entity_type) {
 function rooms_entity_access_query_alter($query, $entity_type, $base_table = NULL, $account = NULL, $op = 'view') {
   global $user;
 
-  // Read the account from the query if available or default to the current user.
+  // Read the account from the query if available or current user by default.
   if (!isset($account) && !$account = $query->getMetaData('account')) {
     $account = $user;
   }
@@ -454,8 +429,8 @@ function rooms_entity_access_query_alter($query, $entity_type, $base_table = NUL
 
   // If the given entity type has a user ownership key...
   if (!empty($entity_info['access arguments']['user key'])) {
-    // Perform 'operation own' access control for the entity in the query if the user
-    // is authenticated.
+    // Perform 'operation own' access control for the entity in the query if the
+    // user is authenticated.
     if ($account->uid && user_access($op  . ' own ' . $entity_type . ' entities', $account)) {
       $conditions->condition($base_table . '.' . $entity_info['access arguments']['user key'], $account->uid);
     }
@@ -465,13 +440,13 @@ function rooms_entity_access_query_alter($query, $entity_type, $base_table = NUL
   // data for the current query.
   $hooks = array(
     'rooms_entity_access_' . $op . '_condition_' . $entity_type,
-    'rooms_entity_access_' . $op . '_condition'
+    'rooms_entity_access_' . $op . '_condition',
   );
 
   $context = array(
     'account' => $account,
     'entity_type' => $entity_type,
-    'base_table' => $base_table
+    'base_table' => $base_table,
   );
 
   // Allow other modules to add conditions to the array as necessary.
@@ -579,7 +554,6 @@ function rooms_field_widget_info() {
   return array(
     'rooms_options_combined' => array(
       'label' => t('Combined text field'),
-      'description' => t(''),
       'field types' => array('rooms_options'),
       'settings' => array(),
     ),
@@ -603,7 +577,7 @@ function rooms_field_formatter_info() {
 }
 
 /**
- * Implements hook_field_formatter_view
+ * Implements hook_field_formatter_view().
  */
 function rooms_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
@@ -614,6 +588,7 @@ function rooms_field_formatter_view($entity_type, $entity, $field, $instance, $l
         $element[$delta] = array('#markup' => "{$item['quantity']} x {$item['name']}");
       }
       break;
+
     case 'rooms_options_admin':
       foreach ($items as $delta => $item) {
         $element[$delta] = array('#markup' => "{$item['quantity']} x {$item['name']} - {$item['operation']} {$item['value']}");
@@ -634,17 +609,18 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
       '#title' => t('Name'),
       '#default_value' => isset($items[$delta]['name']) ? $items[$delta]['name'] : NULL,
       '#attributes' => array(
-        'class' => array('rooms-option--name')
+        'class' => array('rooms-option--name'),
       ),
     );
     $element['quantity'] = array(
       '#type' => 'select',
       '#title' => t('Quantity'),
-      '#options' => array('None', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'),
+      '#options' => rooms_assoc_range(1, 10),
+      '#empty_option' => t('None'),
       '#default_value' => isset($items[$delta]['quantity']) ? $items[$delta]['quantity'] : NULL,
       '#description' => t('How many of this option should be available'),
       '#attributes' => array(
-        'class' => array('rooms-option--quantity')
+        'class' => array('rooms-option--quantity'),
       ),
     );
     $price_options = rooms_price_options_options();
@@ -654,7 +630,7 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
       '#options' => $price_options,
       '#default_value' => isset($items[$delta]['operation']) ? $items[$delta]['operation'] : NULL,
       '#attributes' => array(
-        'class' => array('rooms-option--operation')
+        'class' => array('rooms-option--operation'),
       ),
     );
     $element['value'] = array(
@@ -663,7 +639,7 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
       '#size' => 10,
       '#default_value' => isset($items[$delta]['value']) ? $items[$delta]['value'] : NULL,
       '#attributes' => array(
-        'class' => array('rooms-option--value')
+        'class' => array('rooms-option--value'),
       ),
     );
 
@@ -697,37 +673,37 @@ function rooms_price_options_options() {
 }
 
 /**
- * Utility function that returns an array with the last day of each month given a year
+ * Utility function that returns the last day of each month given a year.
  *
- * @param $year
- * The year to get the end of month dates for
+ * @param int $year
+ *   The year to get the end of month dates for
  *
- * @param $calendar
- * The calendar to use to determine eof dates
- *
- * @return
- * An array keyed by months
+ * @return array
+ *   An array keyed by months
  */
 function rooms_end_of_month_dates($year) {
-
   $end_of_month_dates = array();
 
-  for ($i = 1; $i<=12; $i++) {
-     $end_of_month_dates[$i] = date("t", mktime(0, 0, 0, $i, 1, $year));
+  for ($i = 1; $i <= 12; $i++) {
+    $end_of_month_dates[$i] = date("t", mktime(0, 0, 0, $i, 1, $year));
   }
 
   return $end_of_month_dates;
 }
 
 /**
- * Utility function - we have a few forms that need a start and end date field and we need to apply
- * the same javascript to these forms in order to have a specific consistent behaviour and groups
- * the form elements and javascript injection in one place.
+ * Utility function to create two related datepickers.
  *
- * @param array $data_range_fields If you are adding extra information pass the fields first keeping
- * in mind that any key values that are set in the function will be overidden.
+ * We have a few forms that need a start and end date field
+ * and we need to apply the same javascript to these forms in order to have a
+ * specific consistent behaviour and groups the form elements and javascript
+ * injection in one place.
  *
- * @return array The array holding the field definitions
+ * @param int $year
+ * @param int $month
+ *
+ * @return array
+ *   The array holding the field definitions
  */
 function rooms_date_range_fields($year = NULL, $month = NULL) {
   $date_range_fields = array();
@@ -776,7 +752,6 @@ function rooms_date_range_fields($year = NULL, $month = NULL) {
     '#title' => t('Arrival Date'),
     '#date_type' => DATE_DATETIME,
     '#date_format' => $date_format,
-    //'#default_value' => "$year-$month-01 00:00:00",
     '#date_increment' => 1,
     '#date_year_range' => '-1:+3',
     // Default parameters defined above, with an additional parameter
@@ -786,13 +761,12 @@ function rooms_date_range_fields($year = NULL, $month = NULL) {
   );
 
   $date_range_fields['rooms_end_date'] = array(
-    '#prefix' => '<div class="end-date" id="'. $end_date_id .'">',
+    '#prefix' => '<div class="end-date" id="' . $end_date_id . '">',
     '#suffix' => '</div></div>',
     '#type' => 'date_popup',
     '#title' => t('Departure Date'),
     '#date_type' => DATE_DATETIME,
     '#date_format' => $date_format,
-    //'#default_value' => "$year-$month-01 00:00:00",
     '#date_increment' => 1,
     '#date_year_range' => '-1:+3',
     // Default parameters defined above, with an additional parameter
@@ -806,7 +780,7 @@ function rooms_date_range_fields($year = NULL, $month = NULL) {
       'js' => array(
         drupal_get_path('module', 'rooms') . '/js/rooms_date_popup.js',
         array(
-         'data' => array(
+          'data' => array(
             'rooms' => array(
               'roomsStartYear' => $year,
               'roomsStartMonth' => $month,
@@ -833,19 +807,19 @@ function rooms_date_range_fields($year = NULL, $month = NULL) {
 }
 
 /**
- * Transfom from PHP conventions to jQueryUI conventions for dates
+ * Transforms from PHP conventions to jQueryUI conventions for dates.
  */
 function rooms_dateFormatTojQueryUIDatePickerFormat($date_format) {
   $chars = array(
-    // Day
+    // Day.
     'd' => 'dd', 'j' => 'd', 'l' => 'DD', 'D' => 'D',
-    // Month
+    // Month.
     'm' => 'mm', 'n' => 'm', 'F' => 'MM', 'M' => 'M',
-    // Year
+    // Year.
     'Y' => 'yy', 'y' => 'y',
   );
 
-  return strtr((string)$date_format, $chars);
+  return strtr((string) $date_format, $chars);
 }
 
 /**
@@ -856,7 +830,7 @@ function rooms_dateFormatTojQueryUIDatePickerFormat($date_format) {
  * @param string $field_name
  *   Date field name used to locate the date.
  *
- * @return
+ * @return DateTime
  *   Date object for the corresponding input date, FALSE otherwise.
  */
 function rooms_form_input_date_object($form_state, $field_name) {
@@ -889,9 +863,9 @@ function rooms_form_values_get_start_end_dates($form_state) {
   $start_date = $form_state['values']['rooms_start_date'];
   $end_date = $form_state['values']['rooms_end_date'];
 
-  // if the input format is numeric we assume that is a unixtime seconds format.
+  // If the input format is numeric we assume that is a unixtime seconds format.
   if (is_numeric($start_date) && is_numeric($end_date)) {
-    // the @ indicate DateTime that the format is unixtime
+    // The @ indicate DateTime that the format is unixtime.
     $start_date = '@' . $start_date;
     $end_date = '@' . $end_date;
   }
@@ -903,37 +877,36 @@ function rooms_form_values_get_start_end_dates($form_state) {
 }
 
 /**
- * Validation callback that could be reused in all the forms that need to validate
- * dates. End date must be greater thatn start date.
+ * Validation callback that could be reused in all the forms that need to
+ * validate dates. End date must be greater than start date.
  */
 function rooms_form_start_end_dates_validate($form, &$form_state) {
-  $errors = array();
   list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
   $today_greater = FALSE;
-  // skip if no dates are provided
+  // Skip if no dates are provided.
   if (empty($start_date) || empty($end_date)) {
     form_set_error('date_range', t('Please choose dates.'));
     return;
   }
 
-  // in case that this value is set trigger the today greater validation
+  // In case that this value is set trigger the today greater validation.
   if (isset($form_state['today_greater_validation'])) {
     $today_greater = TRUE;
   }
 
-  // Check date validity
+  // Check date validity.
   $errors = rooms_check_dates_validity($start_date, $end_date, $today_greater);
 
   // For some forms as rooms_availability_pricing_update_form and
-  // rooms_availability_update_status_form we need to validate that the seleced
+  // rooms_availability_update_status_form we need to validate that the selected
   // date match with current values.
   if (isset($form_state['values']['curr_month']) && isset($form_state['values']['curr_year'])) {
     $curr_month = $form_state['values']['curr_month'];
     $curr_year = $form_state['values']['curr_year'];
     if ($start_date->format('n') != $curr_month || $end_date->format('n') != $curr_month
       || $start_date->format('Y') != $curr_year || $end_date->format('Y') != $curr_year) {
-        $errors[] = t('Start and end date must be within the current month.');
-      }
+      $errors[] = t('Start and end date must be within the current month.');
+    }
   }
 
   // When there are multiples errors for the same form element Drupal only
@@ -946,23 +919,25 @@ function rooms_form_start_end_dates_validate($form, &$form_state) {
 
 /**
  * Checks the logical validity of date values.
+ *
  * @param DateTime $start_date
  *   The start date
  * @param DateTime $end_date
  *   The end date
  * @param bool $today_greater
- *   TRUE in case to enable the validation that start_date must be greater than today.
+ *   TRUE in case to enable the validation that start_date must be greater than
+ *   today.
  *
- * @return
+ * @return array
  *   An array with error messages.
  */
 function rooms_check_dates_validity(DateTime $start_date, DateTime $end_date, $today_greater = FALSE) {
   $errors = array();
-  // end date must be greater than start date.
+  // End date must be greater than start date.
   if ($end_date <= $start_date) {
     $errors[] = t('End date must be after start date.');
   }
-  // in case the date should be grater than today
+  // In case the date should be grater than today.
   if ($today_greater) {
     $now = new DateTime();
     $diff1 = $now->setTime(0, 0, 0)->diff($start_date);
@@ -976,8 +951,14 @@ function rooms_check_dates_validity(DateTime $start_date, DateTime $end_date, $t
 /**
  * Alternative numeric range generator considering users that use PHP < v5.3.6
  * and experiment the bug: https://bugs.php.net/bug.php?id=51894
+ *
  * @param int $start
+ *   First value of the sequence.
  * @param int $end
+ *   The sequence is ended upon reaching the end value.
+ *
+ * @return array
+ *   The expected range.
  */
 function rooms_range($start, $end) {
   if (version_compare(phpversion(), '5.3.6', '<')) {
@@ -994,10 +975,12 @@ function rooms_range($start, $end) {
 
 /**
  * Returns a range array keyed by value.
+ *
  * @param int $start
  *   First value of the sequence.
  * @param int $end
  *   The sequence is ended upon reaching the end value.
+ *
  * @return array
  *   An array of elements from start to end, inclusive keyed by values.
  */
@@ -1092,6 +1075,11 @@ function rooms_filter_month_form($form, &$form_state, $month, $year) {
   return $form;
 }
 
+/**
+ * Submit callback for rooms_filter_month_form form.
+ *
+ * @see rooms_filter_month_form()
+ */
 function rooms_filter_month_form_submit(&$form, &$form_state) {
   $year = $form_state['values']['year'] + date('Y', time()) - 2;
   $month = $form_state['values']['month'];
@@ -1103,8 +1091,7 @@ function rooms_filter_month_form_submit(&$form, &$form_state) {
   }
 
   if (arg(7) != '') {
-    if ($type == 'all') $address .= '/all/' . arg(7);
-    else $address .= $type . arg(7);
+    $address .= ($type == 'all') ? '/all/' . arg(7) : $type . arg(7);
   }
 
   $form_state['redirect'] = $address;
@@ -1118,7 +1105,7 @@ function rooms_filter_month_form_submit(&$form, &$form_state) {
  */
 function rooms_preprocess_rooms_three_month_calendar(&$vars) {
 
-  // Load FullCalendar
+  // Load FullCalendar.
   rooms_fullcalendar_loaded();
 
   // Add css styles for three-month-calendar.

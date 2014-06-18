@@ -64,7 +64,7 @@ function rooms_booking_settings($form, &$form_state) {
         array(
           'data' => '#rooms-booking-settings .vertical-tabs .form-type-textfield input { width: auto; }',
           'type' => 'inline',
-        )
+        ),
       ),
     ),
   );

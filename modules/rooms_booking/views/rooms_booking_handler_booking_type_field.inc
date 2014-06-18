@@ -2,7 +2,8 @@
 
 /**
  * @file
- * Contains a Views field handler to take care of displaying the correct label for unit types
+ * Contains a Views field handler to take care of displaying the correct label
+ * for unit types.
  */
 
 

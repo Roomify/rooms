@@ -226,7 +226,7 @@ function rooms_availability_schema() {
       'year' => array('year'),
       'month' => array('month'),
     ),
-    'unique keys' =>  array(
+    'unique keys' => array(
       'month_key' => array('unit_id', 'year', 'month'),
     ),
     'foreign keys' => array(
@@ -237,7 +237,7 @@ function rooms_availability_schema() {
     ),
   );
 
-   $schema['rooms_booking_locks'] = array(
+  $schema['rooms_booking_locks'] = array(
     'description' => 'Booking states held in this table can be set to lock - so they cannot be deleted',
     'fields' => array(
       'unit_id' => array(
@@ -258,7 +258,7 @@ function rooms_availability_schema() {
         'not null' => TRUE,
         'default' => '1',
       ),
-    )
+    ),
   );
 
   return $schema;

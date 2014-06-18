@@ -19,7 +19,7 @@ function rooms_booking_manager_install() {
  * Creates a product that can be referenced from line items.
  */
 function rooms_booking_manager_enable() {
-  // Reset product types cache to have our rooms_product available
+  // Reset product types cache to have our rooms_product available.
   commerce_product_types_reset();
   commerce_product_configure_product_type('rooms_product');
 
@@ -31,7 +31,7 @@ function rooms_booking_manager_enable() {
       $product->sku = 'ROOMS-BASIC-BOOKING';
       $product->title = t('Rooms Basic Booking');
       // We will change the price later, but for now set the price to 100 (=$1)
-      // to give tax module something to work with
+      // to give tax module something to work with.
       $product->commerce_price[LANGUAGE_NONE][0]['amount'] = 100;
       $product->commerce_price[LANGUAGE_NONE][0]['currency_code'] = commerce_default_currency();
 
@@ -69,7 +69,7 @@ function rooms_booking_manager_uninstall() {
 }
 
 /**
- * Add "Booking Number People" field to the rooms_booking_manager_line_item
+ * Adds "Booking Number People" field to the rooms_booking_manager_line_item.
  */
 function rooms_booking_manager_update_7001() {
   $field = array(
@@ -130,7 +130,7 @@ function rooms_booking_manager_update_7001() {
 
 
 /**
- * Set price for ROOMS-BASIC-BOOKING to 100 (=$1)
+ * Sets price for ROOMS-BASIC-BOOKING to 100 (=$1).
  */
 function rooms_booking_manager_update_7002() {
   commerce_product_types_reset();
@@ -148,7 +148,7 @@ function rooms_booking_manager_update_7002() {
 
 
 /**
- * Add "Booking Options" field to the rooms_booking_manager_line_item
+ * Adds "Booking Options" field to the rooms_booking_manager_line_item.
  */
 function rooms_booking_manager_update_7003() {
 
@@ -215,7 +215,7 @@ function rooms_booking_manager_update_7003() {
 
 
 /**
- * Add "Booking Reference" field to the rooms_booking_manager_line_item
+ * Adds "Booking Reference" field to the rooms_booking_manager_line_item.
  */
 function rooms_booking_manager_update_7004() {
 
@@ -299,7 +299,7 @@ function rooms_booking_manager_update_7004() {
 
 
 /**
- * Add "Booking Children Ages" field to the rooms_booking_manager_line_item
+ * Adds "Booking Children Ages" field to the rooms_booking_manager_line_item.
  */
 function rooms_booking_manager_update_7005() {
   $field = array(

@@ -5,6 +5,7 @@
  * A pricing event represent a price over a set of continuous dates. As soon as
  * the price changes that is a different pricing event
  */
+
 interface PricingEventInterface extends RoomsEventInterface {
   /**
    * Applies an operation against a Price event.
@@ -20,7 +21,7 @@ interface PricingEventInterface extends RoomsEventInterface {
 
   /**
    * Returns event in a format amenable to FullCalendar display or generally
-   * sensible json
+   * sensible json.
    *
    * @return array
    *   The processed event, in JSON ready format.

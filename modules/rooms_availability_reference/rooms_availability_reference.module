@@ -42,7 +42,6 @@ function rooms_availability_reference_field_info() {
       'settings' => array(
         'referenceable_booking_unit_types' => array(),
       ),
-      //'instance settings' => array('referencable booking unit types' => array()),
       'default_widget'    => 'options_select',
       'default_formatter' => 'rooms_availability_reference_default',
     ),
@@ -115,7 +114,7 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
         $unit_names[] = $unit->name;
         $unit_ids[] = $unit->unit_id;
 
-        // Inject settings in javascript that we will use
+        // Inject settings in javascript that we will use.
         $js_settings['roomsAvailabilityRef'][] = array(
           'unitID' => $unit->unit_id,
           'style' => ROOMS_AVAILABILITY_GENERIC_STYLE,
@@ -167,11 +166,11 @@ function rooms_availability_reference_field_settings_form($field, $instance, $ha
  * Implements hook_field_validate().
  */
 function rooms_availability_reference_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
-  // Extract unit ids to check
+  // Extract unit ids to check.
   $ids = array();
 
-  // Check for non-numeric values
-    // First check non-numeric "nid's to avoid losing time with them.
+  // Check for non-numeric values.
+  // First check non-numeric "nid's to avoid losing time with them.
   foreach ($items as $delta => $item) {
     if (is_array($item) && !empty($item['unit_id'])) {
       if (is_numeric($item['unit_id'])) {
@@ -189,8 +188,7 @@ function rooms_availability_reference_field_validate($entity_type, $entity, $fie
 }
 
 /**
- * Retrieves an array of candidate referenceable booking units
- * (shamelessly stolen from node_reference.module!).
+ * Retrieves an array of candidate referenceable booking units.
  *
  * This info is used in various places (allowed values, autocomplete
  * results, input validation...). Some of them only need the nids,
@@ -211,7 +209,7 @@ function rooms_availability_reference_field_validate($entity_type, $entity, $fie
  *   - ids: array of specific unit ids to lookup.
  *   - limit: maximum size of the the result set. Defaults to 0 (no limit).
  *
- * @return
+ * @return array
  *   An array of valid units in the form:
  *   array(
  *     unit_id => array(
@@ -256,7 +254,7 @@ function rooms_availability_reference_potential_references($field, $options = ar
  * List of referenceable nodes defined by content types.
  */
 function _rooms_availability_reference_potential_references($field, $options) {
-  // Avoid useless work
+  // Avoid useless work.
   if (!isset($field['settings']['referenceable_unit_types'])) {
     return array();
   }
@@ -268,7 +266,7 @@ function _rooms_availability_reference_potential_references($field, $options) {
   $query = db_select('rooms_units', 'u');
   $unit_unit_id_alias = $query->addField('u', 'unit_id');
   $unit_name_alias = $query->addField('u', 'name', 'name');
-  $unit_type_alias  = $query->addField('u', 'type',  'type');
+  $unit_type_alias = $query->addField('u', 'type', 'type');
 
   if (is_array($field['settings']['referenceable_unit_types'])) {
     $query->condition('u.type', $field['settings']['referenceable_unit_types'], 'IN');
@@ -285,7 +283,8 @@ function _rooms_availability_reference_potential_references($field, $options) {
         break;
 
       case 'equals':
-      default: // no match type or incorrect match type: use "="
+      default:
+        // No match type or incorrect match type: use "=".
         $query->condition('u.name', $options['string']);
         break;
     }

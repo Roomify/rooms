@@ -2,12 +2,12 @@
 
 /**
  * @file
- * Manages pricing for Bookable Units and displaying dates on the jquery FullCalendar
- * plugin
+ * Manages pricing for Bookable Units and displaying dates on the jquery
+ * FullCalendar plugin.
  */
 
-define ('ROOMS_PER_NIGHT', 'rooms_per_night');
-define ('ROOMS_PER_PERSON', 'rooms_per_person');
+define('ROOMS_PER_NIGHT', 'rooms_per_night');
+define('ROOMS_PER_PERSON', 'rooms_per_person');
 
 
 /**
@@ -63,11 +63,11 @@ function rooms_pricing_query_rooms_pricing_access_alter(QueryAlterableInterface 
  * Implements hook_menu().
  */
 function rooms_pricing_menu() {
-  $items  =  array();
+  $items = array();
 
   $items['admin/rooms/units/unit/%rooms_unit/pricing'] = array(
     'title' => 'Manage Pricing',
-    'page callback' =>  'rooms_pricing_page',
+    'page callback' => 'rooms_pricing_page',
     'page arguments' => array(4, 6, 7),
     'access callback' => 'rooms_unit_access',
     'access arguments' => array('update pricing', 4),
@@ -77,7 +77,7 @@ function rooms_pricing_menu() {
   );
 
   $items['rooms/units/unit/%rooms_unit/pricing/json/%/%'] = array(
-    'title' =>  'Pricing Info',
+    'title' => 'Pricing Info',
     'page callback' => 'rooms_pricing_json',
     'page arguments' => array(3, 6, 7),
     'access callback' => 'rooms_unit_access',
@@ -99,11 +99,11 @@ function rooms_pricing_menu() {
 }
 
 /**
- * Callback for admin/rooms/units/unit/%pricing_unit/pricing - builds pricing
- * page by adding calendar and pulling events from pricing table.
+ * Callback for admin/rooms/units/unit/%pricing_unit/pricing.
  *
+ * Builds pricing page by adding calendar and pulling events from pricing table.
  */
-function rooms_pricing_page(RoomsUnit $rooms_unit, $year='', $month='') {
+function rooms_pricing_page(RoomsUnit $rooms_unit, $year = '', $month = '') {
   // Set the page title.
   drupal_set_title(t('Edit @unit_name Pricing', array('@unit_name' => $rooms_unit->name)));
 
@@ -134,7 +134,7 @@ function rooms_pricing_page(RoomsUnit $rooms_unit, $year='', $month='') {
 }
 
 /**
- * A basic form that allows us to update the state of the calendar
+ * A basic form that allows us to update the state of the calendar.
  */
 function update_unit_pricing_form($form, &$form_state, $unit_id) {
 
@@ -158,7 +158,7 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
   );
 
   $form['rooms_update_pricing']['rooms_date_range'] += rooms_date_range_fields();
-  // Unset a js setting that is not relevant for pricing
+  // Unset a js setting that is not relevant for pricing.
   drupal_add_js(array('rooms' => array('roomsBookingStartDay' => 0)), 'setting');
 
   $form['rooms_update_pricing']['op'] = array(
@@ -170,7 +170,7 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
     '#type' => 'select',
     '#title' => t('Operation'),
     '#options' => $price_options,
-    '#default_value' =>  'replace',
+    '#default_value' => 'replace',
   );
 
   $form['rooms_update_pricing']['op']['amount'] = array(
@@ -213,9 +213,11 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
 
 /**
  * Validate callback form update_unit_pricing_form form.
+ *
+ * @see update_unit_pricing_form()
  */
 function update_unit_pricing_form_validate(&$form, &$form_state) {
-  // Make sure amount entered is numeric
+  // Make sure amount entered is numeric.
   if (!empty($form_state['values']['amount']) && !is_numeric($form_state['values']['amount'])) {
     form_set_error('amount', t('%name: you must enter a numeric value for the price.', array('%name' => 'Amount')));
   }
@@ -223,6 +225,8 @@ function update_unit_pricing_form_validate(&$form, &$form_state) {
 
 /**
  * Submit callback form update_unit_pricing_form form.
+ *
+ * @see update_unit_pricing_form()
  */
 function update_unit_pricing_form_submit(&$form, &$form_state) {
   list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
@@ -230,7 +234,7 @@ function update_unit_pricing_form_submit(&$form, &$form_state) {
   $amount = $form_state['values']['amount'];
   $unit_id = $form_state['values']['unit_id'];
 
-  // Get all the pricing events for the date range
+  // Get all the pricing events for the date range.
   $rc = new UnitPricingCalendar($unit_id);
   $pe = new PricingEvent($unit_id, $amount, $start_date, $end_date, $operation);
   $events = array($pe);
@@ -239,8 +243,10 @@ function update_unit_pricing_form_submit(&$form, &$form_state) {
 }
 
 /**
- * Creates the necessary json for the date range provided - needs at least start year and month at which point it will
- * return the entire month.
+ * Creates the necessary json for the date range provided.
+ *
+ * Needs at least start year and month at which point it will return the entire
+ * month.
  */
 function rooms_pricing_json($unit, $start_year = '', $start_month = '', $start_day = '', $end_year = '', $end_month = '', $end_day = '') {
 
@@ -272,7 +278,7 @@ function rooms_pricing_json($unit, $start_year = '', $start_month = '', $start_d
     $end_day = $eom[$end_date->format('n')];
     $end_date = new DateTime("$end_year-$end_month-$end_day");
   }
-  else{
+  else {
     $start_date = new DateTime("$start_year-$start_month-$start_day");
     $end_date = new DateTime("$end_year-$end_month-$end_day");
   }
@@ -291,22 +297,32 @@ function rooms_pricing_json($unit, $start_year = '', $start_month = '', $start_d
 
 /**
  * Page callback for Bulk Pricing Management.
+ *
+ * @param string $year
+ *   Year to perform the operations.
+ * @param string $month
+ *   Month to perform the operations.
+ * @param string $type
+ *   Bookable unit type to perform the operation.
+ *
+ * @return array
+ *   Bulk pricing management page render array.
  */
-function rooms_pricing_bulk_pricing_management($year = '', $month = '', $type = 'all', $action = '', $start = '', $end = '') {
-  // Load FullCalendar and relevant js/css
+function rooms_pricing_bulk_pricing_management($year = '', $month = '', $type = 'all') {
+  // Load FullCalendar and relevant js/css.
   rooms_fullcalendar_loaded();
 
-  // If year is not set then give it the current date
+  // If year is not set then give it the current date.
   $year = ($year == '') ? date('Y', time()) : $year;
   $month = ($month == '') ? date('n', time()) : $month;
   $type = ($type == '') ? 'all' : $type;
 
-  // It's not a valid unit type
+  // It's not a valid unit type.
   if (rooms_unit_get_types($type) == FALSE) {
     $type = 'all';
   }
 
-  // It's not a valid month or not valid year
+  // It's not a valid month or not valid year.
   $year_options = range(date('Y', time()) - 2, date('Y', time()) + 5);
   if ($month < 1 || $month > 12 || !in_array($year, $year_options)) {
     $year = date('Y', time());
@@ -353,9 +369,9 @@ function rooms_pricing_bulk_pricing_management($year = '', $month = '', $type = 
             ),
           ),
           'type' => 'setting',
-        )
-      )
-    )
+        ),
+      ),
+    ),
   );
 }
 
@@ -416,7 +432,7 @@ function rooms_pricing_update_form($form, &$form_state, $month, $year, $type, $r
     '#type' => 'select',
     '#title' => t('Operation'),
     '#options' => $price_options,
-    '#default_value' =>  'replace',
+    '#default_value' => 'replace',
   );
 
   $form['rooms_pricing_update']['op']['amount'] = array(
@@ -465,7 +481,7 @@ function rooms_pricing_update_form($form, &$form_state, $month, $year, $type, $r
   }
 
   foreach ($rooms_units as $key => $value) {
-    $form['rooms_data']['rooms-'.$value->unit_id] = array(
+    $form['rooms_data']['rooms-' . $value->unit_id] = array(
       '#type' => 'checkbox',
       '#title' => $value->name,
       '#prefix' => '<tr><th class="unit-name">',
@@ -480,11 +496,11 @@ function rooms_pricing_update_form($form, &$form_state, $month, $year, $type, $r
  * Validate callback for rooms_pricing_update_form form.
  */
 function rooms_pricing_update_form_validate(&$form, &$form_state) {
-  // Make sure amount entered is numeric
+  // Make sure amount entered is numeric.
   if (!empty($form_state['values']['amount']) && !is_numeric($form_state['values']['amount'])) {
     form_set_error('amount', t('%name: you must enter a numeric value for the price.', array('%name' => t('Amount'))));
   }
-  // validate that a rooms is selected
+  // Validate that a room is selected.
   _rooms_select_rooms_validation($form_state);
 }
 
@@ -501,16 +517,16 @@ function rooms_pricing_update_form_submit(&$form, &$form_state) {
   if ($form_state['values']['select-all'] == ROOMS_ALL_PAGES) {
     $query = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
     if ($type != 'all') {
-      $query->condition('type', $type , '=');
+      $query->condition('type', $type, '=');
     }
     $rooms_units = $query->execute()->fetchAll();
 
     foreach ($rooms_units as $room) {
-      $unit_id = $room->unit_id ;
+      $unit_id = $room->unit_id;
 
       if (!empty($days)) {
 
-        // Get all the pricing events for the date range
+        // Get all the pricing events for the date range.
         $rc = new UnitPricingCalendar($unit_id);
         $events = $rc->calculatePricingEvents($unit_id, $amount, $start_date, $end_date, $operation, $days);
 
@@ -519,7 +535,7 @@ function rooms_pricing_update_form_submit(&$form, &$form_state) {
       }
       else {
 
-        // Get all the pricing events for the date range
+        // Get all the pricing events for the date range.
         $rc = new UnitPricingCalendar($unit_id);
         $pe = new PricingEvent($unit_id, $amount, $start_date, $end_date, $operation);
         $events = array($pe);
@@ -536,7 +552,7 @@ function rooms_pricing_update_form_submit(&$form, &$form_state) {
 
         if (!empty($days)) {
 
-          // Get all the pricing events for the date range
+          // Get all the pricing events for the date range.
           $rc = new UnitPricingCalendar($unit_id);
           $events = $rc->calculatePricingEvents($unit_id, $amount, $start_date, $end_date, $operation, $days);
 
@@ -545,7 +561,7 @@ function rooms_pricing_update_form_submit(&$form, &$form_state) {
         }
         else {
 
-          // Get all the pricing events for the date range
+          // Get all the pricing events for the date range.
           $rc = new UnitPricingCalendar($unit_id);
           $pe = new PricingEvent($unit_id, $amount, $start_date, $end_date, $operation);
           $events = array($pe);

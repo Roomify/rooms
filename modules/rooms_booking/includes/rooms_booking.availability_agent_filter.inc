@@ -1,36 +1,54 @@
 <?php
 
+/**
+ * @file
+ * Rooms Booking agent filter interfaces and base implementations.
+ */
 
 /**
  * An availability agent filter receives a set of units and applies a filter
  * to them returning the remainder.
  */
-interface AvailabilityAgentFilter {
+interface AvailabilityAgentFilterInterface {
 
   /**
-   * @param array rooms The set of rooms to filter through
-   * @param array parameters A set of filter parameters
-   */
-  public function __construct($units, $parameters);
-
-  /**
-   * @return array The rooms remaining following the application of the filter
+   * Applies the filter operation to the units in the filter.
+   *
+   * @return array|int
+   *   Rooms remaining after the filter, error code otherwise.
    */
   public function applyFilter();
 
 }
 
-
 /**
- * Abstract class implementing AvailabilityAgentFilter that expose common functions.
+ * Abstract class implementing AvailabilityAgentFilterInterface.
  */
-abstract class AvailabilityAgentCommonFilter implements AvailabilityAgentFilter {
+abstract class AvailabilityAgentCommonFilter implements AvailabilityAgentFilterInterface {
 
+  /**
+   * Set of bookable units to filter through.
+   *
+   * @var array
+   */
   protected $units;
 
+  /**
+   * Set of filter parameters.
+   *
+   * @var array
+   */
   protected $parameters;
 
-  public function __construct($units, $parameters) {
+  /**
+   * Builds a new AvailabilityAgentFilter object.
+   *
+   * @param array $units
+   *   Set of bookable units to filter through.
+   * @param array $parameters
+   *   Set of filter parameters.
+   */
+  public function __construct(array $units, array $parameters) {
     $this->units = $units;
     $this->parameters = $parameters;
   }
@@ -40,10 +58,11 @@ abstract class AvailabilityAgentCommonFilter implements AvailabilityAgentFilter 
    *
    * @param array $filtered_units
    *   The rooms_units that passes the current filter.
+   *
    * @return array
    *   The intersection of filtered units with the provided set.
    */
-  function intersectUnits($filtered_units) {
+  protected function intersectUnits($filtered_units) {
     $filtered_keys = array_keys($filtered_units);
     $unit_keys = array_keys($this->units);
 
@@ -60,15 +79,17 @@ abstract class AvailabilityAgentCommonFilter implements AvailabilityAgentFilter 
 
 }
 
-
 /**
  * Filter by group_size and group_size_children.
  */
 class AvailabilityAgentSizeFilter extends AvailabilityAgentCommonFilter {
 
+  /**
+   * {@inheritdoc}
+   */
   public function applyFilter() {
 
-    // Check parameters
+    // Check parameters.
     $group_size = isset($this->parameters['group_size']) ? $this->parameters['group_size'] : 0;
     $group_size_children = isset($this->parameters['group_size_children']) ? $this->parameters['group_size_children'] : 0;
     $unit_types = isset($this->parameters['unit_types']) ? $this->parameters['unit_types'] : NULL;
@@ -80,12 +101,12 @@ class AvailabilityAgentSizeFilter extends AvailabilityAgentCommonFilter {
       ->propertyCondition('max_children', $group_size_children, '>=')
       ->propertyCondition('bookable', 1);
 
-    // Add a unit type condition if this has been defined
+    // Add a unit type condition if this has been defined.
     if ($unit_types != NULL) {
       $query->propertyCondition('type', $unit_types[0]);
     }
 
-    // Execute the query and collect the results
+    // Execute the query and collect the results.
     $results = $query->execute();
 
     if (count($results) == 0) {
@@ -96,29 +117,32 @@ class AvailabilityAgentSizeFilter extends AvailabilityAgentCommonFilter {
       return $results['rooms_unit'];
     }
     else {
-      // Computes the intersection of units and results
+      // Computes the intersection of units and results.
       return $this->intersectUnits($results['rooms_unit']);
     }
-
   }
 
 }
-
 
 /**
  * Filter by start_date, end_date, valid_states.
  */
 class AvailabilityAgentDateFilter extends AvailabilityAgentCommonFilter {
 
+  /**
+   * {@inheritdoc}
+   */
   public function applyFilter() {
 
-    // Check parameters
+    // Check parameters.
     $start_date = isset($this->parameters['start_date']) ? $this->parameters['start_date'] : NULL;
     $end_date = isset($this->parameters['end_date']) ? $this->parameters['end_date'] : NULL;
     $confirmed = isset($this->parameters['confirmed']) ? $this->parameters['confirmed'] : FALSE;
 
-    // Stard date and end date parameters must be set
-    if ($start_date == NULL || $end_date == NULL) return $this->units;
+    // Start date and end date parameters must be set.
+    if ($start_date == NULL || $end_date == NULL) {
+      return $this->units;
+    }
 
     if (isset($this->parameters['valid_states'])) {
       $valid_states = $this->parameters['valid_states'];
@@ -133,18 +157,17 @@ class AvailabilityAgentDateFilter extends AvailabilityAgentCommonFilter {
       ->propertyOrderBy('max_sleeps', 'ASC')
       ->propertyCondition('bookable', 1);
 
-    // Execute the query and collect the results
+    // Execute the query and collect the results.
     $results = $query->execute();
 
     foreach ($results['rooms_unit'] as $key => $unit) {
       $unit = rooms_unit_load($unit->unit_id);
 
-      // Get a calendar and check availability
+      // Get a calendar and check availability.
       $rc = new UnitCalendar($unit->unit_id);
-      // We need to make this based on user-set vars
-
-      // Rather than using $rc->stateAvailability we will get the states check directly
-      // as different states will impact on what products we create.
+      // We need to make this based on user-set vars.
+      // Rather than using $rc->stateAvailability we will get the states check
+      // directly as different states will impact on what products we create.
       $states = $rc->getStates($start_date, $end_date, $confirmed);
       $state_diff = array_diff($states, $valid_states);
 
@@ -157,7 +180,7 @@ class AvailabilityAgentDateFilter extends AvailabilityAgentCommonFilter {
       return $results['rooms_unit'];
     }
     else {
-      // Computes the intersection of units and results
+      // Computes the intersection of units and results.
       return $this->intersectUnits($results['rooms_unit']);
     }
 
@@ -165,17 +188,19 @@ class AvailabilityAgentDateFilter extends AvailabilityAgentCommonFilter {
 
 }
 
-
 /**
  * Filter units if is in the commerce cart.
  */
 class AvailabilityAgentCommerceFilter extends AvailabilityAgentCommonFilter {
 
+  /**
+   * {@inheritdoc}
+   */
   public function applyFilter() {
 
     global $user;
 
-    // Check parameters
+    // Check parameters.
     $start_date = isset($this->parameters['start_date']) ? $this->parameters['start_date'] : date_create()->setTimestamp(0);
     $end_date = isset($this->parameters['end_date']) ? $this->parameters['end_date'] : date_create()->setTimestamp(2147483647);
 
@@ -185,7 +210,7 @@ class AvailabilityAgentCommerceFilter extends AvailabilityAgentCommonFilter {
         ->propertyOrderBy('max_sleeps', 'ASC')
         ->propertyCondition('bookable', 1);
 
-      // Execute the query and collect the results
+      // Execute the query and collect the results.
       $results = $query->execute();
       if (count($results)) {
         $results = $results['rooms_unit'];
@@ -195,7 +220,7 @@ class AvailabilityAgentCommerceFilter extends AvailabilityAgentCommonFilter {
       $results = $this->units;
     }
 
-    // Load order for current user
+    // Load order for current user.
     if ($order = commerce_cart_order_load($user->uid)) {
       $wrapper = entity_metadata_wrapper('commerce_order', $order);
 
@@ -203,19 +228,20 @@ class AvailabilityAgentCommerceFilter extends AvailabilityAgentCommonFilter {
       if (commerce_line_items_quantity($wrapper->commerce_line_items, commerce_product_line_item_types()) > 0) {
         // Get the unit IDs already in the cart.
         foreach ($wrapper->commerce_line_items as $line_item) {
-          // There are some line_item types as: coupon, fee, etc. that don't have
-          // a referenced commerce_product.
+          // There are some line_item types as: coupon, fee, etc. that don't
+          // have a referenced commerce_product.
           if (in_array($line_item->type->value(), commerce_product_line_item_types())) {
-            // Need to check if commerce_product_type = 'rooms_product'
+            // Need to check if commerce_product_type = 'rooms_product'.
             if ($line_item->commerce_product->value()->type == 'rooms_product') {
               $line_item_values = $line_item->value();
 
-              // Current line_item start_date and end_date values
+              // Current line_item start_date and end_date values.
               $s_date = new DateTime($line_item_values->rooms_booking_dates[LANGUAGE_NONE][0]['value']);
               $e_date = new DateTime($line_item_values->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
 
-              // If current line_item date interval overlap parameters interval remove unit from results
-              if ( $this->checkInRange($s_date, $e_date, $start_date, $end_date) ) {
+              // If current line_item date interval overlap parameters interval
+              // remove unit from results.
+              if ($this->checkInRange($s_date, $e_date, $start_date, $end_date)) {
                 if (isset($results[$line_item_values->rooms_booked_unit_id[LANGUAGE_NONE][0]['value']])) {
                   unset($results[$line_item_values->rooms_booked_unit_id[LANGUAGE_NONE][0]['value']]);
                 }
@@ -230,23 +256,33 @@ class AvailabilityAgentCommerceFilter extends AvailabilityAgentCommonFilter {
       return $results;
     }
     else {
-      // Computes the intersection of units and results
+      // Computes the intersection of units and results.
       return $this->intersectUnits($results);
     }
   }
 
-  // Check if search interval overlaps line_item interval
+  /**
+   * Checks if search interval overlaps line_item interval.
+   *
+   * @param DateTime $line_item_start_date
+   *   Line item start date.
+   * @param DateTime $line_item_end_date
+   *   Line item end date.
+   * @param DateTime $start_date
+   *   Interval start date.
+   * @param DateTime $end_date
+   *   Interval end date.
+   *
+   * @return bool
+   *   TRUE in case of overlapping, FALSE otherwise.
+   */
   private function checkInRange($line_item_start_date, $line_item_end_date, $start_date, $end_date) {
     if (!(($line_item_start_date < $start_date && $line_item_end_date < $start_date) ||
-          ($line_item_start_date > $end_date && $line_item_end_date > $end_date))) {
-
+      ($line_item_start_date > $end_date && $line_item_end_date > $end_date))) {
       return TRUE;
-
     }
     else {
-
       return FALSE;
-
     }
   }
 

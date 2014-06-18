@@ -58,7 +58,7 @@ function rooms_unit_views_data_alter(&$data) {
     ),
     'argument' => array(
       'handler' => 'views_handler_argument_user_uid',
-      'name field' => 'name', // display this field in the summary
+      'name field' => 'name',
     ),
     'filter' => array(
       'title' => t('Name'),

@@ -19,7 +19,15 @@ class rooms_booking_handler_booking_operations_field extends views_handler_field
   function render($values) {
     $links = menu_contextual_links('rooms_booking', 'admin/rooms/bookings/booking', array($this->get_value($values, 'booking_id')));
     if (!empty($links)) {
-      return theme('links', array('links' => $links, 'attributes' => array('class' => array('links', 'inline', 'operations'))));
+      return theme('links', array(
+        'links' => $links,
+        'attributes' => array(
+          'class' => array('links',
+            'inline',
+            'operations'
+          ),
+        ),
+      ));
     }
   }
 }
