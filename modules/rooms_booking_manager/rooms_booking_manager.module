@@ -2507,6 +2507,12 @@ function rooms_booking_cancel_order_booking() {
 
 function rooms_booking_manager_price_apply($line_item, $name) {
   if ($line_item->type == 'rooms_booking') {
+    if ($item = field_get_items('commerce_line_item', $line_item, 'commerce_product')) {
+      $product = commerce_product_load($item[0]['product_id']);
+      if ($product->sku != 'ROOMS-BASIC-BOOKING') {
+        return;
+      }
+    }
     $amount = $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'];
 
     $start_date = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value']);

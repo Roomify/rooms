@@ -155,7 +155,7 @@ function rooms_unit_form_wrapper($unit) {
   drupal_set_title(t('Edit @unit_name', array('@unit_name' => $unit->name)));
   $unit->date = format_date($unit->created, 'custom', 'Y-m-d H:i:s O');
   $account = user_load($unit->uid);
-  $unit->author_name = $account->name;
+  $unit->author_name = isset($account->name) ? $account->name : '';
   return drupal_get_form('rooms_unit_edit_form', $unit);
 }
 
@@ -174,6 +174,7 @@ function rooms_unit_create_form_wrapper($type) {
   $unit = rooms_unit_create(array('type' => $type, 'uid' => $user->uid));
   $unit->created = REQUEST_TIME;
   $unit->author_name = $user->name;
+  $unit->status = 1;
   return drupal_get_form('rooms_unit_edit_form', $unit);
 }
 
