@@ -26,7 +26,7 @@ function rooms_booking_manager_menu() {
   $items  =  array();
 
   $items['booking'] = array(
-    'title' => 'Create your booking',
+    'title' => variable_get_value('rooms_booking_manager_create_your_booking'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('rooms_booking_availability_search_form_page'),
     'file' => 'rooms_booking_manager.availability_search.inc',
@@ -35,7 +35,7 @@ function rooms_booking_manager_menu() {
   );
 
   $items['booking/%start_date/%end_date'] = array(
-    'title' => 'Select your stay',
+    'title' => variable_get_value('rooms_booking_manager_select_your_stay'),
     'page callback' =>  'rooms_booking_manager_results_page',
     'page arguments' => array(1, 2),
     'access arguments' => array('book units'),
@@ -51,7 +51,7 @@ function rooms_booking_manager_menu() {
   );
 
   $items['bookings'] = array(
-    'title' => 'Review your reservation',
+    'title' => variable_get_value('rooms_booking_manager_review_your_reservation'),
     'page callback' => 'rooms_booking_manager_cart_view',
     'access arguments' => array('access checkout'),
   );
@@ -445,13 +445,13 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
       $booking_search_form = drupal_get_form('rooms_booking_availability_search_form_page');
 
       // Alter the page title.
-      drupal_set_title(t('Create your booking'));
+      drupal_set_title(variable_get_value('rooms_booking_manager_create_your_booking'));
 
       // Store and clean old messages.
       $old_messages = drupal_get_messages();
 
       // Create a warning message.
-      drupal_set_message(t('Unfortunately no units are available - try different dates if possible.'), 'warning');
+      drupal_set_message(variable_get_value('rooms_booking_manager_warning_no_units_available'), 'warning');
 
       // Show the themed warning message inside our form.
       $content['no_results'] = array(
@@ -468,14 +468,14 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
     elseif (variable_get('rooms_presentation_style', ROOMS_PER_TYPE) == ROOMS_PER_TYPE) {
 
       // Alter the page title.
-      drupal_set_title(t('Select your stay'));
+      drupal_set_title(variable_get_value('rooms_booking_manager_select_your_stay'));
 
       $content = rooms_booking_manager_present_types($units_per_type, $content, $start_date, $end_date, $booking_parameters, $booking_units, $type);
     }
     elseif (variable_get('rooms_presentation_style', ROOMS_PER_TYPE) == ROOMS_INDIVIDUAL) {
 
       // Alter the page title.
-      drupal_set_title(t('Select your stay'));
+      drupal_set_title(variable_get_value('rooms_booking_manager_select_your_stay'));
 
       $content = rooms_booking_manager_present_individual_rooms($units_per_type, $content, $start_date, $end_date, $booking_parameters);
     }
@@ -519,7 +519,7 @@ function rooms_booking_manager_change_search_form($form, &$form_state, $start_da
   if (!isset($form['info'])) {
     $form['info'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Your current search'),
+      '#title' => variable_get_value('rooms_booking_manager_your_current_search'),
       '#tree' => FALSE,
       '#attributes' => array('class' => array('rooms-current-search__info', 'form-item')),
     );
@@ -535,7 +535,7 @@ function rooms_booking_manager_change_search_form($form, &$form_state, $start_da
 
   $form['info']['arrival_date'] = array(
     '#theme' => 'container',
-    '#markup' => '<label>' . t('Arrival Date') . '</label> <span class="info">' . check_plain($start_date->format($date_format)) . '</span>',
+    '#markup' => '<label>' . variable_get_value('rooms_booking_manager_arrival_date') . '</label> <span class="info">' . check_plain($start_date->format($date_format)) . '</span>',
     '#attributes' => array('class' => array('rooms-current-search__arrival', 'form-item')),
   );
   $form['info']['params']['start_date'] = array(
@@ -545,7 +545,7 @@ function rooms_booking_manager_change_search_form($form, &$form_state, $start_da
 
   $form['info']['departure_date'] = array(
     '#theme' => 'container',
-    '#markup' => '<label>' . t('Departure Date') . '</label> <span class="info">' . check_plain($end_date->format($date_format)) . '</span>',
+    '#markup' => '<label>' . variable_get_value('rooms_booking_manager_departure_date') . '</label> <span class="info">' . check_plain($end_date->format($date_format)) . '</span>',
     '#attributes' => array('class' => array('rooms-current-search__departure', 'form-item')),
   );
   $form['info']['params']['end_date'] = array(
@@ -555,14 +555,14 @@ function rooms_booking_manager_change_search_form($form, &$form_state, $start_da
 
   $form['info']['nights'] = array(
     '#theme' => 'container',
-    '#markup' => '<label>' . t('Nights') . '</label> <span class="info">' . $end_date->diff($start_date)->days . '</span>',
+    '#markup' => '<label>' . variable_get_value('rooms_booking_manager_nights') . '</label> <span class="info">' . $end_date->diff($start_date)->days . '</span>',
     '#attributes' => array('class' => array('rooms-current-search__nights', 'form-item')),
   );
 
   if ($b_units) {
     $form['info']['units'] = array(
       '#theme' => 'container',
-      '#markup' => '<label>' . t('Units') . '</label> <span class="info">' . check_plain($b_units) . '</span>',
+      '#markup' => '<label>' . variable_get_value('rooms_booking_manager_units') . '</label> <span class="info">' . check_plain($b_units) . '</span>',
       '#attributes' => array('class' => array('rooms-current-search__units', 'form-item')),
     );
     $form['info']['params']['b_units'] = array(
@@ -574,7 +574,7 @@ function rooms_booking_manager_change_search_form($form, &$form_state, $start_da
   if ($type && $type_obj = rooms_unit_get_types($type)) {
     $form['info']['type'] = array(
       '#theme' => 'container',
-      '#markup' => '<label>' . t('Unit type') . '</label> <span class="info">' . check_plain($type_obj->label) . '</span>',
+      '#markup' => '<label>' . variable_get_value('rooms_booking_manager_unit_type') . '</label> <span class="info">' . check_plain($type_obj->label) . '</span>',
       '#attributes' => array('class' => array('rooms-current-search__type', 'form-item')),
     );
     $form['info']['params']['type'] = array(
@@ -606,7 +606,7 @@ function rooms_booking_manager_change_search_form($form, &$form_state, $start_da
   );
   $form['info']['actions']['change_search'] = array(
     '#type' => 'submit',
-    '#value' => t('Change search'),
+    '#value' => variable_get_value('rooms_booking_manager_button_change_search'),
     '#submit' => $submit,
     '#attributes' => array('class' => array('rooms-current-search__change-search-button')),
   );
@@ -1310,7 +1310,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
       // Element to display price
       $form[$type][$price]['price'] = array(
         '#prefix' => '<tr class="rooms-search-result__unit_summary_wrapper"><td class="rooms-search-result__base_price">',
-        '#markup' => format_plural(count($units), '1 @unit_type unit available from @price', '@count @unit_type units available from @price', array(
+        '#markup' => format_plural(count($units), '1 @unit_type '.variable_get_value('rooms_booking_manager_unit_available_from').' @price', '@count @unit_type '.variable_get_value('rooms_booking_manager_unit_available_from').' @price', array(
           '@unit_type' => $type_obj->label,
           '@price' =>
             t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
@@ -1345,7 +1345,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
       $id = 'rooms_' . $type . '_' . $price;
       $form[$type][$price]['quantity'] = array(
         '#prefix' => '<td class="rooms-search-result__select-units" style="width:15%;">',
-        '#field_suffix' => t('Units chosen'),
+        '#field_suffix' => variable_get_value('rooms_booking_manager_units_chosen'),
         '#type' => 'select',
         '#options' => $options,
         '#suffix' => '</td>',
@@ -1364,7 +1364,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
         $form[$type][$price]['submit'] = array(
           '#prefix' => '<td class="rooms-search-result__booking_button"  style="width:15%;"><div id="rooms_booking_button">',
           '#type' => 'submit',
-          '#value' => t('Place Booking'),
+          '#value' => variable_get_value('rooms_booking_manager_button_place_booking'),
           '#submit' => array('book_units_per_type_form_submit'),
           '#suffix' => '</div></td></tr>',
         );
@@ -1656,7 +1656,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
   $form['actions']['place_booking'] = array(
     '#type' => 'submit',
-    '#value' => t('Place Booking'),
+    '#value' => variable_get_value('rooms_booking_manager_button_place_booking'),
     '#submit' => array('book_units_per_type_form_submit'),
   );
 
@@ -2156,7 +2156,7 @@ function rooms_booking_manager_views_form_booking_cart_form_(&$form, &$form_stat
         $line_item_id = $form['edit_delete'][$key]['#line_item_id'];
         $form_state['line_items'][$line_item_id] = commerce_line_item_load($line_item_id);
 
-        $form['edit_delete'][$key]['#value'] = t('Remove');
+        $form['edit_delete'][$key]['#value'] = variable_get_value('rooms_booking_manager_button_remove');
         $form['edit_delete'][$key]['#submit'] = array_merge($form['#submit'], array('commerce_cart_line_item_delete_form_submit'));
       }
     }
@@ -2164,7 +2164,7 @@ function rooms_booking_manager_views_form_booking_cart_form_(&$form, &$form_stat
 
   $form['actions']['checkout'] = array(
     '#type' => 'submit',
-    '#value' => t('Checkout'),
+    '#value' => variable_get_value('rooms_booking_manager_button_checkout'),
     '#weight' => 5,
     '#access' => user_access('access checkout'),
     '#submit' => array_merge($form['#submit'], array('commerce_checkout_line_item_views_form_submit')),
