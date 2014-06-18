@@ -6,3 +6,4 @@ version = 1.x-dev
 package = Rooms
 
 dependencies[] = rooms
+dependencies[] = variable
