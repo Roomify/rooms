@@ -66,6 +66,7 @@ function rooms_booking_manager_menu() {
   return $items;
 }
 
+<<<<<<< HEAD
 /**
  * Implements hook_variable_group_info().
  */
@@ -93,6 +94,8 @@ function rooms_booking_manager_variable_info($options) {
   );
   return $variables;
 }
+=======
+>>>>>>> ROOMS-201: Remove variable definitions from rooms_booking_manager
 
 /**
  * Implements hook_mail().
@@ -111,7 +114,7 @@ function rooms_booking_manager_mail($key, &$message, $params) {
 function rooms_booking_manager_enquiry_confirmation() {
   return array(
     '#theme' => 'rooms_booking_enquiry_confirmation',
-    '#message' => variable_get('rooms_enquiry_form_confirmation'),
+    '#message' => variable_get('rooms_booking_manager_enquiry_form_confirmation'),
   );
 }
 
@@ -2278,7 +2281,7 @@ function rooms_booking_manager_alter_rooms_booking_settings(&$form, &$form_state
   $form['rooms_checkout_settings']['enquiry_section']['rooms_enquiry_form_confirmation'] = array(
     '#type' => 'textarea',
     '#title' => t('Confirmation message'),
-    '#default_value' => variable_get('rooms_enquiry_form_confirmation'),
+    '#default_value' => variable_get('rooms_booking_manager_enquiry_form_confirmation'),
   );
 
   $form['rooms_checkout_settings']['rooms_price_calculation'] = array(
