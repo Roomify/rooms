@@ -12,4 +12,5 @@ files[] = includes/rooms.event_interface.inc
 package = Rooms
 
 dependencies[] = libraries (>=2.x)
+dependencies[] = variable
 

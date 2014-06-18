@@ -1,0 +1,47 @@
+<?php
+
+/**
+ * @file
+ * Manage Settings - Settings that can be configured
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function rooms_terminology_menu() {
+	$items  =  array();
+	$items['admin/rooms/config/terminology'] = array(
+    'title' => 'Rooms Terminology',
+    'description' => 'Change Rooms Terminology',
+    'page callback' => 'rooms_terminology_form',
+    'access arguments' => array('configure room settings'),
+	);
+ 
+  return $items;
+}
+
+function rooms_terminology_form() {
+	$module_list = module_list();
+  $list = array();
+  // Looking for all Rooms modules
+  foreach ($module_list as $element) {
+    if (strncmp($element, 'rooms', strlen('rooms')) == 0)
+      $list[] = $element;
+  }
+
+  $variable_list = array();
+  // Include specific API for variable
+  variable_include();
+  // Create the list of variable of all Rooms modules enabled
+  foreach ($list as $element) {
+    $element = variable_list_module($element);
+    if (!empty($element)) {
+      foreach ($element as $elem)
+        $variable_list[] = $elem['name'];
+    }
+  }
+  
+  return drupal_get_form('variable_edit_form', $variable_list);
+}
+
+
