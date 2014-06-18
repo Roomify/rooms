@@ -451,7 +451,7 @@ function rooms_booking_form_rooms_booking_settings_alter(&$form, &$form_state, $
   $form['rooms_admin_settings']['rooms_booking_expiration_time'] = array(
     '#title' => t('Cart expiration time'),
     '#type' => 'rules_duration',
-    '#default_value' => variable_get('rooms_booking_expiration_time', 172800),
+    '#default_value' => variable_get('rooms_booking_expiration_time', 1800),
     '#description' => t('Set the time after the carts will expire.'),
     '#weight' => 50,
   );
@@ -470,7 +470,7 @@ function rooms_booking_rules_action_info_alter(&$actions) {
  */
 function rooms_booking_expiration_delete_orders($limit) {
   module_load_include('inc', 'commerce_cart_expiration', 'commerce_cart_expiration.rules');
-  $interval = variable_get('rooms_booking_expiration_time', 172800);
+  $interval = variable_get('rooms_booking_expiration_time', 1800);
   commerce_cart_expiration_delete_orders($interval, $limit);
 }
 
