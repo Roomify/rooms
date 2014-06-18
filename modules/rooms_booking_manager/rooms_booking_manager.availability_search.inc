@@ -37,7 +37,7 @@ function rooms_booking_availability_search_form_builder($form, &$form_state) {
 
   $form['conditions']['rooms'] = array(
     '#type' => 'select',
-    '#title' => t('Units'),
+    '#title' => variable_get_value('rooms_booking_manager_units'),
     '#options' => rooms_assoc_range(1, variable_get('rooms_booking_manager_search_form_units', 6)),
     '#default_value' =>  $rooms_number,
   );
@@ -59,12 +59,12 @@ function rooms_booking_availability_search_form_builder($form, &$form_state) {
     $classes .= ($rooms_number > 1) ? 'rooms-group-size-multiple-units': 'rooms-group-size-one-unit';
     $form['rooms_fieldset']['table_header'] = array(
       '#prefix' => '<table class="' . $classes . '"><thead>',
-      '#markup' => '<th class="rooms-group-size__people" colspan="2">' . t('Group size') . '</th>',
+      '#markup' => '<th class="rooms-group-size__people" colspan="2">' . variable_get_value('rooms_booking_manager_group_size') . '</th>',
       '#suffix' => '</thead>',
     );
 
     if (variable_get('rooms_display_children', ROOMS_DISPLAY_CHILDREN_NO) == ROOMS_DISPLAY_CHILDREN) {
-      $form['rooms_fieldset']['table_header']['#markup'] .= '<th class="rooms-group-size__children">' . t('Children') . '</th>';
+      $form['rooms_fieldset']['table_header']['#markup'] .= '<th class="rooms-group-size__children">' . variable_get_value('rooms_booking_manager_children') . '</th>';
     }
 
     $form['rooms_fieldset']['table_body'] = array(
@@ -107,7 +107,7 @@ function rooms_booking_availability_search_form_builder($form, &$form_state) {
   elseif (variable_get('rooms_presentation_style', ROOMS_PER_TYPE) == ROOMS_INDIVIDUAL) {
     $form['rooms_fieldset']['group_size_adults:1'] = array(
       '#type' => 'select',
-      '#title' => t('Group size'),
+      '#title' => variable_get_value('rooms_booking_manager_group_size'),
       '#options' => rooms_assoc_range(1, 8),
       '#default_value' => isset($booking_parameters[1]['adults']) ? $booking_parameters[1]['adults'] : 2,
     );
@@ -124,7 +124,7 @@ function rooms_booking_availability_search_form_builder($form, &$form_state) {
 
   if (variable_get('rooms_booking_manager_type_selector', ROOMS_DISPLAY_TYPE_SELECTOR_NO) == ROOMS_DISPLAY_TYPE_SELECTOR) {
     $form['unit_type'] = array(
-      '#title' => t('Select Type'),
+      '#title' => variable_get_value('rooms_booking_manager_select_type'),
       '#type' => 'select',
       '#options' => array('' => '') + rooms_unit_types_ids(),
       '#default_value' => 0,
@@ -154,7 +154,7 @@ function rooms_booking_availability_search_form_builder($form, &$form_state) {
 
   $form['actions']['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Search for Availability'),
+    '#value' => variable_get_value('rooms_booking_manager_button_search_for_availability'),
     '#submit' => $submit + array('rooms_booking_availability_search_form_submit'),
   );
 

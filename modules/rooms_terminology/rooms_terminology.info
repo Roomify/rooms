@@ -1,0 +1,10 @@
+name = Rooms Terminology
+description = Give the possibility to change Rooms Strings
+core = 7.x
+version = 1.x-dev
+
+package = Rooms
+
+dependencies[] = rooms
+dependencies[] = variable
+
