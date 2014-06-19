@@ -65,6 +65,8 @@ is updated to reflect the change.
 Please join us in the [Rooms issue queue][3] and collaborate with us to create a
 great booking solution for Drupal!
 
+For a more complete set of documentation visit http://www.drupalrooms.com
+
 
 PHP REQUIREMENTS & DATE REQUIREMENTS
 --------------------------------------
