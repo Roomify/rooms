@@ -474,11 +474,8 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
     }
   }
 
-  // TODO: investigate why this is needed, if not, refactor and remove it.
-  $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
-
   if ($content['booking_results']) {
-    $content['change_search'] = drupal_get_form('rooms_booking_manager_change_search_form', $start_date, $end_date, $booking_parameters, $booking_units, $type, $date_format);
+    $content['change_search'] = drupal_get_form('rooms_booking_manager_change_search_form', $start_date, $end_date, $booking_parameters, $booking_units, $type);
   }
   return theme('rooms_booking_results', $content);
 }
@@ -488,15 +485,10 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
  * availability search along with a "change search" button that will take you
  * back to the initial booking search page.
  */
-function rooms_booking_manager_change_search_form($form, &$form_state, $start_date, $end_date, $booking_parameters, $b_units, $type = '', $date_format = '') {
+function rooms_booking_manager_change_search_form($form, &$form_state, $start_date, $end_date, $booking_parameters, $b_units, $type = '') {
   // Ensure stylesheets are added to the page.
   $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
-
-  // Use the default date format if one is not provided.
-  // TODO: investigate why this option is needed, if not, refactor and remove it.
-  if (!$date_format) {
-    $date_format = variable_get('rooms_date_format', 'd-m-Y');
-  }
+  $date_format = variable_get('rooms_date_format', 'd-m-Y');
 
   if (!isset($form['info'])) {
     $form['info'] = array(
@@ -1075,9 +1067,6 @@ function book_unit_form_submit(&$form, &$form_state) {
   // reconvert them back to strings to recreate them in the Availability Agent.
   $sd = start_date_load($start_date);
   $ed = end_date_load($end_date);
-
-  // TODO: investigate why this is needed, if not, refactor and remove it.
-  $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
 
   // Let us get available rooms again and match the order against actual rooms.
   $agent = new AvailabilityAgent($sd, $ed, $group_size);
@@ -2340,7 +2329,7 @@ function rooms_booking_manager_alter_rooms_booking_settings(&$form, &$form_state
   $form['rooms_admin_settings']['rooms_date_format'] = array(
     '#type' => 'item',
     '#title' => t('Rooms PHP Date Format'),
-    '#description' => t("A custom date format used throughout the Rooms admin interface. Define a php date format string like 'm-d-Y' (see <a href=\"@link\">http://php.net/date</a> for more details).", array('@link' => 'http://php.net/date')),
+    '#description' => t("A custom date format for Booking labels, search summary and calendar pop-ups. Define a php date format string like 'm-d-Y' (see <a href=\"@link\">http://php.net/date</a> for more details).", array('@link' => 'http://php.net/date')),
   );
 
   $form['rooms_admin_settings']['rooms_date_format']['rooms_date_format'] = array(
