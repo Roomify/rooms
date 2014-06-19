@@ -4,8 +4,6 @@ core = 7.x
 
 package = Rooms
 
-version = 1.x-dev
-
 dependencies[] = rooms
 dependencies[] = rooms_ui
 dependencies[] = entity

@@ -1,7 +1,6 @@
 name = Rooms Pricing
 description = Manages pricing information for Rooms.
 core = 7.x
-version = 1.x-dev
 
 package = Rooms
 

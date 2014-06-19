@@ -53,6 +53,13 @@ function rooms_booking_manager_uninstall() {
   variable_del('rooms_date_format');
   variable_del('rooms_booking_manager_booking_product_id');
 
+  module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.variable');
+  $vars = rooms_booking_manager_variable_info(array());
+
+  foreach ($vars as $var_name => $var) {
+    variable_del($var_name);
+  }
+
   // Delete fields created by this module.
   field_delete_field('rooms_booking_options');
   field_delete_field('rooms_booking_number_people');
@@ -356,4 +363,13 @@ function rooms_booking_manager_update_7005() {
   );
 
   field_create_instance($instance);
+}
+
+/**
+ * Renames 'rooms_enquiry_form_confirmation' variable to
+ * 'rooms_booking_manager_enquiry_form_confirmation'.
+ */
+function rooms_booking_manager_update_7006() {
+  variable_set_value('rooms_booking_manager_enquiry_form_confirmation', variable_get_value('rooms_enquiry_form_confirmation'));
+  variable_delete('rooms_enquiry_form_confirmation');
 }

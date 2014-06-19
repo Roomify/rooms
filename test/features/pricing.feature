@@ -1,10 +1,10 @@
-Feature: Once rooms_availability is installed
+Feature: Once rooms_pricing is installed
   In order to create bookable units
   As a site administrator
-  I should be able to manage the bookable units availability options
+  I should be able to manage the bookable units pricing options
 
 @api @javascript
-Scenario: Availability manager user should be able to modify the availability state of units both in bulk availability page and per unit.
+Scenario: Availability manager user should be able to modify the pricing of units both in bulk pricing page and per unit.
   #Creating a unit type and some units.
   Given unit types:
   |type     |label    |base_price|min_sleeps|max_sleeps|min_children|max_children|

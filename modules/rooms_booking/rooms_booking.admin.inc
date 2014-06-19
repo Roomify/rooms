@@ -647,7 +647,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
                 );
 
                 // Show quantity field selector if an option quantity is set.
-                if (is_numeric($option['quantity']) && $form_state['values'][$option_name] == 1 && $option['quantity'] > 1) {
+                if (is_numeric($option['quantity']) && isset($form_state['values'][$option_name]) && $form_state['values'][$option_name] == 1 && $option['quantity'] > 1) {
                   $form['availability_fieldset']['unit_fieldset']['options_fieldset'][$option_name . ':quantity'] = array(
                     '#type' => 'select',
                     '#title' => t('Quantity'),

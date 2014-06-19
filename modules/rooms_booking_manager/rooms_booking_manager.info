@@ -1,7 +1,6 @@
 name = Rooms Booking Manager
 description = Manages booking for Rooms - handling main integration with Commerce
 core = 7.x
-version = 1.x-dev
 
 package = Rooms
 

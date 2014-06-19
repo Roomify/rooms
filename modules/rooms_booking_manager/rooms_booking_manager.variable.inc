@@ -177,7 +177,7 @@ function rooms_booking_manager_variable_info($options) {
   );
 
   $variables['rooms_booking_manager_enquiry_form_confirmation'] = array(
-    'type' => 'string',
+    'type' => 'text',
     'title' => t('Enquiry form confirmation', array(), $options),
     'description' => t('Enquiry form confirmation message', array(), $options),
     'default' => 'Thank you - a reservation has been created in our system for this unit and your enquiry has been sent successfully.',

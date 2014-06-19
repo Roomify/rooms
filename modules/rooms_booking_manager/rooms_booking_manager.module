@@ -84,7 +84,7 @@ function rooms_booking_manager_mail($key, &$message, $params) {
 function rooms_booking_manager_enquiry_confirmation() {
   return array(
     '#theme' => 'rooms_booking_enquiry_confirmation',
-    '#message' => variable_get('rooms_booking_manager_enquiry_form_confirmation'),
+    '#message' => variable_get_value('rooms_booking_manager_enquiry_form_confirmation'),
   );
 }
 
@@ -171,7 +171,7 @@ function rooms_booking_manager_enquiry_page_form($form, $form_state, $start_date
 
   if (isset($_GET['order'])) {
     foreach ($_GET['order'] as $type => $units) {
-      $i = 0;
+      $i = 1;
       $printed = FALSE;
       foreach ($units as $unit) {
         for ($index = 1; $index <= $unit['quantity']; $index++) {
@@ -2237,10 +2237,10 @@ function rooms_booking_manager_alter_rooms_booking_settings(&$form, &$form_state
     ),
   );
 
-  $form['rooms_checkout_settings']['enquiry_section']['rooms_enquiry_form_confirmation'] = array(
+  $form['rooms_checkout_settings']['enquiry_section']['rooms_booking_manager_enquiry_form_confirmation'] = array(
     '#type' => 'textarea',
     '#title' => t('Confirmation message'),
-    '#default_value' => variable_get('rooms_booking_manager_enquiry_form_confirmation'),
+    '#default_value' => variable_get_value('rooms_booking_manager_enquiry_form_confirmation'),
   );
 
   $form['rooms_checkout_settings']['rooms_price_calculation'] = array(

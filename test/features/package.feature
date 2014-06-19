@@ -1,4 +1,4 @@
-Feature: Have Rooms package correctly installed
+Feature: Once rooms_package correctly installed
   In order to create packages
   As a site administrator
   I need to be able to access all the Rooms packages configuration screens

@@ -1,4 +1,4 @@
-Feature: Have Rooms booking correctly installed
+Feature: Once rooms_booking correctly installed
   In order to create bookings
   As a site administrator
   I need to be able to access all the Rooms booking configuration screens
