@@ -69,6 +69,20 @@ class FeatureContext extends DrupalContext
   public $products = array();
 
   /**
+   * Keep track of created content types so they can be cleaned up.
+   *
+   * @var array
+   */
+  public $content_types = array();
+
+  /**
+   * Keep track of created fields so they can be cleaned up.
+   *
+   * @var array
+   */
+  public $fields = array();
+
+  /**
    * Initializes context.
    * Every scenario gets its own context object.
    *
@@ -135,6 +149,14 @@ class FeatureContext extends DrupalContext
         $product_ids[] = $product->product_id;
       }
       commerce_product_delete_multiple($product_ids);
+    }
+
+    foreach ($this->content_types as $content_type) {
+      node_type_delete($content_type);
+    }
+
+    foreach ($this->fields as $field) {
+      field_delete_field($field);
     }
 
   }
@@ -643,6 +665,105 @@ class FeatureContext extends DrupalContext
     // Set internal browser on the node edit page.
     $this->getSession()->visit($this->locatePath('/admin/commerce/products/' . $product->product_id . '/edit'));
   }
+
+  /**
+   * Adds availability reference field to a content type.
+   *
+   * @When /^I add the "(?<field_name>[^"]*)" availability reference field referencing to "(?<unit_types>[^"]*)" units in "(?<content_type>[^"]*)" content$/
+   */
+  public function iAddTheAvailabilityReferenceFieldReferencingToUnitsInPageContent($field_name, $unit_types, $content_type) {
+    // Create the content type.
+    // Make sure a testimonial content type doesn't already exist.
+    if (!in_array($content_type, node_type_get_names())) {
+      $type = array(
+        'type' => $content_type,
+        'name' => $content_type,
+        'base' => 'node_content',
+        'custom' => 1,
+        'modified' => 1,
+        'locked' => 0,
+      );
+
+      $type = node_type_set_defaults($type);
+      node_type_save($type);
+      node_add_body_field($type);
+      $this->content_types[] = $content_type;
+    }
+
+    // Create field ('rooms_booking_unit_options') if not exist.
+    if (field_read_field($field_name) === FALSE) {
+      $field = array(
+        'field_name' => $field_name,
+        'type' => 'rooms_availability_reference',
+        'cardinality' => -1,
+        'settings' => array(
+          'referenceable_unit_types' => drupal_map_assoc(explode(',', $unit_types)),
+        ),
+      );
+      field_create_field($field);
+      $this->fields[] = $field_name;
+    }
+
+    if (field_read_instance('node', $field_name, $content_type) === FALSE) {
+      // Create the instance on the bundle.
+      $instance = array(
+        'field_name' => $field_name,
+        'entity_type' => 'node',
+        'label' => 'Availability reference',
+        'bundle' => $content_type,
+        'required' => FALSE,
+        'widget' => array(
+          'type' => 'rooms_availability_reference_autocomplete',
+        )
+      );
+      field_create_instance($instance);
+    }
+
+  }
+
+  /**
+   * @Given /^reference units "(?<unit_names>[^"]*)" in the "(?<field_name>[^"]*)" field$/
+   */
+  public function referenceUnitsInTheField($unit_names, $field_name) {
+    $table_id = drupal_clean_css_identifier($field_name . '-values');
+    $items = $this->getSession()->getPage()->findAll('css', 'table[id^="' . $table_id . '"] tbody tr');
+    $delta = count($items) - 1;
+
+    foreach (explode(',', $unit_names) as $unit_name) {
+      $unit_id = $this->findBookableUnitByName($unit_name);
+      $this->fillFieldByJS('availability_ref[und][' . $delta . '][unit_id]', $unit_name. " [unit_id:$unit_id]");
+      $this->pressButton($field_name . '_add_more');
+      $this->iWaitForAjaxToFinish();
+      $delta++;
+    }
+  }
+
+  /**
+   * @Then /^I navigate in the fullCalendar to "(?<month>[^"]*)"$/
+   */
+  public function iNavigateInTheFullcalendarTo($month) {
+    $today = new DateTime();
+    $final = new DateTime($month . '-1');
+    $button_selector = ($today > $final) ? '.fc-button-prev' : '.fc-button-next';
+
+    if ($today > $final) {
+      $start = $final->add(new DateInterval('P2M'));;
+      $end = $today;
+    }
+    else {
+      $start = $today;
+      $end = $final->sub(new DateInterval('P1M'));
+    }
+    foreach ($this->monthsBetweenDates($start, $end) as $month) {
+      $element = $this->getSession()->getPage()->find('css', 'span' . $button_selector);
+      if ($element === NULL) {
+        throw new \InvalidArgumentException(sprintf('Cannot find button: "%s"', $button_selector));
+      }
+      $element->click();
+      $this->iWaitForAjaxToFinish();
+    }
+  }
+
 
   /**
    * Asserts that a given node type is editable.

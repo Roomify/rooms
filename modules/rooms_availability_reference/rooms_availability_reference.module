@@ -40,9 +40,9 @@ function rooms_availability_reference_field_info() {
       'label' => t('Rooms Availability Reference'),
       'description' => t('Display availability information embedded from other fieldable content.'),
       'settings' => array(
-        'referenceable_booking_unit_types' => array(),
+        'referenceable_unit_types' => array(),
       ),
-      'default_widget'    => 'options_select',
+      'default_widget' => 'rooms_availability_reference_autocomplete',
       'default_formatter' => 'rooms_availability_reference_default',
     ),
   );
@@ -61,7 +61,7 @@ function rooms_availability_reference_field_is_empty($item, $field) {
 function rooms_availability_reference_field_formatter_info() {
   $ret = array(
     'rooms_availability_reference_default' => array(
-      'label'       => t('Rooms Availability Calendar'),
+      'label' => t('Rooms Availability Calendar'),
       'description' => t('Displays availability information on a calendar.'),
       'field types' => array('rooms_availability_reference', 'entityreference'),
     ),
@@ -198,9 +198,9 @@ function rooms_availability_reference_field_validate($entity_type, $entity, $fie
  * The array we return contains all the potentially needed information,
  * and lets consumers use the parts they actually need.
  *
- * @param $field
+ * @param array $field
  *   The field definition.
- * @param $options
+ * @param array $options
  *   An array of options to limit the scope of the returned list. The following
  *   key/value pairs are accepted:
  *   - string: string to filter unit names on (used by autocomplete).
