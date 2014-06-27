@@ -2026,10 +2026,10 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
         // If the event addition was succesful lock the event.
         if ($responses[$id] == ROOMS_UPDATED) {
           $be->lock();
-          drupal_set_message(t('Unit availability has been updated.'));
+          watchdog('rooms_booking_manager', 'Unit availability has been updated.', array(), WATCHDOG_NOTICE);
         }
         else {
-          drupal_set_message(t('Unit availability could not be updated.'));
+          watchdog('rooms_booking_manager', 'Unit availability could not be updated.', array(), WATCHDOG_ERROR);
         }
       }
     }
