@@ -111,8 +111,10 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
           $unit = rooms_unit_load($item['unit_id']);
         }
 
-        $unit_names[] = $unit->name;
-        $unit_ids[] = $unit->unit_id;
+        if ($unit) {
+          $unit_names[] = $unit->name;
+          $unit_ids[] = $unit->unit_id;
+        }
       }
 
       if (!empty($unit_ids)) {

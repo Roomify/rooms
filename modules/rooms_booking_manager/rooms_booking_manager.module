@@ -2293,6 +2293,14 @@ function rooms_booking_manager_alter_rooms_booking_settings(&$form, &$form_state
     '#default_value' => variable_get('rooms_presentation_style', ROOMS_PER_TYPE),
   );
 
+  $form['rooms_search_settings']['rooms_booking_manager_search_form_max_group_size'] = array(
+    '#type' => 'select',
+    '#title' => t('Maximum group size to display'),
+    '#description' => t('Select the maximum group size to display in the availability search form select list'),
+    '#options' => rooms_assoc_range(1, 20),
+    '#default_value' => variable_get('rooms_booking_manager_search_form_max_group_size', 8),
+  );
+
   $form['rooms_search_settings']['rooms_booking_manager_search_form_units'] = array(
     '#type' => 'select',
     '#title' => t('Number of units to display'),

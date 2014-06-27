@@ -88,7 +88,7 @@ function rooms_booking_availability_search_form_builder($form, &$form_state) {
 
       $form['rooms_fieldset']['group_size_adults:' . $i] = array(
         '#type' => 'select',
-        '#options' => rooms_assoc_range(1, 8),
+        '#options' => rooms_assoc_range(1, variable_get('rooms_booking_manager_search_form_max_group_size', 8)),
         '#default_value' => isset($booking_parameters[$i]['adults']) ? $booking_parameters[$i]['adults'] : '2',
         '#prefix' => '<td class="rooms-group-size__people">',
         '#suffix' => '</td>',
