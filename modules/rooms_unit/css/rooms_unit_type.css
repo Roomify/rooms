@@ -37,15 +37,14 @@
 
 .rooms-unit-type-edit-form .form-item-name,
 .rooms-unit-type-edit-form .form-item-data-base-price,
-.rooms-unit-type-edit-form #edit-guest-capacity,
-.rooms-unit-type-edit-form #edit-child-capacity,
-.rooms-unit-type-edit-form #edit-data-bed-arrangement {
+.rooms-unit-type-edit-form .rooms-unit-type-guest-capacity,
+.rooms-unit-type-edit-form .rooms-unit-type-child-capacity {
   float: left;
   width: 15em;
   margin-right: 20px;
 }
-.rooms-unit-type-edit-form #edit-reference,
-.rooms-unit-type-edit-form #edit-unit-defaults {
+.rooms-unit-type-edit-form .rooms-unit-type-reference,
+.rooms-unit-type-edit-form .rooms-unit-type-defaults {
   float: none;
   width: 100%;
   max-width: 100%;

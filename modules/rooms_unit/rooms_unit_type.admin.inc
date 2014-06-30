@@ -69,6 +69,7 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#description' => '<strong>' . t('Unit defaults') . '</strong> - ' . t('Values specified below will be pre-populated as the defaults when creating units of this type.'),
     '#tree' => FALSE,
     '#weight' => -98,
+    '#attributes' => array('class' => array('rooms-unit-type-defaults')),
   );
 
   $form['unit_defaults']['data']['#tree'] = TRUE;
@@ -87,6 +88,7 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#type' => 'fieldset',
     '#title' => t('Default sleeping capacity'),
     '#tree' => FALSE,
+    '#attributes' => array('class' => array('rooms-unit-type-guest-capacity')),
   );
 
   $form['unit_defaults']['guest_capacity']['data']['#tree'] = TRUE;
@@ -110,6 +112,7 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#type' => 'fieldset',
     '#title' => t('Default child capacity'),
     '#tree' => FALSE,
+    '#attributes' => array('class' => array('rooms-unit-type-child-capacity')),
   );
 
   $form['unit_defaults']['child_capacity']['data']['#tree'] = TRUE;
@@ -133,6 +136,7 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#type' => 'fieldset',
     '#tree' => FALSE,
     '#weight' => -97,
+    '#attributes' => array('class' => array('rooms-unit-type-reference')),
   );
 
   $form['reference']['data']['#tree'] = TRUE;
