@@ -221,6 +221,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#title' => t('Sleeping capacity'),
     '#tree' => FALSE,
     '#weight' => -97,
+    '#attributes' => array('class' => array('rooms-unit-guest-capacity')),
   );
 
   $form['guest_capacity']['min_sleeps'] = array(
@@ -243,6 +244,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#title' => t('Child capacity'),
     '#tree' => FALSE,
     '#weight' => -96,
+    '#attributes' => array('class' => array('rooms-unit-child-capacity')),
   );
 
   $form['child_capacity']['min_children'] = array(
@@ -268,6 +270,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
   $form['data']['bed_arrangement'] = array(
     '#type' => 'fieldset',
     '#title' => t('Bed arrangement'),
+    '#attributes' => array('class' => array('rooms-unit-bed-arrangement')),
   );
 
   $form['data']['bed_arrangement']['singles'] = array(

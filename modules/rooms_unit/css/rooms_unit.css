@@ -35,21 +35,21 @@
 
 .rooms-unit-edit-form .form-item-name,
 .rooms-unit-edit-form .form-item-base-price,
-.rooms-unit-edit-form #edit-guest-capacity,
-.rooms-unit-edit-form #edit-child-capacity,
-.rooms-unit-edit-form #edit-data-bed-arrangement {
+.rooms-unit-edit-form .rooms-unit-guest-capacity,
+.rooms-unit-edit-form .rooms-unit-child-capacity,
+.rooms-unit-edit-form .rooms-unit-bed-arrangement {
   float: left;
   width: 15em;
   margin-right: 20px;
 }
 
-.rooms-unit-edit-form #edit-guest-capacity {
+.rooms-unit-edit-form .rooms-unit-guest-capacity {
   clear: left;
 }
 
-.rooms-unit-edit-form #edit-guest-capacity .form-text,
-.rooms-unit-edit-form #edit-child-capacity .form-text,
-.rooms-unit-edit-form #edit-data-bed-arrangement .form-text {
+.rooms-unit-edit-form .rooms-unit-guest-capacity .form-text,
+.rooms-unit-edit-form .rooms-unit-child-capacity .form-text,
+.rooms-unit-edit-form .rooms-unit-data-bed-arrangement .form-text {
   width: 2em;
   text-align: right;
 }
@@ -59,7 +59,7 @@
   text-align: right;
 }
 
-.rooms-unit-edit-form #edit-actions {
+.rooms-unit-edit-form .form-actions {
   clear: both;
   float: none;
 }
