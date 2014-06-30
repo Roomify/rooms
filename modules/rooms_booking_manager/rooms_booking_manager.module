@@ -1333,8 +1333,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
           'wrapper' => $type . '_' . $price . '_container',
         ),
         '#attributes' => array(
-          'onchange' => "if (this.value == 0) document.getElementById('" . $id . "').style.display = 'none';
-                           else document.getElementById('" . $id . "').style.display = 'table-row';",
+          'onchange' => "document.getElementById('" . $id . "').style.display = (this.value == 0) ? 'none' : 'table-row';",
         ),
       );
 
