@@ -250,7 +250,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#default_value' => $client,
     '#weight' => -1,
     '#required' => TRUE,
-    '#prefix' => '<div class="form-wrapper" id="edit-customer-wrapper">',
+    '#prefix' => '<div class="rooms-booking-customer-wrapper" id="edit-customer-wrapper">',
     '#suffix' => '</div>',
     '#ajax' => array(
       'callback' => 'rooms_booking_edit_profile_callback',
@@ -300,7 +300,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#options' => rooms_range(0, $persons),
     '#default_value' => isset($booking->data['group_size_children']) ? $booking->data['group_size_children'] : '0',
     '#description' => t('The number of children staying in this unit.'),
-    '#prefix' => '<div id="rooms_booking_group_size_children_container">',
+    '#prefix' => '<div class="rooms-booking-group-size-children-container" id="rooms_booking_group_size_children_container">',
     '#suffix' => '</div>',
   );
 
@@ -313,7 +313,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     );
 
     $form['data']['childrens_age'] = array(
-      '#prefix' => '<div class="form-wrapper container-inline" id="rooms_booking_childrensage">',
+      '#prefix' => '<div class="container-inline rooms-booking-childrensage" id="rooms_booking_childrensage">',
       '#suffix' => '</div>',
     );
 
@@ -353,6 +353,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   // A fieldset to hold the date range fields.
   $form['rooms_date_range'] = array(
     '#type' => 'fieldset',
+    '#attributes' => array('class' => array('rooms-booking-date-range-wrapper')),
   );
 
   $form['rooms_date_range'] += rooms_date_range_fields();
@@ -397,7 +398,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       'callback' => 'rooms_booking_edit_form_availability_callback',
       'wrapper' => 'availability-wrapper',
     ),
-    '#prefix' => '<div class="form-wrapper" id="availability-button">',
+    '#prefix' => '<div class="rooms-booking-availability-button-wrapper" id="availability-button">',
     '#suffix' => '</div>',
   );
 
@@ -457,13 +458,14 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   $form['availability_fieldset'] = array(
     '#type' => 'fieldset',
     '#description' => $unit_selected,
-    '#prefix' => '<div class="form-wrapper" id="availability-wrapper">',
+    '#prefix' => '<div class="rooms-booking-availability-wrapper" id="availability-wrapper">',
     '#suffix' => '</div>',
   );
 
   $form['b_status'] = array(
     '#type' => 'fieldset',
     '#title' => t('Booking status'),
+    '#attributes' => array('class' => array('rooms-booking-status-wrapper')),
   );
   $form['b_status']['booking_status'] = array(
     '#type' => 'checkbox',
@@ -484,6 +486,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
         $form['order'] = array(
           '#type' => 'fieldset',
           '#title' => t('Order'),
+          '#attributes' => array('class' => array('rooms-booking-order-wrapper')),
         );
         $form['order']['order_link'] = array(
           '#type' => 'markup',
@@ -542,7 +545,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     // This is where the available untis will pop up.
     $form['availability_fieldset']['unit_fieldset'] = array(
       '#type' => 'fieldset',
-      '#prefix' => '<div class="form-wrapper" id="unit-wrapper">',
+      '#prefix' => '<div class="rooms-booking-unit-wrapper" id="unit-wrapper">',
       '#suffix' => '</div>',
     );
 
@@ -581,6 +584,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
             $form['availability_fieldset']['unit_fieldset']['type'] = array(
               '#type' => 'fieldset',
               '#title' => t('@unit_type available bookable units', array('@unit_type' => $type_obj->label)),
+              '#attributes' => array('class' => array('rooms-booking-unit-type-wrapper')),
             );
 
             $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
@@ -616,7 +620,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
             $form['availability_fieldset']['unit_fieldset']['options_fieldset'] = array(
               '#type' => 'fieldset',
-              '#prefix' => '<div class="form-wrapper" id="options-wrapper">',
+              '#prefix' => '<div class="rooms-booking-options-wrapper" id="options-wrapper">',
               '#suffix' => '</div>',
             );
 

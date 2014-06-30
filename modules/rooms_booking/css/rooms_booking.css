@@ -1,39 +1,48 @@
 /* Booking edit form */
 .rooms-booking-form .form-actions,
-.rooms-booking-form #edit-b-status,
-.rooms-booking-form #availability-wrapper fieldset {
+.rooms-booking-form .rooms-booking-status-wrapper {
   float: none;
   clear: both;
 }
-.rooms-booking-form #edit-b-status,
-.rooms-booking-form #availability-wrapper,
-.rooms-booking-form #edit-get-availability,
-.rooms-booking-form #edit-order,
-.rooms-booking-form #edit-type {
+.rooms-booking-form .rooms-booking-status-wrapper,
+.rooms-booking-form .rooms-booking-availability-wrapper,
+.rooms-booking-form .rooms-booking-unit-type-wrapper,
+.rooms-booking-form .rooms-booking-order-wrapper {
   margin-bottom: 15px;
 }
-.rooms-booking-form #edit-customer-wrapper {
+.rooms-booking-form .rooms-booking-customer-wrapper,
+.rooms-booking-form .rooms-booking-data-wrapper {
   float: left;
   max-width: 400px;
   margin-right: 20px;
 }
-.rooms-booking-form #edit-customer-wrapper .form-item-client .form-text,
-.rooms-booking-form #edit-customer-wrapper .form-item-client .field-suffix {
-  width: 45%;
-  margin-right: 4%;
-  display: inline-block;
+.rooms-booking-form .rooms-booking-customer-wrapper .form-item-client .form-text {
+  width: 62%;
+  min-width: 250px;
 }
-
-.rooms-booking-form .form-wrapper {
+.rooms-booking-form .rooms-booking-customer-wrapper .form-item-client .field-suffix {
+  width: 30%;
+  display: block;
+}
+.rooms-booking-form .rooms-booking-date-range-wrapper {
   clear: both;
   padding: 0;
   margin: 0 0 1em;
 }
-.rooms-booking-form #availability-wrapper .fieldset-description {
+.rooms-booking-form .rooms-booking-availability-button-wrapper {
+  clear: both;
+}
+.rooms-booking-form .rooms-booking-availability-wrapper fieldset {
+  background: none;
+  float: none;
+  clear: both;
+  margin-bottom: 0;
+}
+.rooms-booking-form .rooms-booking-availability-wrapper .fieldset-description {
   padding: 0;
 }
 .rooms-booking-form .form-item-data-group-size,
-.rooms-booking-form #rooms_booking_group_size_children_container {
+.rooms-booking-form .rooms-booking-group-size-children-container {
   float: left;
   margin-right: 20px;
   max-width: 175px;
@@ -42,15 +51,19 @@
 .rooms-booking-form .form-item-data-group-size-children {
   padding: 0;
 }
-.rooms-booking-form #availability-wrapper fieldset {
-  background: none;
+.rooms-booking-form .rooms-booking-options-wrapper .form-wrapper {
+  margin: 0;
 }
-.rooms-booking-form #options-wrapper .form-type-select {
+.rooms-booking-form .rooms-booking-options-wrapper .form-type-select {
   float: none;
 }
-.rooms-booking-form #options-wrapper .form-type-select label{
-    display: inline;
-    font-weight: normal;
+.rooms-booking-form .rooms-booking-options-wrapper .form-type-select label {
+  display: inline;
+  font-weight: normal;
+}
+.rooms-booking-form .rooms-booking-availability-wrapper .form-item-unit-type {
+  float: none;
+  margin-bottom: 15px;
 }
 
 /* Children discount form */
