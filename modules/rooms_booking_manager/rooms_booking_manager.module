@@ -1629,6 +1629,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     '#type' => 'actions',
     '#tree' => FALSE,
     '#weight' => 400,
+    '#attributes' => array('class' => array('rooms-search-result__actions')),
   );
 
   $form['actions']['place_booking'] = array(
