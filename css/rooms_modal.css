@@ -102,7 +102,7 @@
 }
 .page-admin-rooms .modal-content .rooms-management-form .rooms-date-range,
 .page-admin-rooms .modal-content .rooms-management-form .form-item-data-group-size,
-.page-admin-rooms .modal-content .rooms-management-form #rooms_booking_group_size_children_container {
+.page-admin-rooms .modal-content .rooms-management-form .rooms-booking-group-size-children-container {
   float: left !important;
   margin-right: 4% !important;
   width: 45% !important;
