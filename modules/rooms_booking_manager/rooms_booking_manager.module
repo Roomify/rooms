@@ -1152,9 +1152,9 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
   // Add stylesheets and classes.
   $form['#attached']['css'] = array(
     drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css',
-    drupal_get_path('module', 'rooms_booking_manager') . '/css/button_float.css',
+    drupal_get_path('module', 'rooms_booking_manager') . '/css/rooms_sticky_booking_legend.css',
   );
-  $form['#attached']['js'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/js/rooms_booking_manager_button_scroll.js');
+  $form['#attached']['js'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/js/rooms_sticky_booking_legend.js');
 
   $form['#attributes']['class'][] = 'rooms-availability-search-results';
 
@@ -1340,7 +1340,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
       // Show button 'Place Booking' only on the first row.
       if ($first_row == TRUE) {
         $form[$type][$price]['submit'] = array(
-          '#prefix' => '<td class="rooms-search-result__booking_button"  style="width:15%;"><div id="rooms_booking_button">',
+          '#prefix' => '<td class="rooms-search-result--booking-legend"  style="width:15%;"><div class="booking-legend booking-legend--rooms-search-result">',
           '#type' => 'submit',
           '#value' => variable_get_value('rooms_booking_manager_button_place_booking'),
           '#submit' => array('book_units_per_type_form_submit'),
