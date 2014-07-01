@@ -863,7 +863,7 @@ function rooms_booking_get_client_profiles($profile_string = '') {
     if (module_exists('commerce_customer')) {
       $result = db_select('field_data_commerce_customer_address')
         ->fields('field_data_commerce_customer_address', array('commerce_customer_address_name_line', 'commerce_customer_address_thoroughfare', 'entity_id'))
-        ->condition('commerce_customer_address_name_line', db_like($profile_string) . '%', 'LIKE')
+        ->condition('commerce_customer_address_name_line', '%' . db_like($profile_string) . '%', 'LIKE')
         ->condition('entity_type', 'commerce_customer_profile')
         ->condition('bundle', 'billing')
         ->range(0, 10)
@@ -876,7 +876,7 @@ function rooms_booking_get_client_profiles($profile_string = '') {
     else {
       $result = db_select('rooms_customers')
         ->fields('rooms_customers', array('name', 'id'))
-        ->condition('name', db_like($profile_string) . '%', 'LIKE')
+        ->condition('name', '%' . db_like($profile_string) . '%', 'LIKE')
         ->range(0, 10)
         ->execute();
       foreach ($result as $customer) {
