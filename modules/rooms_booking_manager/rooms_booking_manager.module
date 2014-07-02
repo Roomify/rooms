@@ -2406,7 +2406,7 @@ function rooms_booking_manager_deposit_config_form(&$form,$form_state) {
       '#type' => 'textfield',
       '#title' => t('Select the fixed deposit value'),
       '#description' => t('Users will pay during checkout this fixed amount.'),
-      '#default_value' => $fixed_amount ? $fixed_amount : variable_get('rooms_booking_manager_deposit_fixed', 100),
+      '#default_value' => $fixed_amount ? ($fixed_amount / 100) : variable_get('rooms_booking_manager_deposit_fixed', 100),
       '#states' => array(
         'visible' => array(
           'input[name="rooms_booking_manager_deposit_type"]' => array('value' => 'commerce_line_item_unit_price_amount'),
@@ -2468,7 +2468,7 @@ function rooms_booking_manager_deposit_config_form_submit($form, &$form_state) {
         }
       }
 
-      $amount = ($form_state['values']['rooms_booking_manager_deposit_type'] == 'commerce_line_item_unit_price_amount') ? $form_state['values']['rooms_booking_manager_deposit_fixed'] : ($form_state['values']['rooms_booking_manager_deposit_multiply'] / 100);
+      $amount = ($form_state['values']['rooms_booking_manager_deposit_type'] == 'commerce_line_item_unit_price_amount') ? (100 * $form_state['values']['rooms_booking_manager_deposit_fixed']) : ($form_state['values']['rooms_booking_manager_deposit_multiply'] / 100);
 
       $rule->action($form_state['values']['rooms_booking_manager_deposit_type'], array(
         'commerce_line_item:select' => 'commerce_line_item',
