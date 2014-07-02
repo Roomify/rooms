@@ -60,6 +60,17 @@ function rooms_booking_manager_uninstall() {
     variable_del($var_name);
   }
 
+  $vars = array(
+    'rooms_booking_manager_deposit_enabled',
+    'rooms_booking_manager_deposit_type',
+    'rooms_booking_manager_deposit_fixed',
+    'rooms_booking_manager_deposit_multiply',
+  );
+
+  foreach ($vars as $var_name => $var) {
+    variable_del($var_name);
+  }
+
   // Delete fields created by this module.
   field_delete_field('rooms_booking_options');
   field_delete_field('rooms_booking_number_people');
