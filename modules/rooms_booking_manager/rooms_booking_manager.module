@@ -1109,7 +1109,8 @@ function book_unit_form_submit(&$form, &$form_state) {
       // Add line item to cart.
       $line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
 
-      // Send user to search page.
+      // Refresh line items price and redirect to bookings page.
+      commerce_cart_order_refresh(commerce_cart_order_load($user->uid));
       $form_state['redirect'] = 'bookings';
     }
     elseif (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT) {
