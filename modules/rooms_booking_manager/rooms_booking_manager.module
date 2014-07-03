@@ -2363,9 +2363,9 @@ function rooms_booking_manager_deposit_config_form(&$form,$form_state) {
 
     $form['rooms_checkout_settings']['rooms_booking_manager_deposit_enabled'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Allow to pay only a percentage or fixed deposit instead of the full booking amount.'),
+      '#title' => t('Enable bookings based on percentage or fixed amount deposit instead of the full amount.'),
       '#options' => rooms_assoc_range(0, 1),
-      '#description' => t('Enabling this option, user will pay only the deposit amount during checkout.'),
+      '#description' => t('Enable this option if you want uses to pay only a percentage or fixed amount for the deposit and not the full amount.'),
       '#default_value' => $deposit->active,
     );
 
