@@ -2405,8 +2405,8 @@ function rooms_booking_manager_deposit_config_form(&$form,$form_state) {
 
     $form['rooms_checkout_settings']['rooms_booking_manager_deposit_fieldset']['rooms_booking_manager_deposit_fixed'] = array(
       '#type' => 'textfield',
-      '#title' => t('Select the fixed deposit value'),
-      '#description' => t('Users will pay during checkout this fixed amount.'),
+      '#title' => t('Specify the amount for the fixed deposit'),
+      '#description' => t('Guests must pay this fixed amount during checkout.'),
       '#default_value' => $fixed_amount ? ($fixed_amount / 100) : variable_get('rooms_booking_manager_deposit_fixed', 100),
       '#states' => array(
         'visible' => array(
@@ -2417,8 +2417,8 @@ function rooms_booking_manager_deposit_config_form(&$form,$form_state) {
 
     $form['rooms_checkout_settings']['rooms_booking_manager_deposit_fieldset']['rooms_booking_manager_deposit_multiply'] = array(
       '#type' => 'textfield',
-      '#title' => t('Select the percentage deposit value'),
-      '#description' => t('Users will pay this percentage of the booking amount during checkout.'),
+      '#title' => t('Specify the rate for the percentage deposit'),
+      '#description' => t('Guests must pay this percentage of the booking amount during checkout.'),
       '#default_value' => $multiply_amount ? (100 * $multiply_amount) : variable_get('rooms_booking_manager_deposit_multiply', 25),
       '#states' => array(
         'visible' => array(
