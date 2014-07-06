@@ -52,9 +52,9 @@ function rooms_ui_menu() {
 }
 
 /**
- * Implements hook_init().
+ * Implements hook_page_build().
  */
-function rooms_ui_init() {
+function rooms_ui_page_build(&$page) {
   drupal_add_css(drupal_get_path('module', 'rooms_ui') . '/css/rooms_ui.css');
 }
 
