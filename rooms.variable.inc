@@ -13,6 +13,7 @@ function rooms_variable_info($options) {
     'title' => t('Arrival Date'),
     'default' => 'Arrival Date',
     'description' => t('Change text : Arrival Date'),
+    'localize' => TRUE,
     'group' => 'rooms',
   );
   
@@ -21,6 +22,7 @@ function rooms_variable_info($options) {
     'title' => t('Departure Date'),
     'default' => 'Departure Date',
     'description' => t('Change text : Departure Date'),
+    'localize' => TRUE,
     'group' => 'rooms',
   );
 
