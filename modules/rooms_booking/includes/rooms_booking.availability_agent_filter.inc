@@ -220,8 +220,17 @@ class AvailabilityAgentCommerceFilter extends AvailabilityAgentCommonFilter {
       $results = $this->units;
     }
 
-    // Load order for current user.
-    if ($order = commerce_cart_order_load($user->uid)) {
+    // Load all the current carts to
+    $orders = array();
+    $query = new EntityFieldQuery();
+    $result = $query->entityCondition('entity_type', 'commerce_order')
+      ->propertyCondition('status', array('cart', 'checkout_checkout', 'checkout_review', 'checkout_payment', 'checkout_complete'))
+      ->execute();
+    if (isset($result['commerce_order'])) {
+      $orders = commerce_order_load_multiple(array_keys($result['commerce_order']));
+    }
+
+    foreach ($orders as $order) {
       $wrapper = entity_metadata_wrapper('commerce_order', $order);
 
       // See if there are any product line items.
