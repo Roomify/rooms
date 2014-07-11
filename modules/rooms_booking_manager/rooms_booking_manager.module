@@ -1728,7 +1728,7 @@ function book_units_per_type_form_validate(&$form, &$form_state) {
     }
   }
 
-  form_set_error('', t('Please select a unit in order to continue with booking.'));
+  form_set_error('', variable_get_value('rooms_booking_manager_error_select_unit'));
 }
 
 /**
