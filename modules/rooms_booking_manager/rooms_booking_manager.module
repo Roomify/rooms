@@ -2418,7 +2418,7 @@ function rooms_booking_manager_deposit_config_form(&$form,$form_state) {
       ),
     );
 
-    list($prefix, $suffix) = explode('@percentage', t('Guests must pay @percentage % (percent) of the full booking price during checkout.'));
+    list($prefix, $suffix) = explode('@percentage', t('Guests must pay @percentage % of the full booking price during checkout.'));
     $form['rooms_checkout_settings']['rooms_booking_manager_deposit_fieldset']['rooms_booking_manager_deposit_multiply'] = array(
       '#type' => 'textfield',
       '#size' => 2,
