@@ -2363,9 +2363,9 @@ function rooms_booking_manager_deposit_config_form(&$form,$form_state) {
 
     $form['rooms_checkout_settings']['rooms_booking_manager_deposit_enabled'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Enable bookings based on percentage or fixed amount deposit instead of the full amount.'),
+      '#title' => t('Enable partial payment deposits'),
       '#options' => rooms_assoc_range(0, 1),
-      '#description' => t('Enable this option if you want uses to pay only a percentage or fixed amount for the deposit and not the full amount.'),
+      '#description' => t('Allow guests to make bookings by paying a deposit (percentage or fixed amount) instead of the full booking price of their stay.'),
       '#default_value' => $deposit->active,
     );
 
@@ -2381,7 +2381,7 @@ function rooms_booking_manager_deposit_config_form(&$form,$form_state) {
 
     $form['rooms_checkout_settings']['rooms_booking_manager_deposit_fieldset']['rooms_booking_manager_deposit_type'] = array(
       '#type' => 'radios',
-      '#title' => t('Select the type of deposit you want to enable'),
+      '#title' => t('Select the type of deposit'),
       '#options' => array(
         'commerce_line_item_unit_price_amount' => t('Fixed amount deposit'),
         'commerce_line_item_unit_price_multiply' => t('Percentage deposit'),
@@ -2403,11 +2403,14 @@ function rooms_booking_manager_deposit_config_form(&$form,$form_state) {
       }
     }
 
+    list($prefix, $suffix) = explode('@amount', t('Guests must pay a fixed amount of @amount @currency during checkout.', array('@currency' => commerce_default_currency())));
     $form['rooms_checkout_settings']['rooms_booking_manager_deposit_fieldset']['rooms_booking_manager_deposit_fixed'] = array(
       '#type' => 'textfield',
-      '#title' => t('Specify the amount for the fixed deposit'),
-      '#description' => t('Guests must pay this fixed amount during checkout.'),
+      '#size' => 2,
+      '#field_prefix' => $prefix,
+      '#field_suffix' => $suffix,
       '#default_value' => $fixed_amount ? ($fixed_amount / 100) : variable_get('rooms_booking_manager_deposit_fixed', 100),
+      '#attributes' => array('placeholder' => variable_get('rooms_booking_manager_deposit_fixed', 50)),
       '#states' => array(
         'visible' => array(
           'input[name="rooms_booking_manager_deposit_type"]' => array('value' => 'commerce_line_item_unit_price_amount'),
@@ -2415,11 +2418,14 @@ function rooms_booking_manager_deposit_config_form(&$form,$form_state) {
       ),
     );
 
+    list($prefix, $suffix) = explode('@percentage', t('Guests must pay @percentage % (percent) of the full booking price during checkout.'));
     $form['rooms_checkout_settings']['rooms_booking_manager_deposit_fieldset']['rooms_booking_manager_deposit_multiply'] = array(
       '#type' => 'textfield',
-      '#title' => t('Specify the rate for the percentage deposit'),
-      '#description' => t('Guests must pay this percentage of the booking amount during checkout.'),
+      '#size' => 2,
+      '#field_prefix' => $prefix,
+      '#field_suffix' => $suffix,
       '#default_value' => $multiply_amount ? (100 * $multiply_amount) : variable_get('rooms_booking_manager_deposit_multiply', 25),
+      '#attributes' => array('placeholder' => variable_get('rooms_booking_manager_deposit_multiply', 25)),
       '#states' => array(
         'visible' => array(
           'input[name="rooms_booking_manager_deposit_type"]' => array('value' => 'commerce_line_item_unit_price_multiply'),
