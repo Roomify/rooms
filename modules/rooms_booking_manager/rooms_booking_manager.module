@@ -2363,7 +2363,7 @@ function rooms_booking_manager_deposit_config_form(&$form,$form_state) {
 
     $form['rooms_checkout_settings']['rooms_booking_manager_deposit_enabled'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Enable partial payment deposits'),
+      '#title' => t('Allow bookings based on a deposit'),
       '#options' => rooms_assoc_range(0, 1),
       '#description' => t('Allow guests to make bookings by paying a deposit (percentage or fixed amount) instead of the full booking price of their stay.'),
       '#default_value' => $deposit->active,
@@ -2403,7 +2403,7 @@ function rooms_booking_manager_deposit_config_form(&$form,$form_state) {
       }
     }
 
-    list($prefix, $suffix) = explode('@amount', t('Guests must pay a fixed amount of @amount @currency during checkout.', array('@currency' => commerce_default_currency())));
+    list($prefix, $suffix) = explode('@amount', t('Guests must pay a fixed amount of @amount @currency at checkout to secure booking.', array('@currency' => commerce_default_currency())));
     $form['rooms_checkout_settings']['rooms_booking_manager_deposit_fieldset']['rooms_booking_manager_deposit_fixed'] = array(
       '#type' => 'textfield',
       '#size' => 2,
@@ -2418,7 +2418,7 @@ function rooms_booking_manager_deposit_config_form(&$form,$form_state) {
       ),
     );
 
-    list($prefix, $suffix) = explode('@percentage', t('Guests must pay @percentage % of the full booking price during checkout.'));
+    list($prefix, $suffix) = explode('@percentage', t('Guests must pay @percentage % of the full booking price at checkout to secure booking.'));
     $form['rooms_checkout_settings']['rooms_booking_manager_deposit_fieldset']['rooms_booking_manager_deposit_multiply'] = array(
       '#type' => 'textfield',
       '#size' => 2,
@@ -2443,11 +2443,11 @@ function rooms_booking_manager_deposit_config_form(&$form,$form_state) {
  * Custom validate callback for rooms_booking_manager_deposit_config_form.
  */
 function rooms_booking_manager_deposit_config_form_validate($form, &$form_state) {
-  if ($form_state['values']['rooms_booking_manager_deposit_type'] == 'commerce_line_item_unit_price_amount' && (!is_numeric($form_state['values']['rooms_booking_manager_deposit_fixed']) || $form_state['values']['rooms_booking_manager_deposit_fixed'] <= 0)) {
+  if ($form_state['values']['rooms_booking_manager_deposit_type'] == 'commerce_line_item_unit_price_amount' && (!is_numeric($form_state['values']['rooms_booking_manager_deposit_fixed']) || $form_state['values']['rooms_booking_manager_deposit_fixed'] < 0)) {
     form_set_error('rooms_booking_manager_deposit_fixed', t('Fixed deposit value must be numeric and positive.'));
   }
 
-  if ($form_state['values']['rooms_booking_manager_deposit_type'] == 'commerce_line_item_unit_price_multiply' && (!is_numeric($form_state['values']['rooms_booking_manager_deposit_multiply']) || $form_state['values']['rooms_booking_manager_deposit_multiply'] <= 0)) {
+  if ($form_state['values']['rooms_booking_manager_deposit_type'] == 'commerce_line_item_unit_price_multiply' && (!is_numeric($form_state['values']['rooms_booking_manager_deposit_multiply']) || $form_state['values']['rooms_booking_manager_deposit_multiply'] < 0)) {
     form_set_error('rooms_booking_manager_deposit_multiply', t('Percentage deposit value must be numeric and positive.'));
   }
 }
