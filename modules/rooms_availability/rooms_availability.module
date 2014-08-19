@@ -475,12 +475,14 @@ function update_availability_calendar_form_submit(&$form, &$form_state) {
  * Creates the necessary json for the date range provided - needs at least start
  * year and month at which point it will return the entire month.
  */
-function rooms_availability_event($units, $start_year = '', $start_month = '', $start_day = '', $end_year = '', $end_month = '', $end_day = '', $event_style = ROOMS_AVAILABILITY_ADMIN_STYLE) {
+function rooms_availability_event($unit, $start_year = '', $start_month = '', $start_day = '', $end_year = '', $end_month = '', $end_day = '', $event_style = ROOMS_AVAILABILITY_ADMIN_STYLE) {
 
-  // Check if units is array and if not place in array.
-  if (!is_array($units)) {
-    $units = array($units);
+  // If user don't have 'view anonymous availability information' permission.
+  if (!(user_access('view anonymous availability information') || rooms_unit_access('update availability', $unit))) {
+    echo drupal_json_encode(array());
+    return;
   }
+
   $start_year = (int) $start_year;
   $start_month = (int) $start_month;
   $start_day = (int) $start_day;
@@ -521,14 +523,12 @@ function rooms_availability_event($units, $start_year = '', $start_month = '', $
   }
 
   $json_events  = array();
-  foreach ($units as $unit) {
-    $rc = new UnitCalendar($unit->unit_id, $unit->default_state);
+  $rc = new UnitCalendar($unit->unit_id, $unit->default_state);
 
-    $events = $rc->getEvents($start_date, $end_date);
-    $event_style = rooms_availability_get_style($event_style, $unit);
-    foreach ($events as $event) {
-      $json_events[] = $event->formatJson($event_style, $unit->name);
-    }
+  $events = $rc->getEvents($start_date, $end_date);
+  $event_style = rooms_availability_get_style($event_style, $unit);
+  foreach ($events as $event) {
+    $json_events[] = $event->formatJson($event_style, $unit->name);
   }
 
   echo drupal_json_encode($json_events);
@@ -544,11 +544,6 @@ function rooms_availability_get_style($event_style, $unit) {
   if (!(user_access('view named availability information') || rooms_unit_access('update availability', $unit))
     && $event_style == ROOMS_AVAILABILITY_ADMIN_STYLE) {
     $event_style = (int) ROOMS_AVAILABILITY_GENERIC_STYLE;
-  }
-  // If user don't have 'view anonymous availability information' permission.
-  if (!(user_access('view anonymous availability information') || rooms_unit_access('update availability', $unit))
-    && $event_style == ROOMS_AVAILABILITY_GENERIC_STYLE) {
-    echo drupal_json_encode(array());
   }
 
   return $event_style;
