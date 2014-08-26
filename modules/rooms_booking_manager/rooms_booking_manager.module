@@ -1324,7 +1324,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
       // AJAX wrapper id.
       $id = 'rooms_' . $type . '_' . $price;
       $form[$type][$price]['quantity'] = array(
-        '#prefix' => '<td class="rooms-search-result__select-units" style="width:15%;">',
+        '#prefix' => '<td class="rooms-search-result__select-units">',
         '#field_suffix' => variable_get_value('rooms_booking_manager_units_chosen'),
         '#type' => 'select',
         '#options' => $options,
@@ -1341,7 +1341,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
       // Show button 'Place Booking' only on the first row.
       if ($first_row == TRUE) {
         $form[$type][$price]['submit'] = array(
-          '#prefix' => '<td class="rooms-search-result--booking-legend"  style="width:15%;"><div class="booking-legend booking-legend--rooms-search-result">',
+          '#prefix' => '<td class="rooms-search-result__booking-legend"><div class="booking-legend booking-legend--rooms-search-result">',
           '#type' => 'submit',
           '#value' => variable_get_value('rooms_booking_manager_button_place_booking'),
           '#submit' => array('book_units_per_type_form_submit'),
@@ -1352,7 +1352,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
       }
       else {
         $form[$type][$price]['submit'] = array(
-          '#prefix' => '<td class="rooms-search-result__booking_button" style="width:15%;">',
+          '#prefix' => '<td class="rooms-search-result__booking-legend">',
           '#suffix' => '</td></tr>',
         );
       }

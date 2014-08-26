@@ -139,8 +139,10 @@
   font-weight: bold;
   display: inline;
 }
+.rooms-search-result__booking-legend,
 .rooms-search-result__select-units {
   text-align: left;
+  width: 15%;
 }
 .rooms-search-result__select-units .form-item label {
   display: inline;
