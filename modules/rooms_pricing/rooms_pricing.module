@@ -161,6 +161,20 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
   // Unset a js setting that is not relevant for pricing.
   drupal_add_js(array('rooms' => array('roomsBookingStartDay' => 0)), 'setting');
 
+  $form['rooms_update_pricing']['day_options'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Days of the Week applicable'),
+    '#options' => array(
+      '1' => t('Sun'),
+      '2' => t('Mon'),
+      '3' => t('Tue'),
+      '4' => t('Wed'),
+      '5' => t('Thu'),
+      '6' => t('Fri'),
+      '7' => t('Sat'),
+    ),
+  );
+
   $form['rooms_update_pricing']['op'] = array(
     '#type' => 'fieldset',
   );
@@ -233,13 +247,9 @@ function update_unit_pricing_form_submit(&$form, &$form_state) {
   $operation = $form_state['values']['operation'];
   $amount = $form_state['values']['amount'];
   $unit_id = $form_state['values']['unit_id'];
+  $days = array_filter($form_state['values']['day_options']);
 
-  // Get all the pricing events for the date range.
-  $rc = new UnitPricingCalendar($unit_id);
-  $pe = new PricingEvent($unit_id, $amount, $start_date, $end_date, $operation);
-  $events = array($pe);
-
-  $rc->updateCalendar($events);
+  update_calendar_event($unit_id, $amount, $start_date, $end_date, $operation, $days);
 }
 
 /**
@@ -524,25 +534,7 @@ function rooms_pricing_update_form_submit(&$form, &$form_state) {
     foreach ($rooms_units as $room) {
       $unit_id = $room->unit_id;
 
-      if (!empty($days)) {
-
-        // Get all the pricing events for the date range.
-        $rc = new UnitPricingCalendar($unit_id);
-        $events = $rc->calculatePricingEvents($unit_id, $amount, $start_date, $end_date, $operation, $days);
-
-        $rc->updateCalendar($events);
-
-      }
-      else {
-
-        // Get all the pricing events for the date range.
-        $rc = new UnitPricingCalendar($unit_id);
-        $pe = new PricingEvent($unit_id, $amount, $start_date, $end_date, $operation);
-        $events = array($pe);
-
-        $rc->updateCalendar($events);
-
-      }
+      update_calendar_event($unit_id, $amount, $start_date, $end_date, $operation, $days);
     }
   }
   else {
@@ -550,27 +542,31 @@ function rooms_pricing_update_form_submit(&$form, &$form_state) {
       if (strpos($key, 'rooms-') === 0 && $value == '1') {
         $unit_id = str_replace('rooms-', '', $key);
 
-        if (!empty($days)) {
-
-          // Get all the pricing events for the date range.
-          $rc = new UnitPricingCalendar($unit_id);
-          $events = $rc->calculatePricingEvents($unit_id, $amount, $start_date, $end_date, $operation, $days);
-
-          $rc->updateCalendar($events);
-
-        }
-        else {
-
-          // Get all the pricing events for the date range.
-          $rc = new UnitPricingCalendar($unit_id);
-          $pe = new PricingEvent($unit_id, $amount, $start_date, $end_date, $operation);
-          $events = array($pe);
-
-          $rc->updateCalendar($events);
-
-        }
+        update_calendar_event($unit_id, $amount, $start_date, $end_date, $operation, $days);
       }
     }
   }
 
+}
+
+// Get all the pricing events for the date range.
+function update_calendar_event($unit_id, $amount, $start_date, $end_date, $operation, $days) {
+
+  if (!empty($days)) {
+
+    $rc = new UnitPricingCalendar($unit_id);
+    $events = $rc->calculatePricingEvents($unit_id, $amount, $start_date, $end_date, $operation, $days);
+
+    $rc->updateCalendar($events);
+
+  }
+  else {
+
+    $rc = new UnitPricingCalendar($unit_id);
+    $pe = new PricingEvent($unit_id, $amount, $start_date, $end_date, $operation);
+    $events = array($pe);
+
+    $rc->updateCalendar($events);
+
+  }
 }

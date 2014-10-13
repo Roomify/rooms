@@ -6,6 +6,7 @@
 /* Filter month form */
 .rooms-filter-month-form .form-item-month,
 .rooms-filter-month-form .form-item-year,
+.rooms-management-form .form-item,
 .rooms-filter-month-form .form-item-type {
   float: left;
   margin-right: 20px;
