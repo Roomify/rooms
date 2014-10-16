@@ -1103,11 +1103,47 @@ function book_unit_form_submit(&$form, &$form_state) {
         }
       }
 
-      // Create line item.
-      $line_item = rooms_create_line_item($unit, $agent, array('adults' => $group_size, 'children' => 0), $price_modifiers);
+      $price_calendar = new UnitPricingCalendar($unit_id);
+      $pricing_events = $price_calendar->getEvents($sd, $ed->sub(new DateInterval('P1D')));
+      $price = $price_calendar->calculatePrice($sd, $ed);
+      $total = $price['full_price'];
+      $line_items = array();
+      $options = array();
+      foreach ($pricing_events as $pricing_event) {
+        $pricing_event->end_date->add(new DateInterval('P1D'));
+        $days = $pricing_event->diff()->days;
+        $price = $pricing_event->amount;
+        $unit['price'] = $unit['booking_price'] = $price;
+        $agent = new AvailabilityAgent($pricing_event->start_date, $pricing_event->end_date, $group_size);
+        $line_item = rooms_create_line_item($unit, $agent, array('adults' => $group_size, 'children' => 0));
+        $line_item->quantity = $days;
+        $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'] = 100 * $price;
+        commerce_cart_product_add($user->uid, $line_item, FALSE);
+        $line_items[] = $line_item->line_item_id;
+      }
+      foreach ($price_modifiers as $price_modifier) {
+        $value = $price_calendar->applyPriceModifier($total, $price_modifier, $days);
+        $total += $value;
+        $product_id = 2;
+        $room_product = commerce_product_load($product_id);
+        $line_item = commerce_product_line_item_new($room_product, 1, 0, array(), 'rooms_booking');
+        $line_item->line_item_label = $price_modifier['#name'];
+        commerce_cart_product_add($user->uid, $line_item, FALSE);
+        $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'] = 100 * $value / $price_modifier['#quantity'];
+        $line_item->quantity = $price_modifier['#quantity'];
+        $line_items[] = $line_item->line_item_id;
+        $options[$price_modifier['#name']] = $price_modifier['#quantity'];
+      }
 
-      // Add line item to cart.
-      $line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
+      $order = commerce_cart_order_load($user->uid);
+      $order->data['booking'][] = array(
+        'start_date' => $start_date,
+        'end_date' => $end_date,
+        'unit_id' => $unit_id,
+        'price' => $total * 100,
+        'line_items' => $line_items,
+        'options' => $options,
+      );
 
       // Refresh line items price and redirect to bookings page.
       commerce_cart_order_refresh(commerce_cart_order_load($user->uid));
@@ -1955,8 +1991,74 @@ function rooms_booking_manager_theme() {
  */
 function rooms_booking_manager_commerce_checkout_complete($order) {
   $profile = commerce_customer_profile_load($order->commerce_customer_billing[LANGUAGE_NONE][0]['profile_id']);
+
+  foreach ($order->data['booking'] as $booking_data) {
+    // Create a booking.
+    $booking_type = variable_get('rooms_booking_type', 'standard_booking');
+    $booking = rooms_booking_create(array('type' => $booking_type));
+    $booking->created = time();
+    $booking->start_date = $booking_data['start_date'];
+    $booking->end_date = $booking_data['end_date'];
+    // Associate it with this order.
+    $booking->order_id = $order->order_number;
+
+    $booking->unit_id = $booking_data['unit_id'];
+    // Load the unit to get its type.
+    $unit = rooms_unit_load($booking->unit_id);
+    $booking->unit_type = $unit->type;
+    $booking->customer_id = $order->commerce_customer_billing[LANGUAGE_NONE][0]['profile_id'];
+    $booking->name = $profile->commerce_customer_address[LANGUAGE_NONE][0]['name_line'];
+
+    $booking->price = $booking_data['price'];
+
+    foreach ($booking_data['options'] as $option => $quantity) {
+      $option_name = strtolower(str_replace(array(':', ' '), '_', $option));
+
+      $booking->data[$option_name] = 1;
+      $booking->data[$option_name . ':quantity'] = $quantity - 1;
+    }
+
+    $booking->booking_status = 1;
+    $booking->uid = $unit->uid;
+    $booking->save();
+
+    // Line item 'Entity Reference field' that points to the booking.
+    foreach ($booking_data['line_items'] as $line_item_id) {
+      $line_item = commerce_line_item_load($line_item_id);
+      $line_item->rooms_booking_reference['und'][0]['target_id'] = $booking->booking_id;
+      commerce_line_item_save($line_item);
+    }
+
+    // Now let us lock availability
+    // First - we get an event id.
+    $id = rooms_availability_assign_id($booking->booking_id, '1');
+    // Set the start and end dates for the booking event.
+    // They are the same as the booking above but the end date is not the
+    // departure date rather it is the last night spend in the room.
+    $sd = new DateTime($booking->start_date);
+
+    // End date is actually a day less.
+    $ed = new DateTime($booking->end_date);
+    $ed->sub(new DateInterval('P1D'));
+
+    // Create a booking event.
+    $be = new BookingEvent($booking->unit_id, $id, $sd, $ed);
+
+    // Call up the UnitCalendar for this unit and add the event to it.
+    $rc = new UnitCalendar($booking->unit_id);
+    $responses = $rc->updateCalendar(array($be));
+
+    // If the event addition was successful lock the event.
+    if ($responses[$id] == ROOMS_UPDATED) {
+      $be->lock();
+      watchdog('rooms_booking_manager', 'Unit availability has been updated.', array(), WATCHDOG_NOTICE);
+    }
+    else {
+      watchdog('rooms_booking_manager', 'Unit availability could not be updated.', array(), WATCHDOG_ERROR);
+    }
+  }
   // Cycle through orders looking for booking products.
-  foreach ($order->commerce_line_items as $lang => $item) {
+  /*foreach ($order->commerce_line_items as $lang => $item) {
     foreach ($item as $item_id) {
       $line_item = commerce_line_item_load($item_id['line_item_id']);
       if ($line_item->type == 'rooms_booking') {
@@ -2034,7 +2136,7 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
         }
       }
     }
-  }
+  }*/
 }
 
 /**
@@ -2647,14 +2749,23 @@ function rooms_booking_cancel_order_booking() {
  *   Line item to modify.
  */
 function rooms_booking_manager_price_apply($line_item) {
-  if ($line_item->type == 'rooms_booking') {
+  if ($line_item->type == 'rooms_booking' && $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'] == 100) {
     if ($item = field_get_items('commerce_line_item', $line_item, 'commerce_product')) {
       $product = commerce_product_load($item[0]['product_id']);
-      if ($product->sku != 'ROOMS-BASIC-BOOKING') {
+      if (!in_array($product->sku, array('ROOMS-BASIC-BOOKING', 'ROOMS-BASIC-BOOKING-OPTION'))) {
         return;
       }
     }
+
+    $line_item_loaded = commerce_line_item_load($line_item->line_item_id);
     $amount = $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'];
+    if ($line_item_loaded->commerce_unit_price[LANGUAGE_NONE][0]['amount'] != $amount) {
+      $line_item->commerce_unit_price = $line_item_loaded->commerce_unit_price;
+      foreach ($line_item->commerce_unit_price[LANGUAGE_NONE][0]['data']['components'] as $key => $component) {
+        $line_item->commerce_unit_price[LANGUAGE_NONE][0]['data']['components'][$key]['price']['amount'] = $line_item_loaded->commerce_unit_price[LANGUAGE_NONE][0]['amount'];
+      }
+      return;
+    }
 
     $start_date = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value']);
     $end_date = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);

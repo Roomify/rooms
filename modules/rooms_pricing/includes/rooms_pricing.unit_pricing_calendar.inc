@@ -116,43 +116,47 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
     $price = $base_price;
     if (!empty($this->price_modifiers)) {
       foreach ($this->price_modifiers as $modifier) {
-        if ($modifier['#type'] == ROOMS_PRICE_SINGLE_OCCUPANCY) {
-          $price -= $base_price * $this->unit->data['singlediscount'] / 100;
-        }
-        elseif ($modifier['#type'] == ROOMS_DYNAMIC_MODIFIER) {
-          switch ($modifier['#op_type']) {
-            case ROOMS_ADD:
-              $price += $modifier['#amount'] * $modifier['#quantity'];
-              break;
-
-            case ROOMS_ADD_DAILY:
-              $price += $modifier['#amount'] * $modifier['#quantity'] * $days;
-              break;
-
-            case ROOMS_SUB:
-              $price -= $modifier['#amount'] * $modifier['#quantity'];
-              break;
-
-            case ROOMS_SUB_DAILY:
-              $price -= $modifier['#amount'] * $modifier['#quantity'] * $days;
-              break;
-
-            case ROOMS_REPLACE:
-              $price = $modifier['#amount'];
-              break;
-
-            case ROOMS_INCREASE:
-              $price += $base_price * ($modifier['#amount'] * $modifier['#quantity']) / 100;
-              break;
-
-            case ROOMS_DECREASE:
-              $price -= $base_price * ($modifier['#amount'] * $modifier['#quantity']) / 100;
-              break;
-          }
-        }
+        $price += $this->applyPriceModifier($base_price, $modifier, $days);
       }
     }
     return $price;
+  }
+
+  public function applyPriceModifier($base_price, $modifier, $days) {
+    if ($modifier['#type'] == ROOMS_PRICE_SINGLE_OCCUPANCY) {
+      return -($base_price * $this->unit->data['singlediscount'] / 100);
+    }
+    elseif ($modifier['#type'] == ROOMS_DYNAMIC_MODIFIER) {
+      switch ($modifier['#op_type']) {
+        case ROOMS_ADD:
+          return $modifier['#amount'] * $modifier['#quantity'];
+          break;
+
+        case ROOMS_ADD_DAILY:
+          return $modifier['#amount'] * $modifier['#quantity'] * $days;
+          break;
+
+        case ROOMS_SUB:
+          return -($modifier['#amount'] * $modifier['#quantity']);
+          break;
+
+        case ROOMS_SUB_DAILY:
+          return -($modifier['#amount'] * $modifier['#quantity'] * $days);
+          break;
+
+        /*case ROOMS_REPLACE:
+          $price = $modifier['#amount'];
+          break;*/
+
+        case ROOMS_INCREASE:
+          return $base_price * ($modifier['#amount'] * $modifier['#quantity']) / 100;
+          break;
+
+        case ROOMS_DECREASE:
+          return -($base_price * ($modifier['#amount'] * $modifier['#quantity']) / 100);
+          break;
+      }
+    }
   }
 
   /**

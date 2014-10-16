@@ -241,7 +241,7 @@ class AvailabilityAgentCommerceFilter extends AvailabilityAgentCommonFilter {
           // have a referenced commerce_product.
           if (in_array($line_item->type->value(), commerce_product_line_item_types())) {
             // Need to check if commerce_product_type = 'rooms_product'.
-            if ($line_item->commerce_product->value()->type == 'rooms_product') {
+            if ($line_item->commerce_product->value()->type == 'rooms_product' && $line_item->commerce_product->value()->sku == 'ROOMS-BASIC-BOOKING') {
               $line_item_values = $line_item->value();
 
               // Current line_item start_date and end_date values.
