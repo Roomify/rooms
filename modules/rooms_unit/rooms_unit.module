@@ -748,7 +748,6 @@ class RoomsUnitController extends EntityAPIController {
     $values += array(
       'unit_id' => '',
       'is_new' => TRUE,
-      'original' => TRUE,
       'title' => '',
       'created' => '',
       'changed' => '',
