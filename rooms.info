@@ -1,7 +1,7 @@
 name = Rooms
 description = Provides basic underlying functionality and configuration options used by all Rooms modules.
 core = 7.x
-php = 5.3
+php = 5.3.9
 
 files[] = includes/rooms.calendar.inc
 files[] = includes/rooms.calendar_interface.inc
@@ -12,4 +12,3 @@ package = Rooms
 
 dependencies[] = libraries (>=2.x)
 dependencies[] = variable
-
