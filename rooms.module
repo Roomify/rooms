@@ -76,6 +76,7 @@ function rooms_libraries_info() {
     'path' => 'fullcalendar',
     'files' => array(
       'js' => array(
+        'moment.min.js',
         'fullcalendar.js',
         'gcal.js',
       ),
