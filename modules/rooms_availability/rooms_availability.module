@@ -120,6 +120,18 @@ function rooms_availability_query_rooms_availability_access_alter(QueryAlterable
 }
 
 /**
+ * Implements hook_entity_delete().
+ */
+function rooms_availability_entity_delete($entity, $type) {
+  if ($type == 'rooms_unit') {
+    // Remove data related to entity from rooms_availability table.
+    db_delete('rooms_availability')
+      ->condition('unit_id', $entity->unit_id)
+      ->execute();
+  }
+}
+
+/**
  * Form for the Bulk Availability Management.
  *
  * Could receive date params for the interested interval to edit.
