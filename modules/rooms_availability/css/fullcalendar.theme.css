@@ -2,7 +2,7 @@
   margin: 0;
 }
 .fc td, .fc th {
-  width: .1%; /* Attempt to make all cells equal-width */
+  width: auto;
 }
 
 /* Header styles */
