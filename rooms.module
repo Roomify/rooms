@@ -84,6 +84,27 @@ function rooms_libraries_info() {
         'fullcalendar.css',
       ),
     ),
+    'variants' => array(
+      'minified' => array(
+        'files' => array(
+          'js' => array(
+            'moment.min.js',
+            'fullcalendar.min.js',
+            'gcal.js',
+          ),
+          'css' => array(
+            'fullcalendar.min.css',
+          ),
+        ),
+      ),
+      'source' => array(
+        'files' => array(
+          'js' => array(
+            'fullcalendar.js',
+          ),
+        ),
+      ),
+    ),
   );
   return $libraries;
 }
@@ -95,7 +116,8 @@ function rooms_libraries_info() {
  *   A boolean indicating the FullCalendar status.
  */
 function rooms_fullcalendar_loaded() {
-  if (($library = libraries_load('rooms_fullcalendar')) && !empty($library['loaded'])) {
+
+  if (($library = libraries_load('rooms_fullcalendar', 'minified')) && !empty($library['loaded'])) {
     return TRUE;
   }
   else {

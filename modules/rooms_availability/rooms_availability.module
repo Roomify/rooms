@@ -137,7 +137,7 @@ function rooms_availability_query_rooms_availability_access_alter(QueryAlterable
 function rooms_availability_bulk_unit_management($year = '', $month = '', $type = 'all') {
   // Load FullCalendar.
   rooms_fullcalendar_loaded();
-  drupal_add_js('/sites/all/libraries/rooms_fullcalendar/fullCalendar/moment.min.js');
+
   // Modal includes and style.
   rooms_availability_modal_style();
 
