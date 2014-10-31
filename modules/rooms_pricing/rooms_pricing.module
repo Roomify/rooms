@@ -321,7 +321,6 @@ function rooms_pricing_json($unit, $start_year = '', $start_month = '', $start_d
 function rooms_pricing_bulk_pricing_management($year = '', $month = '', $type = 'all') {
   // Load FullCalendar and relevant js/css.
   rooms_fullcalendar_loaded();
-  drupal_add_js('sites/all/libraries/rooms_fullcalendar/moment.min.js');
 
   // If year is not set then give it the current date.
   $year = ($year == '') ? date('Y', time()) : $year;
