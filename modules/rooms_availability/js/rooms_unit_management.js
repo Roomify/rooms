@@ -76,13 +76,13 @@ Drupal.behaviors.roomsAvailability = {
             //We are probably dealing with a single day event
             calEvent.end = calEvent.start;
           }
-          var localOffset = (-1) * calEvent.start.getTimezoneOffset() * 60000;
-          var sd = Math.round((calEvent.start.getTime()+localOffset)/1000);
-          var ed = Math.round((calEvent.end.getTime()+localOffset)/1000);
+          var sd = calEvent.start.unix();
+          var ed = calEvent.end.unix();
           // Open the modal for edit
           Drupal.RoomsAvailability.Modal(view, unit_id, calEvent.id, sd, ed);
         },
         select: function(start, end, allDay) {
+          var ed = end.subtract(1, 'days');
           var sd = start.unix();
           var ed = end.unix();
           // Open the modal for edit
