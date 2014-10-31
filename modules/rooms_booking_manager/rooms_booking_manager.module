@@ -564,6 +564,14 @@ function rooms_booking_manager_change_search_form($form, &$form_state, $start_da
     );
   }
 
+  // Include form elements provided by other availability search plugins.
+  ctools_include('plugins');
+  $filters = ctools_get_plugins('rooms_booking', 'availabilityagent_filter');
+  foreach ($filters as $filter) {
+    $class = ctools_plugin_get_class($filter, 'handler');
+    $class::availabilityChangeSearchForm($form, $form_state);
+  }
+
   // We add the form's #submit array to this button along with the actual submit
   // handler to preserve any submit handlers added by a form callback_wrapper.
   $submit = array('rooms_booking_manager_change_search_form_submit');
@@ -586,6 +594,16 @@ function rooms_booking_manager_change_search_form($form, &$form_state, $start_da
   );
 
   return $form;
+}
+
+function rooms_booking_manager_change_search_form_validate($form, &$form_state) {
+  // validate form elements provided by other availability search plugins.
+  ctools_include('plugins');
+  $filters = ctools_get_plugins('rooms_booking', 'availabilityagent_filter');
+  foreach ($filters as $filter) {
+    $class = ctools_plugin_get_class($filter, 'handler');
+    $class::availabilityChangeSearchFormValidate($form, $form_state);
+  }
 }
 
 /**
@@ -1862,6 +1880,8 @@ function rooms_booking_manager_change_search_form_submit($form, &$form_state) {
     }
   }
 
+  $query = rooms_booking_manager_get_plugin_parameters($form_state);
+
   // Build query parameters from the provided form fields.
   $query['rooms_start_date'] = $form_state['values']['start_date'];
   $query['rooms_end_date'] = $form_state['values']['end_date'];
@@ -1880,6 +1900,32 @@ function rooms_booking_manager_change_search_form_submit($form, &$form_state) {
       'query' => $query,
     ),
   );
+}
+
+/**
+ * Retrieves parameters defined by plugins and return them as an array.
+ *
+ * @param $form_state
+ * @return array
+ */
+function rooms_booking_manager_get_plugin_parameters($form_state) {
+  $plugins_values = array();
+  $query = array();
+
+  ctools_include('plugins');
+  $filters = ctools_get_plugins('rooms_booking', 'availabilityagent_filter');
+  foreach ($filters as $filter) {
+    $class = ctools_plugin_get_class($filter, 'handler');
+    $plugins_values += $class::availabilitySearchParameters();
+  }
+
+  // Collect the values for booking parameters.
+  foreach ($plugins_values as $value) {
+    if (isset($form_state['values'][$value])) {
+      $query[$value] = is_array($form_state['values'][$value]) ? implode(',', $form_state['values'][$value]) : $form_state['values'][$value];
+    }
+  }
+  return $query;
 }
 
 /**
