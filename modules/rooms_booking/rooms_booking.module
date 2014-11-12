@@ -1034,8 +1034,11 @@ class RoomsBookingController extends EntityAPIController {
       // Create a calendar.
       $uc = new UnitCalendar($entity->original->unit_id);
       $event_id = rooms_availability_assign_id($entity->booking_id, $entity->booking_status);
+      // The original end date of the BookingEvent to remove
+      $corrected_original_end_date = new DateTime($entity->original->end_date);
+      $corrected_original_end_date->sub(new DateInterval('P1D'));
       // Create an event representing the event to remove.
-      $be = new BookingEvent($entity->original->unit_id, $event_id, new DateTime($entity->original->start_date), $corrected_end_date);
+      $be = new BookingEvent($entity->original->unit_id, $event_id, new DateTime($entity->original->start_date), $corrected_original_end_date);
       $uc->removeEvents(array($be));
     }
 
