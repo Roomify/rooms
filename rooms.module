@@ -93,14 +93,14 @@ function rooms_libraries_info() {
   $libraries['rooms_fullcalendar'] = array(
     'name' => 'Full Calendar',
     'vendor url' => 'http://fullcalendar.io',
-    'download url' => 'https://github.com/arshaw/fullcalendar/releases/download/v2.1.1/fullcalendar-2.1.1.zip',
+    'download url' => 'https://github.com/salvoscala/fullcalendar',
     'version arguments' => array(
-      'file' => 'fullcalendar/fullcalendar.js',
+      'file' => 'dist/fullcalendar.js',
       // 2.1.1
       'pattern' => '/v(\d+\.\d+\.\d)/',
       'lines' => 3,
     ),
-    'path' => 'fullcalendar',
+    'path' => 'dist',
     'files' => array(
       'js' => array(
         'fullcalendar.js',
