@@ -665,7 +665,6 @@ function rooms_availability_modal_style() {
   drupal_add_css(drupal_get_path('module', 'rooms') . '/css/rooms_modal.css');
 }
 
-
 /**
  * The Event Manager Form.
  */
@@ -744,16 +743,22 @@ function rooms_availability_event_manager_form($form, $form_state, $unit, $event
     $booking_types = rooms_booking_get_types();
 
     foreach ($booking_types as $type) {
+      $book_end_date = clone($end_date);
+
+      // If we select one day from the calendar, postpone the departure date.
+      if ($start_date == $end_date) {
+        $book_end_date = $book_end_date->add(new DateInterval('P1D'));
+      }
+
       $form['order']['order_link'][$type->type] = array(
         '#type' => 'markup',
-        '#markup' => '<div>' . l(t('Create @booking_type', array('@booking_type' => $type->label)), 'admin/rooms/bookings/add/' . $type->type, array('query' => array('startdate' => $start_date->getTimestamp(), 'enddate' => $end_date->getTimestamp(), 'unitid' => $unit->unit_id))) . '</div>',
+        '#markup' => '<div>' . l(t('Create @booking_type', array('@booking_type' => $type->label)), 'admin/rooms/bookings/add/' . $type->type, array('query' => array('startdate' => $start_date->getTimestamp(), 'enddate' => $book_end_date->getTimestamp(), 'unitid' => $unit->unit_id))) . '</div>',
       );
     }
   }
 
   return $form;
 }
-
 
 /**
  * The callback for the change_event_status widget of the event manager form.
