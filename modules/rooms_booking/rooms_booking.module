@@ -1006,7 +1006,6 @@ class RoomsBookingController extends EntityAPIController {
     $values += array(
       'booking_id' => '',
       'is_new' => TRUE,
-      'original' => TRUE,
       'title' => '',
       'created' => '',
       'changed' => '',
