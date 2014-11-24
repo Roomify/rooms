@@ -27,7 +27,7 @@ function rooms_field_schema($field) {
           'not null' => FALSE,
         ),
         'value' => array(
-          'type' => 'int',
+          'type' => 'float',
           'not null' => FALSE,
         ),
       ),
@@ -97,4 +97,28 @@ function rooms_update_rename_permissions($map) {
       $view->save();
     }
   }
+}
+
+/**
+ * Converts the booking option price value columns from integer to float.
+ */
+function rooms_update_7001() {
+  $spec = array(
+    'type' => 'float',
+    'not null' => FALSE,
+  );
+
+  $fields = array_filter(field_info_fields(), function($item){
+    return $item['type'] == 'rooms_options';
+  });
+
+  foreach ($fields as $field_definition) {
+    $data_table = 'field_data_' . $field_definition['field_name'];
+    $revision_table = 'field_revision_' . $field_definition['field_name'];
+    $field = $field_definition['field_name'] . '_value';
+
+    db_change_field($data_table, $field, $field, $spec);
+    db_change_field($revision_table, $field, $field, $spec);
+  }
+  return t('Field structure updated.');
 }
