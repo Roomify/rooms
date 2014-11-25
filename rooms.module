@@ -544,7 +544,9 @@ function rooms_options_data_property_info($name = NULL) {
  * Implements hook_field_is_empty().
  */
 function rooms_field_is_empty($item, $field) {
-  return empty($item['name']);
+  return empty($item['name']) || empty($item['quantity']) || !is_integer($item['quantity'])
+    || empty($item['value']) || !is_numeric($item['value'])
+    || empty($item['operation']) || !in_array($item['operation'], array_keys(rooms_price_options_options()));
 }
 
 /**
@@ -616,7 +618,6 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
       '#type' => 'select',
       '#title' => t('Quantity'),
       '#options' => rooms_assoc_range(1, 10),
-      '#empty_option' => t('None'),
       '#default_value' => isset($items[$delta]['quantity']) ? $items[$delta]['quantity'] : NULL,
       '#description' => t('How many of this option should be available'),
       '#attributes' => array(
@@ -638,6 +639,7 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
       '#title' => t('Value'),
       '#size' => 10,
       '#default_value' => isset($items[$delta]['value']) ? $items[$delta]['value'] : NULL,
+      '#element_validate' => array('element_validate_number'),
       '#attributes' => array(
         'class' => array('rooms-option--value'),
       ),
