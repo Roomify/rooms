@@ -466,6 +466,29 @@ function rooms_entity_access_query_alter($query, $entity_type, $base_table = NUL
 }
 
 /**
+ * Implements hook_module_implements_alter()
+ */
+function rooms_module_implements_alter(&$implementations, $hook) {
+  if ($hook == 'form_alter' && isset($implementations['rooms'])) {
+    $group = $implementations['rooms'];
+    unset($implementations['rooms']);
+    $implementations['rooms'] = $group;
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Force 'rooms_options' field as non translatable.
+ */
+function rooms_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
+  if ($form['#field']['type'] == 'rooms_options') {
+    $form['field']['translatable']['#access'] = FALSE;
+    $form['instance']['settings']['entity_translation_sync']['#access'] = FALSE;
+  }
+}
+
+/**
  * Implements hook_field_info().
  */
 function rooms_field_info() {
