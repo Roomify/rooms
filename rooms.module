@@ -467,6 +467,8 @@ function rooms_entity_access_query_alter($query, $entity_type, $base_table = NUL
 
 /**
  * Implements hook_module_implements_alter()
+ *
+ * This ensures that this hook is called after entity translation's alter hook.
  */
 function rooms_module_implements_alter(&$implementations, $hook) {
   if ($hook == 'form_alter' && isset($implementations['rooms'])) {
@@ -479,7 +481,7 @@ function rooms_module_implements_alter(&$implementations, $hook) {
 /**
  * Implements hook_form_FORM_ID_alter().
  *
- * Force 'rooms_options' field as non translatable.
+ * Force 'rooms_options' field as non translatable since we wrap them in a t().
  */
 function rooms_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
   if ($form['#field']['type'] == 'rooms_options') {
