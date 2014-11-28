@@ -837,7 +837,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
     $form['options'][$option_name] = array(
       '#type' => 'checkbox',
-      '#title' => $option['name'],
+      '#title' => t($option['name']),
       '#ajax' => array(
         'callback' => 'rooms_booking_manager_options_change_callback',
         'wrapper' => 'unit_' . $unit->unit_id . '_price',
@@ -1394,7 +1394,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
             $form[$type][$price]['fieldset'][$c][$option_name] = array(
               '#type' => 'checkbox',
-              '#title' => $option['name'],
+              '#title' => t($option['name']),
               '#ajax' => array(
                 'callback' => 'rooms_booking_manager_options_change_callback',
                 'wrapper' => $type . '_' . $price . '_' . $c . '_price',
