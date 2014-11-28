@@ -72,6 +72,11 @@ function rooms_libraries_info() {
       // 2.8.3
       'pattern' => '/(\d+\.\d+\.\d)/',
     ),
+    'files' => array(
+      'js' => array(
+        'moment.min.js',
+      ),
+    ),
     'variants' => array(
       'minified' => array(
         'files' => array(
@@ -93,7 +98,7 @@ function rooms_libraries_info() {
   $libraries['rooms_fullcalendar'] = array(
     'name' => 'Full Calendar',
     'vendor url' => 'http://fullcalendar.io',
-    'download url' => 'https://github.com/salvoscala/fullcalendar',
+    'download url' => 'http://www.drupalrooms.com/sites/default/files/rooms_fullcalendar-2.1.1.zip',
     'version arguments' => array(
       'file' => 'dist/fullcalendar.js',
       // 2.1.1
@@ -127,12 +132,16 @@ function rooms_libraries_info() {
         'files' => array(
           'js' => array(
             'fullcalendar.js',
+            'gcal.js',
+          ),
+          'css' => array(
+            'fullcalendar.css',
           ),
         ),
         'dependencies' => array('moment (>=2.8.3)'),
       ),
     ),
-  );  
+  );
 
   return $libraries;
 }
@@ -144,7 +153,7 @@ function rooms_libraries_info() {
  *   A boolean indicating the FullCalendar status.
  */
 function rooms_fullcalendar_loaded() {
-  if (($moment = libraries_load('moment', 'minified')) && ($library = libraries_load('rooms_fullcalendar', 'minified')) && !empty($library['loaded']) && !empty($moment['loaded'])) {
+  if ($library = libraries_load('rooms_fullcalendar', 'minified') && !empty($library['loaded'])) {
     return TRUE;
   }
   else {
