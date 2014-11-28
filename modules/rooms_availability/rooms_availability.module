@@ -472,7 +472,7 @@ function update_availability_calendar_form_submit(&$form, &$form_state) {
 }
 
 /**
- * Shows the necessary json for the date range provided - needs at least start
+ * Displays the necessary json for the date range provided - needs at least start
  * year and month at which point it will return the entire month.
  */
 function rooms_availability_event($unit, $start_year = '', $start_month = '', $start_day = '', $end_year = '', $end_month = '', $end_day = '', $event_style = ROOMS_AVAILABILITY_ADMIN_STYLE) {
@@ -489,7 +489,10 @@ function rooms_availability_event($unit, $start_year = '', $start_month = '', $s
   echo drupal_json_encode($json_events);
 }
 
-// Creates the necessary json for the data range provided.
+
+/**
+ * Generates json based on date range provided.
+ */
 function rooms_availability_generate_json($unit, $start_year = '', $start_month = '', $start_day = '', $end_year = '', $end_month = '', $end_day = '', $event_style = ROOMS_AVAILABILITY_ADMIN_STYLE) {
 
   $start_year = (int) $start_year;
