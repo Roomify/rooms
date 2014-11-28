@@ -153,7 +153,7 @@ function rooms_libraries_info() {
  *   A boolean indicating the FullCalendar status.
  */
 function rooms_fullcalendar_loaded() {
-  if ($library = libraries_load('rooms_fullcalendar', 'minified') && !empty($library['loaded'])) {
+  if (($library = libraries_load('rooms_fullcalendar', 'minified')) && !empty($library['loaded'])) {
     return TRUE;
   }
   else {
