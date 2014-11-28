@@ -146,6 +146,14 @@ function rooms_booking_availability_search_form_builder($form, &$form_state) {
     }
   }
 
+  // Include form elements provided by other availability search plugins.
+  ctools_include('plugins');
+  $filters = ctools_get_plugins('rooms_booking', 'availabilityagent_filter');
+  foreach ($filters as $filter) {
+    $class = ctools_plugin_get_class($filter, 'handler');
+    $class::availabilitySearchForm($form, $form_state);
+  }
+
   $form['actions'] = array(
     '#type' => 'actions',
     '#tree' => FALSE,
@@ -197,6 +205,14 @@ function rooms_booking_availability_search_form_validate(&$form, &$form_state) {
   if ($diff1->days < $rooms_booking_start_date) {
     form_set_error('rooms_date_range', t('Bookings must be made at least @count_days in advance.', array('@count_days' => format_plural($rooms_booking_start_date, '1 day', '@count days'))));
   }
+
+  // Validate form elements provided by other availability search plugins.
+  ctools_include('plugins');
+  $filters = ctools_get_plugins('rooms_booking', 'availabilityagent_filter');
+  foreach ($filters as $filter) {
+    $class = ctools_plugin_get_class($filter, 'handler');
+    $class::availabilitySearchFormValidate($form, $form_state);
+  }
 }
 
 /**
@@ -216,6 +232,8 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
       $rooms_query['type'] = $form_state['values']['unit_type'];
     }
   }
+
+  $rooms_query += rooms_booking_manager_get_plugin_parameters($form_state);
 
   // Collect the values for booking parameters.
   foreach ($form_state['values'] as $key => $value) {
