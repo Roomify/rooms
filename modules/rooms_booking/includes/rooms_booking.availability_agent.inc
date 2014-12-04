@@ -231,14 +231,32 @@ class AvailabilityAgent {
       }
     }
 
-    // Of the rooms that fit the criteria lets see what availability we have.
-    $units = $this->getUnitsByPriceType($results);
+    return $results;
+  }
 
-    if (count($units) == 0) {
-      return ROOMS_NO_ROOMS;
+  /**
+   * Checks the availability.
+   *
+   * If valid units exist an array keyed by valid unit ids containing unit and
+   * the states it holds during the requested period or a message as to what
+   * caused the failure.
+   *
+   * @param bool $confirmed
+   *   Whether include confirmed states or not.
+   *
+   * @return array|int
+   *   Bookable units remaining after the filter, error code otherwise.
+   */
+  public function checkAvailabilityAndCalculatePrice($confirmed = FALSE) {
+    $results = $this->checkAvailability($confirmed);
+
+    if (is_array($results)) {
+      // Of the rooms that fit the criteria lets see what availability we have.
+    $units = $this->getUnitsByPriceType($results);
+       return $units;
     }
     else {
-      return $units;
+      return ROOMS_NO_ROOMS;
     }
   }
 
@@ -329,7 +347,7 @@ class AvailabilityAgent {
    * @return array
    *   Units in a price based structure.
    */
-  protected function getUnitsByPriceType($results, $price_modifiers = array()) {
+  public function getUnitsByPriceType($results, $price_modifiers = array()) {
     $units = array();
 
     if (count($results) > 0) {
