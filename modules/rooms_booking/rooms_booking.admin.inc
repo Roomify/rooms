@@ -9,6 +9,10 @@
  * more often than not, be end-user facing.
  */
 
+use \Drupal\rooms_booking\AvailabilityAgentBase;
+use \Drupal\rooms_booking\BookingAgent;
+use \Drupal\rooms_booking\PricingPerNightAgent;
+
 /**
  * UI controller.
  */
@@ -1038,12 +1042,15 @@ function rooms_booking_edit_form_get_rooms($unit_type, $current_booking, $start_
   }
 
   if (!empty($current_booking->booking_id)) {
-    $ac = new AvailabilityAgent($start_date, $end_date, $booking_parameters, 1, array_merge($valid_states, array(rooms_availability_assign_id($current_booking->booking_id, '0'), rooms_availability_assign_id($current_booking->booking_id))), $unit_types);
+    $ac = new AvailabilityAgentBase($booking_parameters, 1, array_merge($valid_states, array(rooms_availability_assign_id($current_booking->booking_id, '0'), rooms_availability_assign_id($current_booking->booking_id))), $unit_types);
   }
   else {
-    $ac = new AvailabilityAgent($start_date, $end_date, $booking_parameters, 1, array_merge($valid_states, array($current_booking_state)), $unit_types);
+    $ac = new AvailabilityAgentBase($booking_parameters, 1, array_merge($valid_states, array($current_booking_state)), $unit_types);
   }
-  $available_units = $ac->checkAvailability(TRUE);
+  $pm = new PricingPerNightAgent();
+  $ba = new BookingAgent($ac, $pm);
+  $ba->setDates($start_date, $end_date);
+  $available_units = $ba->checkAvailabilityAndCalculatePrice(TRUE);
 
   if (is_array($available_units)) {
     foreach ($available_units as $type => $units_per_price) {

@@ -1,10 +1,10 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: plopesc
- * Date: 5/9/14
- * Time: 9:20 AM
+ * @file
+ * Contains \Drupal\rooms\RoomsEventInterface.
  */
+
+namespace Drupal\rooms;
 
 /**
  * Class RoomsEventInterface
@@ -113,7 +113,7 @@ interface RoomsEventInterface {
   /**
    * Returns the date interval between end and start date.
    *
-   * @return bool|DateInterval
+   * @return bool|\DateInterval
    *   The interval between the end and start date.
    */
   public function diff();

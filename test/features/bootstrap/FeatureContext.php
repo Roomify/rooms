@@ -911,7 +911,7 @@ class FeatureContext extends DrupalContext
     $end_date = new DateTime($end);
 
     $agent = new AvailabilityAgent($start_date, $end_date);
-    $units = $agent->checkAvailability();
+    $units = $agent->checkAvailabilityAndCalculatePrice();
 
     if (is_array($units)) {
       foreach ($units as $units_per_type) {

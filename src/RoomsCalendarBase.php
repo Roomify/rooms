@@ -1,10 +1,17 @@
 <?php
 
 /**
+ * @file
+ * Contains \Drupal\rooms\RoomsCalendarBase.
+ */
+
+namespace Drupal\rooms;
+
+/**
  * Handles querying and updating the availability information
  * relative to a single bookable unit.
  */
-abstract class RoomsCalendar implements RoomsCalendarInterface {
+abstract class RoomsCalendarBase implements RoomsCalendarInterface {
 
   /**
    * The default state for the room if it has no specific booking.
@@ -89,12 +96,12 @@ abstract class RoomsCalendar implements RoomsCalendarInterface {
   /**
    * {@inheritdoc}
    */
-  public abstract function getEvents(DateTime $start_date, DateTime $end_date);
+  public abstract function getEvents(\DateTime $start_date, \DateTime $end_date);
 
   /**
    * {@inheritdoc}
    */
-  public abstract function getRawDayData(DateTime $start_date, DateTime $end_date);
+  public abstract function getRawDayData(\DateTime $start_date, \DateTime $end_date);
 
   /**
    * {@inheritdoc}
@@ -107,7 +114,7 @@ abstract class RoomsCalendar implements RoomsCalendarInterface {
     $query->condition('a.unit_id', $this->unit_id);
     $query->condition('a.year', $year);
     $query->condition('a.month', $month);
-    $result = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
+    $result = $query->execute()->fetchAll(\PDO::FETCH_ASSOC);
     if (count($result) > 0) {
       return TRUE;
     }

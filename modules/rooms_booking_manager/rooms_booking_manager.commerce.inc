@@ -47,7 +47,7 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent, $bookin
   $line_item_label .= t('Departure') . ': ' . $dd->format($date_format) . ')';
   $line_item->line_item_label = $line_item_label;
 
-  $unit_info = $agent->checkAvailabilityForUnit($unit_id, $price_modifiers);
+  $unit_info = $agent->checkAvailabilityAndCalculatePriceForUnit($unit_id, $price_modifiers);
 
   // Check $unit_info to make sure we still have availability.
   if ($unit_info == ROOMS_NO_ROOMS) {

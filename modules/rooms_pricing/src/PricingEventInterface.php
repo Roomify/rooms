@@ -2,9 +2,12 @@
 
 /**
  * @file
- * A pricing event represent a price over a set of continuous dates. As soon as
- * the price changes that is a different pricing event
+ * Contains \Drupal\rooms_pricing\PricingEventInterface.
  */
+
+namespace Drupal\rooms_pricing;
+
+use Drupal\rooms\RoomsEventInterface;
 
 interface PricingEventInterface extends RoomsEventInterface {
   /**

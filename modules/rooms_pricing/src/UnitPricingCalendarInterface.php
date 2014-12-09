@@ -2,8 +2,12 @@
 
 /**
  * @file
- * Contains UnitPricingCalendarInterface.
+ * Contains \Drupal\rooms_pricing\UnitPricingCalendarInterface.
  */
+
+namespace Drupal\rooms_pricing;
+
+use Drupal\rooms\RoomsCalendarInterface;
 
 /**
  * Handles querying and updating the pricing information
@@ -31,9 +35,9 @@ interface UnitPricingCalendarInterface extends RoomsCalendarInterface {
    *   The unit id to calculate.
    * @param int $amount
    *   The initial amount.
-   * @param DateTime $start_date
+   * @param \DateTime $start_date
    *   The start date.
-   * @param DateTime $end_date
+   * @param \DateTime $end_date
    *   The end date.
    * @param string $operation
    *   The operation to perform.
@@ -43,14 +47,14 @@ interface UnitPricingCalendarInterface extends RoomsCalendarInterface {
    * @return PricingEventInterface[]
    *   The events in that range of dates
    */
-  public function calculatePricingEvents($unit_id, $amount, DateTime $start_date, DateTime $end_date, $operation, $days);
+  public function calculatePricingEvents($unit_id, $amount, \DateTime $start_date, \DateTime $end_date, $operation, $days);
 
   /**
    * Given a date range determine the cost of the room over that period.
    *
-   * @param DateTime $start_date
+   * @param \DateTime $start_date
    *   The starting date for the search.
-   * @param DateTime $end_date
+   * @param \DateTime $end_date
    *   The end date for the search.
    * @param int $persons
    *   The number of persons staying in this room.
@@ -62,6 +66,6 @@ interface UnitPricingCalendarInterface extends RoomsCalendarInterface {
    * @return array
    *   Array holding full price and booking price of the room for that period.
    */
-  public function calculatePrice(DateTime $start_date, DateTime $end_date, $persons = 0, $children = 0, $children_ages = array());
+  public function calculatePrice(\DateTime $start_date, \DateTime $end_date, $persons = 0, $children = 0, $children_ages = array());
 
 }

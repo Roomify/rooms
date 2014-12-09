@@ -6,6 +6,9 @@
  * FullCalendar plugin.
  */
 
+use \Drupal\rooms_availability\BookingEvent;
+use \Drupal\rooms_availability\UnitCalendar;
+
 define('ROOMS_AVAILABILITY_ADMIN_STYLE', 1);
 define('ROOMS_AVAILABILITY_GENERIC_STYLE', 2);
 

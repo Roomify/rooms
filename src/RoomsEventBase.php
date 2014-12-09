@@ -1,6 +1,13 @@
 <?php
 
-abstract class RoomsEvent implements RoomsEventInterface {
+/**
+ * @file
+ * Contains \Drupal\rooms\RoomsEventBase.
+ */
+
+namespace Drupal\rooms;
+
+abstract class RoomsEventBase implements RoomsEventInterface {
 
   /**
    * The booking unit the event is relevant to
@@ -11,14 +18,14 @@ abstract class RoomsEvent implements RoomsEventInterface {
   /**
    * The default state for the room if it has no specific booking.
    *
-   * @var DateTime
+   * @var \DateTime
    */
   public $start_date;
 
   /**
    * The end date for the event.
    *
-   * @var DateTime
+   * @var \DateTime
    */
   public $end_date;
 
@@ -98,9 +105,9 @@ abstract class RoomsEvent implements RoomsEventInterface {
   public function transformToYearlyEvents() {
     // If same year return the event
     if ($this->sameYear()) {
-      $sd = new DateTime();
+      $sd = new \DateTime();
       $sd->setDate($this->startYear(), $this->startMonth(), $this->startDay());
-      $ed = new DateTime();
+      $ed = new \DateTime();
       $ed->setDate($this->endYear(), $this->endMonth(), $this->endDay());
       $be = $this->createEvent($sd, $ed);
       return array($be);
@@ -109,8 +116,8 @@ abstract class RoomsEvent implements RoomsEventInterface {
     // Else split into years
     $events = array();
     for ($i = $this->startYear(); $i <= $this->endYear(); $i++) {
-      $sd = new DateTime();
-      $ed = new DateTime();
+      $sd = new \DateTime();
+      $ed = new \DateTime();
       if ($i == $this->startYear()) {
         $sd->setDate($i, $this->startMonth(), $this->startDay());
         $ed->setDate($i, 12, 31);
@@ -141,9 +148,9 @@ abstract class RoomsEvent implements RoomsEventInterface {
       return FALSE;
     }
     if ($this->sameMonth()) {
-      $sd = new DateTime();
+      $sd = new \DateTime();
       $sd->setDate($this->startYear(), $this->startMonth(), $this->startDay());
-      $ed = new DateTime();
+      $ed = new \DateTime();
       $ed->setDate($this->endYear(), $this->endMonth(), $this->endDay());
       $be = $this->createEvent($sd, $ed);
       return array($be);
@@ -151,8 +158,8 @@ abstract class RoomsEvent implements RoomsEventInterface {
     $months = rooms_end_of_month_dates($this->startYear());
 
     for ($i = $this->startMonth(); $i <= $this->endMonth(); $i++) {
-      $sd = new DateTime();
-      $ed = new DateTime();
+      $sd = new \DateTime();
+      $ed = new \DateTime();
       if ($i == $this->startMonth()) {
         $sd->setDate($this->startYear() , $i, $this->startDay());
         $ed->setDate($this->startYear(), $i, $months[$i]);
@@ -175,14 +182,14 @@ abstract class RoomsEvent implements RoomsEventInterface {
   /**
    * Creates a new event
    *
-   * @param DateTime $start_date
+   * @param \DateTime $start_date
    *   The new event start date.
-   * @param DateTime $end_date
+   * @param \DateTime $end_date
    *   The new event end date.
    *
    * @return RoomsEventInterface
    *   The new event created.
    */
-  protected abstract function createEvent(DateTime $start_date, DateTime $end_date);
+  protected abstract function createEvent(\DateTime $start_date, \DateTime $end_date);
 
 }

@@ -18,7 +18,6 @@ dependencies[] = commerce_order
 
 files[] = rooms_booking.admin.inc
 files[] = rooms_booking_type.admin.inc
-files[] = includes/rooms_booking.availability_agent.inc
 files[] = includes/rooms_booking.availability_agent_filter.inc
 files[] = views/rooms_booking.views.inc
 files[] = views/rooms_booking_handler_link_field.inc

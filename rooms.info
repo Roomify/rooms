@@ -3,12 +3,8 @@ description = Provides basic underlying functionality and configuration options 
 core = 7.x
 php = 5.3.9
 
-files[] = includes/rooms.calendar.inc
-files[] = includes/rooms.calendar_interface.inc
-files[] = includes/rooms.event.inc
-files[] = includes/rooms.event_interface.inc
-
 package = Rooms
 
 dependencies[] = libraries (>=2.x)
 dependencies[] = variable
+dependencies[] = xautoload (>= 7.x-4.0)

@@ -2,10 +2,14 @@
 
 /**
  * @file
- * Class BookingEvent
+ * Contains \Drupal\rooms_availability\BookingEvent
  */
 
-class BookingEvent extends RoomsEvent implements BookingEventInterface {
+namespace Drupal\rooms_availability;
+
+use Drupal\rooms\RoomsEventBase;
+
+class BookingEvent extends RoomsEventBase implements BookingEventInterface {
 
   /**
    * The type of event.
@@ -21,9 +25,9 @@ class BookingEvent extends RoomsEvent implements BookingEventInterface {
    *   The bookable unit.
    * @param int $event_id
    *   The event ID.
-   * @param DateTime $start_date
+   * @param \DateTime $start_date
    *   The start date of the event.
-   * @param DateTime $end_date
+   * @param \DateTime $end_date
    *   The end date of the event.
    */
   public function __construct($unit_id, $event_id, $start_date, $end_date) {
@@ -36,7 +40,7 @@ class BookingEvent extends RoomsEvent implements BookingEventInterface {
   /**
    * {@inheritdoc}
    */
-  protected function createEvent(DateTime $start_date, DateTime $end_date) {
+  protected function createEvent(\DateTime $start_date, \DateTime $end_date) {
     return new BookingEvent($this->unit_id, $this->id, $start_date, $end_date);
   }
 
@@ -52,7 +56,7 @@ class BookingEvent extends RoomsEvent implements BookingEventInterface {
     $query->condition('l.unit_id', $this->unit_id);
     $query->condition('l.state', $this->id);
     $query->condition('l.locked', 1);
-    $result = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
+    $result = $query->execute()->fetchAll(\PDO::FETCH_ASSOC);
 
     if (count($result) == 1) {
       return FALSE;

@@ -2,8 +2,12 @@
 
 /**
  * @file
- * Interface BookingEventInterface
+ * Contains \Drupal\rooms_availability\BookingEventInterface
  */
+
+namespace Drupal\rooms_availability;
+
+use Drupal\rooms\RoomsEventInterface;
 
 interface BookingEventInterface extends RoomsEventInterface {
 

@@ -2,10 +2,18 @@
 
 /**
  * @file
- * contains PricingEvent.
+ * Contains \Drupal\rooms_pricing\PricingEvent.
  */
 
-class PricingEvent extends RoomsEvent implements PricingEventInterface {
+namespace Drupal\rooms_pricing;
+
+use Drupal\rooms\RoomsEventBase;
+
+/**
+ * A pricing event represent a price over a set of continuous dates. As soon as
+ * the price changes that is a different pricing event
+ */
+class PricingEvent extends RoomsEventBase implements PricingEventInterface {
 
   /**
    * The amount for this period.
@@ -28,14 +36,14 @@ class PricingEvent extends RoomsEvent implements PricingEventInterface {
    *   The unit ID.
    * @param int $amount
    *   The booking amount.
-   * @param DateTime $start_date
+   * @param \DateTime $start_date
    *   The start date of the event.
-   * @param DateTime $end_date
+   * @param \DateTime $end_date
    *   The start date of the event.
    * @param string $operation
    *   The operation to perform.
    */
-  public function __construct($unit_id, $amount, $start_date, $end_date, $operation = '') {
+  public function __construct($unit_id, $amount, \DateTime $start_date, \DateTime $end_date, $operation = '') {
     $this->unit_id = $unit_id;
     $this->amount = $amount;
     $this->start_date = $start_date;
@@ -46,7 +54,7 @@ class PricingEvent extends RoomsEvent implements PricingEventInterface {
   /**
    * {@inheritdoc}
    */
-  protected function createEvent(DateTime $start_date, DateTime $end_date) {
+  protected function createEvent(\DateTime $start_date, \DateTime $end_date) {
     return new PricingEvent($this->unit_id, $this->amount, $start_date, $end_date, $this->operation);
   }
 

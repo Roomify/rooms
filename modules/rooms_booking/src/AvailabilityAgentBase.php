@@ -2,11 +2,13 @@
 
 /**
  * @file
- * Contains the AvailabilityAgent.
+ * Contains the AvailabilityAgentBase.
  */
 
+namespace Drupal\rooms_booking;
+
 /**
- * An AvailabilityAgent provides access to the availability functionality of
+ * An AvailabilityAgentBase provides access to the availability functionality of
  * Rooms and lets you query for availability, get pricing information and create
  * products that can be bought.
  *
@@ -16,21 +18,21 @@
  * An Agent reasons over a single set of information regarding a booking which
  * are exposed as public variables to make it easy for us to set and or change them.
  */
-class AvailabilityAgent {
+class AvailabilityAgentBase implements AvailabilityAgentInterface {
 
   /**
    * The start date for availability search.
    *
-   * @var DateTime
+   * @var \DateTime
    */
-  public $start_date;
+  public $startDate;
 
   /**
-   * The departure date
+   * The departure date.
    *
-   * @var DateTime
+   * @var \DateTime
    */
-  public $end_date;
+  public $endDate;
 
   /**
    * How many people we are looking to accommodate.
@@ -76,12 +78,8 @@ class AvailabilityAgent {
 
 
   /**
-   * Construct the AvailabilityAgent instance.
+   * Construct the AvailabilityAgentBase instance.
    *
-   * @param DateTime $start_date
-   *   The start date.
-   * @param DateTime $end_date
-   *   The end date.
    * @param array $booking_parameters
    *   Parameters to include in the search.
    * @param int $booking_units
@@ -91,17 +89,17 @@ class AvailabilityAgent {
    * @param array $unit_types
    *   Unit types to perform the search.
    */
-  public function __construct($start_date, $end_date, $booking_parameters = array(), $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS), $unit_types = array()) {
+  public function __construct($booking_parameters = array(), $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS), $unit_types = array()) {
     $this->valid_states = $valid_states;
-    $this->start_date = $start_date;
-    // For availability purposes the end date is a day earlier than checkout.
-    $this->end_date = clone($end_date);
-    $this->end_date->sub(new DateInterval('P1D'));
     $this->booking_parameters = $booking_parameters;
     $this->booking_units = $booking_units;
     $this->unit_types = $unit_types;
   }
 
+  public function setDates(\DateTime $start_date, \DateTime $end_date) {
+    $this->startDate = $start_date;
+    $this->endDate = $end_date;
+  }
 
   /**
    * Sets the valid states for an availability search.
@@ -252,8 +250,8 @@ class AvailabilityAgent {
 
     if (is_array($results)) {
       // Of the rooms that fit the criteria lets see what availability we have.
-    $units = $this->getUnitsByPriceType($results);
-       return $units;
+      $units = $this->getUnitsByPriceType($results);
+      return $units;
     }
     else {
       return ROOMS_NO_ROOMS;
@@ -273,17 +271,33 @@ class AvailabilityAgent {
    */
   public function checkAvailabilityForUnit($unit_id, $price_modifiers = array()) {
     // Load the unit.
+    $unit = array($unit_id => rooms_unit_load($unit_id));
+
+    return $this->applyAvailabilityFilter($unit);
+  }
+
+  /**
+   * Returns availability for a specific unit.
+   *
+   * @param int $unit_id
+   *   Bookable unit to check availability for.
+   * @param array $price_modifiers
+   *   Price modifiers to apply.
+   *
+   * @return array|int
+   *   Bookable unit if available, error code otherwise.
+   */
+  public function checkAvailabilityAndCalculatePriceForUnit($unit_id, $price_modifiers = array()) {
+    $unit_info = $this->checkAvailabilityForUnit($unit_id, $price_modifiers);
     $unit = rooms_unit_load($unit_id);
 
-    $units = $this->getUnitsByPriceType(array($unit_id => $unit), $price_modifiers);
-    $units = array_pop($units);
-    $units = array_pop($units);
-
-    if (count($units) == 0) {
-      return ROOMS_NO_ROOMS;
+    if (is_array($unit_info)) {
+      $unit_info = $this->getUnitsByPriceType(array($unit_id => $unit), $price_modifiers);
+      $unit_info = array_pop($unit_info);
+      return array_pop($unit_info);
     }
     else {
-      return $units;
+      return ROOMS_NO_ROOMS;
     }
   }
 
@@ -304,7 +318,7 @@ class AvailabilityAgent {
    */
   protected function applyAvailabilityFilter($units = array(), $adults = 0, $children = 0, $confirmed = FALSE) {
     // Apply AvailabilityAgentSizeFilter.
-    $av_sizefilter = new AvailabilityAgentSizeFilter($units, array('group_size' => $adults, 'group_size_children' => $children, 'unit_types' => $this->unit_types));
+    $av_sizefilter = new \AvailabilityAgentSizeFilter($units, array('group_size' => $adults, 'group_size_children' => $children, 'unit_types' => $this->unit_types));
     $units = $av_sizefilter->applyFilter();
 
     if ($units == ROOMS_SIZE_FAILURE) {
@@ -312,7 +326,7 @@ class AvailabilityAgent {
     }
 
     // Apply AvailabilityAgentDateFilter.
-    $av_datefilter = new AvailabilityAgentDateFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date, 'valid_states' => $this->valid_states, 'confirmed' => $confirmed));
+    $av_datefilter = new \AvailabilityAgentDateFilter($units, array('start_date' => $this->startDate, 'end_date' => $this->endDate, 'valid_states' => $this->valid_states, 'confirmed' => $confirmed));
     $units = $av_datefilter->applyFilter();
 
     if (empty($units)) {
@@ -320,7 +334,7 @@ class AvailabilityAgent {
     }
 
     // Apply AvailabilityAgentCommerceFilter.
-    $av_commercefilter = new AvailabilityAgentCommerceFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date));
+    $av_commercefilter = new \AvailabilityAgentCommerceFilter($units, array('start_date' => $this->startDate, 'end_date' => $this->endDate));
     $units = $av_commercefilter->applyFilter();
 
     ctools_include('plugins');
@@ -328,7 +342,7 @@ class AvailabilityAgent {
 
     foreach ($filters as $filter) {
       $class = ctools_plugin_get_class($filter, 'handler');
-      $object_filter = new $class($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date, 'group_size' => $adults, 'group_size_children' => $children, 'unit_types' => $this->unit_types, 'valid_states' => $this->valid_states, 'confirmed' => $confirmed));
+      $object_filter = new $class($units, array('start_date' => $this->startDate, 'end_date' => $this->endDate, 'group_size' => $adults, 'group_size_children' => $children, 'unit_types' => $this->unit_types, 'valid_states' => $this->valid_states, 'confirmed' => $confirmed));
 
       $units = $object_filter->applyFilter();
     }
@@ -356,18 +370,18 @@ class AvailabilityAgent {
         $unit = rooms_unit_load($unit->unit_id);
 
         // Get a calendar and check availability.
-        $rc = new UnitCalendar($unit->unit_id);
+        $rc = new \UnitCalendar($unit->unit_id);
         // We need to make this based on user-set vars.
         // Rather than using $rc->stateAvailability we will get the states check
         // directly as different states will impact on what products we create.
-        $states = $rc->getStates($this->start_date, $this->end_date);
+        $states = $rc->getStates($this->startDate, $this->endDate);
 
         // Calculate the price as well to add to the array.
-        $temp_end_date = clone($this->end_date);
-        $temp_end_date->add(new DateInterval('P1D'));
+        $temp_end_date = clone($this->endDate);
+        $temp_end_date->add(new \DateInterval('P1D'));
 
         $booking_info = array(
-          'start_date' => clone($this->start_date),
+          'start_date' => clone($this->startDate),
           'end_date' => $temp_end_date,
           'unit' => $unit,
           'booking_parameters' => $this->booking_parameters,
@@ -376,13 +390,13 @@ class AvailabilityAgent {
         // Give other modules a chance to change the price modifiers.
         drupal_alter('rooms_price_modifier', $price_modifiers, $booking_info);
 
-        $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
+        $price_calendar = new \UnitPricingCalendar($unit->unit_id, $price_modifiers);
 
         if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON && count($this->booking_parameters) == 1 && isset($this->booking_parameters[0]) && is_array($this->booking_parameters)) {
-          $price = $price_calendar->calculatePrice($this->start_date, $this->end_date, $this->booking_parameters[0]['adults'], $this->booking_parameters[0]['children'], $this->booking_parameters[0]['childrens_age']);
+          $price = $price_calendar->calculatePrice($this->startDate, $this->endDate, $this->booking_parameters[0]['adults'], $this->booking_parameters[0]['children'], $this->booking_parameters[0]['childrens_age']);
         }
         else {
-          $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
+          $price = $price_calendar->calculatePrice($this->startDate, $this->endDate);
         }
         $full_price = $price['full_price'];
 
@@ -404,50 +418,6 @@ class AvailabilityAgent {
     $units = $this->orderByOptionals($units);
 
     return $units;
-  }
-
-
-  /**
-   * Ordering units by the optional items that are available.
-   *
-   * @param array $units
-   *   Units to sort.
-   *
-   * @return array
-   *   Sorted units by number of options.
-   */
-  protected function orderByOptionals($units) {
-    foreach ($units as $type => $v) {
-      foreach ($v as $price => $value) {
-        uasort($value, array(get_class($this), 'compareByOptionals'));
-        $units[$type][$price] = $value;
-      }
-    }
-
-    return $units;
-  }
-
-  /**
-   * Compares two bookable units based on the number of available options.
-   *
-   * @param array $unit_a
-   *   First unit.
-   * @param array $unit_b
-   *   Second unit.
-   *
-   * @return int
-   *   Comparison result.
-   */
-  protected static function compareByOptionals($unit_a, $unit_b) {
-    $a_items = rooms_unit_get_unit_options($unit_a['unit']);
-    $b_items = rooms_unit_get_unit_options($unit_b['unit']);
-
-    if (count($a_items) == count($b_items)) {
-      return $unit_a['unit']->unit_id < $unit_b['unit']->unit_id ? 1 : -1;
-    }
-    else {
-      return count($a_items) < count($b_items) ? 1 : -1;
-    }
   }
 
 }

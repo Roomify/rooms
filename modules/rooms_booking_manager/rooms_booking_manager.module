@@ -6,6 +6,8 @@
  * and book it - including the DrupalCommerce integration
  */
 
+use Drupal\rooms_booking\AvailabilityAgentBase;
+
 /**
  * Implements hook_permission().
  */
@@ -408,9 +410,9 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
     }
 
     // Get all the units.
-    $agent = new AvailabilityAgent($start_date, $end_date, $booking_parameters, $booking_units, variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS)), $unit_types);
+    $agent = new AvailabilityAgentBase($start_date, $end_date, $booking_parameters, $booking_units, variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS)), $unit_types);
 
-    $units_per_type = $agent->checkAvailability();
+    $units_per_type = $agent->checkAvailabilityAndCalculatePrice();
 
     // Give other modules a chance to change the search results.
     drupal_alter('rooms_booking_results', $units_per_type, $start_date, $end_date, $booking_parameters);
@@ -1069,11 +1071,11 @@ function book_unit_form_submit(&$form, &$form_state) {
   $ed = end_date_load($end_date);
 
   // Let us get available rooms again and match the order against actual rooms.
-  $agent = new AvailabilityAgent($sd, $ed, $group_size);
+  $agent = new AvailabilityAgentBase($sd, $ed, $group_size);
   $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
 
   // Let us make sure our bookable unit is still available.
-  $available_units = $agent->checkAvailabilityForUnit($unit_id);
+  $available_units = $agent->checkAvailabilityAndCalculatePriceForUnit($unit_id);
 
   if (count($available_units) > 0) {
     if (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_COMMERCE_CHECKOUT) {
@@ -1774,10 +1776,10 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
   }
 
   // Check the rooms availability and match the order against actual rooms.
-  $agent = new AvailabilityAgent($start_date, $end_date, $booking_parameters, $b_units, array());
+  $agent = new AvailabilityAgentBase($start_date, $end_date, $booking_parameters, $b_units, array());
   $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
 
-  $units_per_type = $agent->checkAvailability();
+  $units_per_type = $agent->checkAvailabilityAndCalculatePrice();
 
   // We are going to check that this is still true.
   foreach ($order as $type => $price_serving) {
@@ -2593,7 +2595,7 @@ function rooms_booking_manager_create_order($start_date, $end_date, $booking_par
     }
   }
 
-  $agent = new AvailabilityAgent($start_date, $end_date, $booking_parameters, 1, array());
+  $agent = new AvailabilityAgentBase($start_date, $end_date, $booking_parameters, 1, array());
   $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
 
   // Create line item.
