@@ -465,7 +465,7 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
 
       $s_timestamp = strtotime('+1 days', $s_timestamp);
 
-    } while ($s_timestamp < $e_timestamp);
+    } while ($s_timestamp <= $e_timestamp);
 
     return $events;
   }
