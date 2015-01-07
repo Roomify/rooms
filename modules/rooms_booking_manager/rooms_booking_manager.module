@@ -564,6 +564,13 @@ function rooms_booking_manager_change_search_form($form, &$form_state, $start_da
     );
   }
 
+  if (isset($_GET['rooms_id'])) {
+    $form['rooms_id'] = array( 
+      '#type' => 'hidden',
+      '#value' => $_GET['rooms_id'],
+    );
+  }
+
   // We add the form's #submit array to this button along with the actual submit
   // handler to preserve any submit handlers added by a form callback_wrapper.
   $submit = array('rooms_booking_manager_change_search_form_submit');
@@ -581,7 +588,6 @@ function rooms_booking_manager_change_search_form($form, &$form_state, $start_da
   $form['info']['actions']['change_search'] = array(
     '#type' => 'submit',
     '#value' => variable_get_value('rooms_booking_manager_button_change_search'),
-    '#submit' => $submit,
     '#attributes' => array('class' => array('rooms-current-search__change-search-button')),
   );
 
