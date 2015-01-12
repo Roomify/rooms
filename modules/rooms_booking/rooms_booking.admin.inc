@@ -642,7 +642,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
                 $form['availability_fieldset']['unit_fieldset']['options_fieldset'][$option_name] = array(
                   '#type' => 'checkbox',
-                  '#title' => $option['name'],
+                  '#title' => t($option['name']),
                   '#default_value' => isset($booking->data[$option_name]) ? '1' : '0',
                   '#ajax' => array(
                     'callback' => 'rooms_booking_select_unit_callback',

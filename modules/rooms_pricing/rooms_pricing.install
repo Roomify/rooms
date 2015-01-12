@@ -270,3 +270,22 @@ function rooms_pricing_update_7002() {
   variable_del('ROOMS_SELECT_ALL_PAGES_PR');
   return t('Removed stale variable');
 }
+
+/**
+ * Remove orphaned rows from rooms_pricing table.
+ */
+function rooms_pricing_update_7003() {
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'rooms_unit')
+    ->addMetaData('account', user_load(1));
+  $result = $query->execute();
+
+  $delete = db_delete('rooms_pricing');
+  if (isset($result['rooms_unit']) && !empty($result['rooms_unit'])) {
+    $ids = array_keys($result['rooms_unit']);
+    $delete->condition('unit_id', $ids, 'NOT IN');
+  }
+  $delete ->execute();
+
+  return t('Removed orphaned rows from rooms_pricing table');
+}

@@ -45,21 +45,6 @@ function rooms_pricing_permission() {
 }
 
 /**
- * Implements hook_query_TAG_alter().
- */
-function rooms_pricing_query_rooms_pricing_access_alter(QueryAlterableInterface $query) {
-  // Look for unit base table to pass to the query altering function or else
-  // assume we don't have the tables we need to establish order related altering
-  // right now.
-  foreach ($query->getTables() as $table) {
-    if ($table['table'] === 'rooms_units') {
-      rooms_entity_access_query_alter($query, 'rooms_unit', $table['alias'], NULL, 'update pricing');
-      break;
-    }
-  }
-}
-
-/**
  * Implements hook_menu().
  */
 function rooms_pricing_menu() {
@@ -96,6 +81,34 @@ function rooms_pricing_menu() {
   );
 
   return $items;
+}
+
+
+/**
+ * Implements hook_query_TAG_alter().
+ */
+function rooms_pricing_query_rooms_pricing_access_alter(QueryAlterableInterface $query) {
+  // Look for unit base table to pass to the query altering function or else
+  // assume we don't have the tables we need to establish order related altering
+  // right now.
+  foreach ($query->getTables() as $table) {
+    if ($table['table'] === 'rooms_units') {
+      rooms_entity_access_query_alter($query, 'rooms_unit', $table['alias'], NULL, 'update pricing');
+      break;
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_delete().
+ */
+function rooms_pricing_entity_delete($entity, $type) {
+  if ($type == 'rooms_unit') {
+    // Remove data related to entity from rooms_pricing table.
+    db_delete('rooms_pricing')
+      ->condition('unit_id', $entity->unit_id)
+      ->execute();
+  }
 }
 
 /**

@@ -120,6 +120,18 @@ function rooms_availability_query_rooms_availability_access_alter(QueryAlterable
 }
 
 /**
+ * Implements hook_entity_delete().
+ */
+function rooms_availability_entity_delete($entity, $type) {
+  if ($type == 'rooms_unit') {
+    // Remove data related to entity from rooms_availability table.
+    db_delete('rooms_availability')
+      ->condition('unit_id', $entity->unit_id)
+      ->execute();
+  }
+}
+
+/**
  * Form for the Bulk Availability Management.
  *
  * Could receive date params for the interested interval to edit.
@@ -472,7 +484,7 @@ function update_availability_calendar_form_submit(&$form, &$form_state) {
 }
 
 /**
- * Creates the necessary json for the date range provided - needs at least start
+ * Displays the necessary json for the date range provided - needs at least start
  * year and month at which point it will return the entire month.
  */
 function rooms_availability_event($unit, $start_year = '', $start_month = '', $start_day = '', $end_year = '', $end_month = '', $end_day = '', $event_style = ROOMS_AVAILABILITY_ADMIN_STYLE) {
@@ -482,6 +494,18 @@ function rooms_availability_event($unit, $start_year = '', $start_month = '', $s
     echo drupal_json_encode(array());
     return;
   }
+
+  $json_events = array();
+  $json_events = rooms_availability_generate_json($unit, $start_year, $start_month, $start_day, $end_year, $end_month, $end_day, $event_style = ROOMS_AVAILABILITY_ADMIN_STYLE);
+
+  echo drupal_json_encode($json_events);
+}
+
+
+/**
+ * Generates json based on date range provided.
+ */
+function rooms_availability_generate_json($unit, $start_year = '', $start_month = '', $start_day = '', $end_year = '', $end_month = '', $end_day = '', $event_style = ROOMS_AVAILABILITY_ADMIN_STYLE) {
 
   $start_year = (int) $start_year;
   $start_month = (int) $start_month;
@@ -531,7 +555,7 @@ function rooms_availability_event($unit, $start_year = '', $start_month = '', $s
     $json_events[] = $event->formatJson($event_style, $unit->name);
   }
 
-  echo drupal_json_encode($json_events);
+  return $json_events;
 }
 
 /**

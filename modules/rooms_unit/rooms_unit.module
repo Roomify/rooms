@@ -83,6 +83,15 @@ function rooms_unit_entity_info() {
       'controller class' => 'RoomsUnitUIController',
       'menu wildcard' => '%rooms_unit',
     ),
+    'translation' => array(
+      'entity_translation' => array(
+        'base path' => 'admin/rooms/units/unit/%rooms_unit',
+        'default settings' => array(
+          'default_language' => LANGUAGE_NONE,
+          'hide_language_selector' => FALSE,
+        ),
+      ),
+    ),
   );
   // The entity that holds information about the entity types.
   $return['rooms_unit_type'] = array(
@@ -529,7 +538,7 @@ function rooms_unit_ids($bundle = '') {
  */
 function rooms_unit_page_view($unit, $view_mode = 'full') {
   $controller = entity_get_controller('rooms_unit');
-  $content = $controller->view(array($unit->unit_id => $unit));
+  $content = $controller->view(array($unit->unit_id => $unit), $view_mode);
   drupal_set_title($unit->name);
   return $content;
 }
