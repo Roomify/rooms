@@ -16,7 +16,7 @@ Follow the steps below to install Rooms.
 (http://fullcalendar.io) library. To improve the Rooms user experience,
 we created a specific fork of this library adding some new features.
 
-The required version of Fullcaclendar is 2.1.1 and you can download
+The required version of FullCalendar is 2.1.1 and you can download
 the specific version from our website[1]. The FullCalendar library should be
 placed in sites/all/libraries so that you end up with the file located here:
 sites/all/libraries/rooms_fullcalendar/dist/fullcalendar.js
