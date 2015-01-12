@@ -213,6 +213,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#size' => '5',
     '#field_suffix' => t('Per unit per night'),
     '#maxlength' => 10,
+    '#required' => TRUE,
     '#weight' => -98,
   );
 
