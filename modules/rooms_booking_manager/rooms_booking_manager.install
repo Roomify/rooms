@@ -11,6 +11,8 @@
 function rooms_booking_manager_install() {
   user_role_grant_permissions(1, array('book units'));
   user_role_grant_permissions(2, array('book units'));
+
+  variable_set('rooms_unit_type_selector', array());
 }
 
 /**
@@ -52,6 +54,7 @@ function rooms_booking_manager_uninstall() {
 
   variable_del('rooms_date_format');
   variable_del('rooms_booking_manager_booking_product_id');
+  variable_del('rooms_unit_type_selector');
 
   module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.variable');
   $vars = rooms_booking_manager_variable_info(array());

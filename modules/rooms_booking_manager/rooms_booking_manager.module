@@ -408,8 +408,19 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
     if (isset($_GET['type'])) {
       $type = check_plain($_GET['type']);
 
-      if (rooms_unit_type_load($type) !== FALSE) {
-        $unit_types[] = $type;
+      if ($_GET['type'] == 'all') {
+        $types = variable_get('rooms_unit_type_selector', array());
+
+        foreach ($types as $element) {
+          $unit_types[] = $element;
+        }
+      }
+      else {
+        $type = check_plain($_GET['type']);
+
+        if (rooms_unit_type_load($type) !== FALSE) {
+          $unit_types[] = $type;
+        }
       }
     }
 
@@ -2378,6 +2389,26 @@ function rooms_booking_manager_alter_rooms_booking_settings(&$form, &$form_state
     '#default_value' => variable_get('rooms_booking_manager_type_selector', ROOMS_DISPLAY_TYPE_SELECTOR_NO),
   );
 
+  $form['rooms_search_settings']['rooms_display_unit_type_selector'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Valid unit types'),
+    '#states' => array(
+      'visible' => array(
+        '#edit-rooms-booking-manager-type-selector' => array('checked' => TRUE),
+      ),
+    ),
+  );
+
+  $unit_types = variable_get('rooms_unit_type_selector', array());
+
+  $form['rooms_search_settings']['rooms_display_unit_type_selector']['rooms_unit_type_selector'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Select unit types to show to user in the Unit-Type selector.'),
+    '#group' => 'rooms_display_unit_type_selector',
+    '#options' => rooms_unit_types_ids(),
+    '#default_value' => array_keys($unit_types),
+  );
+
   $form['rooms_booking_settings']['rooms_valid_availability_states'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Valid availability states'),
@@ -2403,6 +2434,15 @@ function rooms_booking_manager_alter_rooms_booking_settings(&$form, &$form_state
     '#default_value' => variable_get('rooms_date_format', 'd-m-Y'),
   );
 
+  $form['#validate'][] = 'rooms_booking_manager_alter_rooms_booking_settings_validate';
+}
+
+/**
+ * Validate the form.
+ */
+function rooms_booking_manager_alter_rooms_booking_settings_validate($form, &$form_state) {
+  // Delete unchecked items.
+  $form_state['values']['rooms_unit_type_selector'] = array_diff($form_state['values']['rooms_unit_type_selector'], array(0)); 
 }
 
 /**

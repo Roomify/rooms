@@ -176,7 +176,7 @@ class AvailabilityAgentSizeFilter extends AvailabilityAgentFilterBase {
 
     // Add a unit type condition if this has been defined.
     if ($unit_types != NULL) {
-      $query->propertyCondition('type', $unit_types[0]);
+      $query->propertyCondition('type', $unit_types);
     }
 
     // Execute the query and collect the results.

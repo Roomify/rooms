@@ -160,6 +160,17 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#weight' => 99,
   );
 
+  $form['unit_type_selector'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Unit type selector'),
+    '#description' => t('Unchecking this option the unit type will not appear in the unit-type selector form.'),
+    '#options' => array(
+      '1' => 'Add to unit type selector',
+    ),
+    '#default_value' => array('1'),
+    '#weight' => 100,
+  );
+
   $form['actions'] = array(
     '#type' => 'actions',
     '#tree' => FALSE,
@@ -221,6 +232,23 @@ function rooms_unit_type_form_submit($form, &$form_state) {
   $unit_type = entity_ui_form_submit_build_entity($form, $form_state);
   // Save and go back.
   $unit_type->save();
+
+  // Get all unit types to show in unit type selector.
+  $unit_types = variable_get_value('rooms_unit_type_selector');
+
+  // If checked add unit type to list of unit types to show.
+  if ($form_state['values']['unit_type_selector'][1]) {
+    $unit_types[$form_state['values']['type']] = $form_state['values']['label'];
+    variable_set('rooms_unit_type_selector', $unit_types);
+  }
+
+  // If we are editing the unit type.
+  else {
+    if (isset($unit_types[$form_state['values']['type']])) {
+      unset($unit_types[$form_state['values']['type']]);
+      variable_set('rooms_unit_type_selector', $unit_types);
+    }
+  }
 
   $form_state['unit_type'] = $unit_type;
 

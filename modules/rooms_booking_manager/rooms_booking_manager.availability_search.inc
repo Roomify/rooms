@@ -131,10 +131,13 @@ function rooms_booking_availability_search_form_builder($form, &$form_state) {
   }
 
   if (variable_get('rooms_booking_manager_type_selector', ROOMS_DISPLAY_TYPE_SELECTOR_NO) == ROOMS_DISPLAY_TYPE_SELECTOR) {
+    $unit_types = variable_get('rooms_unit_type_selector', array());
+
     $form['unit_type'] = array(
       '#title' => variable_get_value('rooms_booking_manager_select_type'),
       '#type' => 'select',
-      '#options' => array('' => '') + rooms_unit_types_ids(),
+      '#empty_option' => t('Select All'),
+      '#options' => $unit_types,
       '#default_value' => 0,
     );
 
@@ -228,8 +231,11 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
   $rooms_query = array();
 
   if (isset($form_state['values']['unit_type'])) {
-    if ($form_state['values']['unit_type'] != '') {
+    if (!empty($form_state['values']['unit_type'])) {
       $rooms_query['type'] = $form_state['values']['unit_type'];
+    }
+    else {
+      $rooms_query['type'] = 'all';
     }
   }
 
