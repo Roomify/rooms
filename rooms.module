@@ -153,7 +153,7 @@ function rooms_libraries_info() {
  *   A boolean indicating the FullCalendar status.
  */
 function rooms_fullcalendar_loaded() {
-  if (($library = libraries_load('rooms_fullcalendar', 'minified')) && !empty($library['loaded'])) {
+  if (rooms_library_loaded('rooms_fullcalendar', 'minified')) {
     return TRUE;
   }
   else {
@@ -161,6 +161,7 @@ function rooms_fullcalendar_loaded() {
     drupal_set_message(t('The FullCalendar Library could not be found.
                           Please check the installation instructions and the <a href="@status">Status Report</a>.',
       array('@status' => url('admin/reports/status'))), 'warning');
+    return FALSE;
   }
 }
 
@@ -180,6 +181,16 @@ function rooms_theme() {
       ),
     ),
   );
+}
+
+/**
+ * Helper function to check if a library is loaded properly or not.
+ *
+ * @return bool
+ *   Boolean indicating if the library is properly loaded or not.
+ */
+function rooms_library_loaded($name, $variant = NULL) {
+  return ($library = libraries_load($name, $variant)) && !empty($library['loaded']);
 }
 
 /**
