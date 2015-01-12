@@ -33,3 +33,9 @@
   clear: both;
   visibility: hidden;
 }
+.fc-day-grid-container {
+  overflow-y: hidden;
+}
+.fc-title {
+  color: white;
+}

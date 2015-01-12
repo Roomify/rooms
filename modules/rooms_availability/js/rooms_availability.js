@@ -56,11 +56,11 @@ Drupal.behaviors.rooms_availability = {
         ignoreTimezone: false,
         editable: false,
         selectable: true,
+        height: 400,
         dayNamesShort:[Drupal.t("Sun"), Drupal.t("Mon"), Drupal.t("Tue"), Drupal.t("Wed"), Drupal.t("Thu"), Drupal.t("Fri"), Drupal.t("Sat")],
         monthNames:[Drupal.t("January"), Drupal.t("February"), Drupal.t("March"), Drupal.t("April"), Drupal.t("May"), Drupal.t("June"), Drupal.t("July"), Drupal.t("August"), Drupal.t("September"), Drupal.t("October"), Drupal.t("November"), Drupal.t("December")],
         firstDay: firstDay,
-        month: value[1],
-        year: value[2],
+        defaultDate: moment([value[2],phpmonth-1]),
         header:{
           left: 'title',
           center: '',
@@ -73,19 +73,23 @@ Drupal.behaviors.rooms_availability = {
             //We are probably dealing with a single day event
             calEvent.end = calEvent.start;
           }
-          var localOffset = (-1) * calEvent.start.getTimezoneOffset() * 60000;
-          var sd = Math.round((calEvent.start.getTime()+localOffset)/1000);
-          var ed = Math.round((calEvent.end.getTime()+localOffset)/1000);
+
+          var sd = calEvent.start.unix();
+          var ed = calEvent.end.unix();
           // Open the modal for edit
           Drupal.RoomsAvailability.Modal(view, calEvent.id, sd, ed);
         },
         select: function(start, end, allDay) {
-          var localOffset = (-1) * start.getTimezoneOffset() * 60000;
-          var sd = Math.round((start.getTime()+localOffset)/1000);
-          var ed = Math.round((end.getTime()+localOffset)/1000);
+          var ed = end.subtract(1, 'days');
+          var sd = start.unix();
+          ed = end.unix();
           // Open the modal for edit
           Drupal.RoomsAvailability.Modal(this, -2, sd, ed);
           $(value[0]).fullCalendar('unselect');
+        },
+        //Remove Time from events
+        eventRender: function(event, el) {
+          el.find('.fc-time').remove();
         }
       });
     });
@@ -108,7 +112,7 @@ Drupal.RoomsAvailability.Modal = function(element, eid, sd, ed) {
   };
   // To made all calendars trigger correctly the getResponse event we need to
   // initialize the ajax instance with the global calendar table element.
-  var calendars_table = $(element.element).closest('.calendar-set');
+  var calendars_table = $(element.el).closest('.calendar-set');
 
   // create new instance only once if exists just override the url
   if (Drupal.ajax[base] === undefined) {

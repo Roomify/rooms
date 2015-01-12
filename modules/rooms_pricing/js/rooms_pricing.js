@@ -45,17 +45,21 @@ Drupal.behaviors.rooms_availability = {
       phpmonth = value[1]+1;
       $(value[0]).once().fullCalendar({
         editable:false,
+        height: 400,
         dayNamesShort:[Drupal.t("Sun"), Drupal.t("Mon"), Drupal.t("Tue"), Drupal.t("Wed"), Drupal.t("Thu"), Drupal.t("Fri"), Drupal.t("Sat")],
         monthNames:[Drupal.t("January"), Drupal.t("February"), Drupal.t("March"), Drupal.t("April"), Drupal.t("May"), Drupal.t("June"), Drupal.t("July"), Drupal.t("August"), Drupal.t("September"), Drupal.t("October"), Drupal.t("November"), Drupal.t("December")],
         firstDay: firstDay,
-        month:value[1],
-        year:value[2],
+        defaultDate: moment([value[2],phpmonth-1]),
         header:{
           left: 'title',
           center: '',
           right: ''
         },
-        events: Drupal.settings.basePath + '?q=rooms/units/unit/' + Drupal.settings.roomsPricing.roomID + '/pricing/json/' + value[2] + '/' + phpmonth
+        events: Drupal.settings.basePath + '?q=rooms/units/unit/' + Drupal.settings.roomsPricing.roomID + '/pricing/json/' + value[2] + '/' + phpmonth,
+        //Remove Time from events
+        eventRender: function(event, el) {
+          el.find('.fc-time').remove();
+        }
       });
     });
     // Resize takes care of some quirks on occasion
