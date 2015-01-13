@@ -135,6 +135,8 @@ function rooms_booking_children_discount($form, &$form_state) {
       '#attributes' => array('class' => array('child-discount container-inline')),
     );
     $form['option'][$i]['discount'] = array(
+      '#title' => 'Discount',
+      '#title_display' => 'invisible',
       '#type' => 'textfield',
       '#field_prefix' => $option_prefix,
       '#field_suffix' => $option_suffix,
@@ -143,8 +145,11 @@ function rooms_booking_children_discount($form, &$form_state) {
       '#required' => TRUE,
       '#default_value' => isset($options[$i]['end']) ? $options[$i]['discount'] : '',
       '#attributes' => array('class' => array('child-discount__amount')),
+      '#element_validate' => array('rooms_element_validate_integer_positive_less_than_100'),
     );
     $form['option'][$i]['start'] = array(
+      '#title' => 'Start date',
+      '#title_display' => 'invisible',
       '#type' => 'textfield',
       '#field_prefix' => $start_prefix,
       '#size' => 5,
@@ -152,8 +157,11 @@ function rooms_booking_children_discount($form, &$form_state) {
       '#required' => TRUE,
       '#default_value' => isset($options[$i]['start']) ? $options[$i]['start'] : '',
       '#attributes' => array('class' => array('child-discount__age-start')),
+      '#element_validate' => array('rooms_element_validate_integer_zero_positive'),
     );
     $form['option'][$i]['end'] = array(
+      '#title' => 'End date',
+      '#title_display' => 'invisible',
       '#type' => 'textfield',
       '#field_prefix' => $end_prefix,
       '#field_suffix' => $end_suffix,
@@ -162,6 +170,7 @@ function rooms_booking_children_discount($form, &$form_state) {
       '#required' => TRUE,
       '#default_value' => isset($options[$i]['end']) ? $options[$i]['end'] : '',
       '#attributes' => array('class' => array('child-discount__age-end')),
+      '#element_validate' => array('rooms_element_validate_integer_zero_positive'),
     );
   }
   $form['actions'] = array(
@@ -200,14 +209,8 @@ function rooms_booking_children_discount($form, &$form_state) {
 function rooms_booking_children_discount_validate($form, &$form_state) {
   foreach ($form_state['values']['option'] as $key => $value) {
     if ($value['start'] != '' || $value['end'] != '' || $value['discount'] != '') {
-      if (!is_numeric($value['start'])) {
-        form_set_error('option][' . $key . '][start', t('This is not a valid integer.'));
-      }
-      if (!is_numeric($value['end'])) {
-        form_set_error('option][' . $key . '][end', t('This is not a valid integer.'));
-      }
-      if (!is_numeric($value['discount'])) {
-        form_set_error('option][' . $key . '][discount', t('This is not a valid discount.'));
+      if ($value['start'] > $value['end']) {
+        form_set_error('option][' . $key . '][start', t('Start age must be less than end age.'));
       }
     }
   }

@@ -1206,3 +1206,29 @@ function rooms_preprocess_rooms_three_month_calendar(&$vars) {
   $vars['backward_link'] = l(t('Back'), $backward_path, $vars['link_options']);
   $vars['current_link'] = l(t('Current'), $current_path, $vars['link_options']);
 }
+
+/**
+ * Form element validation handler for integer elements greater than or equal 
+ * to 0.
+ */
+function rooms_element_validate_integer_zero_positive($element, &$form_state) {
+  $value = $element['#value'];
+  if ($value !== '' && (!is_numeric($value) || intval($value) != $value || $value < 0)) {
+    form_error($element, t('%name must be a positive integer.', array('%name' => $element['#title'])));
+  }
+}
+
+/**
+ * Form element validation handler for integer elements positive less than 100.
+ */
+function rooms_element_validate_integer_positive_less_than_100($element, &$form_state) {
+  $value = $element['#value'];
+  if ($value !== '' && (!is_numeric($value) || intval($value) != $value || $value < 0 || $value > 100)) {
+    if ($value < 0) {
+      form_error($element, t('%name must be greather than 0.', array('%name' => $element['#title'])));
+    }
+    elseif ($value > 100) {
+      form_error($element, t('%name must be less than 100.', array('%name' => $element['#title'])));
+    }
+  }
+}
