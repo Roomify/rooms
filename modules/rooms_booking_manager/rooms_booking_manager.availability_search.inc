@@ -131,20 +131,23 @@ function rooms_booking_availability_search_form_builder($form, &$form_state) {
   }
 
   if (variable_get('rooms_booking_manager_type_selector', ROOMS_DISPLAY_TYPE_SELECTOR_NO) == ROOMS_DISPLAY_TYPE_SELECTOR) {
-    $unit_types = variable_get('rooms_unit_type_selector', array());
+    $searchable_unit_types = variable_get('rooms_unit_type_selector', array());
+    if (!empty($searchable_unit_types)) {
+      $unit_types = variable_get('rooms_unit_type_selector', array());
 
-    $form['unit_type'] = array(
-      '#title' => variable_get_value('rooms_booking_manager_select_type'),
-      '#type' => 'select',
-      '#empty_option' => t('Select All'),
-      '#options' => $unit_types,
-      '#default_value' => 0,
-    );
+      $form['unit_type'] = array(
+        '#title' => variable_get_value('rooms_booking_manager_select_type'),
+        '#type' => 'select',
+        '#empty_option' => t('Select All'),
+        '#options' => $unit_types,
+        '#default_value' => 0,
+      );
 
-    if (isset($_GET['type'])) {
-      $type = check_plain($_GET['type']);
-      if ($type != '' && rooms_unit_type_load($type) !== FALSE) {
-        $form['unit_type']['#default_value'] = $type;
+      if (isset($_GET['type'])) {
+        $type = check_plain($_GET['type']);
+        if ($type != '' && rooms_unit_type_load($type) !== FALSE) {
+          $form['unit_type']['#default_value'] = $type;
+        }
       }
     }
   }
