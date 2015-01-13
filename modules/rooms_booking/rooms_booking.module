@@ -210,7 +210,7 @@ function rooms_booking_children_discount_validate($form, &$form_state) {
   foreach ($form_state['values']['option'] as $key => $value) {
     if ($value['start'] != '' || $value['end'] != '' || $value['discount'] != '') {
       if ($value['start'] > $value['end']) {
-        form_set_error('option][' . $key . '][start', t('Start age must be less than end age.'));
+        form_set_error('option][' . $key . '][start', t('End age must be greater than start age.'));
       }
     }
   }
