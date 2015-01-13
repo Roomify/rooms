@@ -240,7 +240,7 @@ function rooms_unit_type_form_submit($form, &$form_state) {
   $unit_types = variable_get_value('rooms_unit_type_selector');
 
   // If checked add unit type to list of unit types to show.
-  if ($form_state['values']['unit_type_selector'][1]) {
+  if (!empty($form_state['values']['unit_type_selector'])) {
     $unit_types[$form_state['values']['type']] = $form_state['values']['label'];
     variable_set('rooms_unit_type_selector', $unit_types);
   }

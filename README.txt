@@ -21,7 +21,7 @@ the specific version from our website[1]. The FullCalendar library should be
 placed in sites/all/libraries so that you end up with the file located here:
 sites/all/libraries/rooms_fullcalendar/dist/fullcalendar.js
 
-This version of FullCalendar depends on moment.js library
+This version of FullCalendar depends on moment.js library minified version
 (http://momentjs.com). You can download moment.js from this link[2]. The moment.js
 library should be placed in sites/all/libraries so that you end up with the
 file located here: sites/all/libraries/moment/moment.min.js

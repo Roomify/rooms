@@ -66,9 +66,9 @@ function rooms_libraries_info() {
   $libraries['moment'] = array(
     'name' => 'Moment',
     'vendor url' => 'http://momentjs.com',
-    'download url' => 'http://momentjs.com/downloads/moment.js',
+    'download url' => 'http://momentjs.com/downloads/moment.min.js',
     'version arguments' => array(
-      'file' => 'moment.js',
+      'file' => 'moment.min.js',
       // 2.8.3
       'pattern' => '/(\d+\.\d+\.\d)/',
     ),
