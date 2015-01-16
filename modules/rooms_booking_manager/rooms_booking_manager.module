@@ -154,16 +154,15 @@ function rooms_booking_manager_enquiry_page_form($form, $form_state, $start_date
         '#markup' => t('Options: !options', array('!options' => $printable_options)),
       );
     }
+    // Added unit name to enquiry email
+    $form['unit'] = array(
+      '#type' => 'hidden',
+      '#value' => $unit_obj->name,
+    );
   }
 
   $form['#tree'] = TRUE;
   $form['#attributes']['class'][] = 'rooms-enquiry-form';
-
-  //ROOMS-529: Added unit name to enquiry email
-  $form['unit'] = array(
-      '#type' => 'hidden',
-      '#value' => $unit_obj->name,
-  );
 
   $form['start_date'] = array(
     '#type' => 'hidden',
