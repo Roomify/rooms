@@ -1028,7 +1028,7 @@ function rooms_booking_edit_form_get_rooms($unit_type, $current_booking, $start_
     $current_booking_state = rooms_availability_assign_id($current_booking->booking_id, $current_booking->booking_status);
   }
 
-  $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST))));
+  $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', drupal_map_assoc(array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)))));
 
   if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
     $booking_parameters = array(array('adults' => $group_size, 'children' => $group_size_children, 'childrens_age' => $children_age));
@@ -1113,7 +1113,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
         // Check if a locked event is blocking the update.
         $states_confirmed = $uc->getStates($start_date, $adjusted_end_date);
 
-        $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST))));
+        $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', drupal_map_assoc(array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)))));
         $valid_states = array_merge($valid_states, array(ROOMS_UNCONFIRMED_BOOKINGS, $be->id));
 
         $state_diff_confirmed = array_diff($states_confirmed, $valid_states);
@@ -1131,7 +1131,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
         // Check if this booking overlap with an unconfirmed booking.
         $states_unconfirmed = $uc->getStates($start_date, $adjusted_end_date, TRUE);
 
-        $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST))));
+        $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', drupal_map_assoc(array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)))));
         $valid_states = array_merge($valid_states, array($be->id));
 
         $state_diff_unconfirmed = array_diff($states_unconfirmed, $valid_states);

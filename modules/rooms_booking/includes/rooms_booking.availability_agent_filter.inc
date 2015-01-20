@@ -221,7 +221,7 @@ class AvailabilityAgentDateFilter extends AvailabilityAgentFilterBase {
       $valid_states = $this->parameters['valid_states'];
     }
     else {
-      $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST))));
+      $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', drupal_map_assoc(array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)))));
       $valid_states = array_merge($valid_states, array(ROOMS_UNCONFIRMED_BOOKINGS));
     }
 

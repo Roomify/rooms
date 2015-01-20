@@ -425,7 +425,7 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
     }
 
     // Get all the units.
-    $agent = new AvailabilityAgent($start_date, $end_date, $booking_parameters, $booking_units, variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS)), $unit_types);
+    $agent = new AvailabilityAgent($start_date, $end_date, $booking_parameters, $booking_units, array_keys(array_filter(variable_get('rooms_valid_availability_states', drupal_map_assoc(array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST))))), $unit_types);
 
     $units_per_type = $agent->checkAvailability();
 
@@ -1105,7 +1105,7 @@ function book_unit_form_submit(&$form, &$form_state) {
 
   // Let us get available rooms again and match the order against actual rooms.
   $agent = new AvailabilityAgent($sd, $ed, $group_size);
-  $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
+  $agent->setValidStates(array_keys(array_filter(variable_get('rooms_valid_availability_states', drupal_map_assoc(array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST))))));
 
   // Let us make sure our bookable unit is still available.
   $available_units = $agent->checkAvailabilityForUnit($unit_id);
@@ -1810,7 +1810,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
 
   // Check the rooms availability and match the order against actual rooms.
   $agent = new AvailabilityAgent($start_date, $end_date, $booking_parameters, $b_units, array());
-  $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));
+  $agent->setValidStates(array_keys(array_filter(variable_get('rooms_valid_availability_states', drupal_map_assoc(array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST))))));
 
   $units_per_type = $agent->checkAvailability();
 
