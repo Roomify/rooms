@@ -1094,7 +1094,7 @@ function book_unit_form_submit(&$form, &$form_state) {
   $unit_id = $form_state['values']['unit_id'];
   $start_date = $form_state['values']['start_date'];
   $end_date = $form_state['values']['end_date'];
-  $group_size = $form_state['values']['rooms_group_size'];
+  $group_size = (isset($form_state['values']['persons'])) ? $form_state['values']['persons'] : $form_state['values']['rooms_group_size'];
   $status = $form_state['values']['status'];
 
   // This is very inefficient right now but we need to create date objects
@@ -1138,7 +1138,19 @@ function book_unit_form_submit(&$form, &$form_state) {
       }
 
       // Create line item.
-      $line_item = rooms_create_line_item($unit, $agent, array('adults' => $group_size, 'children' => 0), $price_modifiers);
+      if (isset($form_state['values']['children'])) {
+        $children = $form_state['values']['children'];
+        if (isset($form_state['values']['childrens_age'])) {
+          $childrens_age = $form_state['values']['childrens_age'];
+          $line_item = rooms_create_line_item($unit, $agent, array('adults' => $group_size, 'children' => $children, 'childrens_age' => $childrens_age), $price_modifiers);
+        }
+        else {
+          $line_item = rooms_create_line_item($unit, $agent, array('adults' => $group_size, 'children' => $children), $price_modifiers);
+        }
+      }
+      else {
+        $line_item = rooms_create_line_item($unit, $agent, array('adults' => $group_size, 'children' => 0), $price_modifiers);
+      }
 
       // Add line item to cart.
       $line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
@@ -1826,12 +1838,13 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
               $childrens_age[] = $form_state['values'][$type][$price_level]['fieldset'][$i]['childrens_age'][$t];
             }
           }
-          $persons = isset($form_state['values'][$type][$price_level]['fieldset'][$i]['persons']) ?
+          $persons = (isset($form_state['values'][$type][$price_level]['fieldset'][$i]['persons'])) ?
             $form_state['values'][$type][$price_level]['fieldset'][$i]['persons'] + $unit['unit']->min_sleeps :
-            isset($booking_parameters[$i]['adults']) ? $booking_parameters[$i]['adults'] : $unit['unit']->min_sleeps;
-          $children = isset($form_state['values'][$type][$price_level]['fieldset'][$i]['children']) ?
+            ((isset($booking_parameters[$i]['adults'])) ? $booking_parameters[$i]['adults'] : $unit['unit']->min_sleeps);
+
+          $children = (isset($form_state['values'][$type][$price_level]['fieldset'][$i]['children'])) ?
             $form_state['values'][$type][$price_level]['fieldset'][$i]['children'] + $unit['unit']->min_children :
-            isset($booking_parameters[$i]['children']) ? $booking_parameters[$i]['children'] : 0;
+            ((isset($booking_parameters[$i]['children'])) ? $booking_parameters[$i]['children'] : 0);
 
           // Fill group_size with unit size.
           $group_size = array(
