@@ -293,8 +293,8 @@ class AvailabilityAgent {
       return array();
     }
 
-    // Apply AvailabilitySingleUnitFilter.
-    $av_singleunitfilter = new AvailabilitySingleUnitFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date));
+    // Apply AvailabilityAgentSingleUnitFilter.
+    $av_singleunitfilter = new AvailabilityAgentSingleUnitFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date));
     $units = $av_singleunitfilter->applyFilter();
 
     // Apply AvailabilityAgentDateFilter.

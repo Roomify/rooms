@@ -587,7 +587,7 @@ function rooms_booking_manager_change_search_form($form, &$form_state, $start_da
     $class = ctools_plugin_get_class($filter, 'handler');
     $class::availabilityChangeSearchForm($form, $form_state);
   }
-  
+
   if (isset($_GET['rooms_id'])) {
     $form['rooms_id'] = array( 
       '#type' => 'hidden',
