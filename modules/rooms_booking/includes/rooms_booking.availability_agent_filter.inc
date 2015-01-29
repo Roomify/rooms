@@ -262,6 +262,30 @@ class AvailabilityAgentDateFilter extends AvailabilityAgentFilterBase {
 }
 
 /**
+ * Filter units by unit id.
+ */
+class AvailabilitySingleUnitFilter extends AvailabilityAgentCommonFilter {
+
+  public function applyFilter() {
+    if (variable_get('rooms_presentation_style') == ROOMS_INDIVIDUAL && isset($_GET['rooms_id'])) {
+
+      foreach ($this->units as $unit) {
+        if ($unit->unit_id != $_GET['rooms_id']) {
+          unset($this->units[$unit->unit_id]);
+        }
+      }
+      if (empty($this->units)) {
+        $unit = rooms_unit_load($_GET['rooms_id']);
+        drupal_set_message('Unforunally ' . $unit->name . ' is not available - try other dates if possible', 'warning');
+        drupal_goto('availability/nojs/' . $unit->unit_id);
+      }
+
+    }
+    return $this->units;
+  }
+}
+
+/**
  * Filter units if is in the commerce cart.
  */
 class AvailabilityAgentCommerceFilter extends AvailabilityAgentFilterBase {
