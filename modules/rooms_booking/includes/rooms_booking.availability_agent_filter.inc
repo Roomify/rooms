@@ -128,7 +128,9 @@ abstract class AvailabilityAgentFilterBase implements AvailabilityAgentFilterInt
   /**
    * {@inheritdoc}
    */
-  public static function availabilitySearchParameters() { }
+  public static function availabilitySearchParameters() {
+    return array();
+  }
 
   /**
    * {@inheritdoc}
