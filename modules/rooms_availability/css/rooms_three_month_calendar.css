@@ -1,6 +1,7 @@
 .rooms-three-month-calendar {
   margin-bottom: 20px;
   position: relative;
+  overflow-x: hidden;
 }
 .rooms-three-month-calendar ::-moz-selection {
   color: inherit;
@@ -65,4 +66,34 @@
 }
 .calendar-forward {
   text-align: right; /* LTR */
+}
+
+/* Ensure to show datepicker over the modal popup. */
+#ui-datepicker-div {
+  z-index: 1005 !important;
+}
+
+.rooms-three-month-calendar .fc-content-skeleton .fc-event-container a {
+  border-radius: 0px;
+}
+
+.rooms-three-month-calendar .fc-content-skeleton .fc-event-container .event-end,
+.rooms-three-month-calendar .fc-content-skeleton .fc-event-container .event-start {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-color: transparent;
+    border-bottom: 0;
+    bottom: -12px;
+    left: 4px;
+    border-width: 12px;
+  }
+.rooms-three-month-calendar .fc-content-skeleton .fc-event-container .event-end {
+    margin-bottom: 26px;
+    transform: rotate(180deg);
+}
+.rooms-three-month-calendar .fc-content-skeleton tbody tr:nth-child(2) .fc-content {
+  margin-top: -15px;
 }

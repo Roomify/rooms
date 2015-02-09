@@ -87,10 +87,49 @@ Drupal.behaviors.rooms_availability = {
           Drupal.RoomsAvailability.Modal(this, -2, sd, ed);
           $(value[0]).fullCalendar('unselect');
         },
-        //Remove Time from events
         eventRender: function(event, el) {
+          // Remove Time from events.
           el.find('.fc-time').remove();
-        }
+
+          // Add a class if the event start it is not "AV" or "N/A".
+          if (el.hasClass('fc-start') && this.id != 1 && this.id != 0) {
+            el.append('<div class="event-start"/>');
+            el.find('.event-start').css('border-top-color', this.color);
+          }
+
+          // Add a class if the event end and it is not "AV" or "N/A".
+          if (el.hasClass('fc-end') && this.id != 1 && this.id != 0) {
+            el.append('<div class="event-end"/>');
+            el.find('.event-end').css('border-top-color', this.color);
+          }
+        },
+        eventAfterRender: function( event, element, view ) { 
+          // Event width.
+          var width = element.parent().width()
+          // Event colspan number.
+          var colspan = element.parent().get(0).colSpan;
+          // Single cell width.
+          var cell_width = width/colspan;
+          var half_cell_width = cell_width/2;
+          // Move events between table margins.
+          element.css('margin-left', half_cell_width);
+          element.css('margin-right', half_cell_width);
+
+          // Calculate width event to add end date triangle.
+          width_event = element.children('.fc-content').width();
+          // Add a margin left to the top triangle.
+          element.children().closest('.event-end').css('margin-left', width_event - (half_cell_width));
+
+          // If the event end in a next row.
+          if(element.hasClass('fc-not-end')) {
+            element.css('margin-right', 0);
+          }
+          // If the event start in a previous row.
+          if(element.hasClass('fc-not-start')) {
+            element.css('margin-left', 0);
+            element.children().closest('.event-end').css('margin-left', width_event);
+          }
+        },
       });
     });
   }

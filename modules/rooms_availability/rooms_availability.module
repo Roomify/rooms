@@ -470,6 +470,8 @@ function update_availability_calendar_form_submit(&$form, &$form_state) {
   $event_id = $form_state['values']['unit_state'];
   $unit_id = $form_state['values']['unit_id'];
 
+  // Consider right START DATE and END DATE for all events.
+  $end_date->sub(new DateInterval('P1D'));
   // Create a new Booking Event.
   $be = new BookingEvent($unit_id, $event_id, $start_date, $end_date);
   $events = array($be);
@@ -552,6 +554,7 @@ function rooms_availability_generate_json($unit, $start_year = '', $start_month 
   $events = $rc->getEvents($start_date, $end_date);
   $event_style = rooms_availability_get_style($event_style, $unit);
   foreach ($events as $event) {
+    $event->end_date->add(new DateInterval('P1D'));
     $json_events[] = $event->formatJson($event_style, $unit->name);
   }
 
