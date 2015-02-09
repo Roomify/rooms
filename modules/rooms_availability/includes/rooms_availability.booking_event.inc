@@ -150,7 +150,7 @@ class BookingEvent extends RoomsEvent implements BookingEventInterface {
         break;
     }
 
-    if (!empty($view_unit_name) && $style == ROOMS_AVAILABILITY_GENERIC_STYLE) {
+    if (!empty($view_unit_name)) {
       $event['title'] = $unit_name;
     }
 
