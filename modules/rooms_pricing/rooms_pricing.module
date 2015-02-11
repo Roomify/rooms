@@ -195,6 +195,8 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
   );
 
   $price_options = rooms_price_options_options();
+  unset($price_options[ROOMS_ADD_DAILY]);
+  unset($price_options[ROOMS_SUB_DAILY]);
   $form['rooms_update_pricing']['op']['operation'] = array(
     '#type' => 'select',
     '#title' => t('Operation'),

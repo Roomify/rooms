@@ -1069,7 +1069,7 @@ function _rooms_select_rooms_validation($form_state) {
   }
 }
 
-function rooms_filter_month_form($form, &$form_state, $month, $year) {
+function rooms_filter_month_form($form, &$form_state, $month, $year, $unit_types = NULL) {
 
   $form['#attributes']['class'][] = 'rooms-management-form rooms-filter-month-form';
 
@@ -1104,12 +1104,10 @@ function rooms_filter_month_form($form, &$form_state, $month, $year) {
     '#default_value' => $year - date('Y', time()) + 2,
   );
 
-  $query = db_select('rooms_unit_type', 'n')->fields('n', array('type', 'label'));
-  $unit_type = $query->execute()->fetchAll();
-
   $type_options['all'] = t('All types');
-  foreach ($unit_type as $unit) {
-    $type_options[$unit->type] = $unit->label;
+  $unit_types = isset($unit_types) ? $unit_types : rooms_unit_get_types();
+  foreach ($unit_types as $unit_type_name => $unit_type) {
+    $type_options[$unit_type_name] = $unit_type->label;
   }
 
   $form['rooms_availability_filter_month']['type'] = array(
