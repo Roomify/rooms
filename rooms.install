@@ -44,13 +44,17 @@ function rooms_requirements($phase) {
   switch ($phase) {
     case 'runtime':
       if (!rooms_library_loaded('rooms_fullcalendar', 'minified')) {
-        $description = $t('Could not load the Rooms FullCalendar Library');
+        $description = array();
+        $fullcalendar_library = libraries_detect('rooms_fullcalendar');
+        if (!$fullcalendar_library['installed']) {
+          $description[] = $t('Could not load the Rooms FullCalendar Library');
+        }
         if (!rooms_library_loaded('moment')) {
-          $description .= '<br />' . $t('Could not load the Moment Library');
+          $description[] = $t('Could not load the Moment Library');
         }
         $requirements['rooms_fullcalendar'] = array(
           'title' => $t('Rooms FullCalendar'),
-          'description' => $description,
+          'description' => implode('<br />', $description),
           'value' => 'FullCalendar Missing',
           'severity' => REQUIREMENT_ERROR,
         );
@@ -58,8 +62,8 @@ function rooms_requirements($phase) {
       else {
         $requirements['rooms_fullcalendar'] = array(
           'title' => $t('Rooms FullCalendar'),
-          'description' => $t('The FullCalendar Library is installed'),
-          'value' => 'FullCalendar Installed',
+          'description' => $t('The FullCalendar Library and the Moment Library are installed'),
+          'value' => 'FullCalendar and Moment Installed',
           'severity' => REQUIREMENT_OK,
         );
       }
