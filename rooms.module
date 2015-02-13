@@ -229,7 +229,7 @@ function rooms_entity_access($op, $entity, $account, $entity_type) {
   }
 
   // Grant generic administrator level access.
-  if (user_access('bypass ' . $entity_type . ' entities', $account)) {
+  if (user_access('bypass ' . $entity_type . ' entities access', $account)) {
     $rights[$account->uid][$cid][$op] = TRUE;
     return TRUE;
   }
