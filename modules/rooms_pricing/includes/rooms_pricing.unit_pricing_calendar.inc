@@ -395,6 +395,8 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
 
         foreach ($affected_events as $a_event) {
           /** @var PricingEventInterface $a_event */
+          // Apply the operation.
+          $a_event->applyOperation($event->amount, $event->operation);
           // If the event is in the same month span just queue to be added.
           if ($a_event->sameMonth()) {
             $monthly_events[] = $a_event;

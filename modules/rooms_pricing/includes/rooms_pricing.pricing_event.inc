@@ -53,7 +53,7 @@ class PricingEvent extends RoomsEvent implements PricingEventInterface {
   /**
    * {@inheritdoc}
    */
-  public function applyOperation($amount, $operation, $days) {
+  public function applyOperation($amount, $operation) {
     switch ($operation) {
       case ROOMS_REPLACE:
         $this->amount = $amount;
