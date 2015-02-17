@@ -242,6 +242,11 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
     }
   }
 
+  // Get parameter for AvailabilityAgentSingleUnitFilter.
+  if (isset($form_state['values']['rooms_id'])) {
+    $rooms_query['rooms_id'] = $form_state['values']['rooms_id'];
+  }
+
   $rooms_query += rooms_booking_manager_get_plugin_parameters($form_state);
 
   // Collect the values for booking parameters.
