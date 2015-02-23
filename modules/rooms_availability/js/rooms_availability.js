@@ -116,16 +116,13 @@ Drupal.behaviors.rooms_availability = {
           var cell_width = width/colspan;
           var half_cell_width = cell_width/2;
 
-          console.log(width);
-          console.log(colspan);console.log(cell_width);console.log(half_cell_width);
-
           // Move events between table margins.
           element.css('margin-left', half_cell_width);
           element.css('margin-right', half_cell_width);
 
           // Calculate width event to add end date triangle.
           width_event = element.children('.fc-content').width();
-          console.log('Width_event',width_event);
+
           // Add a margin left to the top triangle.
           element.children().closest('.event-end').css('margin-left', width_event-23);
 

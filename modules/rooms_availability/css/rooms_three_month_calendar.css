@@ -73,16 +73,9 @@
   z-index: 1005 !important;
 }
 
-
-.rooms-three-month-calendar .calendar {
-    font: normal 500 .923em/1.5em "Open Sans", Arial, sans-serif;
+.page-admin-rooms-units{
+    font: normal 81.3%/1.538em "Lucida Grande", "Lucida Sans Unicode", sans-serif;
 }
-
-.rooms-three-month-calendar .fc-event{
-    font-size: 0.8em;
-}
-
-
 .rooms-three-month-calendar .fc-content-skeleton .fc-event-container a {
   border-radius: 0px;
 }
