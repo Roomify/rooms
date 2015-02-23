@@ -56,6 +56,7 @@ Drupal.behaviors.rooms_availability = {
         ignoreTimezone: false,
         editable: false,
         selectable: true,
+        handleWindowResize: true,
         height: 400,
         dayNamesShort:[Drupal.t("Sun"), Drupal.t("Mon"), Drupal.t("Tue"), Drupal.t("Wed"), Drupal.t("Thu"), Drupal.t("Fri"), Drupal.t("Sat")],
         monthNames:[Drupal.t("January"), Drupal.t("February"), Drupal.t("March"), Drupal.t("April"), Drupal.t("May"), Drupal.t("June"), Drupal.t("July"), Drupal.t("August"), Drupal.t("September"), Drupal.t("October"), Drupal.t("November"), Drupal.t("December")],
@@ -64,7 +65,10 @@ Drupal.behaviors.rooms_availability = {
         header:{
           left: 'title',
           center: '',
-          right: ''
+          right: '',
+        },
+        windowResize: function(view) {
+          $(value[0]).fullCalendar('refetchEvents');
         },
         events: Drupal.settings.basePath + '?q=rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/availability/json/' + value[2] + '/' + phpmonth,
         eventClick: function(calEvent, jsEvent, view) {
@@ -111,14 +115,19 @@ Drupal.behaviors.rooms_availability = {
           // Single cell width.
           var cell_width = width/colspan;
           var half_cell_width = cell_width/2;
+
+          console.log(width);
+          console.log(colspan);console.log(cell_width);console.log(half_cell_width);
+
           // Move events between table margins.
           element.css('margin-left', half_cell_width);
           element.css('margin-right', half_cell_width);
 
           // Calculate width event to add end date triangle.
           width_event = element.children('.fc-content').width();
+          console.log('Width_event',width_event);
           // Add a margin left to the top triangle.
-          element.children().closest('.event-end').css('margin-left', width_event - (half_cell_width));
+          element.children().closest('.event-end').css('margin-left', width_event-23);
 
           // If the event end in a next row.
           if(element.hasClass('fc-not-end')) {
@@ -129,7 +138,7 @@ Drupal.behaviors.rooms_availability = {
             element.css('margin-left', 0);
             element.children().closest('.event-end').css('margin-left', width_event);
           }
-        },
+        }
       });
     });
   }

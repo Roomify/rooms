@@ -1,0 +1,50 @@
+
+.rooms-availability-field-calendar .fc-content-skeleton .fc-event-container a {
+    border-radius: 0px;
+}
+
+.rooms-availability-field-calendar .fc-content-skeleton .fc-event-container .event-start {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-color: transparent;
+    border-bottom: 0;
+    bottom: -12px;
+    left: 0px;
+    border-width: 12px;
+}
+
+.rooms-availability-field-calendar .fc-content-skeleton .fc-event-container .event-end {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-color: transparent;
+    border-bottom: 0;
+    bottom: -10px;
+    left: 0px;
+    border-width: 12px;
+}
+
+.rooms-availability-field-calendar .fc-content-skeleton .fc-event-container .event-end {
+    margin-bottom: 26px;
+    transform: rotate(180deg);
+}
+.rooms-availability-field-calendar .fc-content-skeleton tbody tr:nth-child(2) .fc-content {
+    margin-top: -17px;
+}
+
+.fc-event .fc-title {
+    color:white;
+}
+
+.fc-event .fc-title:hover {
+    color:white;
+}
+
+.fc-unthemed .fc-popover, .fc-unthemed .fc-row, .fc-unthemed hr, .fc-unthemed tbody, .fc-unthemed td, .fc-unthemed th, .fc-unthemed thead{
+    border-color:white;
+}

@@ -68,7 +68,7 @@
   text-align: right; /* LTR */
 }
 
-/* Ensure to show datepicker over the modal popup. */
+/* Ensure that datepicker is visible in the modal popup. */
 #ui-datepicker-div {
   z-index: 1005 !important;
 }
@@ -77,7 +77,6 @@
   border-radius: 0px;
 }
 
-.rooms-three-month-calendar .fc-content-skeleton .fc-event-container .event-end,
 .rooms-three-month-calendar .fc-content-skeleton .fc-event-container .event-start {
     content: "";
     position: absolute;
@@ -87,9 +86,23 @@
     border-color: transparent;
     border-bottom: 0;
     bottom: -12px;
-    left: 4px;
+    left: 0px;
     border-width: 12px;
   }
+
+.rooms-three-month-calendar .fc-content-skeleton .fc-event-container .event-end {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-color: transparent;
+    border-bottom: 0;
+    bottom: -12px;
+    left: 0px;
+    border-width: 12px;
+}
+
 .rooms-three-month-calendar .fc-content-skeleton .fc-event-container .event-end {
     margin-bottom: 26px;
     transform: rotate(180deg);
