@@ -16,9 +16,48 @@
   display: inline;
   margin-right: 4px;
 }
-.fc-day-grid-container {
+.rooms-bulk-availability-form .fc-day-grid-container {
   overflow-y: hidden;
+  height:60px;
 }
 .fc-title {
   color: white;
+}
+
+.rooms-bulk-availability-form .fc-content-skeleton .fc-event-container a {
+  border-radius: 0px;
+}
+
+.rooms-bulk-availability-form .fc-content-skeleton .fc-event-container .event-start {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-color: transparent;
+  border-bottom: 0;
+  bottom: -9px;
+  left: 0px;
+  border-width: 9px;
+}
+
+.rooms-bulk-availability-form .fc-content-skeleton .fc-event-container .event-end {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-color: transparent;
+  border-bottom: 0;
+  bottom: -9px;
+  left: 0px;
+  border-width: 9px;
+}
+
+.rooms-bulk-availability-form .fc-content-skeleton .fc-event-container .event-end {
+  margin-bottom: 23px;
+  transform: rotate(180deg);
+}
+.rooms-month-manager .fc-view-container tbody tr:nth-child(2) .fc-day-grid-event {
+  margin-top: -15px;
 }

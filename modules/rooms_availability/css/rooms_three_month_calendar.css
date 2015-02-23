@@ -73,6 +73,16 @@
   z-index: 1005 !important;
 }
 
+
+.rooms-three-month-calendar .calendar {
+    font: normal 500 .923em/1.5em "Open Sans", Arial, sans-serif;
+}
+
+.rooms-three-month-calendar .fc-event{
+    font-size: 0.8em;
+}
+
+
 .rooms-three-month-calendar .fc-content-skeleton .fc-event-container a {
   border-radius: 0px;
 }
@@ -110,3 +120,4 @@
 .rooms-three-month-calendar .fc-content-skeleton tbody tr:nth-child(2) .fc-content {
   margin-top: -15px;
 }
+

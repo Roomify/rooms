@@ -114,13 +114,15 @@ class BookingEvent extends RoomsEvent implements BookingEventInterface {
     // Set the color.
     switch ($this->id) {
       case ROOMS_NOT_AVAILABLE:
-        $event['color']  = variable_get('rooms_not_available_color', 'red');
+        $event['color']  = variable_get('rooms_not_available_color', '#CC2727');
+        $event['borderColor']  = variable_get('rooms_not_available_color',
+          '#CC2727');
         $event['title'] = variable_get('rooms_not_available_text', 'N/A');
         break;
 
       case ROOMS_AVAILABLE:
-        $event['color'] = variable_get('rooms_available_color', '#8CBF62');
-        $event['borderColor'] = '#04711B';
+        $event['color'] = variable_get('rooms_available_color', '#8ba175');
+        $event['borderColor'] = '#8ba175';
         $event['title'] = variable_get('rooms_available_text', 'AV');
         break;
 
@@ -130,23 +132,24 @@ class BookingEvent extends RoomsEvent implements BookingEventInterface {
         break;
 
       case ($this->id < 0):
-        $event['color'] = variable_get('rooms_unconfirmed_booking_color', '#8CBF62');
+        $event['color'] = variable_get('rooms_unconfirmed_booking_color', '#6D8C9C');
         $event['title'] = variable_get('rooms_unconfirmed_booking_text', 'UNCONF');
         break;
 
       case ROOMS_ANON_BOOKED:
         if ($style == ROOMS_AVAILABILITY_ADMIN_STYLE) {
-          $event['color'] = variable_get('rooms_anon_booking_color', '#481600');
+          $event['color'] = variable_get('rooms_anon_booking_color', '#8C6A5A');
           $event['title'] = variable_get('rooms_anon_booking_text', 'A-B');
         }
         elseif ($style == ROOMS_AVAILABILITY_GENERIC_STYLE) {
-          $event['color']  = variable_get('rooms_not_available_color', 'red');
+          $event['color']  = variable_get('rooms_not_available_color',
+            '#910a1c');
           $event['title'] = variable_get('rooms_not_available_text', 'N/A');
         }
         break;
 
       default:
-        $event['color'] = 'blue';
+        $event['color'] = '#017eba';
         break;
     }
 
