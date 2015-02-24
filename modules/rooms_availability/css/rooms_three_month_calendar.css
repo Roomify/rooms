@@ -76,36 +76,38 @@
 }
 
 .rooms-three-month-calendar .fc-content-skeleton .fc-event-container .event-start {
-    content: "";
-    position: absolute;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-color: transparent;
-    border-bottom: 0;
-    bottom: -12px;
-    left: 0px;
-    border-width: 12px;
-  }
-
-.rooms-three-month-calendar .fc-content-skeleton .fc-event-container .event-end {
-    content: "";
-    position: absolute;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-color: transparent;
-    border-bottom: 0;
-    bottom: -12px;
-    left: 0px;
-    border-width: 12px;
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-color: transparent;
+  border-bottom: 0;
+  bottom: -12px;
+  left: 0px;
+  border-width: 12px;
 }
 
 .rooms-three-month-calendar .fc-content-skeleton .fc-event-container .event-end {
-    margin-bottom: 26px;
-    transform: rotate(180deg);
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-color: transparent;
+  border-bottom: 0;
+  bottom: -12px;
+  left: 0px;
+  border-width: 12px;
 }
+
+.rooms-three-month-calendar .fc-content-skeleton .fc-event-container .event-end {
+  margin-bottom: 26px;
+  transform: rotate(180deg);
+  -ms-transform: rotate(180deg); /* IE 9 */
+  -webkit-transform: rotate(180deg);
+}
+
 .rooms-three-month-calendar .fc-content-skeleton tbody tr:nth-child(2) .fc-content {
   margin-top: -15px;
 }
-
