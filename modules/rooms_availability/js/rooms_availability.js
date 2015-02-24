@@ -132,6 +132,10 @@ Drupal.behaviors.rooms_availability = {
           }
           // If the event start in a previous row.
           if(element.hasClass('fc-not-start')) {
+            // Fixes to work well with jquery 1.7.
+            if (colspan == 1) {
+              width_event = 0;
+            }
             element.css('margin-left', 0);
             element.children().closest('.event-end').css('margin-left', width_event);
           }
