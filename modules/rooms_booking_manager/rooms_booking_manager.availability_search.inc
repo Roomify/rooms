@@ -133,14 +133,12 @@ function rooms_booking_availability_search_form_builder($form, &$form_state) {
   if (variable_get('rooms_booking_manager_type_selector', ROOMS_DISPLAY_TYPE_SELECTOR_NO) == ROOMS_DISPLAY_TYPE_SELECTOR) {
     $searchable_unit_types = variable_get('rooms_unit_type_selector', array());
     if (!empty($searchable_unit_types)) {
-      $searchable_unit_types = _rooms_booking_manager_get_unit_type_labels
-      ($searchable_unit_types);
 
       $form['unit_type'] = array(
         '#title' => variable_get_value('rooms_booking_manager_select_type'),
         '#type' => 'select',
         '#empty_option' => t('Select All'),
-        '#options' => $searchable_unit_types,
+        '#options' => _rooms_booking_manager_get_unit_type_labels($searchable_unit_types),
         '#default_value' => 0,
       );
 
@@ -273,19 +271,22 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
 }
 
 /**
- * Returns the actual labels of for the rooms unit types
+ * Returns the actual labels of for the given rooms unit types.
  *
- * @param array - A list of machine names to get the labels for
- * @returns array - A list of labels keys by machine name
+ * @param array $unit_type_ids
+ *   A list of machine names to get the labels for.
+ *
+ * @return array
+ *   A list of labels keys by machine name.
  */
-function _rooms_booking_manager_get_unit_type_labels($labels){
+function _rooms_booking_manager_get_unit_type_labels($unit_type_ids){
   // Get all labels
-  $all_labels = rooms_unit_get_types();
+  $unit_types = rooms_unit_get_types();
 
-  $keyed_labels = array();
-  foreach ($labels as $label){
-    $keyed_labels[$label] = $all_labels[$label]->label;
+  $unit_type_labels = array();
+  foreach ($unit_type_ids as $label){
+    $unit_type_labels[$label] = $unit_types[$label]->label;
   }
 
-  return $keyed_labels;
+  return $unit_type_labels;
 }
