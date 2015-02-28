@@ -167,6 +167,7 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
       '#title' => t('Unit type selector'),
       '#description' => t('Unchecking this option the unit type will not appear in the unit-type selector form.'),
       '#options' => array(
+        0 => 'Remove from unit type selector',
         1 => 'Add to unit type selector',
       ),
       '#default_value' => !empty($unit_types[$unit_type->type]),
