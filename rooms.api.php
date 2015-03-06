@@ -8,7 +8,7 @@
  */
 
 /**
- * Allow modules to deny or provide access for a user to perform a non-view
+ * Allows modules to deny or provide access for a user to perform a non-view
  * operation on an entity before any other access check occurs.
  *
  * Modules implementing this hook can return FALSE to provide a blanket
@@ -38,7 +38,7 @@ function hook_rooms_entity_access($op, $entity, $account, $entity_type) {
 }
 
 /**
- * Allow modules to alter the conditions used on the query to grant view access
+ * Allows modules to alter the conditions used on the query to grant view access
  * to a Rooms entity of the specified ENTITY TYPE.
  *
  * The Rooms module defines a generic implementation of hook_query_alter() to
@@ -62,7 +62,7 @@ function hook_rooms_entity_access_condition_ENTITY_TYPE_alter() {
 }
 
 /**
- * Allow modules to alter the conditions used on the query to grant view access
+ * Allows modules to alter the conditions used on the query to grant view access
  * to a Rooms entity.
  *
  * This hook uses the same parameters as the entity type specific hook but is
@@ -75,7 +75,7 @@ function hook_rooms_entity_access_condition_alter() {
 }
 
 /**
- * Allow modules to use contextual information about bookings
+ * Allows modules to use contextual information about bookings
  * to change what is shown to the user.
  *
  * @param &$string_suggestions - String suggestions, the suggestion with the
