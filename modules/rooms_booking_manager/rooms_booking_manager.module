@@ -185,7 +185,7 @@ function rooms_booking_manager_enquiry_page_form($form, $form_state, $start_date
             $form['units'][$type] = array(
               '#type' => 'fieldset',
               '#collapsible' => FALSE,
-              '#title' => $room_type->label,
+              '#title' => check_plain($room_type->label),
             );
             $printed = TRUE;
           }
@@ -1201,40 +1201,19 @@ function book_unit_form_submit(&$form, &$form_state) {
  * Book units per type booking form callback.
  */
 function book_units_per_type_form($form, $form_state, $units_per_type, $start_date, $end_date, $booking_parameters, $b_units, $type = '') {
+  module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.units_per_type_form');
 
   // Add stylesheets and classes.
   $form['#attached']['css'] = array(
     drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css',
-    drupal_get_path('module', 'rooms_booking_manager') . '/css/rooms_sticky_booking_legend.css',
   );
-  $form['#attached']['js'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/js/rooms_sticky_booking_legend.js');
 
   $form['#attributes']['class'][] = 'rooms-availability-search-results';
 
-  $form['start_date'] = array(
-    '#type' => 'hidden',
-    '#value' => $start_date,
-  );
-  $form['end_date'] = array(
-    '#type' => 'hidden',
-    '#value' => $end_date,
-  );
-
-  $form['booking_parameters'] = array(
-    '#type' => 'hidden',
-    '#value' => serialize($booking_parameters),
-  );
-  $form['info']['params']['b_units'] = array(
-    '#type' => 'hidden',
-    '#value' => check_plain($b_units),
-  );
+  $form = _rooms_booking_manager_setup_hidden_fields($form, $start_date, $end_date, $booking_parameters, $b_units);
 
   $currency_setting = commerce_currency_load(commerce_default_currency());
   $currency_symbol = $currency_setting['symbol'];
-
-  // Used below to add a "Place booking" button at the top of the form
-  // in the first row only).
-  $first_row = TRUE;
 
   // Check if there are multiple units chosen, and keep a running tally of
   // the number of elements chosen.
@@ -1307,113 +1286,16 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
       $form[$type][$price] = array();
 
-      // Check if a description source is loaded and if so render.
-      if (isset($type_obj->data['rooms_description_source'])) {
-        if ($type_obj->data['rooms_description_source'] != '') {
-          $source_ref = explode(':', $type_obj->data['rooms_description_source']);
-          if (isset($source_ref[1])) {
-            $node_id = $source_ref[1];
+      $form = _rooms_booking_manager_load_description($form, $type_obj, $type, $price);
 
-            if (module_exists('translation')) {
-              $node_translations = translation_node_get_translations($node_id);
-              if (!empty($node_translations)) {
-                $node_id = $node_translations[$GLOBALS['language']->language]->nid;
-              }
-            }
+      $form = _rooms_booking_manager_load_price_info($form, $type_obj, $type, $price, $currency_symbol, $units_per_price, $units);
 
-            $node = node_load($node_id);
-
-            if ($node !== FALSE) {
-              $node_view = node_view($node, 'rooms_list');
-              $node_html = render($node_view);
-
-              $form[$type][$price]['description'] = array(
-                '#prefix' => '<tr class="rooms-search-result__unit_details_wrapper"><td class="rooms-search-result__room-description">',
-                '#markup' => $node_html,
-                '#suffix' => '</td><td class="empty"></td><td class="empty"></td></tr>',
-              );
-            }
-          }
-        }
-      }
-
-      // Element to display price.
-      $form[$type][$price]['price'] = array(
-        '#prefix' => '<tr class="rooms-search-result__unit_summary_wrapper"><td class="rooms-search-result__base_price">',
-        '#markup' => format_plural(count($units), '1 @unit_type '.variable_get_value('rooms_booking_manager_unit_available_from').' @price', '@count @unit_type '.variable_get_value('rooms_booking_manager_unit_available_from').' @price', array(
-          '@unit_type' => $type_obj->label,
-          '@price' => t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
-            '@currency_symbol' => $currency_symbol,
-            '@amount' => $price))
-          )
-        ),
-      );
-      if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
-        $units_keys = array_keys($units);
-        // Calculate the price per person for the period.
-        $base_price = $units[$units_keys[0]]['price'] / $units[$units_keys[0]]['unit']->max_sleeps;
-        $form[$type][$price]['price']['#markup'] = format_plural(count($units), '1 @unit_type unit available starting at @price per person', '@count @unit_type units available starting at @price per person', array(
-          '@unit_type' => $type_obj->label,
-          '@price' => t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
-            '@currency_symbol' => $currency_symbol,
-            '@amount' => $base_price))
-          )
-        );
-      }
-
-      // Element to hold price.
-      $form[$type][$price]['price_value'] = array(
-        '#type' => 'hidden',
-        '#value' => $price,
-        '#suffix' => '</td>',
-      );
-
-      // Dropdown to select quantity.
-      $options = array();
-      for ($i = 0; $i <= count($units); $i++) {
-        $options[$i] = $i;
-      }
-      // AJAX wrapper id.
-      $id = 'rooms_' . $type . '_' . $price;
-      $form[$type][$price]['quantity'] = array(
-        '#prefix' => '<td class="rooms-search-result__select-units">',
-        '#field_suffix' => variable_get_value('rooms_booking_manager_units_chosen'),
-        '#type' => 'select',
-        '#options' => $options,
-        '#suffix' => '</td>',
-        '#ajax' => array(
-          'callback' => 'rooms_booking_manager_quantity_change_callback',
-          'wrapper' => $type . '_' . $price . '_container',
-        ),
-        '#attributes' => array(
-          'onchange' => "document.getElementById('" . $id . "').style.display = (this.value == 0) ? 'none' : 'table-row';",
-        ),
-      );
-
-      // Show button 'Place Booking' only on the first row.
-      if ($first_row == TRUE) {
-        $form[$type][$price]['submit'] = array(
-          '#prefix' => '<td class="rooms-search-result__booking-legend"><div class="booking-legend booking-legend--rooms-search-result">',
-          '#type' => 'submit',
-          '#value' => variable_get_value('rooms_booking_manager_button_place_booking'),
-          '#submit' => array('book_units_per_type_form_submit'),
-          '#suffix' => '</div></td></tr>',
-        );
-
-        $first_row = FALSE;
-      }
-      else {
-        $form[$type][$price]['submit'] = array(
-          '#prefix' => '<td class="rooms-search-result__booking-legend">',
-          '#suffix' => '</td></tr>',
-        );
-      }
+      $form = _rooms_booking_manager_display_book_button($form, $type, $price);
 
       // Display price options.
       $form[$type][$price]['field_start'] = array(
         '#markup' => '<tr id="rooms_' . $type . '_' . $price . '" style="display:none;"><td class="rooms-search-result__unit_options_wrapper" colspan="2">',
       );
-
       $form[$type][$price]['fieldset'] = array(
         '#prefix' => '<div class="rooms-search-result__unit_options form-wrapper" id="' . $type . '_' . $price . '_container">',
         '#type' => 'container',
@@ -1443,115 +1325,13 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
           // Add options checkboxes.
           foreach (rooms_unit_get_unit_options($units[$units_keys[$c - 1]]['unit']) as $option) {
-            $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
-            $form[$type][$price]['fieldset'][$c][$option_name] = array(
-              '#type' => 'checkbox',
-              '#title' => t($option['name']),
-              '#ajax' => array(
-                'callback' => 'rooms_booking_manager_options_change_callback',
-                'wrapper' => $type . '_' . $price . '_' . $c . '_price',
-              ),
-            );
-
-            // Show quantity field selector if an option quantity is set.
-            if (is_numeric($option['quantity'])) {
-              if (isset($form_state['values'][$type][$price]['fieldset'][$c][$option_name]) &&
-                $form_state['values'][$type][$price]['fieldset'][$c][$option_name] == 1 && $option['quantity'] > 1) {
-
-                $form[$type][$price]['fieldset'][$c][$option_name . ':quantity'] = array(
-                  '#type' => 'select',
-                  '#title' => t('Quantity'),
-                  '#options' => range(1, $option['quantity']),
-                  '#ajax' => array(
-                    'callback' => 'rooms_booking_manager_options_change_callback',
-                    'wrapper' => $type . '_' . $price . '_' . $c . '_price',
-                  ),
-                  '#prefix' => '<div class="rooms-search-result__select-quantity" id="' . $type . '_' . $price . '_' . $c . '_' . $option_name . '_quantity">',
-                  '#suffix' => '</div>',
-                );
-              }
-              else {
-                $form[$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] = array(
-                  '#prefix' => '<div class="rooms-search-result__select-quantity" id="' . $type . '_' . $price . '_' . $c . '_' . $option_name . '_quantity">',
-                  '#suffix' => '</div>',
-                );
-              }
-            }
+            $form = _rooms_booking_manager_add_options($form, $type, $price, $c, $option);
           }
 
-          // Show Guests and Children selectors if price calculation is set
-          // to 'Price per person per night'.
+          $tmp_unit = $units[$units_keys[$c - 1]]['unit'];
+
           if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
-            $tmp_unit = $units[$units_keys[$c - 1]]['unit'];
-
-            $form[$type][$price]['fieldset'][$c]['persons'] = array(
-              '#type' => 'select',
-              '#field_suffix' => t('Guests'),
-              '#options' => range($tmp_unit->min_sleeps, $tmp_unit->max_sleeps),
-              '#default_value' => $tmp_unit->max_sleeps - $tmp_unit->min_sleeps,
-              '#ajax' => array(
-                'callback' => 'rooms_booking_manager_quantity_change_callback',
-                'wrapper' => $type . '_' . $price . '_container',
-              ),
-              '#title' => t('How many people in this unit (including adults and children)?'),
-              '#prefix' => '<div class="rooms-search-result__select-guests">',
-              '#suffix' => '</div>',
-            );
-
-            $max_children = $tmp_unit->max_children;
-            if (isset($form_state['values'][$type][$price]['fieldset'][$c]['persons'])) {
-              $persons = $form_state['values'][$type][$price]['fieldset'][$c]['persons'] + $tmp_unit->min_sleeps;
-
-              if ($persons < $tmp_unit->max_children) {
-                $max_children = $persons;
-              }
-            }
-
-            if (variable_get('rooms_display_children', ROOMS_DISPLAY_CHILDREN_NO) == ROOMS_DISPLAY_CHILDREN) {
-              if ($tmp_unit->max_children > 0) {
-                $form[$type][$price]['fieldset'][$c]['children'] = array(
-                  '#type' => 'select',
-                  '#title' => t('How many of the guests are children?'),
-                  '#field_suffix' => t('Children'),
-                  '#options' => range($tmp_unit->min_children, $max_children),
-                  '#default_value' => 0,
-                  '#ajax' => array(
-                    'callback' => 'rooms_booking_manager_children_change_callback',
-                    'wrapper' => $type . '_' . $price . '_' . $c . '_childrensage',
-                  ),
-                  '#prefix' => '<div class="rooms-search-result__select-children">',
-                  '#suffix' => '</div>',
-                );
-              }
-
-              $form[$type][$price]['fieldset'][$c]['childrens_age'] = array(
-                '#prefix' => '<div class="rooms-search-result__select-childrenage" id="' . $type . '_' . $price . '_' . $c . '_childrensage">',
-                '#suffix' => '</div>',
-              );
-
-              $children_number = 0;
-              if (isset($form_state['values'][$type][$price]['fieldset'][$c]['children'])) {
-                if ($form_state['values'][$type][$price]['fieldset'][$c]['children'] > 0) {
-                  $children_number = $form_state['values'][$type][$price]['fieldset'][$c]['children'];
-                }
-              }
-              else {
-                $children_number = $tmp_unit->min_children;
-              }
-
-              for ($t = 1; $t <= $children_number; $t++) {
-                $form[$type][$price]['fieldset'][$c]['childrens_age'][$t] = array(
-                  '#type' => 'select',
-                  '#field_prefix' => t('Age of child @num', array('@num' => $t)),
-                  '#options' => range(0, 18),
-                  '#ajax' => array(
-                    'callback' => 'rooms_booking_manager_options_change_callback',
-                    'wrapper' => $type . '_' . $price . '_' . $c . '_price',
-                  ),
-                  '#attributes' => array('class' => array('rooms-search-result__childrens-age')),
-                );
-              }
-            }
+            $form = _rooms_booking_manager_handle_per_person_pricing($form, $form_state, $tmp_unit, $units, $units_keys, $c, $type, $price);
           }
 
           // When prices are shown as per person, display this one as a subtotal
@@ -1562,6 +1342,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
           else {
             $label = t('Price');
           }
+
           $form[$type][$price]['fieldset'][$c]['price'] = array(
             '#prefix' => '<div class="rooms-search-result__unit-price" id="' . $type . '_' . $price . '_' . $c . '_price"><label>' . $label . ':</label> <span class="rooms-search-result__unit-price-amount">',
             // TODO: replace with a proper currency formatter.
@@ -1596,7 +1377,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
           // Price is calculated as 'Price per person per night'
           if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
             if (isset($form_state['values'][$type][$price]['fieldset'][$c]['persons'])) {
-              $group_size = $form_state['values'][$type][$price]['fieldset'][$c]['persons'] + $tmp_unit->min_sleeps;
+              $group_size = $form_state['values'][$type][$price]['fieldset'][$c]['persons'];
             }
             else {
               $group_size = $tmp_unit->max_sleeps;
@@ -1634,13 +1415,13 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             if (isset($form_state['values'][$type][$price]['fieldset'][$c]['persons'])) {
               if (variable_get('rooms_display_children', ROOMS_DISPLAY_CHILDREN_NO) == ROOMS_DISPLAY_CHILDREN) {
                 $new_price = $price_calendar->calculatePrice($start_date, $temp_end_date,
-                  $form_state['values'][$type][$price]['fieldset'][$c]['persons'] + $tmp_unit->min_sleeps,
-                  $form_state['values'][$type][$price]['fieldset'][$c]['children'] + $tmp_unit->min_children,
+                  $form_state['values'][$type][$price]['fieldset'][$c]['persons'],
+                  $form_state['values'][$type][$price]['fieldset'][$c]['children'],
                   $childrens_age);
               }
               else {
                 $new_price = $price_calendar->calculatePrice($start_date, $temp_end_date,
-                  $form_state['values'][$type][$price]['fieldset'][$c]['persons'] + $tmp_unit->min_sleeps);
+                  $form_state['values'][$type][$price]['fieldset'][$c]['persons']);
               }
             }
             else {
@@ -1663,7 +1444,6 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             '@currency_symbol' => $currency_symbol,
             '@amount' => $new_price,
           ));
-          // TODO: replace with a proper currency formatter.
         }
       }
 
@@ -1742,8 +1522,8 @@ function rooms_booking_manager_options_change_callback(&$form, $form_state) {
  * AJAX callback on booking search results page when Children selector change.
  */
 function rooms_booking_manager_children_change_callback(&$form, $form_state) {
-  list($type, $price, $tmp, $fieldset, $tmp, $index) = preg_split('/[\[(.)\]]/', $form_state['triggering_element']['#name']);
 
+  list($type, $price, $tmp, $fieldset, $tmp, $index) = preg_split('/[\[(.)\]]/', $form_state['triggering_element']['#name']);
   $commands = array();
 
   // Show availability of individual units.
@@ -1756,7 +1536,6 @@ function rooms_booking_manager_children_change_callback(&$form, $form_state) {
     $commands[] = ajax_command_replace('#' . $type . '_' . $price . '_' . $index . '_childrensage', render($form[$type][$price][$fieldset][$index]['childrens_age']));
     $commands[] = ajax_command_replace('#' . $type . '_' . $price . '_' . $index . '_price', render($form[$type][$price][$fieldset][$index]['price']));
   }
-
   return array('#type' => 'ajax', '#commands' => $commands);
 }
 
@@ -2466,7 +2245,7 @@ function rooms_booking_manager_alter_rooms_booking_settings_validate($form, &$fo
 /**
  * Form snippet to configure deposit configuration form.
  */
-function rooms_booking_manager_deposit_config_form(&$form,$form_state) {
+function rooms_booking_manager_deposit_config_form(&$form, $form_state) {
   $deposit = rules_config_load('rooms_booking_manager_deposit');
 
   if ($deposit) {
@@ -2579,8 +2358,8 @@ function rooms_booking_manager_deposit_config_form_submit($form, &$form_state) {
     else {
       $rule->active = TRUE;
 
-      foreach($rule as $action) {
-        if ($action instanceof RulesAction){
+      foreach ($rule as $action) {
+        if ($action instanceof RulesAction) {
           $action->delete();
         }
       }

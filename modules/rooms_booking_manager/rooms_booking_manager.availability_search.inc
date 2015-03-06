@@ -279,12 +279,12 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
  * @return array
  *   A list of labels keys by machine name.
  */
-function _rooms_booking_manager_get_unit_type_labels($unit_type_ids){
+function _rooms_booking_manager_get_unit_type_labels($unit_type_ids) {
   // Get all labels
   $unit_types = rooms_unit_get_types();
 
   $unit_type_labels = array();
-  foreach ($unit_type_ids as $label){
+  foreach ($unit_type_ids as $label) {
     $unit_type_labels[$label] = $unit_types[$label]->label;
   }
 
