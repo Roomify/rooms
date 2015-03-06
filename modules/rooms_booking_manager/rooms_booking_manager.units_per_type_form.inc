@@ -1,21 +1,20 @@
 <?php
 
-
 /**
  * @file
  * Helper functions to clear up the units per type form and make the logic
  * easier to follow.
  */
 
-
 /**
- * Setups hidden fields with info that is required throughout the form
+ * Set up hidden fields with information that is required throughout the form.
  *
  * @param $form
  * @param $start_date
  * @param $end_date
  * @param $booking_parameters
  * @param $b_units
+ *
  * @return mixed
  */
 function _rooms_booking_manager_setup_hidden_fields($form, $start_date, $end_date, $booking_parameters, $b_units) {
@@ -48,10 +47,12 @@ function _rooms_booking_manager_setup_hidden_fields($form, $start_date, $end_dat
  * @param $type_obj
  * @param $type
  * @param $price
+ *
  * @return mixed
  */
 function _rooms_booking_manager_load_description($form, $type_obj, $type, $price) {
-  // Check if a description source is loaded and if so render.
+
+  // Check if a description source is loaded and render it if so.
   if (isset($type_obj->data['rooms_description_source'])) {
     if ($type_obj->data['rooms_description_source'] != '') {
       $source_ref = explode(':', $type_obj->data['rooms_description_source']);
@@ -65,9 +66,7 @@ function _rooms_booking_manager_load_description($form, $type_obj, $type, $price
           }
         }
 
-        $node = node_load($node_id);
-
-        if ($node !== FALSE) {
+        if ($node = node_load($node_id)) {
           $node_view = node_view($node, 'rooms_list');
           $node_html = render($node_view);
 
@@ -80,6 +79,7 @@ function _rooms_booking_manager_load_description($form, $type_obj, $type, $price
       }
     }
   }
+
   return $form;
 }
 
@@ -93,9 +93,11 @@ function _rooms_booking_manager_load_description($form, $type_obj, $type, $price
  * @param $currency_symbol
  * @param $units_per_price
  * @param $units
+ *
  * @return mixed
  */
 function _rooms_booking_manager_load_price_info($form, $type_obj, $type, $price, $currency_symbol, $units_per_price, $units) {
+
   // Element to display price.
   $form[$type][$price]['price'] = array(
     '#prefix' => '<tr class="rooms-search-result__unit_summary_wrapper"><td class="rooms-search-result__base_price">',
@@ -114,7 +116,8 @@ function _rooms_booking_manager_load_price_info($form, $type_obj, $type, $price,
 
   if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
     $units_keys = array_keys($units);
-    // Calculate the price per person for the period.
+
+    // Calculate the price per person for the booking period.
     $base_price = $units[$units_keys[0]]['price'] / $units[$units_keys[0]]['unit']->max_sleeps;
     $form[$type][$price]['price']['#markup'] = format_plural(count
     ($units), '1 @unit_type unit available starting at @price per
@@ -127,18 +130,19 @@ function _rooms_booking_manager_load_price_info($form, $type_obj, $type, $price,
     );
   }
 
-  // Element to hold price.
+  // Add form element to hold the price.
   $form[$type][$price]['price_value'] = array(
     '#type' => 'hidden',
     '#value' => $price,
     '#suffix' => '</td>',
   );
 
-  // Dropdown to select quantity.
+  // Dropdown element to select unit quantity.
   $options = array();
   for ($i = 0; $i <= count($units); $i++) {
     $options[$i] = $i;
   }
+
   // AJAX wrapper id.
   $id = 'rooms_' . $type . '_' . $price;
   $form[$type][$price]['quantity'] = array(
@@ -157,10 +161,18 @@ function _rooms_booking_manager_load_price_info($form, $type_obj, $type, $price,
   );
 
   return $form;
-
 }
 
+/**
+ * Add "place booking" button to form.
+ * @param $form
+ * @param $type
+ * @param $price
+ *
+ * @return mixed
+ */
 function _rooms_booking_manager_display_book_button($form, $type, $price) {
+
   // Show button 'Place Booking' only on the first row.
   $form[$type][$price]['submit'] = array(
     '#prefix' => '<td class="rooms-search-result__booking-legend"><div class="booking-legend booking-legend--rooms-search-result">',
@@ -173,13 +185,14 @@ function _rooms_booking_manager_display_book_button($form, $type, $price) {
 }
 
 /**
- * Checks if there are any options to add to units and loads them.
+ * Checks if there are any options to add to units and loads them if so.
  *
  * @param $form
  * @param $type
  * @param $price
  * @param $c
  * @param $option
+ *
  * @return mixed
  */
 function _rooms_booking_manager_add_options($form, $type, $price, $c, $option) {
@@ -222,7 +235,7 @@ function _rooms_booking_manager_add_options($form, $type, $price, $c, $option) {
 }
 
 /**
- * Handles per person pricing display.
+ * Handles display for per person pricing.
  *
  * @param $form
  * @param $form_state
@@ -235,6 +248,7 @@ function _rooms_booking_manager_add_options($form, $type, $price, $c, $option) {
  * @return mixed
  */
 function _rooms_booking_manager_handle_per_person_pricing($form, &$form_state, $tmp_unit, $units, $units_keys, $c, $type, $price) {
+
   // Show Guests and Children selectors if price calculation is set
   // to 'Price per person per night'.
   $form[$type][$price]['fieldset'][$c]['persons'] = array(
@@ -309,5 +323,6 @@ function _rooms_booking_manager_handle_per_person_pricing($form, &$form_state, $
       );
     }
   }
+
   return $form;
 }
