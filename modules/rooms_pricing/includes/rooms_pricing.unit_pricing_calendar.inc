@@ -61,15 +61,30 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
     }
 
     $price = 0;
+    $booking_price = 0;
+
+    // Setup pricing reply and log
+    $reply = array(
+      'full_price' => $price,
+      'booking_price' => $booking_price,
+      'log' => '',
+    );
+
+    // Get settings to add to log
+    $reply['log']['rooms_children_discount_options'] = variable_get('rooms_children_discount_options', array());
+    $reply['log']['rooms_price_calculation'] = variable_get('rooms_price_calculation', ROOMS_PER_NIGHT);
+
     $pricing_events = $this->getEvents($start_date, $end_date);
+    $reply['log']['pricing_events'] = $pricing_events;
     foreach ($pricing_events as $event) {
       $days = $event->diff()->days + 1;
-      if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
+      if ((variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) && ($children!=0) && (count($children_ages) > 0)) {
         $children_discount_options = variable_get('rooms_children_discount_options', array());
-
         $price = $price + ($days * $event->amount * ($persons - $children));
 
+
         foreach ($children_ages as $age) {
+          $reply['log']['children'][$age]['pre'] = $price;
           if (is_array($age)) {
             $age = $age['value'];
           }
@@ -82,6 +97,9 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
           }
 
           $price = $price + ($days * $event->amount * (100 - $discount) / 100);
+          $reply['log']['children'][$age]['post'] = $price;
+
+
         }
       }
       else {
@@ -102,64 +120,90 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
 
     drupal_alter('rooms_booking_amount_before_modifiers', $price, $booking_info);
 
-    $price = $this->applyPriceModifiers($price, $days);
+    $price = $this->applyPriceModifiers($price, $days, &$reply);
 
     $payment_option = variable_get('rooms_payment_options', FULL_PAYMENT);
+    $reply['rooms_payment_option'] = variable_get('rooms_payment_options', FULL_PAYMENT);
     switch ($payment_option) {
       case FULL_PAYMENT:
         $booking_price = $price;
         break;
 
       case PERCENT_PAYMENT:
+        $reply['rooms_payment_option'][PERCENT_PAYMENT] = variable_get('rooms_payment_options_percentual');
         $booking_price = $price / 100 * variable_get('rooms_payment_options_percentual');
         break;
 
       case FIRST_NIGHT_PAYMENT:
         $booking_price = $pricing_events[0]->amount;
+        $reply['rooms_payment_option'][FIRST_NIGHT_PAYMENT] = $booking_price;
         break;
     }
-
-    return array('full_price' => $price, 'booking_price' => $booking_price);
+    $reply['full_price'] = $price;
+    $reply['booking_price'] = $booking_price;
+    return $reply;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function applyPriceModifiers($base_price, $days) {
+  public function applyPriceModifiers($base_price, $days, &$reply) {
     $price = $base_price;
     if (!empty($this->price_modifiers)) {
-      foreach ($this->price_modifiers as $modifier) {
+      foreach ($this->price_modifiers as $source => $modifier) {
+
         if ($modifier['#type'] == ROOMS_PRICE_SINGLE_OCCUPANCY) {
+          $reply['log']['modifiers'][$source][$mod_count][ROOMS_PRICE_SINGLE_OCCUPANCY]['pre'] = $price;
+          $reply['log']['modifiers'][$source][$mod_count][ROOMS_PRICE_SINGLE_OCCUPANCY]['amount'] = $this->unit->data['singlediscount'];
+          $reply['log']['modifiers'][$source][$mod_count][ROOMS_PRICE_SINGLE_OCCUPANCY]['modifier'] = $modifier;
+            $this->unit->data['singlediscount'];
           $price -= $base_price * $this->unit->data['singlediscount'] / 100;
+          $reply['log']['modifiers'][$source][ROOMS_PRICE_SINGLE_OCCUPANCY]['post'] = $price;
         }
         elseif ($modifier['#type'] == ROOMS_DYNAMIC_MODIFIER) {
+          $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['modifier'] = $modifier;
+          $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['pre'] = $price;
           switch ($modifier['#op_type']) {
             case ROOMS_ADD:
               $price += $modifier['#amount'] * $modifier['#quantity'];
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['op'] = ROOMS_ADD;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['post'] = $price;
               break;
 
             case ROOMS_ADD_DAILY:
               $price += $modifier['#amount'] * $modifier['#quantity'] * $days;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['op'] = ROOMS_ADD_DAILY;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['post'] = $price;
               break;
 
             case ROOMS_SUB:
               $price -= $modifier['#amount'] * $modifier['#quantity'];
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['op'] = ROOMS_SUB;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['post'] = $price;
               break;
 
             case ROOMS_SUB_DAILY:
               $price -= $modifier['#amount'] * $modifier['#quantity'] * $days;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['op'] = ROOMS_SUB_DAILY;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['post'] = $price;
               break;
 
             case ROOMS_REPLACE:
               $price = $modifier['#amount'];
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['op'] = ROOMS_REPLACE;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['post'] = $price;
               break;
 
             case ROOMS_INCREASE:
               $price += $base_price * ($modifier['#amount'] * $modifier['#quantity']) / 100;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['op'] = ROOMS_INCREASE;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['post'] = $price;
               break;
 
             case ROOMS_DECREASE:
               $price -= $base_price * ($modifier['#amount'] * $modifier['#quantity']) / 100;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['op'] = ROOMS_DECREASE;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['post'] = $price;
               break;
           }
         }
