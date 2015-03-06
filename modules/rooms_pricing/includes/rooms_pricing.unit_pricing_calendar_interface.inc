@@ -20,6 +20,7 @@ interface UnitPricingCalendarInterface extends RoomsCalendarInterface {
    *   The event duration.
    * @param array $reply
    *   A log of prices changes
+   *
    * @return float
    *   The modified price.
    */
