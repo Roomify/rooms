@@ -10,6 +10,9 @@ files[] = includes/rooms.event_interface.inc
 
 package = Rooms
 
-dependencies[] = libraries (>=2.x)
+dependencies[] = date
+dependencies[] = date_api
+dependencies[] = date_popup
 dependencies[] = jquery_update
+dependencies[] = libraries (>=2.x)
 dependencies[] = variable
