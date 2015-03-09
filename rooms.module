@@ -1230,3 +1230,25 @@ function rooms_element_validate_integer_positive_less_than_100($element, &$form_
     }
   }
 }
+
+/**
+ * A string transformation function specific to Rooms to allow modules to use
+ * contextual information about bookings to change what is shown to the user.
+ *
+ * @param $string - The string to be altered.
+ * @param $context - Contextual information about the string.
+ *
+ * @return mixed
+ */
+function rooms_string($string, $context) {
+
+  // The string_suggestions array will hold information about all the
+  // suggestions coming from modules. The default behaviour now is to simply
+  // return the suggestion made by the module with the highest weight.
+  $string_suggestions = array();
+  $string_suggestions[] = $string;
+  drupal_alter('rooms_string', $string_suggestions, $context);
+
+  // Return the highest option string.
+  return max($string_suggestions);
+}
