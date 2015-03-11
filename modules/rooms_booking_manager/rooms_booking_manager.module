@@ -503,7 +503,7 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
  */
 function rooms_booking_manager_change_search_form($form, &$form_state, $start_date, $end_date, $booking_parameters, $b_units, $type = '') {
   // Ensure stylesheets are added to the page.
-  $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
+  $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/rooms_booking_search.css');
   $date_format = variable_get('rooms_date_format', 'd-m-Y');
 
   if (!isset($form['info'])) {
@@ -1253,6 +1253,9 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
   // Sort the types by least expensive first.
   asort($sortorder);
 
+  // Calculate the period.
+  $nights = $form['end_date']['#value']->diff($form['start_date']['#value'])->days;
+
   foreach ($sortorder as $type => $least_expensive_base_price) {
 
     // Load the units per price.
@@ -1307,8 +1310,17 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
         for ($c = 1; $c <= $form_state['values'][$type][$price]['quantity']; $c++) {
 
+          // Looking for unit options.
+          $rooms_unit_options = rooms_unit_get_unit_options($units[$units_keys[$c - 1]]['unit']);
+
           // Display each row as a fieldset.
           $form[$type][$price]['fieldset'][$c]['#type'] = 'fieldset';
+
+          // If there are options or pricing is not "PER PERSON" add a css
+          // class and remove fieldset style.
+          if (empty($rooms_unit_options) && variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) != ROOMS_PER_PERSON) {
+            $form[$type][$price]['fieldset'][$c]['#attributes']['class'][] = 'no-unit-fieldset';
+          }
 
           // Display a clean title for each unit. If there are multiple units
           // chosen, add a cumulative index to the unit label. You can disable
@@ -1319,12 +1331,27 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
           //
           $unit_label = $type_obj->label;
           if ($multiple_chosen) {
-            $unit_label = t('Unit @num - @label', array('@num' => ++$chosen_unit_counter, '@label' => $type_obj->label));
+            $unit_label = rooms_string(t('Unit @num - @label',
+              array(
+                '@num' => ++$chosen_unit_counter,
+                '@label' => $type_obj->label
+              )
+            ),
+              $context =
+                array(
+                  '#component' => 'units_results_fieldset_legend_label',
+                  '#purpose' => 'display_fieldset_label',
+                  '#data' => array(
+                    'chosen_unit_counter' => $chosen_unit_counter,
+                    'type' => $type_obj,
+                  )
+                )
+              );
           }
           $form[$type][$price]['fieldset'][$c]['#title'] = $unit_label;
 
           // Add options checkboxes.
-          foreach (rooms_unit_get_unit_options($units[$units_keys[$c - 1]]['unit']) as $option) {
+          foreach ($rooms_unit_options as $option) {
             $form = _rooms_booking_manager_add_options($form, $type, $price, $c, $option);
           }
 
@@ -1336,11 +1363,32 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
           // When prices are shown as per person, display this one as a subtotal
           // for all people in the room.
+          $unit_type_label = rooms_unit_get_types($units[$units_keys[$c - 1]]['unit']->type)->label;
           if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
-            $label = t('Subtotal');
+            $label = rooms_string('Subtotal',
+              $context = array(
+                '#component' => 'units_per_type_form_subtotal_label',
+                '#purpose' => 'display_base_subtotal_label',
+                '#data' => array(
+                  'type' => $unit_type_label,
+                  'nights' => $nights,
+                  'unit_number' => $c,
+                )
+              )
+            );
           }
           else {
-            $label = t('Price');
+            $label = rooms_string('Price',
+              $context = array(
+                '#component' => 'units_per_type_form_price_label',
+                '#purpose' => 'display_base_price_label',
+                '#data' => array(
+                  'type' => $unit_type_label,
+                  'nights' => $nights,
+                  'unit_number' => $c,
+                )
+              )
+            );
           }
 
           $form[$type][$price]['fieldset'][$c]['price'] = array(
@@ -2724,8 +2772,7 @@ function rooms_booking_manager_views_api() {
  */
 function rooms_booking_manager_rooms_string_alter(&$string_suggestions, $context) {
   if ($context['#component'] == 'units_per_type_form'  && $context['#purpose'] == 'display_base_price' ) {
-    $string_suggestions[] = format_plural(count($context['#data']['units']), '1
-    @unit_type '
+    $string_suggestions[] = format_plural(count($context['#data']['units']), '1 @unit_type '
       . variable_get_value('rooms_booking_manager_unit_available_from')
       . ' @price', '@count @unit_type '
       . variable_get_value('rooms_booking_manager_unit_available_from')

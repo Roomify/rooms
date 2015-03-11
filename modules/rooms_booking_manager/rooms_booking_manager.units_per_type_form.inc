@@ -98,6 +98,8 @@ function _rooms_booking_manager_load_description($form, $type_obj, $type, $price
  */
 function _rooms_booking_manager_load_price_info($form, $type_obj, $type, $price, $currency_symbol, $units_per_price, $units) {
 
+  // Calculate the period.
+  $nights = $form['end_date']['#value']->diff($form['start_date']['#value'])->days;
   // Element to display price.
   $form[$type][$price]['price'] = array(
     '#prefix' => '<tr class="rooms-search-result__unit_summary_wrapper"><td class="rooms-search-result__base_price">',
@@ -110,6 +112,7 @@ function _rooms_booking_manager_load_price_info($form, $type_obj, $type, $price,
         'currency_symbol' => $currency_symbol,
         'amount' => $price,
         'units' => $units_per_price,
+        'nights' => $nights,
         ),
       )
     ),
