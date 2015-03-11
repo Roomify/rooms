@@ -16,7 +16,7 @@ function rooms_booking_availability_search_form_builder($form, &$form_state) {
   form_load_include($form_state, 'inc', 'rooms_booking_manager', 'rooms_booking_manager.availability_search');
 
   $form['#attributes']['class'][] = 'rooms-management-form rooms-availability-search';
-  $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
+  $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/rooms_booking_search.css');
 
   $rooms_number = 1;
 
