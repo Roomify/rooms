@@ -61,7 +61,8 @@ before_script:
   - drush --yes pm-enable rooms_booking_manager
 
   # Download required libraries
-  - cd drupal/sites/all/libraries
+  - mkdir sites/all/libraries
+  - cd sites/all/libraries
   - mkdir moment
   - wget http://momentjs.com/downloads/moment.min.js
   - cd ..
