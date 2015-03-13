@@ -17,7 +17,7 @@ before_install:
 install:
   # install php packages required for running a web server from drush on php 5.3
   - sudo apt-get install -y --force-yes php5-cgi php5-mysql
-   - "mysql -e 'create database drupal;'"
+  - mysql -e 'create database drupal;'
 
   # add composer's global bin directory to the path
   # see: https://github.com/drush-ops/drush#install---composer
@@ -58,10 +58,20 @@ before_script:
   # Enable module and its dependencies
   - drush --yes dl commerce date jquery_update addressfield
   - drush --yes pm-enable rooms_booking_manager
+
+  # Download required libraries
+  - cd drupal/sites/all/libraries
+  - mkdir moment
+  - wget http://momentjs.com/downloads/moment.min.js
+  - cd ..
+  - wget http://www.drupalrooms.com/sites/default/files/rooms_fullcalendar-2.1.1.zip
+  - unzip rooms_fullcalendar-2.1.1.zip
+  -cd ..
+
   # Start server
   - drush runserver --server=builtin 8888 > /dev/null 2>&1 &
   - until netstat -an 2>/dev/null | grep '8888.*LISTEN'; do true; done
-  - cd drupal/sites/all/modules/rooms/tests/behat
+  - cd modules/rooms/tests/behat
 
 script:
 
