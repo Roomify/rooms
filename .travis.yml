@@ -37,9 +37,10 @@ install:
 
   - php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php --yes core-quick-drupal --profile=standard --no-server --db-url=mysql://root:@127.0.0.1/drupal rooms
   - ln -s $(readlink -e $(cd -)) rooms/drupal/sites/all/modules/rooms
+  - cd rooms/drupal
 
   # Setup files
-  - sudo chmod -R 777 rooms/drupal/sites/all
+  - sudo chmod -R 777 sites/all
 
   # Setup display for Selenium
   - export DISPLAY=:99.0
