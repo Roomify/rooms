@@ -39,7 +39,7 @@ install:
   - ln -s $(readlink -e $(cd -)) rooms/drupal/sites/all/modules/rooms
 
   # Setup files
-  - sudo chmod -R 777 drupal/sites/all
+  - sudo chmod -R 777 rooms/drupal/sites/all
 
   # Setup display for Selenium
   - export DISPLAY=:99.0
