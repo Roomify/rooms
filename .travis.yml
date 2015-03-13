@@ -37,6 +37,11 @@ install:
 
   - php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php --yes core-quick-drupal --profile=standard --no-server --db-url=mysql://root:@127.0.0.1/drupal drupal
   - ls -la
+  - cd drupal
+  - ls -la
+  - cd sites
+  - ls -la
+  - cd ../..
   - mv rooms drupal/sites/all/modules
 
   # Setup files
