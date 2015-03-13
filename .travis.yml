@@ -29,20 +29,14 @@ install:
   # Build Behat dependencies
   - cd ./tests/behat
   - composer install --no-interaction --prefer-source
-  - cd ../../../
+  - cd ../../../..
 
   # Setting Behat environment
   - DISTRO=`echo $TRAVIS_BUILD_DIR | sed -e "s/\/[^\/]*$//"`
   - export BEHAT_PARAMS="{\"extensions\":{\"Drupal\\\DrupalExtension\":{\"drupal\":{\"drupal_root\":\"$DISTRO/drupal\"}}}}"
 
-  - php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php --yes core-quick-drupal --profile=standard --no-server --db-url=mysql://root:@127.0.0.1/drupal drupal
-  - ls -la
-  - cd drupal
-  - ls -la
-  - cd sites
-  - ls -la
-  - cd ../..
-  - mv rooms drupal/sites/all/modules
+  - php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php --yes core-quick-drupal --profile=standard --no-server --db-url=mysql://root:@127.0.0.1/drupal rooms
+  - ln -s $(readlink -e $(cd -)) rooms/drupal/sites/all/modules/rooms
 
   # Setup files
   - sudo chmod -R 777 drupal/sites/all
