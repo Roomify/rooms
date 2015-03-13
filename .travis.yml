@@ -36,6 +36,7 @@ install:
   - export BEHAT_PARAMS="{\"extensions\":{\"Drupal\\\DrupalExtension\":{\"drupal\":{\"drupal_root\":\"$DISTRO/drupal\"}}}}"
 
   - php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php --yes core-quick-drupal --profile=standard --no-server --db-url=mysql://root:@127.0.0.1/drupal drupal
+  - ls -la
   - mv rooms drupal/sites/all/modules
 
   # Setup files
