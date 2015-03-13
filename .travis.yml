@@ -1,0 +1,68 @@
+language: php
+
+php:
+  - 5.4
+
+mysql:
+  database: drupal
+  username: root
+  encoding: utf8
+
+matrix:
+  fast_finish: true
+
+before_install:
+  - sudo apt-get update > /dev/null
+
+install:
+  # install php packages required for running a web server from drush on php 5.3
+  - sudo apt-get install -y --force-yes php5-cgi php5-mysql
+   - "mysql -e 'create database drupal;'"
+
+  # add composer's global bin directory to the path
+  # see: https://github.com/drush-ops/drush#install---composer
+  - export PATH="$HOME/.composer/vendor/bin:$PATH"
+
+  # install drush globally
+  - composer global require drush/drush:6.*
+
+  # Build Behat dependencies
+  - cd ./tests/behat
+  - composer install --no-interaction --prefer-source
+  - cd ../../../
+
+  # Setting Behat environment
+  - DISTRO=`echo $TRAVIS_BUILD_DIR | sed -e "s/\/[^\/]*$//"`
+  - export BEHAT_PARAMS="{\"extensions\":{\"Drupal\\\DrupalExtension\":{\"drupal\":{\"drupal_root\":\"$DISTRO/drupal\"}}}}"
+
+  - php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php --yes core-quick-drupal --profile=standard --no-server --db-url=mysql://root:@127.0.0.1/drupal drupal
+  - mv rooms drupal/sites/all/modules
+
+  # Setup files
+  - sudo chmod -R 777 drupal/sites/all
+
+  # Setup display for Selenium
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
+  - sleep 5
+
+  # Get Selenium
+  - wget http://selenium-release.storage.googleapis.com/2.42/selenium-server-standalone-2.42.1.jar
+  - java -jar selenium-server-standalone-2.42.1.jar > /dev/null 2>&1 &
+  - until netstat -an 2>/dev/null | grep '4444.*LISTEN'; do true; done
+
+   # Disable sendmail
+  - echo sendmail_path=`which true` >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+
+before_script:
+  # Enable module and its dependencies
+  - drush --yes dl commerce date jquery_update addressfield
+  - drush --yes pm-enable rooms_booking_manager
+  # Start server
+  - drush runserver --server=builtin 8888 > /dev/null 2>&1 &
+  - until netstat -an 2>/dev/null | grep '8888.*LISTEN'; do true; done
+  - cd drupal/sites/all/modules/rooms/tests/behat
+
+script:
+
+  - ./bin/behat --config behat.travis.yml

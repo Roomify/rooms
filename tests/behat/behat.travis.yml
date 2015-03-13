@@ -1,0 +1,18 @@
+default:
+  paths:
+    features: 'features'
+  extensions:
+    Behat\MinkExtension\Extension:
+      goutte: ~
+      selenium2:
+        capabilities: {"browser": "firefox"}
+      base_url: 127.0.0.1:8888
+    Drupal\DrupalExtension\Extension:
+      blackbox: ~
+      api_driver: 'drupal'
+      drush:
+        alias: 'self'
+      selectors:
+        message_selector: '.messages'
+        error_message_selector: '.messages-error'
+        success_message_selector: '.messages.status'
