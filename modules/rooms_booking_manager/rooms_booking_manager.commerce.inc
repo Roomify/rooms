@@ -54,8 +54,8 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent, $bookin
         'unit' => $unit_to_book,
         'unit_id' => $unit_id,
         'unit_type' => $unit_type->label,
-        'arrival' => $agent->start_date->format($date_format),
-        'departure' => $dd->format($date_format),
+        'arrival' => $agent->start_date,
+        'departure' => $dd,
         'nights' => $nights,
       )
     )

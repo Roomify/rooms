@@ -835,20 +835,32 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     );
   }
 
+  // Calculate the period.
+  $nights = $end_date->diff($start_date)->days;
+
   $form['price'] = array(
     '#prefix' => '<div class="rooms-search-result__unit-base-price" id="unit_' . $unit->unit_id . '_base_price">',
-    '#markup' => '<label>' . t('Base price') . ':</label> <span class="rooms-search-result__base-price-amount">' .
+    '#markup' => rooms_string('<label>' . t('Base price') . ':</label> <span class="rooms-search-result__base-price-amount">' .
       t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
         '@currency_symbol' => $currency_symbol,
         '@amount' => $price,
-      )) . '</span>',
+      )) . '</span>', array(
+      '#component' => 'book_unit_form_builder',
+      '#purpose' => 'display_base_price',
+      '#data' => array(
+        'price' => $price,
+        'currency_symbol' => $currency_symbol,
+        'amount' => $price,
+        'unit' => $unit,
+        'nights' => $nights,
+        'arrival' => $start_date,
+        'departure' => $end_date,
+      ),
+    )),
     '#suffix' => '</div>',
   );
 
   if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
-
-    // Calculate the period.
-    $nights = $end_date->diff($start_date)->days;
 
     // Calculate the price per person for the period.
     $price_per_person = $price / $unit->max_sleeps;
@@ -856,13 +868,25 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     // Calculate the price per person per night, too.
     $base_price = $price_per_person / $nights;
 
-    $form['price']['#markup'] = format_plural($nights, 'Book this unit for 1 night at <b>@price per person</b> (@base_price per person per night)', 'Book this unit for @count nights at <b>@price per person</b> (@base_price per person per night)', array(
+    $form['price']['#markup'] = rooms_string(format_plural($nights, 'Book this unit for 1 night at <b>@price per person</b> (@base_price per person per night)', 'Book this unit for @count nights at <b>@price per person</b> (@base_price per person per night)', array(
       '@price' => t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
         '@currency_symbol' => $currency_symbol,
         '@amount' => $price_per_person)),
       '@base_price' => t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
         '@currency_symbol' => $currency_symbol,
         '@amount' => $base_price))
+    )), array(
+      '#component' => 'book_unit_form_builder',
+      '#purpose' => 'display_base_price_per_pèrson',
+      '#data' => array(
+        'price' => $price,
+        'currency_symbol' => $currency_symbol,
+        'amount' => $price,
+        'unit' => $unit,
+        'nights' => $nights,
+        'arrival' => $start_date,
+        'departure' => $end_date,
+      ),
     ));
   }
 
