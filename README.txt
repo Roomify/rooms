@@ -5,7 +5,7 @@ B&Bs and vacation rentals.
 
 It builds on the Drupal CMS (drupal.org) and its modules.
 
-For more extensive documentation and examples check out http://www.drupalrooms.com/docs
+For more extensive documentation and examples check out http://roomify.us/documentation/rooms-module
 
 
 INSTALLATION
