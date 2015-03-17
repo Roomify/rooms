@@ -113,6 +113,8 @@ function _rooms_booking_manager_load_price_info($form, $type_obj, $type, $price,
         'amount' => $price,
         'units' => $units_per_price,
         'nights' => $nights,
+        'arrival' => $form['start_date']['#value'],
+        'departure' => $form['end_date']['#value'],
         ),
       )
     ),
