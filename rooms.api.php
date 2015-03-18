@@ -79,7 +79,8 @@ function hook_rooms_entity_access_condition_alter() {
  * to change what is shown to the user.
  *
  * @param &$string_suggestions - String suggestions, the suggestion with the
- *   highest index in the array will be used.
+ *   highest index in the array will be used. The value at index 0 is the
+ *   default value.
  * @param $context - Contextual information about the string.
  *
  * @return mixed

@@ -118,7 +118,6 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
     drupal_alter('rooms_booking_amount_before_modifiers', $price, $booking_info);
 
     $price = $this->applyPriceModifiers($price, $days, $reply);
-
     $payment_option = variable_get('rooms_payment_options', FULL_PAYMENT);
     $reply['rooms_payment_option'] = variable_get('rooms_payment_options', FULL_PAYMENT);
     switch ($payment_option) {

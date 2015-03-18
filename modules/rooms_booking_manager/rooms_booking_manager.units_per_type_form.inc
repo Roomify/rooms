@@ -103,18 +103,33 @@ function _rooms_booking_manager_load_price_info($form, $type_obj, $type, $price,
   // Element to display price.
   $form[$type][$price]['price'] = array(
     '#prefix' => '<tr class="rooms-search-result__unit_summary_wrapper"><td class="rooms-search-result__base_price">',
-    '#markup' => rooms_string('', $context = array(
-      '#component' => 'units_per_type_form',
-      '#purpose' => 'display_base_price',
-      '#data' => array(
-        'unit_type' => $type_obj->label,
-        'price' => $price,
-        'currency_symbol' => $currency_symbol,
-        'amount' => $price,
-        'units' => $units_per_price,
-        'nights' => $nights,
-        'arrival' => $form['start_date']['#value'],
-        'departure' => $form['end_date']['#value'],
+    '#markup' => rooms_string(
+      format_plural(count($units_per_price), '1 @unit_type '
+        . variable_get_value('rooms_booking_manager_unit_available_from')
+        . ' @price', '@count @unit_type '
+        . variable_get_value('rooms_booking_manager_unit_available_from')
+        . ' @price',
+        array(
+          '@unit_type' => $type_obj->label,
+          '@price' => t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
+              '@currency_symbol' => $currency_symbol,
+              '@amount' => $price,
+            )
+          )
+        )
+      ),
+      $context = array(
+        '#component' => 'units_per_type_form',
+        '#purpose' => 'display_base_price',
+        '#data' => array(
+          'unit_type' => $type_obj->label,
+          'price' => $price,
+          'currency_symbol' => $currency_symbol,
+          'amount' => $price,
+          'units' => $units_per_price,
+          'nights' => $nights,
+          'arrival' => $form['start_date']['#value'],
+          'departure' => $form['end_date']['#value'],
         ),
       )
     ),

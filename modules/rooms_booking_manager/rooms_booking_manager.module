@@ -1502,6 +1502,9 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
           }
           // Price is calculated as 'Price per room per night'.
           else {
+            // Give other modules a chance to change the price modifiers.
+            drupal_alter('rooms_price_modifier', $price_modifiers, $booking_info);
+
             // Apply price modifiers and replace unit price.
             $price_calendar = new UnitPricingCalendar($units[$units_keys[$c - 1]]['unit']->unit_id, $price_modifiers);
             // Let us make sure we remove a day.
@@ -1513,19 +1516,26 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
           // Replace old price with the new calculated value.
           $form[$type][$price]['fieldset'][$c]['price']['#markup'] =
-            rooms_string('', $context = array(
-              '#component' => 'units_per_type_form',
-              '#purpose' => 'display_room_recalculated_price',
-              '#data' => array(
-                'unit_id' => $units[$units_keys[$c - 1]]['unit']->unit_id,
-                'unit_type' => $type_obj->label,
-                'price' => $price,
-                'new_price' => $new_price,
-                'currency_symbol' => $currency_symbol,
-                'amount' => $price,
-                'units' => $units_per_price,
+            rooms_string(
+              t('@currency_symbol @amount', array(
+                '@currency_symbol' => $currency_symbol,
+                '@amount' => $new_price,
+                )
               ),
-            ));
+              $context = array(
+                '#component' => 'units_per_type_form',
+                '#purpose' => 'display_room_recalculated_price',
+                '#data' => array(
+                  'unit_id' => $units[$units_keys[$c - 1]]['unit']->unit_id,
+                  'unit_type' => $type_obj->label,
+                  'price' => $price,
+                  'new_price' => $new_price,
+                  'currency_symbol' => $currency_symbol,
+                  'amount' => $price,
+                  'units' => $units_per_price,
+                ),
+              )
+            );
         }
       }
 
@@ -2789,33 +2799,4 @@ function rooms_booking_manager_views_api() {
     'api' => 3,
     'path' => drupal_get_path('module', 'rooms_booking_manager') . '/views',
   );
-}
-
-/**
- * Implements hook_rooms_string_alter
- */
-function rooms_booking_manager_rooms_string_alter(&$string_suggestions, $context) {
-  if ($context['#component'] == 'units_per_type_form'  && $context['#purpose'] == 'display_base_price' ) {
-    $string_suggestions[] = format_plural(count($context['#data']['units']), '1 @unit_type '
-      . variable_get_value('rooms_booking_manager_unit_available_from')
-      . ' @price', '@count @unit_type '
-      . variable_get_value('rooms_booking_manager_unit_available_from')
-      . ' @price',
-      array(
-        '@unit_type' => $context['#data']['unit_type'],
-        '@price' => t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
-            '@currency_symbol' => $context['#data']['currency_symbol'],
-            '@amount' => $context['#data']['amount'],
-          )
-        )
-      )
-    );
-  }
-
-  if ($context['#purpose'] == 'display_room_recalculated_price') {
-    $string_suggestions[] = t('@currency_symbol @amount', array(
-      '@currency_symbol' => $context['#data']['currency_symbol'],
-      '@amount' => $context['#data']['new_price']
-    ));
-  }
 }
