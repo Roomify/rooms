@@ -907,8 +907,8 @@ function rooms_date_range_fields($year = NULL, $month = NULL) {
  * instantiate and return DateTime objects.
  */
 function rooms_form_input_get_start_end_dates($form_state) {
-  $start = DateTime::createFromFormat('d/m/Y', $form_state['input']['rooms_start_date']['date']);
-  $end = DateTime::createFromFormat('d/m/Y', $form_state['input']['rooms_end_date']['date']);
+  $start = new DateTime($form_state['values']['rooms_start_date']);
+  $end = new DateTime($form_state['values']['rooms_end_date']);
   return array($start, $end);
 }
 

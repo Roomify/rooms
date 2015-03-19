@@ -224,9 +224,7 @@ function rooms_booking_availability_search_form_validate(&$form, &$form_state) {
  * Submit callback for rooms_booking_availability_search_form form.
  */
 function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
-
-  $start_date = DateTime::createFromFormat($form['rooms_date_range']['rooms_start_date']['#date_format'], $form_state['input']['rooms_start_date']['date']);
-  $end_date = DateTime::createFromFormat($form['rooms_date_range']['rooms_end_date']['#date_format'], $form_state['input']['rooms_end_date']['date']);
+  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
 
   $units = $form_state['values']['rooms'];
 
