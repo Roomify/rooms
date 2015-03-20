@@ -1956,34 +1956,6 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
         // Line item 'Entity Reference field' that points to the booking.
         $line_item->rooms_booking_reference['und'][0]['target_id'] = $booking->booking_id;
         commerce_line_item_save($line_item);
-
-        // Now let us lock availability
-        // First - we get an event id.
-        $id = rooms_availability_assign_id($booking->booking_id, '1');
-        // Set the start and end dates for the booking event.
-        // They are the same as the booking above but the end date is not the
-        // departure date rather it is the last night spend in the room.
-        $sd = new DateTime($booking->start_date);
-
-        // End date is actually a day less.
-        $ed = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
-        $ed->sub(new DateInterval('P1D'));
-
-        // Create a booking event.
-        $be = new BookingEvent($booking->unit_id, $id, $sd, $ed);
-
-        // Call up the UnitCalendar for this unit and add the event to it.
-        $rc = new UnitCalendar($booking->unit_id);
-        $responses = $rc->updateCalendar(array($be));
-
-        // If the event addition was succesful lock the event.
-        if ($responses[$id] == ROOMS_UPDATED) {
-          $be->lock();
-          watchdog('rooms_booking_manager', 'Unit availability has been updated.', array(), WATCHDOG_NOTICE);
-        }
-        else {
-          watchdog('rooms_booking_manager', 'Unit availability could not be updated.', array(), WATCHDOG_ERROR);
-        }
       }
     }
   }
