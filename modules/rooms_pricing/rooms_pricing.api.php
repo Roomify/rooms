@@ -8,7 +8,8 @@
  */
 
 /**
- * Allows to modify the booking amount before apply price modifiers.
+ * Allows modification of the booking price prior to the application of
+ * price modifiers.
  *
  * @param $price
  *   The calculated booking amount.
