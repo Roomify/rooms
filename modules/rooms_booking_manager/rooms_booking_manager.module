@@ -26,7 +26,9 @@ function rooms_booking_manager_menu() {
   $items = array();
 
   $items['booking'] = array(
-    'title' => variable_get_value('rooms_booking_manager_create_your_booking'),
+    'title' => 'Create your booking',
+    'title callback' => 'rooms_booking_manager_menu_title_callback',
+    'title arguments' => array('booking'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('rooms_booking_availability_search_form_page'),
     'file' => 'rooms_booking_manager.availability_search.inc',
@@ -35,7 +37,9 @@ function rooms_booking_manager_menu() {
   );
 
   $items['booking/%start_date/%end_date'] = array(
-    'title' => variable_get_value('rooms_booking_manager_select_your_stay'),
+    'title' => 'Select your stay',
+    'title callback' => 'rooms_booking_manager_menu_title_callback',
+    'title arguments' => array('select_your_stay'),
     'page callback' =>  'rooms_booking_manager_results_page',
     'page arguments' => array(1, 2),
     'access arguments' => array('book units'),
@@ -51,7 +55,9 @@ function rooms_booking_manager_menu() {
   );
 
   $items['bookings'] = array(
-    'title' => variable_get_value('rooms_booking_manager_review_your_reservation'),
+    'title' => 'Review your reservation',
+    'title callback' => 'rooms_booking_manager_menu_title_callback',
+    'title arguments' => array('bookings'),
     'page callback' => 'rooms_booking_manager_cart_view',
     'access arguments' => array('access checkout'),
   );
@@ -2799,4 +2805,25 @@ function rooms_booking_manager_views_api() {
     'api' => 3,
     'path' => drupal_get_path('module', 'rooms_booking_manager') . '/views',
   );
+}
+
+/**
+ * Given a title argument from a hook_menu() the function returns 
+ *  related variable.
+ *
+ * @param $string - title argument defined via hook_menu().
+ *
+ * @return string
+ */
+function rooms_booking_manager_menu_title_callback($argument) {
+  switch ($argument) {
+    case 'booking':
+      return variable_get_value('rooms_booking_manager_create_your_booking');
+
+    case 'bookings':
+      return variable_get_value('rooms_booking_manager_review_your_reservation');
+
+    case 'select_your_stay':
+      return variable_get_value('rooms_booking_manager_select_your_stay');
+  }
 }
