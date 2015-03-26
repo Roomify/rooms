@@ -40,6 +40,7 @@ function rooms_booking_manager_variable_info($options) {
     'title' => t('Create your booking'),
     'default' => 'Create your booking',
     'description' => t('Change text : Create your booking'),
+    'localize' => TRUE,
     'group' => 'rooms_booking_manager',
   );
 
