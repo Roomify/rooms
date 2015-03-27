@@ -195,7 +195,7 @@ function rooms_booking_availability_search_form_callback(&$form, $form_state) {
  * Validate callback form rooms_booking_availability_search_form form.
  */
 function rooms_booking_availability_search_form_validate(&$form, &$form_state) {
-  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form, $form_state);
+  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
   if (empty($start_date)) {
     return;
   }
@@ -224,7 +224,7 @@ function rooms_booking_availability_search_form_validate(&$form, &$form_state) {
  * Submit callback for rooms_booking_availability_search_form form.
  */
 function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
-  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form, $form_state);
+  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
 
   $units = $form_state['values']['rooms'];
 
