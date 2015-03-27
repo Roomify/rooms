@@ -570,7 +570,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
         }
 
         $group_size_children = (isset($form_state['input']['data']['group_size_children'])) ? $form_state['input']['data']['group_size_children'] : 0;
-        list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
+        list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form, $form_state);
         $available_units = rooms_booking_edit_form_get_rooms($search_unit_type, $booking, $start_date, $end_date, $form_state['input']['data']['group_size'], $group_size_children, $childrens_age);
         if ($available_units == ROOMS_NO_ROOMS) {
           $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
@@ -1066,7 +1066,7 @@ function rooms_booking_edit_form_get_rooms($unit_type, $current_booking, $start_
  */
 function rooms_booking_edit_form_validate(&$form, &$form_state) {
   $booking = $form_state['rooms_booking'];
-  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
+  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form, $form_state);
 
   if ($start_date && $end_date) {
     // Convert input format to the same used in the stored dates.
