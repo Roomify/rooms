@@ -906,10 +906,9 @@ function rooms_date_range_fields($year = NULL, $month = NULL) {
  * Given a form_state locate the start/end dates in the input array and
  * instantiate and return DateTime objects.
  */
-function rooms_form_input_get_start_end_dates($form_state) {
-  $date_format = str_replace('-', '/', variable_get('rooms_date_format', 'd-m-Y'));
-  $start = DateTime::createFromFormat($date_format, $form_state['input']['rooms_start_date']['date']);
-  $end = DateTime::createFromFormat($date_format, $form_state['input']['rooms_end_date']['date']);
+function rooms_form_input_get_start_end_dates($form, $form_state) {
+  $start = DateTime::createFromFormat($form['rooms_date_range']['rooms_start_date']['#date_format'], $form_state['input']['rooms_start_date']['date']);
+  $end = DateTime::createFromFormat($form['rooms_date_range']['rooms_end_date']['#date_format'], $form_state['input']['rooms_end_date']['date']);
   return array($start, $end);
 }
 
@@ -942,7 +941,7 @@ function rooms_form_values_get_start_end_dates($form_state) {
  * validate dates. End date must be greater than start date.
  */
 function rooms_form_start_end_dates_validate($form, &$form_state) {
-  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
+  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form, $form_state);
   $today_greater = FALSE;
   // Skip if no dates are provided.
   if (empty($start_date) || empty($end_date)) {
