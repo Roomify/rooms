@@ -11,9 +11,9 @@
   border-style: solid;
   border-color: transparent;
   border-bottom: 0;
-  bottom: -12px;
+  bottom: -8px;
   left: 0px;
-  border-width: 12px;
+  border-width: 8px;
 }
 
 .rooms-availability-field-calendar .fc-content-skeleton .fc-event-container .event-end {
@@ -24,9 +24,9 @@
   border-style: solid;
   border-color: transparent;
   border-bottom: 0;
-  bottom: -10px;
+  bottom: -11px;
   left: 0px;
-  border-width: 12px;
+  border-width: 8px;
 }
 
 .rooms-availability-field-calendar .fc-content-skeleton .fc-event-container .event-end {

@@ -36,9 +36,9 @@
   border-style: solid;
   border-color: transparent;
   border-bottom: 0;
-  bottom: -9px;
-  left: 0px;
-  border-width: 9px;
+  bottom: -8px;
+  left: -1px;
+  border-width: 7px;
 }
 
 .rooms-bulk-availability-form .fc-content-skeleton .fc-event-container .event-end {
@@ -49,9 +49,9 @@
   border-style: solid;
   border-color: transparent;
   border-bottom: 0;
-  bottom: -9px;
+  bottom: -10px;
   left: 0px;
-  border-width: 9px;
+  border-width: 7px;
 }
 
 .rooms-bulk-availability-form .fc-content-skeleton .fc-event-container .event-end {
