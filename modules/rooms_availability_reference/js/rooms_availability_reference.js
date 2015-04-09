@@ -67,6 +67,9 @@ Drupal.behaviors.rooms_availability_reference = {
           var cell_width = width/colspan;
           var half_cell_width = cell_width/2;
 
+          // Adding a class to the second row of events to use for theme.
+          element.closest('tbody').find('tr:eq(1) .fc-content').addClass('rooms-calendar-second-row-events');
+
           // Move events between table margins.
           element.css('margin-left', half_cell_width);
           element.css('margin-right', half_cell_width);

@@ -108,6 +108,6 @@
   -webkit-transform: rotate(180deg);
 }
 
-.rooms-three-month-calendar .fc-content-skeleton tbody tr:nth-child(2) .fc-content {
+.rooms-three-month-calendar .rooms-calendar-second-row-events {
   margin-top: -15px;
 }

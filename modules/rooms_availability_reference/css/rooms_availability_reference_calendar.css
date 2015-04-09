@@ -35,10 +35,10 @@
   -ms-transform: rotate(180deg); /* IE 9 */
   -webkit-transform: rotate(180deg);
 }
-.rooms-availability-field-calendar .fc-content-skeleton tbody tr:nth-child(2) .fc-content {
-    margin-top: -17px;
-}
 
+.rooms-availability-field-calendar .rooms-calendar-second-row-events {
+  margin-top: -17px;
+}
 .fc-event .fc-title {
   color:white;
 }

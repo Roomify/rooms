@@ -60,7 +60,7 @@
   -ms-transform: rotate(180deg); /* IE 9 */
   -webkit-transform: rotate(180deg);
 }
-.rooms-month-manager .fc-view-container tbody tr:nth-child(2) .fc-day-grid-event {
+.rooms-month-manager .rooms-calendar-second-row-events {
   margin-top: -15px;
 }
 
