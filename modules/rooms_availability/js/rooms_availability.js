@@ -126,7 +126,7 @@ Drupal.behaviors.rooms_availability = {
           width_event = element.children('.fc-content').width();
 
           // Add a margin left to the top triangle.
-          element.children().closest('.event-end').css('margin-left', width_event-15);
+          element.children().closest('.event-end').css('margin-left', width_event-16);
 
           // If the event end in a next row.
           if(element.hasClass('fc-not-end')) {
@@ -139,7 +139,7 @@ Drupal.behaviors.rooms_availability = {
               width_event = 0;
             }
             element.css('margin-left', 0);
-            element.children().closest('.event-end').css('margin-left', ((colspan - 1) * cell_width) + half_cell_width - 15);
+            element.children().closest('.event-end').css('margin-left', ((colspan - 1) * cell_width) + half_cell_width - 16);
           }
         }
       });
