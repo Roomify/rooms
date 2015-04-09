@@ -20,6 +20,9 @@ Drupal.behaviors.rooms_availability_reference = {
           center: 'title',
           right: 'prev, next'
         },
+        windowResize: function(view) {
+          $(this).fullCalendar('refetchEvents');
+        },
         viewRender: function(view) {
           if (view.name == 'month') {
             for (var url in lastSource) {
@@ -64,6 +67,9 @@ Drupal.behaviors.rooms_availability_reference = {
           var cell_width = width/colspan;
           var half_cell_width = cell_width/2;
 
+          // Adding a class to the second row of events to use for theme.
+          element.closest('tbody').find('tr:eq(1) .fc-content').addClass('rooms-calendar-second-row-events');
+
           // Move events between table margins.
           element.css('margin-left', half_cell_width);
           element.css('margin-right', half_cell_width);
@@ -72,7 +78,7 @@ Drupal.behaviors.rooms_availability_reference = {
           width_event = element.children('.fc-content').width();
 
           // Add a margin left to the top triangle.
-          element.children().closest('.event-end').css('margin-left', width_event-22);
+          element.children().closest('.event-end').css('margin-left', width_event - 15);
 
           // If the event end in a next row.
           if(element.hasClass('fc-not-end')) {
@@ -81,7 +87,7 @@ Drupal.behaviors.rooms_availability_reference = {
           // If the event start in a previous row.
           if(element.hasClass('fc-not-start')) {
             element.css('margin-left', 0);
-            element.children().closest('.event-end').css('margin-left', width_event);
+            element.children().closest('.event-end').css('margin-left', ((colspan - 1) * cell_width) + half_cell_width - 15);
           }
         }
       });

@@ -117,15 +117,16 @@ Drupal.behaviors.roomsAvailability = {
           var cell_width = width/colspan;
           var half_cell_width = cell_width/2;
 
+          // Adding a class to the second row of events to use for theme.
+          element.closest('tbody').find('tr:eq(1) .fc-day-grid-event').addClass('rooms-calendar-second-row-events');
           // Move events between table margins.
           element.css('margin-left', half_cell_width);
           element.css('margin-right', half_cell_width);
 
           // Calculate width event to add end date triangle.
           width_event = element.children('.fc-content').width();
-          console.log('Width_event',width_event);
           // Add a margin left to the top triangle.
-          element.children().closest('.event-end').css('margin-left', width_event-17);
+          element.children().closest('.event-end').css('margin-left', width_event-11);
 
           // If the event end in a next row.
           if(element.hasClass('fc-not-end')) {
