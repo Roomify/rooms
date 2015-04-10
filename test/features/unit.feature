@@ -68,6 +68,7 @@ Scenario: Unit type manager creates two unit types and two unit admin creates an
   Then I should see the message "Bookable unit Standard one saved"
   When I am editing the "Standard one" unit
   Then I fill in "name" with "Standard one edited"
+  And I fill in "base_price" with ""
   And I fill in "base_price" with "150"
   And I fill in "min_sleeps" with "3"
   And I fill in "max_sleeps" with "8"
@@ -78,7 +79,7 @@ Scenario: Unit type manager creates two unit types and two unit admin creates an
   When I am on the "Standard one edited" unit
   Then I should see the text "Standard one edited"
   When I am editing the "Standard one edited" unit
-  Then the "base_price" field should contain "150"
+  Then the "base_price" field should contain "150.00"
   And the "min_sleeps" field should contain "3"
   And the "max_sleeps" field should contain "8"
   And the "min_children" field should contain "1"
@@ -100,6 +101,7 @@ Scenario: Unit type manager creates two unit types and two unit admin creates an
   Then I should see the message "Bookable unit Deluxe one saved"
   When I am editing the "Deluxe one" unit
   Then I fill in "name" with "Deluxe one edited"
+  And I fill in "base_price" with ""
   And I fill in "base_price" with "150"
   And I fill in "min_sleeps" with "3"
   And I fill in "max_sleeps" with "8"
@@ -110,7 +112,7 @@ Scenario: Unit type manager creates two unit types and two unit admin creates an
   When I am on the "Deluxe one edited" unit
   Then I should see the text "Deluxe one edited"
   When I am editing the "Deluxe one edited" unit
-  Then the "base_price" field should contain "150"
+  Then the "base_price" field should contain "150.00"
   And the "min_sleeps" field should contain "3"
   And the "max_sleeps" field should contain "8"
   And the "min_children" field should contain "1"

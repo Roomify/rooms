@@ -33,11 +33,10 @@ Scenario: I can create a booking
   When I click "create a new profile"
   And I wait for AJAX to finish
 
-  Then I fill in "commerce_customer_address[und][0][name_line]" with "User test"
-  And select "United States" from "commerce_customer_address[und][0][country]"
+  Then select "United States" from "commerce_customer_address[und][0][country]"
   And I wait for AJAX to finish
-
-  Then I fill in "commerce_customer_address[und][0][thoroughfare]" with "1900 David St"
+  And I fill in "commerce_customer_address[und][0][name_line]" with "User test"
+  And I fill in "commerce_customer_address[und][0][thoroughfare]" with "1900 David St"
   And I fill in "commerce_customer_address[und][0][locality]" with "Austin"
   And select "Texas" from "commerce_customer_address[und][0][administrative_area]"
   And I fill in "commerce_customer_address[und][0][postal_code]" with "78705"

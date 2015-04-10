@@ -11,7 +11,8 @@ use Behat\Behat\Context\ClosuredContextInterface,
     Behat\Behat\Exception\PendingException
   ;
 use Behat\Gherkin\Node\PyStringNode,
-    Behat\Gherkin\Node\TableNode;
+    Behat\Gherkin\Node\TableNode,
+    Behat\Mink\Element\NodeElement;
 
 //
 // Require 3rd-party libraries here:
@@ -333,14 +334,14 @@ class FeatureContext extends DrupalContext
       $this->getSession()->visit($this->locatePath($path));
       $content = $this->getSession()->getPage()->find('xpath', '/body')
         ->getHtml();
-      $events = json_decode($content);
 
+      $events = json_decode($content);
       foreach ($events as $event) {
         $event_start = new DateTime($event->start);
         $event_end = new DateTime($event->end);
 
         // Discard events out of the range to check.
-        if (($start_format > $event_end->format('Y-m-d')) || ($end_format < $event_start->format('Y-m-d'))) {
+        if (($start_format >= $event_end->format('Y-m-d')) || ($end_format <= $event_start->format('Y-m-d'))) {
           continue;
         }
         // Throw exception if the event id is not the desired.
@@ -744,7 +745,7 @@ class FeatureContext extends DrupalContext
   public function iNavigateInTheFullcalendarTo($month) {
     $today = new DateTime();
     $final = new DateTime($month . '-1');
-    $button_selector = ($today > $final) ? '.fc-button-prev' : '.fc-button-next';
+    $button_selector = ($today > $final) ? '.fc-prev-button' : '.fc-next-button';
 
     if ($today > $final) {
       $start = $final->add(new DateInterval('P2M'));;
@@ -755,7 +756,7 @@ class FeatureContext extends DrupalContext
       $end = $final->sub(new DateInterval('P1M'));
     }
     foreach ($this->monthsBetweenDates($start, $end) as $month) {
-      $element = $this->getSession()->getPage()->find('css', 'span' . $button_selector);
+      $element = $this->getSession()->getPage()->find('css', 'button' . $button_selector);
       if ($element === NULL) {
         throw new \InvalidArgumentException(sprintf('Cannot find button: "%s"', $button_selector));
       }
@@ -948,4 +949,24 @@ class FeatureContext extends DrupalContext
     ));
   }
 
+  /**
+   * Looks for a table, then looks for a row that contains the given text.
+   * Once it finds the right row, it clicks a link in that row.
+   *
+   * Really handy when you have a generic "Edit" link on each row of
+   * a table, and you want to click a specific one (e.g. the "Edit" link
+   * in the row that contains "Item #2")
+   *
+   * @When /^I click on "([^"]*)" on the row containing "([^"]*)"$/
+   */
+  public function iClickOnOnTheRowContaining($linkName, $rowText)
+  {
+      /** @var $row \Behat\Mink\Element\NodeElement */
+      $row = $this->getSession()->getPage()->find('css', sprintf('table tr:contains("%s")', $rowText));
+      if (!$row) {
+          throw new \Exception(sprintf('Cannot find any row on the page containing the text "%s"', $rowText));
+      }
+
+      $row->clickLink($linkName);
+  }
 }

@@ -28,20 +28,7 @@ Scenario: Availability manager user should be able to modify the pricing of unit
   And I fill in "rooms_start_date[date]" with "19/05/2014"
   And I fill in "rooms_end_date[date]" with "23/05/2014"
   And I select "Add to price" from "operation"
-  And I fill in "amount" with "30"
-  And I select "All (this page)" from "select-all"
-  And I press the "Update Unit Pricing" button
-
-  Then the price for "Normal" between "2014-05-19" and "2014-05-23" should be "150"
-  And the price for "Special" between "2014-05-19" and "2014-05-23" should be "160"
-
-  # Check the Add to price per night operation.
-  Given I am on "admin/rooms/units/bulk_pricing_management/2014/5"
-  Then I click "Update Pricing"
-  And I fill in "rooms_start_date[date]" with "19/05/2014"
-  And I fill in "rooms_end_date[date]" with "23/05/2014"
-  And I select "Add to price per night" from "operation"
-  And I fill in "amount" with "10"
+  And I fill in "amount" with "80"
   And I select "All (this page)" from "select-all"
   And I press the "Update Unit Pricing" button
 
@@ -54,20 +41,7 @@ Scenario: Availability manager user should be able to modify the pricing of unit
   And I fill in "rooms_start_date[date]" with "19/05/2014"
   And I fill in "rooms_end_date[date]" with "23/05/2014"
   And I select "Subtract from price" from "operation"
-  And I fill in "amount" with "30"
-  And I select "All (this page)" from "select-all"
-  And I press the "Update Unit Pricing" button
-
-  Then the price for "Normal" between "2014-05-19" and "2014-05-23" should be "170"
-  And the price for "Special" between "2014-05-19" and "2014-05-23" should be "180"
-
-  # Check the Subtract from price per night operation.
-  Given I am on "admin/rooms/units/bulk_pricing_management/2014/5"
-  Then I click "Update Pricing"
-  And I fill in "rooms_start_date[date]" with "19/05/2014"
-  And I fill in "rooms_end_date[date]" with "23/05/2014"
-  And I select "Subtract from price per night" from "operation"
-  And I fill in "amount" with "10"
+  And I fill in "amount" with "80"
   And I select "All (this page)" from "select-all"
   And I press the "Update Unit Pricing" button
 
@@ -120,9 +94,13 @@ Scenario: Availability manager user should be able to modify the pricing of unit
   And I fill in "rooms_end_date[date]" with "23/05/2014"
   And I select "Replace price" from "operation"
   And I fill in "amount" with "120"
-  And I check the box "day_options[2]"
-  And I check the box "day_options[3]"
-  And I check the box "day_options[4]"
+
+  And I uncheck the box "day_options[1]"
+  And I uncheck the box "day_options[5]"
+  And I uncheck the box "day_options[6]"
+  And I uncheck the box "day_options[7]"
+
+
   And I select "All (this page)" from "select-all"
   And I press the "Update Unit Pricing" button
 
