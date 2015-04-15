@@ -457,6 +457,8 @@ function rooms_pricing_update_form($form, &$form_state, $month, $year, $type, $r
   );
 
   $price_options = rooms_price_options_options();
+  unset($price_options[ROOMS_ADD_DAILY]);
+  unset($price_options[ROOMS_SUB_DAILY]);
   $form['rooms_pricing_update']['op']['operation'] = array(
     '#type' => 'select',
     '#title' => t('Operation'),
