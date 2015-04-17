@@ -1452,34 +1452,35 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             }
           }
 
-          // Price is calculated as 'Price per person per night'
-          if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
-            if (isset($form_state['values'][$type][$price]['fieldset'][$c]['persons'])) {
-              $group_size = $form_state['values'][$type][$price]['fieldset'][$c]['persons'];
-            }
-            else {
-              $group_size = $tmp_unit->max_sleeps;
-            }
+          if (isset($form_state['values'][$type][$price]['fieldset'][$c]['persons'])) {
+            $group_size = $form_state['values'][$type][$price]['fieldset'][$c]['persons'];
+          }
+          else {
+            $group_size = $tmp_unit->max_sleeps;
+          }
 
-            $group_size_children = $form_state['values'][$type][$price]['fieldset'][$c]['children'] + $tmp_unit->min_children;
+          $group_size_children = $form_state['values'][$type][$price]['fieldset'][$c]['children'] + $tmp_unit->min_children;
 
-            $childrens_age = array();
-            if (isset($form_state['values'][$type][$price]['fieldset'][$c]['persons'])) {
-              for ($t = 1; $t <= $form_state['values'][$type][$price]['fieldset'][$c]['children']; $t++) {
-                $childrens_age[] = $form_state['values'][$type][$price]['fieldset'][$c]['childrens_age'][$t];
-              }
+          $childrens_age = array();
+          if (isset($form_state['values'][$type][$price]['fieldset'][$c]['persons'])) {
+            for ($t = 1; $t <= $form_state['values'][$type][$price]['fieldset'][$c]['children']; $t++) {
+              $childrens_age[] = $form_state['values'][$type][$price]['fieldset'][$c]['childrens_age'][$t];
             }
+          }
 
-            $booking_info = array(
-              'start_date' => clone($start_date),
-              'end_date' => clone($end_date),
-              'unit' => $units[$units_keys[$c - 1]]['unit'],
-              'booking_parameters' => array(
-                'group_size' => $group_size,
+	        $booking_info = array(
+            'start_date' => clone($start_date),
+            'end_date' => clone($end_date),
+            'unit' => $units[$units_keys[$c - 1]]['unit'],
+            'booking_parameters' => array(
+              'group_size' => $group_size,
                 'group_size_children' => $group_size_children,
                 'childrens_age' => $childrens_age,
-              ),
-            );
+            ),
+          );
+
+          // Price is calculated as 'Price per person per night'
+          if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
 
             // Give other modules a chance to change the price modifiers.
             drupal_alter('rooms_price_modifier', $price_modifiers, $booking_info);
