@@ -1060,8 +1060,13 @@ class RoomsBookingController extends EntityAPIController {
 
       $entity->rooms_av_update = $responses[$event_id];
 
+      // If the event addition was succesful lock the event.
       if ($responses[$event_id] == ROOMS_UPDATED) {
         $be->lock();
+        watchdog('rooms_booking', 'Unit availability has been updated.', array(), WATCHDOG_NOTICE);
+      }
+      else {
+        watchdog('rooms_booking', 'Unit availability could not be updated.', array(), WATCHDOG_ERROR);
       }
     }
   }
