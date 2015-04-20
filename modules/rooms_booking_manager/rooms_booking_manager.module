@@ -2895,7 +2895,7 @@ function rooms_booking_manager_menu_title_callback($argument) {
 }
 
 /**
- * Checks if discount is active.
+ * Checks if deposit is active and returns deposit amount.
  *
  * @param $price
  * @return bool|float|null
