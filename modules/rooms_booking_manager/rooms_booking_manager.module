@@ -1070,15 +1070,37 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
       $new_price = $price_calendar->calculatePrice($start_date, $temp_end_date, $unit->max_sleeps);
     }
 
-    $form['new_price'] = array(
-      '#prefix' => '<div class="rooms-search-result__new-price" id="unit_' . $unit->unit_id . '_price">',
-      '#markup' => '<label>' . t('Cost') . ':</label> <span class="rooms-search-result__new-price-amount">' .
-        t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
+    $rule = rules_config_load('rooms_booking_manager_deposit');
+    if (!empty($rule) && $rule->active) {
+      $deposit_type = variable_get('rooms_booking_manager_deposit_type');
+      $deposit_amount = ($deposit_type == 'commerce_line_item_unit_price_amount') ? variable_get('rooms_booking_manager_deposit_fixed') : variable_get('rooms_booking_manager_deposit_multiply') * $new_price['full_price'] / 100 ;
+    }
+    if (empty($deposit_amount)) {
+      $form['new_price'] = array(
+        '#prefix' => '<div class="rooms-search-result__new-price" id="unit_' . $unit->unit_id . '_price">',
+        '#markup' => '<label>' . t('Cost') . ':</label> <span class="rooms-search-result__new-price-amount">' .
+          t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
+            '@currency_symbol' => $currency_symbol,
+            '@amount' => $new_price['full_price'],
+          )) . '</span>',
+        '#suffix' => '</div>',
+      );
+    }
+    // A deposit is set. Show user the amount of the deposit.
+    else {
+      $form['new_price'] = array(
+        '#prefix' => '<div class="rooms-search-result__new-price" id="unit_' . $unit->unit_id . '_price">',
+        '#markup' => '<label>' . t('Cost') . ':</label> <span class="rooms-search-result__new-price-amount">' .
+          t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
+            '@currency_symbol' => $currency_symbol,
+            '@amount' => $new_price['full_price'],
+          )) . '</span>' . '<label>' . t('Payable Now') . ':</label> <span class="rooms-search-result__new-price-deposit">' . t('@currency_symbol @deposit_amount', array (
           '@currency_symbol' => $currency_symbol,
-          '@amount' => $new_price['full_price'],
-        )) . '</span>',
-      '#suffix' => '</div>',
-    );
+          '@deposit_amount' => $deposit_amount,
+          )) . '</div>',
+        '#suffix' => '</div>',
+      );
+    }
   }
 
   // We add the form's #submit array to this button along with the actual submit
@@ -1421,15 +1443,32 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             );
           }
 
-          $form[$type][$price]['fieldset'][$c]['price'] = array(
-            '#prefix' => '<div class="rooms-search-result__unit-price" id="' . $type . '_' . $price . '_' . $c . '_price"><label>' . $label . ':</label> <span class="rooms-search-result__unit-price-amount">',
-            // TODO: replace with a proper currency formatter.
-            '#markup' => t('@currency_symbol @amount', array(
-              '@currency_symbol' => $currency_symbol,
-              '@amount' => $price,
-            )),
-            '#suffix' => '</span></div>',
-          );
+          // Check for a deposit.
+          $deposit_amount = rooms_booking_manager_check_for_deposit($price);
+          if (empty($deposit_amount)) {
+            $form[$type][$price]['fieldset'][$c]['price'] = array(
+              '#prefix' => '<div class="rooms-search-result__unit-price" id="' . $type . '_' . $price . '_' . $c . '_price"><label>' . $label . ':</label> <span class="rooms-search-result__unit-price-amount">',
+              // TODO: replace with a proper currency formatter.
+              '#markup' => t('@currency_symbol @amount', array(
+                '@currency_symbol' => $currency_symbol,
+                '@amount' => $price,
+              )),
+              '#suffix' => '</span></div>',
+            );
+          }
+          // A deposit is set. Show to user the amount of the deposit.
+          else {
+            $form[$type][$price]['fieldset'][$c]['price'] = array(
+              '#prefix' => '<div class="rooms-search-result__unit-price" id="' . $type . '_' . $price . '_' . $c . '_price"><label>' . $label . ':</label> <span class="rooms-search-result__unit-price-amount">',
+              // TODO: replace with a proper currency formatter.
+              '#markup' => t('@currency_symbol @amount - Payable now: @currency_symbol @deposit', array(
+                '@currency_symbol' => $currency_symbol,
+                '@amount' => $price,
+                '@deposit' => $deposit_amount,
+              )),
+              '#suffix' => '</span></div>',
+            );
+          }
 
           $price_modifiers = array();
           foreach (rooms_unit_get_unit_options($units[$units_keys[$c - 1]]['unit']) as $option) {
@@ -1520,29 +1559,55 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             $new_price = $price_calendar->calculatePrice($start_date, $temp_end_date);
           }
           $new_price = $new_price['full_price'];
-
-          // Replace old price with the new calculated value.
-          $form[$type][$price]['fieldset'][$c]['price']['#markup'] =
-            rooms_string(
-              t('@currency_symbol @amount', array(
-                '@currency_symbol' => $currency_symbol,
-                '@amount' => $new_price,
-                )
-              ),
-              $context = array(
-                '#component' => 'units_per_type_form',
-                '#purpose' => 'display_room_recalculated_price',
-                '#data' => array(
-                  'unit_id' => $units[$units_keys[$c - 1]]['unit']->unit_id,
-                  'unit_type' => $type_obj->label,
-                  'price' => $price,
-                  'new_price' => $new_price,
-                  'currency_symbol' => $currency_symbol,
-                  'amount' => $price,
-                  'units' => $units_per_price,
+          if (empty($deposit_amount)) {
+            // Replace old price with the new calculated value.
+            $form[$type][$price]['fieldset'][$c]['price']['#markup'] =
+              rooms_string(
+                t('@currency_symbol @amount', array(
+                  '@currency_symbol' => $currency_symbol,
+                  '@amount' => $new_price,
+                  )
                 ),
-              )
+                $context = array(
+                  '#component' => 'units_per_type_form',
+                  '#purpose' => 'display_room_recalculated_price',
+                  '#data' => array(
+                    'unit_id' => $units[$units_keys[$c - 1]]['unit']->unit_id,
+                    'unit_type' => $type_obj->label,
+                    'price' => $price,
+                    'new_price' => $new_price,
+                    'currency_symbol' => $currency_symbol,
+                    'amount' => $price,
+                    'units' => $units_per_price,
+                  ),
+                )
+              );
+          }
+          else {
+            // Replace old price with the new calculated value.
+            $form[$type][$price]['fieldset'][$c]['price']['#markup'] =
+              rooms_string(
+                t('@currency_symbol @amount - Payable now: @currency_symbol @deposit', array(
+                  '@currency_symbol' => $currency_symbol,
+                  '@amount' => $new_price,
+                  '@deposit' => $deposit_amount,
+                  )
+                ),
+                $context = array(
+                  '#component' => 'units_per_type_form',
+                  '#purpose' => 'display_room_recalculated_price',
+                  '#data' => array(
+                    'unit_id' => $units[$units_keys[$c - 1]]['unit']->unit_id,
+                    'unit_type' => $type_obj->label,
+                    'price' => $price,
+                    'new_price' => $new_price,
+                    'currency_symbol' => $currency_symbol,
+                    'amount' => $price,
+                    'units' => $units_per_price,
+                  ),
+                )
             );
+          }
         }
       }
 
@@ -2827,4 +2892,20 @@ function rooms_booking_manager_menu_title_callback($argument) {
     case 'select_your_stay':
       return variable_get_value('rooms_booking_manager_select_your_stay');
   }
+}
+
+/**
+ * Checks if deposit is active and returns deposit amount.
+ *
+ * @param $price
+ * @return bool|float|null
+ */
+function rooms_booking_manager_check_for_deposit($price){
+  $deposit_amount = FALSE;
+  $rule = rules_config_load('rooms_booking_manager_deposit');
+  if (!empty($rule) && $rule->active) {
+    $deposit_type = variable_get('rooms_booking_manager_deposit_type');
+    $deposit_amount = ($deposit_type == 'commerce_line_item_unit_price_amount') ? variable_get('rooms_booking_manager_deposit_fixed') : variable_get('rooms_booking_manager_deposit_multiply') * $price / 100 ;
+  }
+  return $deposit_amount;
 }
