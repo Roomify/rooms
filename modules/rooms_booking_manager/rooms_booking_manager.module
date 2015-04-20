@@ -1094,7 +1094,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
           t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
             '@currency_symbol' => $currency_symbol,
             '@amount' => $new_price['full_price'],
-          )) . '</span>' . '<label>' . t('Payable Now') . ':</label> <span class="rooms-search-result__new-price-deposit">' . t('@currency_symbol @deposit_amount', array (
+          )) . '</span>' . '<label>' . t('Payable No22w') . ':</label> <span class="rooms-search-result__new-price-deposit">' . t('@currency_symbol @deposit_amount', array (
           '@currency_symbol' => $currency_symbol,
           '@deposit_amount' => $deposit_amount,
           )) . '</div>',
@@ -1442,11 +1442,9 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               )
             );
           }
-          $rule = rules_config_load('rooms_booking_manager_deposit');
-          if (!empty($rule) && $rule->active) {
-            $deposit_type = variable_get('rooms_booking_manager_deposit_type');
-            $deposit_amount = ($deposit_type == 'commerce_line_item_unit_price_amount') ? variable_get('rooms_booking_manager_deposit_fixed') : variable_get('rooms_booking_manager_deposit_multiply') * $price / 100 ;
-          }
+
+          // Check for a deposit.
+          $deposit_amount = rooms_booking_manager_check_for_deposit($price);
           if (empty($deposit_amount)) {
             $form[$type][$price]['fieldset'][$c]['price'] = array(
               '#prefix' => '<div class="rooms-search-result__unit-price" id="' . $type . '_' . $price . '_' . $c . '_price"><label>' . $label . ':</label> <span class="rooms-search-result__unit-price-amount">',
@@ -1458,12 +1456,12 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               '#suffix' => '</span></div>',
             );
           }
-          // A deposit is setted. Show to user the amount of the deposit.
+          // A deposit is set. Show to user the amount of the deposit.
           else {
             $form[$type][$price]['fieldset'][$c]['price'] = array(
               '#prefix' => '<div class="rooms-search-result__unit-price" id="' . $type . '_' . $price . '_' . $c . '_price"><label>' . $label . ':</label> <span class="rooms-search-result__unit-price-amount">',
               // TODO: replace with a proper currency formatter.
-              '#markup' => t('@currency_symbol @amount - Deposit to pay @currency_symbol @deposit', array(
+              '#markup' => t('@currency_symbol @amount - Payable now: @currency_symbol @deposit', array(
                 '@currency_symbol' => $currency_symbol,
                 '@amount' => $price,
                 '@deposit' => $deposit_amount,
@@ -1561,7 +1559,6 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             $new_price = $price_calendar->calculatePrice($start_date, $temp_end_date);
           }
           $new_price = $new_price['full_price'];
-          $deposit_amount = ($deposit_type == 'commerce_line_item_unit_price_amount') ? variable_get('rooms_booking_manager_deposit_fixed') : variable_get('rooms_booking_manager_deposit_multiply') * $new_price / 100 ;
           if (empty($deposit_amount)) {
             // Replace old price with the new calculated value.
             $form[$type][$price]['fieldset'][$c]['price']['#markup'] =
@@ -2895,4 +2892,20 @@ function rooms_booking_manager_menu_title_callback($argument) {
     case 'select_your_stay':
       return variable_get_value('rooms_booking_manager_select_your_stay');
   }
+}
+
+/**
+ * Checks if discount is active.
+ *
+ * @param $price
+ * @return bool|float|null
+ */
+function rooms_booking_manager_check_for_deposit($price){
+  $deposit_amount = FALSE;
+  $rule = rules_config_load('rooms_booking_manager_deposit');
+  if (!empty($rule) && $rule->active) {
+    $deposit_type = variable_get('rooms_booking_manager_deposit_type');
+    $deposit_amount = ($deposit_type == 'commerce_line_item_unit_price_amount') ? variable_get('rooms_booking_manager_deposit_fixed') : variable_get('rooms_booking_manager_deposit_multiply') * $price / 100 ;
+  }
+  return $deposit_amount;
 }
