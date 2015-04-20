@@ -1086,7 +1086,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
         '#suffix' => '</div>',
       );
     }
-    // A deposit is setted. Show to user the amount of the deposit.
+    // A deposit is set. Show user the amount of the deposit.
     else {
       $form['new_price'] = array(
         '#prefix' => '<div class="rooms-search-result__new-price" id="unit_' . $unit->unit_id . '_price">',
@@ -1094,7 +1094,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
           t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
             '@currency_symbol' => $currency_symbol,
             '@amount' => $new_price['full_price'],
-          )) . '</span>' . '<label>' . t('Deposit to pay') . ':</label> <span class="rooms-search-result__new-price-deposit">' . t('@currency_symbol @deposit_amount', array (
+          )) . '</span>' . '<label>' . t('Payable Now') . ':</label> <span class="rooms-search-result__new-price-deposit">' . t('@currency_symbol @deposit_amount', array (
           '@currency_symbol' => $currency_symbol,
           '@deposit_amount' => $deposit_amount,
           )) . '</div>',
@@ -1590,7 +1590,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             // Replace old price with the new calculated value.
             $form[$type][$price]['fieldset'][$c]['price']['#markup'] =
               rooms_string(
-                t('@currency_symbol @amount - Deposit to pay @currency_symbol @deposit', array(
+                t('@currency_symbol @amount - Payable now: @currency_symbol @deposit', array(
                   '@currency_symbol' => $currency_symbol,
                   '@amount' => $new_price,
                   '@deposit' => $deposit_amount,
