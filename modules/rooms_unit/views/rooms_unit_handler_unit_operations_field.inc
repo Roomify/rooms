@@ -20,6 +20,12 @@ class rooms_unit_handler_unit_operations_field extends views_handler_field {
 
   function render($values) {
     $links = menu_contextual_links('rooms_unit', 'admin/rooms/units/unit', array($this->get_value($values, 'unit_id')));
+
+    // Unset the "view" link, as this is provided separately.
+    if (array_key_exists('rooms_unit-view', $links)) {
+      unset($links['rooms_unit-view']);
+    }
+
     if (!empty($links)) {
       return theme('links', array(
         'links' => $links,
