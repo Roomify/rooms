@@ -844,28 +844,59 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
   // Calculate the period.
   $nights = $end_date->diff($start_date)->days;
 
-  $form['price'] = array(
-    '#prefix' => '<div class="rooms-search-result__unit-base-price" id="unit_' . $unit->unit_id . '_base_price">',
-    '#markup' => rooms_string('<label>' . t('Base price') . ':</label> <span class="rooms-search-result__base-price-amount">' .
-      t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
-        '@currency_symbol' => $currency_symbol,
-        '@amount' => $price,
-      )) . '</span>', array(
-      '#component' => 'book_unit_form_builder',
-      '#purpose' => 'display_base_price',
-      '#data' => array(
-        'price' => $price,
-        'currency_symbol' => $currency_symbol,
-        'amount' => $price,
-        'unit' => $unit,
-        'nights' => $nights,
-        'arrival' => $start_date,
-        'departure' => $end_date,
-      ),
-    )),
-    '#suffix' => '</div>',
-  );
+  // Check for a deposit.
+  $deposit_amount = rooms_booking_manager_check_for_deposit($price);
 
+  if (empty($deposit_amount)) {
+    $form['price'] = array(
+      '#prefix' => '<div class="rooms-search-result__unit-base-price" id="unit_' . $unit->unit_id . '_base_price">',
+      '#markup' => rooms_string('<label>' . t('Base price') . ':</label> <span class="rooms-search-result__base-price-amount">' .
+        t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
+          '@currency_symbol' => $currency_symbol,
+          '@amount' => $price,
+        )) . '</span>', array(
+        '#component' => 'book_unit_form_builder',
+        '#purpose' => 'display_base_price',
+        '#data' => array(
+          'price' => $price,
+          'currency_symbol' => $currency_symbol,
+          'amount' => $price,
+          'unit' => $unit,
+          'nights' => $nights,
+          'arrival' => $start_date,
+          'departure' => $end_date,
+        ),
+      )),
+      '#suffix' => '</div>',
+    );
+  }
+  else {
+    $form['price'] = array(
+      '#prefix' => '<div class="rooms-search-result__unit-base-price" id="unit_' . $unit->unit_id . '_base_price">',
+      '#markup' => rooms_string('<label>' . t('Base price') . ':</label> <span class="rooms-search-result__base-price-amount">' .
+        t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
+          '@currency_symbol' => $currency_symbol,
+          '@amount' => $price,
+        )) . '</span>' . '<label>' . ' - '. t('Payable now') . ':</label> <span class="rooms-search-result__base-price-amount">' . 
+        t('@currency_symbol @deposit', array(
+          '@currency_symbol' => $currency_symbol,
+          '@deposit' => $deposit_amount,
+          )) . '</span>', array(
+        '#component' => 'book_unit_form_builder',
+        '#purpose' => 'display_base_price',
+        '#data' => array(
+          'price' => $price,
+          'currency_symbol' => $currency_symbol,
+          'amount' => $price,
+          'unit' => $unit,
+          'nights' => $nights,
+          'arrival' => $start_date,
+          'departure' => $end_date,
+        ),
+      )),
+      '#suffix' => '</div>',
+    );
+  }
   if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
 
     // Calculate the price per person for the period.
@@ -1070,11 +1101,9 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
       $new_price = $price_calendar->calculatePrice($start_date, $temp_end_date, $unit->max_sleeps);
     }
 
-    $rule = rules_config_load('rooms_booking_manager_deposit');
-    if (!empty($rule) && $rule->active) {
-      $deposit_type = variable_get('rooms_booking_manager_deposit_type');
-      $deposit_amount = ($deposit_type == 'commerce_line_item_unit_price_amount') ? variable_get('rooms_booking_manager_deposit_fixed') : variable_get('rooms_booking_manager_deposit_multiply') * $new_price['full_price'] / 100 ;
-    }
+    // Check for a deposit.
+    $deposit_amount = rooms_booking_manager_check_for_deposit($new_price['full_price']);
+
     if (empty($deposit_amount)) {
       $form['new_price'] = array(
         '#prefix' => '<div class="rooms-search-result__new-price" id="unit_' . $unit->unit_id . '_price">',
@@ -1094,7 +1123,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
           t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
             '@currency_symbol' => $currency_symbol,
             '@amount' => $new_price['full_price'],
-          )) . '</span>' . '<label>' . t('Payable Now') . ':</label> <span class="rooms-search-result__new-price-deposit">' . t('@currency_symbol @deposit_amount', array (
+          )) . '</span>' . '<label>' . ' - ' . t('Payable Now') . ':</label> <span class="rooms-search-result__new-price-deposit">' . t('@currency_symbol @deposit_amount', array (
           '@currency_symbol' => $currency_symbol,
           '@deposit_amount' => $deposit_amount,
           )) . '</span>',
@@ -1507,7 +1536,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             }
           }
 
-	        $booking_info = array(
+          $booking_info = array(
             'start_date' => clone($start_date),
             'end_date' => clone($end_date),
             'unit' => $units[$units_keys[$c - 1]]['unit'],
