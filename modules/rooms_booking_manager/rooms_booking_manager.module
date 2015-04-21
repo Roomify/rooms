@@ -1097,7 +1097,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
           )) . '</span>' . '<label>' . t('Payable Now') . ':</label> <span class="rooms-search-result__new-price-deposit">' . t('@currency_symbol @deposit_amount', array (
           '@currency_symbol' => $currency_symbol,
           '@deposit_amount' => $deposit_amount,
-          )) . '</div>',
+          )) . '</span>',
         '#suffix' => '</div>',
       );
     }
