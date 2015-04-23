@@ -1,0 +1,14 @@
+{
+    "require": {
+      "behat/behat": "2.5.*@stable",
+      "behat/mink": "*",
+      "behat/mink-extension": "*",
+      "behat/mink-selenium2-driver": "*",
+      "drupal/drupal-extension": "*",
+      "guzzlehttp/guzzle": "~3.8"
+    },
+
+    "config": {
+        "bin-dir": "bin/"
+    }
+}
