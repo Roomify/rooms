@@ -78,7 +78,7 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
     $reply['log']['pricing_events'] = $pricing_events;
     foreach ($pricing_events as $event) {
       $days = $event->diff()->days + 1;
-      if ((variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) && ($children != 0) && (count($children_ages) > 0)) {
+      if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
         $children_discount_options = variable_get('rooms_children_discount_options', array());
         $price = $price + ($days * $event->amount * ($persons - $children));
 
