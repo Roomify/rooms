@@ -1,19 +1,25 @@
 default:
-  paths:
-    features: 'features'
+  suites:
+    default:
+      contexts:
+        - FeatureContext
+        - Drupal\DrupalExtension\Context\DrupalContext
+        - Drupal\DrupalExtension\Context\MinkContext
+        - Drupal\DrupalExtension\Context\MessageContext
+        - Drupal\DrupalExtension\Context\DrushContext
   extensions:
-    Behat\MinkExtension\Extension:
+    Behat\MinkExtension:
       goutte: ~
       selenium2:
         capabilities: {"browser": "firefox"}
       base_url: http://roomsdemo.local
-    Drupal\DrupalExtension\Extension:
+    Drupal\DrupalExtension:
       blackbox: ~
       api_driver: 'drupal'
       drush:
         alias: 'rooms.local'
       drupal:
-        drupal_root: '/path/to/rooms'
+        drupal_root: '/Users/Ronald/dev/ROOMS_DEV/ROOMS_MODULE/rooms1/www/'
       selectors:
         message_selector: '.messages'
         error_message_selector: '.messages.error'

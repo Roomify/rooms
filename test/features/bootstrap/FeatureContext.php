@@ -1,31 +1,15 @@
 <?php
 
-use Drupal\DrupalExtension\Context\DrupalContext,
-  Drupal\Component\Utility\Random;
-
-use Behat\Behat\Context\ClosuredContextInterface,
-    Behat\Behat\Context\Step\Given,
-    Behat\Behat\Context\Step\Then,
-    Behat\Behat\Context\TranslatedContextInterface,
-    Behat\Behat\Context\BehatContext,
-    Behat\Behat\Exception\PendingException
-  ;
-use Behat\Gherkin\Node\PyStringNode,
-    Behat\Gherkin\Node\TableNode,
-    Behat\Mink\Element\NodeElement;
-
-//
-// Require 3rd-party libraries here:
-//
-//   require_once 'PHPUnit/Autoload.php';
-//   require_once 'PHPUnit/Framework/Assert/Functions.php';
-//
+use Behat\Behat\Tester\Exception\PendingException;
+use Drupal\DrupalExtension\Context\RawDrupalContext;
+use Behat\Behat\Context\SnippetAcceptingContext;
+use Behat\Gherkin\Node\PyStringNode;
+use Behat\Gherkin\Node\TableNode;
 
 /**
  * Features context.
  */
-class FeatureContext extends DrupalContext
-{
+class FeatureContext extends RawDrupalContext implements SnippetAcceptingContext {
 
   /**
    * Keep track of bookable units so they can be cleaned up.
@@ -85,11 +69,12 @@ class FeatureContext extends DrupalContext
 
   /**
    * Initializes context.
-   * Every scenario gets its own context object.
    *
-   * @param array $parameters context parameters (set them up through behat.yml)
+   * Every scenario gets its own context instance.
+   * You can also pass arbitrary arguments to the
+   * context constructor through behat.yml.
    */
-  public function __construct(array $parameters) {
+  public function __construct() {
     // Initialize your context here
   }
 
