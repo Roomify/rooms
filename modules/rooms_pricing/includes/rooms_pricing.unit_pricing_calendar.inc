@@ -62,6 +62,7 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
 
     $price = 0;
     $booking_price = 0;
+    $booking_days = 0;
 
     // Setup pricing reply and log
     $reply = array(
@@ -78,7 +79,8 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
     $reply['log']['pricing_events'] = $pricing_events;
     foreach ($pricing_events as $event) {
       $days = $event->diff()->days + 1;
-      if ((variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) && ($children != 0) && (count($children_ages) > 0)) {
+      $booking_days += $days;
+      if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
         $children_discount_options = variable_get('rooms_children_discount_options', array());
         $price = $price + ($days * $event->amount * ($persons - $children));
 
@@ -117,7 +119,7 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
 
     drupal_alter('rooms_booking_amount_before_modifiers', $price, $booking_info);
 
-    $price = $this->applyPriceModifiers($price, $days, $reply);
+    $price = $this->applyPriceModifiers($price, $booking_days, $reply);
     $payment_option = variable_get('rooms_payment_options', FULL_PAYMENT);
     $reply['rooms_payment_option'] = variable_get('rooms_payment_options', FULL_PAYMENT);
     switch ($payment_option) {
