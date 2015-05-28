@@ -379,6 +379,8 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
       $response[$event->id] = ROOMS_UPDATED;
     }
 
+    module_invoke_all('rooms_availability_update', $response, $events);
+
     return $response;
   }
 
