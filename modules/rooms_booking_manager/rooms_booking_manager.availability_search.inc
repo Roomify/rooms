@@ -123,7 +123,7 @@ function rooms_booking_availability_search_form_builder($form, &$form_state) {
     if (variable_get('rooms_display_children', ROOMS_DISPLAY_CHILDREN_NO) == ROOMS_DISPLAY_CHILDREN) {
       $form['rooms_fieldset']['group_size_children:1'] = array(
         '#type' => 'select',
-        '#title' => t('Children'),
+        '#title' => variable_get_value('rooms_booking_manager_children'),
         '#options' => rooms_assoc_range(0, 3),
         '#default_value' => isset($booking_parameters[1]['children']) ? $booking_parameters[1]['children'] : 0,
       );
