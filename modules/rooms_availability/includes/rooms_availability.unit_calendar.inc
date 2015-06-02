@@ -118,6 +118,12 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
    * {@inheritdoc}
    */
   public function getRawDayData(DateTime $start_date, DateTime $end_date) {
+    // To handle single-day bookings (Tours) we pretend that they are overnight
+    // bookings.
+    if ($end_date < $start_date) {
+      $end_date->add(new DateInterval('P1D'));
+    }
+
     // Create a dummy BookingEvent to represent the range we are searching over.
     // This gives us access to handy functions that BookingEvents have.
     $s = new BookingEvent($this->unit_id, 0, $start_date, $end_date);
