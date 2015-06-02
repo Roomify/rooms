@@ -74,6 +74,17 @@ class AvailabilityAgent {
    */
   public $valid_rooms_combination = array();
 
+  /**
+   * Standard availability search returns a unit as available only if in one of the
+   * valid availability states. This switch reverts the behaviour to return a
+   * unit as availability if a state not defined in valid_states within the
+   * date range provided. This is particularly useful if looking for unknown state
+   * values within a given date range (e.g. search for any bookings within a date range).
+   *
+   * @var boolean
+   */
+  public $revert_valid_states = FALSE;
+
 
   /**
    * Construct the AvailabilityAgent instance.
@@ -90,8 +101,10 @@ class AvailabilityAgent {
    *   Valid states to perform the availability search.
    * @param array $unit_types
    *   Unit types to perform the search.
+   * @param boolean $revert_valid_states
+   *  If true availability is return if states other than the valid ones exist in date range
    */
-  public function __construct($start_date, $end_date, $booking_parameters = array(), $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS), $unit_types = array()) {
+  public function __construct($start_date, $end_date, $booking_parameters = array(), $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS), $unit_types = array(), $revert_valid_states = FALSE) {
     $this->valid_states = $valid_states;
     $this->start_date = $start_date;
     // For availability purposes the end date is a day earlier than checkout.
@@ -100,6 +113,7 @@ class AvailabilityAgent {
     $this->booking_parameters = $booking_parameters;
     $this->booking_units = $booking_units;
     $this->unit_types = $unit_types;
+    $this->revert_valid_states = $revert_valid_states;
   }
 
 
@@ -298,7 +312,7 @@ class AvailabilityAgent {
     $units = $av_singleunitfilter->applyFilter();
 
     // Apply AvailabilityAgentDateFilter.
-    $av_datefilter = new AvailabilityAgentDateFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date, 'valid_states' => $this->valid_states, 'confirmed' => $confirmed));
+    $av_datefilter = new AvailabilityAgentDateFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date, 'valid_states' => $this->valid_states, 'confirmed' => $confirmed, 'revert_valid_states' => $this->revert_valid_states));
     $units = $av_datefilter->applyFilter();
 
     if (empty($units)) {
