@@ -392,9 +392,9 @@ function rooms_booking_manager_enquiry_page_form_submit(&$form, &$form_state) {
  * @return string
  *   The themed result page string.
  */
-function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_date, $booking_units = 1) {
+function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_date, $booking_units = 1, $single_day_bookings = FALSE) {
   // Validate the dates.
-  $errors = rooms_check_dates_validity($start_date, $end_date, TRUE);
+  $errors = rooms_check_dates_validity($start_date, $end_date, TRUE, $single_day_bookings);
 
   // Check validity of the rest of the booking parameters that are stored in
   // $_GET. Again this is to ensure that any direct links were structured
