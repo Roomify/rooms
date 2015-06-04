@@ -63,6 +63,18 @@ function rooms_booking_views_data_alter(&$data) {
     'field' => array(
       'handler' => 'rooms_booking_handler_unit_field',
     ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'relationship' => array(
+      'title' => t('Unit ID'),
+      'help' => t("Relate this booking to its bookable unit"),
+      'handler' => 'views_handler_relationship',
+      'base' => 'rooms_units',
+      'base field' => 'unit_id',
+      'field' => 'unit_id',
+      'label' => t('Booking unit'),
+    ),
   );
   $data['rooms_bookings']['type']['field'] = array(
     'title' => t('Booking Type'),
