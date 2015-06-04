@@ -261,7 +261,7 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
   }
 
   $form_state['redirect'] = array(
-    'booking/' . $start_date->format('Y-m-d') . '/' . $end_date->format('Y-m-d') . '/' . $units,
+    'booking/' . $start_date->format('Y-m-d') . '/' . $end_date->format('Y-m-d') . '/' . $units . '/' . $form_state['single_day_bookings'],
     array(
       'query' => $rooms_query,
     ),
