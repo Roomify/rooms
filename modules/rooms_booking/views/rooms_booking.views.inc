@@ -6,7 +6,7 @@
  */
 
 /**
- * Implements hook_views_data().
+ * Implements hook_views_data_alter().
  */
 function rooms_booking_views_data_alter(&$data) {
   $data['rooms_bookings']['link_booking'] = array(
@@ -47,6 +47,9 @@ function rooms_booking_views_data_alter(&$data) {
       'handler' => 'rooms_booking_handler_date_field',
       'click sortable' => TRUE,
     ),
+    'filter' => array(
+      'handler' => 'rooms_booking_handler_date_filter',
+    ),
   );
   $data['rooms_bookings']['end_date'] = array(
     'title' => t('End Date'),
@@ -55,6 +58,9 @@ function rooms_booking_views_data_alter(&$data) {
       'float' => TRUE,
       'handler' => 'rooms_booking_handler_date_field',
       'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'rooms_booking_handler_date_filter',
     ),
   );
   $data['rooms_bookings']['unit_id'] = array(
