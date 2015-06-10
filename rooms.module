@@ -1022,6 +1022,21 @@ function rooms_check_dates_validity(DateTime $start_date, DateTime $end_date, $t
     }
   }
 
+  // End date must not be more that the allowed number of days in advance for booking
+  $current_date = new DateTime();
+  $booking_interval = $current_date->diff($end_date);
+
+  // The following necessary to get a properly instantiated date interval when starting with
+  // just seconds
+  $d1 = new DateTime();
+  $d2 = new DateTime();
+  $d2->add(new DateInterval('PT'.variable_get('rooms_advance_bookings_period', 15552000).'S'));
+  $advanced_bookings_interval = $d2->diff($d1);
+
+  if (($booking_interval->format('%a') > $advanced_bookings_interval->format('%a')) && (!user_access('book in advance without limitation'))) {
+    $errors[] = 'You cannot book that far into the future - bookings can only be made ' . $advanced_bookings_interval->format('%a') . ' days in advance';
+  }
+
   // In case the date should be grater than today.
   if ($today_greater) {
     $now = new DateTime();
