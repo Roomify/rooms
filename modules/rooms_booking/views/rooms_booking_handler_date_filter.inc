@@ -1,10 +1,12 @@
 <?php
+
 /**
+ * @file
  * Filter to handle dates stored as a string.
- *
- * @ingroup views_filter_handlers
  */
+
 class rooms_booking_handler_date_filter extends views_handler_filter_date {
+
   function op_simple($field) {
     $query_substitutions = views_views_query_substitutions($this->view);
 
@@ -24,4 +26,5 @@ class rooms_booking_handler_date_filter extends views_handler_filter_date {
     $operator = strtoupper($this->operator);
     $this->query->add_where_expression($this->options['group'], "$field $operator '$a' AND '$b'");
   }
+
 }

@@ -118,6 +118,9 @@ function rooms_booking_views_data_alter(&$data) {
     ),
   );
 
+  $data['rooms_bookings']['booking_status']['field']['handler'] = 'rooms_booking_handler_field_booking_status';
+  $data['rooms_bookings']['booking_status']['filter']['handler'] = 'rooms_booking_handler_filter_booking_status';
+
 }
 
 
