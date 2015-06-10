@@ -2437,8 +2437,6 @@ function rooms_booking_manager_alter_rooms_booking_settings(&$form, &$form_state
     '#default_value' => variable_get('rooms_date_format', 'd-m-Y'),
   );
 
-  dpm($form);
-
   $form['#validate'][] = 'rooms_booking_manager_alter_rooms_booking_settings_validate';
 }
 
