@@ -7,3 +7,8 @@
   clear: both;
   float: right;
 }
+
+.field-widget-rooms-options-combined .ajax-progress {
+	float: right;
+	margin: 5px 10px 0 0;
+}
