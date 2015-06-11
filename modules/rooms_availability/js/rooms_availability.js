@@ -78,6 +78,7 @@ Drupal.behaviors.rooms_availability = {
             calEvent.end = calEvent.start;
           }
 
+          calEvent.end.subtract(1, 'days');
           var sd = calEvent.start.unix();
           var ed = calEvent.end.unix();
           // Open the modal for edit
