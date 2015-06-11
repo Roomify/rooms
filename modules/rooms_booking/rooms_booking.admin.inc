@@ -296,7 +296,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
   $form['data']['group_size_children'] = array(
     '#type' => 'select',
-    '#title' => t('Children'),
+    '#title' => variable_get_value('rooms_booking_manager_children'),
     '#options' => rooms_range(0, $persons),
     '#default_value' => isset($booking->data['group_size_children']) ? $booking->data['group_size_children'] : '0',
     '#description' => t('The number of children staying in this unit.'),
@@ -322,7 +322,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
         for ($t = 1; $t <= $form_state['values']['data']['group_size_children']; $t++) {
           $form['data']['childrens_age'][$t] = array(
             '#type' => 'textfield',
-            '#title' => t('Age of child @num', array('@num' => $t)),
+            '#title' => variable_get_value('rooms_booking_age_of_child') . ' ' . $t,
             '#size' => 5,
             '#maxlength' => 5,
             '#ajax' => array(
@@ -337,7 +337,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       foreach ($booking->data['childrens_age'] as $key => $age) {
         $form['data']['childrens_age'][$key] = array(
           '#type' => 'textfield',
-          '#title' => t('Age of child @num', array('@num' => $key)),
+          '#title' => variable_get_value('rooms_booking_age_of_child') . ' ' . $key,
           '#size' => 5,
           '#maxlength' => 5,
           '#default_value' => $age,
@@ -448,7 +448,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     $unit_selected .= t('(Options: !options)', array('!options' => substr($options_list, 0, strlen($options_list) - 2)));
   }
   if (isset($booking->price)) {
-    $unit_selected .= '<br />' . t('Price') . ': ' .
+    $unit_selected .= '<br />' . variable_get_value('rooms_booking_price') . ': ' .
     t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
       '@currency_symbol' => $currency_symbol,
       '@amount' => number_format($booking->price / 100, 2, '.', ''),
@@ -689,7 +689,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
               $form['availability_fieldset']['unit_fieldset']['options_fieldset']['price'] = array(
                 '#type' => 'textfield',
-                '#title' => t('Price'),
+                '#title' => variable_get_value('rooms_booking_price'),
                 '#default_value' => '',
                 '#size' => '10',
                 '#required' => TRUE,

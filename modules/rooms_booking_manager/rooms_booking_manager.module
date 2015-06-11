@@ -854,7 +854,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
   if (empty($deposit_amount)) {
     $form['price'] = array(
       '#prefix' => '<div class="rooms-search-result__unit-base-price" id="unit_' . $unit->unit_id . '_base_price">',
-      '#markup' => rooms_string('<label>' . t('Base price') . ':</label> <span class="rooms-search-result__base-price-amount">' .
+      '#markup' => rooms_string('<label>' . variable_get_value('rooms_booking_manager_base_price') . ':</label> <span class="rooms-search-result__base-price-amount">' .
         t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
           '@currency_symbol' => $currency_symbol,
           '@amount' => $price,
@@ -877,11 +877,11 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
   else {
     $form['price'] = array(
       '#prefix' => '<div class="rooms-search-result__unit-base-price" id="unit_' . $unit->unit_id . '_base_price">',
-      '#markup' => rooms_string('<label>' . t('Base price') . ':</label> <span class="rooms-search-result__base-price-amount">' .
+      '#markup' => rooms_string('<label>' . variable_get_value('rooms_booking_manager_base_price') . ':</label> <span class="rooms-search-result__base-price-amount">' .
         t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
           '@currency_symbol' => $currency_symbol,
           '@amount' => $price,
-        )) . '</span>' . '<label>' . ' - '. t('Payable now') . ':</label> <span class="rooms-search-result__base-price-amount">' . 
+        )) . '</span>' . '<label>' . ' - '. variable_get_value('rooms_booking_manager_payable_now') . ':</label> <span class="rooms-search-result__base-price-amount">' . 
         t('@currency_symbol @deposit', array(
           '@currency_symbol' => $currency_symbol,
           '@deposit' => $deposit_amount,
@@ -909,7 +909,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     // Calculate the price per person per night, too.
     $base_price = $price_per_person / $nights;
 
-    $form['price']['#markup'] = rooms_string(format_plural($nights, 'Book this unit for 1 night at <b>@price per person</b> (@base_price per person per night)', 'Book this unit for @count nights at <b>@price per person</b> (@base_price per person per night)', array(
+    $form['price']['#markup'] = rooms_string(format_plural($nights, variable_get_value('rooms_booking_manager_book_this_unit_for') . ' 1 night at <b>@price ' . variable_get_value('rooms_booking_manager_per_person') . '</b> (@base_price ' . variable_get_value('rooms_booking_manager_per_person_per_night') . ')', variable_get_value('rooms_booking_manager_book_this_unit_for') . ' @count nights at <b>@price ' . variable_get_value('rooms_booking_manager_per_person') . '</b> (@base_price ' . variable_get_value('rooms_booking_manager_per_person_per_night') . ')', array(
       '@price' => t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
         '@currency_symbol' => $currency_symbol,
         '@amount' => $price_per_person)),
@@ -956,7 +956,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
 
         $form['options'][$option_name . ':quantity'] = array(
           '#type' => 'select',
-          '#title' => t('Quantity'),
+          '#title' => variable_get_value('rooms_booking_manager_quantity'),
           '#options' => range(1, $option['quantity']),
           '#ajax' => array(
             'callback' => 'rooms_booking_manager_options_change_callback',
@@ -995,14 +995,14 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
   if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
     $form['persons'] = array(
       '#type' => 'select',
-      '#field_suffix' => t('Guests'),
+      '#field_suffix' => variable_get_value('rooms_booking_manager_guests'),
       '#options' => range($unit->min_sleeps, $unit->max_sleeps),
       '#default_value' => $unit->max_sleeps - $unit->min_sleeps,
       '#ajax' => array(
         'callback' => 'rooms_booking_manager_quantity_change_callback',
         'wrapper' => 'unit_' . $unit->unit_id . '_price',
       ),
-      '#title' => t('How many people in this unit (including adults and children)?'),
+      '#title' => variable_get_value('rooms_booking_manager_how_many_people'),
       '#prefix' => '<div class="rooms-search-result__select-guests">',
       '#suffix' => '</div>',
     );
@@ -1019,8 +1019,8 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     if ($max_children > $unit->min_children) {
       $form['children'] = array(
         '#type' => 'select',
-        '#title' => t('How many of the guests are children?'),
-        '#field_suffix' => t('Children'),
+        '#title' => variable_get_value('rooms_booking_manager_how_many_guests_children'),
+        '#field_suffix' => variable_get_value('rooms_booking_manager_children'),
         '#options' => range($unit->min_children, $max_children),
         '#default_value' => 0,
         '#ajax' => array(
@@ -1043,7 +1043,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
         for ($t = 1; $t <= $form_state['values']['children']; $t++) {
           $form['childrens_age'][$t] = array(
             '#type' => 'select',
-            '#field_prefix' => t('Age of child @num', array('@num' => $t)),
+            '#field_prefix' => variable_get_value('rooms_booking_age_of_child') . ' ' . $t,
             '#options' => range(0, 18),
             '#ajax' => array(
               'callback' => 'rooms_booking_manager_options_change_callback',
@@ -1111,7 +1111,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     if (empty($deposit_amount)) {
       $form['new_price'] = array(
         '#prefix' => '<div class="rooms-search-result__new-price" id="unit_' . $unit->unit_id . '_price">',
-        '#markup' => '<label>' . t('Cost') . ':</label> <span class="rooms-search-result__new-price-amount">' .
+        '#markup' => '<label>' . variable_get_value('rooms_booking_manager_cost') . ':</label> <span class="rooms-search-result__new-price-amount">' .
           t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
             '@currency_symbol' => $currency_symbol,
             '@amount' => $new_price['full_price'],
@@ -1123,11 +1123,11 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     else {
       $form['new_price'] = array(
         '#prefix' => '<div class="rooms-search-result__new-price" id="unit_' . $unit->unit_id . '_price">',
-        '#markup' => '<label>' . t('Cost') . ':</label> <span class="rooms-search-result__new-price-amount">' .
+        '#markup' => '<label>' . variable_get_value('rooms_booking_manager_cost') . ':</label> <span class="rooms-search-result__new-price-amount">' .
           t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
             '@currency_symbol' => $currency_symbol,
             '@amount' => $new_price['full_price'],
-          )) . '</span>' . '<label>' . ' - ' . t('Payable Now') . ':</label> <span class="rooms-search-result__new-price-deposit">' . t('@currency_symbol @deposit_amount', array (
+          )) . '</span>' . '<label>' . ' - ' . variable_get_value('rooms_booking_manager_payable_now') . ':</label> <span class="rooms-search-result__new-price-deposit">' . t('@currency_symbol @deposit_amount', array (
           '@currency_symbol' => $currency_symbol,
           '@deposit_amount' => $deposit_amount,
           )) . '</span>',
@@ -1151,7 +1151,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
   );
   $form['actions']['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Book This'),
+    '#value' => variable_get_value('rooms_booking_manager_book_this'),
     '#submit' => $submit + array('book_unit_form_submit'),
   );
 
@@ -1450,7 +1450,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
           // for all people in the room.
           $unit_type_label = rooms_unit_get_types($units[$units_keys[$c - 1]]['unit']->type)->label;
           if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
-            $label = rooms_string('Subtotal',
+            $label = rooms_string(variable_get_value('rooms_booking_subtotal'),
               $context = array(
                 '#component' => 'units_per_type_form_subtotal_label',
                 '#purpose' => 'display_base_subtotal_label',
@@ -1463,7 +1463,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             );
           }
           else {
-            $label = rooms_string('Price',
+            $label = rooms_string(variable_get_value('rooms_booking_price'),
               $context = array(
                 '#component' => 'units_per_type_form_price_label',
                 '#purpose' => 'display_base_price_label',
@@ -1494,7 +1494,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             $form[$type][$price]['fieldset'][$c]['price'] = array(
               '#prefix' => '<div class="rooms-search-result__unit-price" id="' . $type . '_' . $price . '_' . $c . '_price"><label>' . $label . ':</label> <span class="rooms-search-result__unit-price-amount">',
               // TODO: replace with a proper currency formatter.
-              '#markup' => t('@currency_symbol @amount - Payable now: @currency_symbol @deposit', array(
+              '#markup' => t('@currency_symbol @amount - ' . variable_get_value('rooms_booking_manager_payable_now') . ': @currency_symbol @deposit', array(
                 '@currency_symbol' => $currency_symbol,
                 '@amount' => $price,
                 '@deposit' => $deposit_amount,
@@ -1620,7 +1620,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             // Replace old price with the new calculated value.
             $form[$type][$price]['fieldset'][$c]['price']['#markup'] =
               rooms_string(
-                t('@currency_symbol @amount - Payable now: @currency_symbol @deposit', array(
+                t('@currency_symbol @amount - ' . variable_get_value('rooms_booking_manager_payable_now') . ': @currency_symbol @deposit', array(
                   '@currency_symbol' => $currency_symbol,
                   '@amount' => $new_price,
                   '@deposit' => $deposit_amount,
@@ -2149,7 +2149,6 @@ function rooms_booking_manager_commerce_checkout_form_cancel_submit($form, &$for
  * Implements hook_form_alter().
  */
 function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
-
   // Commerce checkout form alters.
   if ($form_id == 'commerce_checkout_form_checkout') {
     rooms_booking_manager_alter_commerce_checkout_form_checkout($form, $form_state, $form_id);

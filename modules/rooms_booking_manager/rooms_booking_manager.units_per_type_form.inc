@@ -141,8 +141,7 @@ function _rooms_booking_manager_load_price_info($form, $type_obj, $type, $price,
     // Calculate the price per person for the booking period.
     $base_price = $units[$units_keys[0]]['price'] / $units[$units_keys[0]]['unit']->max_sleeps;
     $form[$type][$price]['price']['#markup'] = format_plural(count
-    ($units), '1 @unit_type unit available starting at @price per
-        person', '@count @unit_type units available starting at @price per person', array(
+    ($units), '1 @unit_type ' . variable_get_value('rooms_booking_manager_unit_available_starting_at') . ' @price '. variable_get_value('rooms_booking_manager_per_person'), '@count @unit_type ' . variable_get_value('rooms_booking_manager_units_available_starting_at') . ' @price '. variable_get_value('rooms_booking_manager_per_person'), array(
         '@unit_type' => $type_obj->label,
         '@price' => t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
           '@currency_symbol' => $currency_symbol,
@@ -150,7 +149,6 @@ function _rooms_booking_manager_load_price_info($form, $type_obj, $type, $price,
       )
     );
   }
-
   // Add form element to hold the price.
   $form[$type][$price]['price_value'] = array(
     '#type' => 'hidden',
@@ -283,7 +281,7 @@ function _rooms_booking_manager_handle_per_person_pricing($form, &$form_state, $
       'callback' => 'rooms_booking_manager_quantity_change_callback',
       'wrapper' => $type . '_' . $price . '_container',
     ),
-    '#title' => t('How many people in this unit (including adults and children)?'),
+    '#title' => variable_get_value('rooms_booking_manager_how_many_people'),
     '#prefix' => '<div class="rooms-search-result__select-guests">',
     '#suffix' => '</div>',
   );
@@ -301,8 +299,8 @@ function _rooms_booking_manager_handle_per_person_pricing($form, &$form_state, $
     if ($tmp_unit->max_children > 0) {
       $form[$type][$price]['fieldset'][$c]['children'] = array(
         '#type' => 'select',
-        '#title' => t('How many of the guests are children?'),
-        '#field_suffix' => t('Children'),
+        '#title' => variable_get_value('rooms_booking_manager_how_many_guests_children'),
+        '#field_suffix' => variable_get_value('rooms_booking_manager_children'),
         '#options' => array_combine(
           range($tmp_unit->min_children, $max_children),
           range($tmp_unit->min_children, $max_children)),
@@ -334,7 +332,7 @@ function _rooms_booking_manager_handle_per_person_pricing($form, &$form_state, $
     for ($t = 1; $t <= $children_number; $t++) {
       $form[$type][$price]['fieldset'][$c]['childrens_age'][$t] = array(
         '#type' => 'select',
-        '#field_prefix' => t('Age of child @num', array('@num' => $t)),
+        '#field_prefix' => variable_get_value('rooms_booking_age_of_child') . ' ' . $t,
         '#options' => range(0, 18),
         '#ajax' => array(
           'callback' => 'rooms_booking_manager_options_change_callback',

@@ -142,6 +142,14 @@ function rooms_booking_manager_variable_info($options) {
     'localize' => TRUE,
     'group' => 'rooms_booking_manager',
   );
+  $variables['rooms_booking_manager_night'] = array(
+    'type' => 'string',
+    'title' => t('Night'),
+    'default' => 'Night',
+    'description' => t('Change text : Night'),
+    'localize' => TRUE,
+    'group' => 'rooms_booking_manager',
+  );
  
   $variables['rooms_booking_manager_error_select_unit'] = array(
     'type' => 'text',
@@ -206,7 +214,111 @@ function rooms_booking_manager_variable_info($options) {
     'group' => 'rooms_booking_manager',
     'required' => TRUE,
   );
-  
+  $variables['rooms_booking_manager_unit_available_starting_at'] = array(
+    'type' => 'string',
+    'title' => t('Unit available starting at'),
+    'description' => t('Unit available starting at'),
+    'default' => 'unit available starting at',
+    'localize' => TRUE,
+    'group' => 'rooms_booking_manager',
+  );
+  $variables['rooms_booking_manager_units_available_starting_at'] = array(
+    'type' => 'string',
+    'title' => t('Units available starting at'),
+    'description' => t('Units available starting at'),
+    'default' => 'units available starting at',
+    'localize' => TRUE,
+    'group' => 'rooms_booking_manager',
+  );
+  $variables['rooms_booking_manager_per_person'] = array(
+    'type' => 'string',
+    'title' => t('Per person'),
+    'description' => t('Change text: per person'),
+    'default' => 'per person',
+    'localize' => TRUE,
+    'group' => 'rooms_booking_manager',
+  );
+  $variables['rooms_booking_manager_per_person_per_night'] = array(
+    'type' => 'string',
+    'title' => t('Per person per night'),
+    'description' => t('Change text: per person per night'),
+    'default' => 'per person per night',
+    'localize' => TRUE,
+    'group' => 'rooms_booking_manager',
+  );
+  $variables['rooms_booking_manager_payable_now'] = array(
+    'type' => 'string',
+    'title' => t('Payable now'),
+    'description' => t('Change text: Payable now'),
+    'default' => 'Payable now',
+    'localize' => TRUE,
+    'group' => 'rooms_booking_manager',
+  );
+  $variables['rooms_booking_manager_how_many_people'] = array(
+    'type' => 'text',
+    'title' => t('How many people in this unit (including adults and children)?'),
+    'default' => 'How many people in this unit (including adults and children)?',
+    'description' => t('Change text : How many people in this unit (including adults and children)?'),
+    'localize' => TRUE,
+    'group' => 'rooms_booking_manager',
+  );
+  $variables['rooms_booking_manager_how_many_guests_children'] = array(
+    'type' => 'text',
+    'title' => t('How many of the guests are children?'),
+    'default' => 'How many of the guests are children?',
+    'description' => t('Change text : How many of the guests are children?'),
+    'localize' => TRUE,
+    'group' => 'rooms_booking_manager',
+  );
+  $variables['rooms_booking_manager_book_this'] = array(
+    'type' => 'string',
+    'title' => t('Book this'),
+    'default' => 'Book this',
+    'description' => t('Change button text : Book this'),
+    'localize' => TRUE,
+    'group' => 'rooms_booking_manager',
+  );
+  $variables['rooms_booking_manager_base_price'] = array(
+    'type' => 'string',
+    'title' => t('Base Price'),
+    'default' => 'Base Price',
+    'description' => t('Change text: Base Price'),
+    'localize' => TRUE,
+    'group' => 'rooms_booking_manager',
+  );
+  $variables['rooms_booking_manager_cost'] = array(
+    'type' => 'string',
+    'title' => t('Cost'),
+    'default' => 'Cost',
+    'description' => t('Change text: Cost'),
+    'localize' => TRUE,
+    'group' => 'rooms_booking_manager',
+  );
+  $variables['rooms_booking_manager_quantity'] = array(
+    'type' => 'string',
+    'title' => t('Quantity'),
+    'default' => 'Quantity',
+    'description' => t('Change text: Quantity'),
+    'localize' => TRUE,
+    'group' => 'rooms_booking_manager',
+  );
+  $variables['rooms_booking_manager_book_this_unit_for'] = array(
+    'type' => 'string',
+    'title' => t('Book this unit for'),
+    'default' => 'Book this unit for',
+    'description' => t('Change text: Book this unit for'),
+    'localize' => TRUE,
+    'group' => 'rooms_booking_manager',
+  );
+  $variables['rooms_booking_manager_guests'] = array(
+    'type' => 'string',
+    'title' => t('Guests'),
+    'default' => 'Guests',
+    'description' => t('Change text: Guests'),
+    'localize' => TRUE,
+    'group' => 'rooms_booking_manager',
+  );
+
   return $variables;
 }
 
