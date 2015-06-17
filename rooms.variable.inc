@@ -11,7 +11,7 @@ function rooms_variable_info($options) {
   $variables['rooms_arrival_date'] = array(
     'type' => 'string',
     'title' => t('Arrival Date'),
-    'default' => 'Arrival Date',
+    'default' => t('Arrival Date'),
     'description' => t('Change text : Arrival Date'),
     'localize' => TRUE,
     'group' => 'rooms',
@@ -20,7 +20,7 @@ function rooms_variable_info($options) {
   $variables['rooms_departure_date'] = array(
     'type' => 'string',
     'title' => t('Departure Date'),
-    'default' => 'Departure Date',
+    'default' => t('Departure Date'),
     'description' => t('Change text : Departure Date'),
     'localize' => TRUE,
     'group' => 'rooms',

@@ -11,7 +11,7 @@ function rooms_booking_variable_info($options) {
   $variables['rooms_booking_price'] = array(
     'type' => 'string',
     'title' => t('Price'),
-    'default' => 'Price',
+    'default' => t('Price'),
     'description' => t('Change text : Price'),
     'localize' => TRUE,
     'group' => 'rooms_booking',
@@ -19,7 +19,7 @@ function rooms_booking_variable_info($options) {
   $variables['rooms_booking_subtotal'] = array(
     'type' => 'string',
     'title' => t('Subtotal'),
-    'default' => 'Subtotal',
+    'default' => t('Subtotal'),
     'description' => t('Change text : Subtotal'),
     'localize' => TRUE,
     'group' => 'rooms_booking',
@@ -27,7 +27,7 @@ function rooms_booking_variable_info($options) {
   $variables['rooms_booking_age_of_child'] = array(
     'type' => 'string',
     'title' => t('Age of Child'),
-    'default' => 'Age of Child',
+    'default' => t('Age of Child'),
     'description' => t('Change text : Age of Child'),
     'localize' => TRUE,
     'group' => 'rooms_booking',
