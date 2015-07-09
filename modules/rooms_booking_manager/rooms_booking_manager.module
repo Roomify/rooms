@@ -1080,7 +1080,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
 
     $booking_info = array(
       'start_date' => clone($start_date),
-      'end_date' => clone($temp_end_date),
+      'end_date' => clone($end_date),
       'unit' => $unit,
       'booking_parameters' => array(
         'group_size' => $group_size,

@@ -1,0 +1,158 @@
+<?php
+
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function rooms_period_pricing_form_rooms_unit_edit_form_alter(&$form, &$form_state) {
+  $unit = $form['#entity'];
+
+  $form['weekly_monthly_price'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Weekly, Monthly price'),
+    '#tree' => FALSE,
+    '#weight' => -97,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $form['weekly_monthly_price']['weekly_price'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Weekly price'),
+    '#default_value' => isset($unit->weekly_price) ? $unit->weekly_price : '',
+    '#size' => '5',
+    '#field_suffix' => t('Per 7 days'),
+    '#maxlength' => 10,
+  );
+
+  $form['weekly_monthly_price']['monthly_price'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Monthly price'),
+    '#default_value' => isset($unit->monthly_price) ? $unit->monthly_price : '',
+    '#size' => '5',
+    '#field_suffix' => t('Per 28 days'),
+    '#maxlength' => 10,
+  );
+
+  $form['#attached']['css'][] = drupal_get_path('module', 'rooms_period_pricing') . '/css/rooms_period_pricing.css';
+}
+
+/**
+ * Implements hook_rooms_price_modifier_alter().
+ */
+function rooms_period_pricing_rooms_price_modifier_alter(&$price_modifiers, $booking_info) {
+  if (isset($price_modifiers['rooms_period_pricing'])) {
+    unset($price_modifiers['rooms_period_pricing']);
+  }
+
+  $amount = 0;
+
+  $unit = $booking_info['unit'];
+  $end_date = $booking_info['end_date'];
+  $start_date = $booking_info['start_date'];
+  $booking_parameters = $booking_info['booking_parameters'];
+
+  $weeks_months_days = rooms_period_pricing_calculate_weeks_months_days($start_date, $end_date);
+
+  // If "Weekly price" is setted
+  if ($unit->weekly_price > 0) {
+    $more_days = $weeks_months_days['more_days'];
+
+    if ($more_days > 0) {
+      $start_date = clone($end_date);
+      $start_date->sub(new DateInterval('P' . ($more_days - 1) . 'D'));
+
+      $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
+
+      if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON && count($booking_parameters) == 1 && isset($booking_parameters[0]) && is_array($booking_parameters)) {
+        $price_log = $price_calendar->calculatePrice($start_date, $end_date, $booking_parameters[0]['adults'], $booking_parameters[0]['children'], $booking_parameters[0]['childrens_age']);
+      }
+      else {
+        $price_log = $price_calendar->calculatePrice($start_date, $end_date);
+      }
+
+      $price_more_days = $price_log['full_price'];
+    }
+    else {
+      $price_more_days = 0;
+    }
+
+    if ($weeks_months_days['months'] > 0 && $unit->monthly_price > 0) {
+      $months = $weeks_months_days['months'];
+      $more_weeks = $weeks_months_days['more_weeks'];
+
+      $amount = commerce_currency_amount_to_decimal(($unit->monthly_price * $months + $unit->weekly_price * $more_weeks + $price_more_days) * 100, commerce_default_currency());
+    }
+    else {
+      $weeks = $weeks_months_days['total_weeks'];
+
+      $amount = commerce_currency_amount_to_decimal(($unit->weekly_price * $weeks + $price_more_days) * 100, commerce_default_currency());
+    }
+  }
+  // If "Monthly price" is setted and the current period is greater than or equal to 28 days
+  elseif ($weeks_months_days['months'] > 0 && $unit->monthly_price > 0) {
+    $months = $weeks_months_days['months'];
+
+    $more_days = $weeks_months_days['more_days'] + $weeks_months_days['more_weeks'] * 7;
+
+    if ($more_days > 0) {
+      $start_date = clone($end_date);
+      $start_date->sub(new DateInterval('P' . ($more_days - 1) . 'D'));
+
+      $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
+
+      if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON && count($booking_parameters) == 1 && isset($booking_parameters[0]) && is_array($booking_parameters)) {
+        $price_log = $price_calendar->calculatePrice($start_date, $end_date, $booking_parameters[0]['adults'], $booking_parameters[0]['children'], $booking_parameters[0]['childrens_age']);
+      }
+      else {
+        $price_log = $price_calendar->calculatePrice($start_date, $end_date);
+      }
+
+      $price_more_days = $price_log['full_price'];
+    }
+    else {
+      $price_more_days = 0;
+    }
+
+    $amount = commerce_currency_amount_to_decimal(($unit->monthly_price * $months + $price_more_days) * 100, commerce_default_currency());
+  }
+
+  // Add a new price modifier to replace the old price with new calculated price
+  if ($amount > 0) {
+    $price_modifiers['rooms_period_pricing'] = array(
+      '#type' => ROOMS_DYNAMIC_MODIFIER,
+      '#quantity' => 1,
+      '#op_type' => ROOMS_REPLACE,
+      '#amount' => $amount,
+    );
+  }
+}
+
+/**
+ * Calculate number of days, weeks and months in a given period.
+ *
+ * @param DateTime $start_date
+ * The starting date
+ *
+ * @param DateTime $end_date
+ * The end date of our range
+ *
+ * @return array
+ */
+function rooms_period_pricing_calculate_weeks_months_days($start_date, $end_date) {
+  $days = $end_date->diff($start_date)->days;
+
+  $weeks = floor($days / 7);
+  $months = floor($weeks / 4);
+
+  $more_weeks = $weeks % 4;
+  $more_days = $days % 7;
+
+  return array(
+    'total_days' => $days,
+    'total_weeks' => $weeks,
+    'more_days' => $more_days,
+    'more_weeks' => $more_weeks,
+    'months' => $months,
+  );
+}

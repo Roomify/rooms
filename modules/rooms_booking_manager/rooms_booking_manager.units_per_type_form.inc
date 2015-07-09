@@ -104,7 +104,7 @@ function _rooms_booking_manager_load_price_info($form, $type_obj, $type, $price,
   $form[$type][$price]['price'] = array(
     '#prefix' => '<tr class="rooms-search-result__unit_summary_wrapper"><td class="rooms-search-result__base_price">',
     '#markup' => rooms_string(
-      format_plural(count($units_per_price), '1 @unit_type '
+      format_plural(count($units), '1 @unit_type '
         . variable_get_value('rooms_booking_manager_unit_available_from')
         . ' @price', '@count @unit_type '
         . variable_get_value('rooms_booking_manager_unit_available_from')
