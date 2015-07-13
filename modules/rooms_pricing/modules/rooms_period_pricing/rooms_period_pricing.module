@@ -9,7 +9,7 @@ function rooms_period_pricing_form_rooms_unit_edit_form_alter(&$form, &$form_sta
 
   $form['weekly_monthly_price'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Weekly, Monthly price'),
+    '#title' => t('Weekly/Monthly pricing'),
     '#tree' => FALSE,
     '#weight' => -97,
     '#collapsible' => TRUE,
@@ -22,6 +22,7 @@ function rooms_period_pricing_form_rooms_unit_edit_form_alter(&$form, &$form_sta
     '#default_value' => isset($unit->weekly_price) ? $unit->weekly_price : '',
     '#size' => '5',
     '#field_suffix' => t('Per 7 days'),
+    '#description' => t('This price will override the standard nightly pricing for each continuous 7 day period of a single booking.'),
     '#maxlength' => 10,
   );
 
@@ -31,6 +32,7 @@ function rooms_period_pricing_form_rooms_unit_edit_form_alter(&$form, &$form_sta
     '#default_value' => isset($unit->monthly_price) ? $unit->monthly_price : '',
     '#size' => '5',
     '#field_suffix' => t('Per 28 days'),
+    '#description' => t('This price will override the standard nightly/weekly pricing for each continuous 28 day period of a single booking.'),
     '#maxlength' => 10,
   );
 
@@ -54,7 +56,7 @@ function rooms_period_pricing_rooms_price_modifier_alter(&$price_modifiers, $boo
 
   $weeks_months_days = rooms_period_pricing_calculate_weeks_months_days($start_date, $end_date);
 
-  // If "Weekly price" is setted
+  // If "Weekly price" is set.
   if ($unit->weekly_price > 0) {
     $more_days = $weeks_months_days['more_days'];
 
@@ -89,7 +91,7 @@ function rooms_period_pricing_rooms_price_modifier_alter(&$price_modifiers, $boo
       $amount = commerce_currency_amount_to_decimal(($unit->weekly_price * $weeks + $price_more_days) * 100, commerce_default_currency());
     }
   }
-  // If "Monthly price" is setted and the current period is greater than or equal to 28 days
+  // If "Monthly price" is set and the current period is greater than or equal to 28 days.
   elseif ($weeks_months_days['months'] > 0 && $unit->monthly_price > 0) {
     $months = $weeks_months_days['months'];
 
@@ -117,7 +119,7 @@ function rooms_period_pricing_rooms_price_modifier_alter(&$price_modifiers, $boo
     $amount = commerce_currency_amount_to_decimal(($unit->monthly_price * $months + $price_more_days) * 100, commerce_default_currency());
   }
 
-  // Add a new price modifier to replace the old price with new calculated price
+  // Add a new price modifier to replace the old price with new calculated price.
   if ($amount > 0) {
     $price_modifiers['rooms_period_pricing'] = array(
       '#type' => ROOMS_DYNAMIC_MODIFIER,
