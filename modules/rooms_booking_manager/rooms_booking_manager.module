@@ -417,6 +417,12 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
   // The array of content to render.
   $content = array();
 
+  // Add dates information to template.
+  if (!empty($start_date) && !empty($end_date)) {
+    $content['start_date'] = $start_date;
+    $content['end_date'] = $end_date;
+    $content['nights'] = $end_date->diff($start_date)->days;
+  }
   if (empty($errors) && is_array($booking_parameters)) {
 
     $content['booking_results'] = 1;
