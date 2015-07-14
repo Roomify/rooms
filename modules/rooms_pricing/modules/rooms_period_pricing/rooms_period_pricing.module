@@ -40,6 +40,82 @@ function rooms_period_pricing_form_rooms_unit_edit_form_alter(&$form, &$form_sta
 }
 
 /**
+ * Implements hook_rooms_string_alter().
+ */
+function rooms_period_pricing_rooms_string_alter(&$string_suggestions, $context) {
+  if ($context['#purpose'] == 'display_base_price') {
+    $string_suggestion = reset($string_suggestions);
+
+    $currency_setting = commerce_currency_load(commerce_default_currency());
+    $currency_symbol = $currency_setting['symbol'];
+
+    $price = $context['#data']['price'];
+    $units = reset($context['#data']['units'][$price]);
+    $unit = $units['unit'];
+
+    $start_date = $context['#data']['arrival'];
+    $end_date = $context['#data']['departure'];
+
+    $weeks_months_days = rooms_period_pricing_calculate_weeks_months_days($start_date, $end_date);
+
+    $monthly_price = commerce_currency_amount_to_decimal($unit->monthly_price * 100, commerce_default_currency());
+    $weekly_price = commerce_currency_amount_to_decimal($unit->weekly_price * 100, commerce_default_currency());
+
+    if ($weeks_months_days['total_weeks'] > 0 && $unit->weekly_price > 0) {
+      $more_days = $weeks_months_days['more_days'];
+
+      if ($weeks_months_days['months'] > 0 && $unit->monthly_price > 0) {
+        $months = $weeks_months_days['months'];
+        $more_weeks = $weeks_months_days['more_weeks'];
+
+        $string_suggestion .= ' (' . format_plural($months, '1 month', '@count months') . ' @ ' . $currency_symbol . $monthly_price . '/month';
+
+        if ($more_weeks > 0) {
+          $string_suggestion .= ', ';
+          $string_suggestion .= format_plural($more_weeks, '1 week', '@count weeks') . ' @ ' . $currency_symbol . $weekly_price . '/wk';
+        }
+
+        $current_price = $months * $monthly_price + $more_weeks * $weekly_price;
+      }
+      else {
+        $weeks = $weeks_months_days['total_weeks'];
+
+        $string_suggestion .= ' (' . format_plural($weeks, '1 week', '@count weeks') . ' @ ' . $currency_symbol . $weekly_price . '/wk';
+
+        $current_price = $weeks * $weekly_price;
+      }
+
+      if ($more_days > 0) {
+        $day_price = ($price - $current_price) / $more_days;
+
+        $string_suggestion .= ', ' . format_plural($more_days, '1 night', '@count nights') . ' @ ' . $currency_symbol . $day_price . '/night';
+      }
+
+      $string_suggestion .= ')';
+    }
+    elseif ($weeks_months_days['months'] > 0 && $unit->monthly_price > 0) {
+      $months = $weeks_months_days['months'];
+
+      $more_days = $weeks_months_days['more_days'] + $weeks_months_days['more_weeks'] * 7;
+
+      $string_suggestion .= ' (' . $months . ' month @ ' . $currency_symbol . $monthly_price . '/month)';
+
+      $current_price = $months * $monthly_price;
+
+      if ($more_days > 0) {
+        $day_price = ($price - $current_price) / $more_days;
+
+        $string_suggestion .= ', ' . $more_days . ' nights @ ' . $currency_symbol . $day_price . '/night';
+      }
+
+      $string_suggestion .= ')';
+    }
+
+    $string_suggestions[] = $string_suggestion;
+  }
+}
+
+/**
  * Implements hook_rooms_price_modifier_alter().
  */
 function rooms_period_pricing_rooms_price_modifier_alter(&$price_modifiers, $booking_info) {
