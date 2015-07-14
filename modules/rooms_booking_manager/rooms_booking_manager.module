@@ -2080,7 +2080,6 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
 
         $booking->booking_status = 1;
         $booking->uid = $unit->uid;
-
         $booking->save();
 
         // Line item 'Entity Reference field' that points to the booking.
