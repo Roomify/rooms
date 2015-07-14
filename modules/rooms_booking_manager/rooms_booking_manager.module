@@ -2014,6 +2014,30 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
   $profile = commerce_customer_profile_load($order->commerce_customer_billing[LANGUAGE_NONE][0]['profile_id']);
   // Cycle through orders looking for booking products.
   foreach ($order->commerce_line_items as $lang => $item) {
+
+    // First check all proposed bookings a final time to ensure they do not conflict with any existing bookings.
+    foreach ($item as $item_id) {
+      $line_item = commerce_line_item_load($item_id['line_item_id']);
+      if ($line_item->type == 'rooms_booking') {
+        $uc = new \UnitCalendar($line_item->rooms_booked_unit_id[LANGUAGE_NONE][0]['value']);
+        $start_date = \DateTime::createFromFormat('Y-m-d', $line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value']);
+        $end_date = \DateTime::createFromFormat('Y-m-d', $line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
+        $adjusted_end_date = clone($end_date);
+        $adjusted_end_date->modify('-1 day');
+        $states_confirmed = $uc->getStates($start_date, $adjusted_end_date);
+        $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', drupal_map_assoc(array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)))));
+        $valid_states = array_merge($valid_states, array(ROOMS_UNCONFIRMED_BOOKINGS));
+        $state_diff_confirmed = array_diff($states_confirmed, $valid_states);
+
+        if (count($state_diff_confirmed) > 0) { // A conflicting confirmed booking was found, bail out.
+          drupal_set_message(t('Unfortunately, availability for your selected bookings has changed since placing them in your cart. Please re-start your search.'));
+          $bookings_url = url('bookings', array('absolute' => TRUE));
+          drupal_goto($bookings_url);
+        }
+      }
+    }
+
+    // If we got this far, it's safe to go ahead and create the bookings.
     foreach ($item as $item_id) {
       $line_item = commerce_line_item_load($item_id['line_item_id']);
       if ($line_item->type == 'rooms_booking') {
@@ -2056,6 +2080,7 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
 
         $booking->booking_status = 1;
         $booking->uid = $unit->uid;
+
         $booking->save();
 
         // Line item 'Entity Reference field' that points to the booking.
@@ -2242,6 +2267,26 @@ function rooms_booking_manager_alter_rooms_booking_settings(&$form, &$form_state
       ROOMS_ENQ_CHECKOUT => t('Enquiry checkout'),
     ),
     '#default_value' => variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT),
+  );
+
+  $form['rooms_checkout_settings']['commerce_section'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Commerce checkout form settings'),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="rooms_checkout_style"]' => array('value' => ROOMS_COMMERCE_CHECKOUT),
+      ),
+    ),
+  );
+
+  $form['rooms_checkout_settings']['commerce_section']['rooms_use_commerce_filter'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Do not show units as available if they are in another user\'s cart'),
+    '#options' => rooms_assoc_range(0, 1),
+    '#description' => t('If this box is checked, Rooms will show units as unavailable once a booking including them has been placed in a user\'s cart. If it is unchecked, multiple users may place the same unit in their cart, and the first user to check out complete their order will successfully complete their booking.'),
+    '#default_value' => variable_get('rooms_use_commerce_filter', '1'),
   );
 
   $form['rooms_checkout_settings']['enquiry_section'] = array(
