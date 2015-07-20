@@ -154,19 +154,73 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['columns'] = array(
     'booking_id' => 'booking_id',
+    'name' => 'name',
+    'start_date' => 'start_date',
+    'end_date' => 'end_date',
+    'unit_id' => 'unit_id',
+    'type' => 'type',
+    'name_1' => 'name_1',
+    'order_id' => 'order_id',
     'operations' => 'operations',
   );
-  $handler->display->display_options['style_options']['default'] = '-1';
+  $handler->display->display_options['style_options']['default'] = 'booking_id';
   $handler->display->display_options['style_options']['info'] = array(
     'booking_id' => array(
-      'sortable' => 0,
+      'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
+      'empty_column' => 0,
+    ),
+    'name' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'start_date' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'end_date' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'unit_id' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'type' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'name_1' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'order_id' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
     ),
     'operations' => array(
       'align' => '',
       'separator' => '',
+      'empty_column' => 0,
     ),
   );
   /* No results behavior: Global: Text area */
@@ -236,11 +290,6 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['fields']['operations']['table'] = 'rooms_bookings';
   $handler->display->display_options['fields']['operations']['field'] = 'operations';
   $handler->display->display_options['fields']['operations']['hide_alter_empty'] = FALSE;
-  /* Sort criterion: Bookings: Bookings ID */
-  $handler->display->display_options['sorts']['booking_id']['id'] = 'booking_id';
-  $handler->display->display_options['sorts']['booking_id']['table'] = 'rooms_bookings';
-  $handler->display->display_options['sorts']['booking_id']['field'] = 'booking_id';
-  $handler->display->display_options['sorts']['booking_id']['order'] = 'DESC';
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
