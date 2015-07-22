@@ -216,7 +216,7 @@ function _rooms_booking_manager_display_book_button($form, $type, $price) {
  *
  * @return mixed
  */
-function _rooms_booking_manager_add_options($form, $type, $price, $c, $option) {
+function _rooms_booking_manager_add_options($form, $form_state, $type, $price, $c, $option) {
   $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
   $form[$type][$price]['fieldset'][$c][$option_name] = array(
     '#type' => 'checkbox',
@@ -234,8 +234,9 @@ function _rooms_booking_manager_add_options($form, $type, $price, $c, $option) {
 
   // Show quantity field selector if an option quantity is set.
   if (is_numeric($option['quantity'])) {
-    if (isset($form_state['values'][$type][$price]['fieldset'][$c][$option_name]) &&
-      $form_state['values'][$type][$price]['fieldset'][$c][$option_name] == 1 && $option['quantity'] > 1) {
+    if ( ((isset($form_state['values'][$type][$price]['fieldset'][$c][$option_name]) &&
+           $form_state['values'][$type][$price]['fieldset'][$c][$option_name] == 1)
+           || $option['type'] == ROOMS_OPTION_MANDATORY) && $option['quantity'] > 1 ) {
 
       $form[$type][$price]['fieldset'][$c][$option_name . ':quantity'] = array(
         '#type' => 'select',
@@ -250,7 +251,7 @@ function _rooms_booking_manager_add_options($form, $type, $price, $c, $option) {
       );
     }
     else {
-      $form[$type][$price]['fieldset'][$c][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] = array(
+      $form[$type][$price]['fieldset'][$c][$option_name . ':quantity'] = array(
         '#prefix' => '<div class="rooms-search-result__select-quantity" id="' . $type . '_' . $price . '_' . $c . '_' . $option_name . '_quantity">',
         '#suffix' => '</div>',
       );

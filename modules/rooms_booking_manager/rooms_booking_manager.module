@@ -1518,7 +1518,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
           // Add options checkboxes.
           foreach ($rooms_unit_options as $option) {
-            $form = _rooms_booking_manager_add_options($form, $type, $price, $c, $option);
+            $form = _rooms_booking_manager_add_options($form, $form_state, $type, $price, $c, $option);
           }
 
           $tmp_unit = $units[$units_keys[$c - 1]]['unit'];
@@ -1589,11 +1589,16 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
 
             if ($option['type'] == ROOMS_OPTION_MANDATORY) {
+              $quantity = 1;
+              if (isset($form_state['values'][$type][$price]['fieldset'][$c][$option_name . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
+                $quantity = $form_state['values'][$type][$price]['fieldset'][$c][$option_name . ':quantity'] + 1;
+              }
+
               $price_modifiers[$option_name] = array(
                 '#type' => ROOMS_DYNAMIC_MODIFIER,
                 '#op_type' => $option['operation'],
                 '#amount' => $option['value'],
-                '#quantity' => $option['quantity'],
+                '#quantity' => $quantity,
               );
             }
             else if (isset($form_state['values'][$type][$price]['fieldset'][$c][$option_name])) {
