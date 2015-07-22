@@ -948,6 +948,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
 
   foreach (rooms_unit_get_unit_options($unit) as $option) {
     $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
+
     $form['options'][$option_name] = array(
       '#type' => 'checkbox',
       '#title' => t($option['name']),
@@ -957,10 +958,15 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
       ),
     );
 
+    if ($option['type'] == ROOMS_OPTION_MANDATORY) {
+      $form['options'][$option_name]['#default_value'] = '1';
+      $form['options'][$option_name]['#disabled'] = TRUE;
+    }
+
     // Show quantity field selector if in option quantity is set.
     if (is_numeric($option['quantity'])) {
-      if (isset($form_state['values']['options'][$option_name]) &&
-        $form_state['values']['options'][$option_name] == 1 && $option['quantity'] > 1) {
+      if ( ((isset($form_state['values']['options'][$option_name]) && $form_state['values']['options'][$option_name] == 1)
+            || $option['type'] == ROOMS_OPTION_MANDATORY) && $option['quantity'] > 1 ) {
 
         $form['options'][$option_name . ':quantity'] = array(
           '#type' => 'select',
@@ -982,19 +988,34 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
       }
     }
 
-    if (isset($form_state['values']['options'][$option_name])) {
+    if ($option['type'] == ROOMS_OPTION_MANDATORY) {
+      $quantity = 1;
+      if (isset($form_state['values']['options'][$option_name . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
+        $quantity = $form_state['values']['options'][$option_name . ':quantity'] + 1;
+      }
+
+      $price_modifiers[$option_name] = array(
+        '#type' => ROOMS_DYNAMIC_MODIFIER,
+        '#op_type' => $option['operation'],
+        '#amount' => $option['value'],
+        '#quantity' => $quantity,
+      );
+    }
+    elseif (isset($form_state['values']['options'][$option_name])) {
       $quantity = 1;
       if (isset($form_state['values']['options'][$option_name . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
         $quantity = $form_state['values']['options'][$option_name . ':quantity'] + 1;
       }
 
       if ($form_state['values']['options'][$option_name] == 1) {
-        $price_modifiers[$option_name] = array(
-          '#type' => ROOMS_DYNAMIC_MODIFIER,
-          '#op_type' => $option['operation'],
-          '#amount' => $option['value'],
-          '#quantity' => $quantity,
-        );
+        if ($option['type'] != ROOMS_OPTION_ONREQUEST) {
+          $price_modifiers[$option_name] = array(
+            '#type' => ROOMS_DYNAMIC_MODIFIER,
+            '#op_type' => $option['operation'],
+            '#amount' => $option['value'],
+            '#quantity' => $quantity,
+          );
+        }
       }
     }
   }
@@ -1223,6 +1244,9 @@ function book_unit_form_submit(&$form, &$form_state) {
               $quantity = 1;
               if (isset($form_state['values']['options'][$option_name . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
                 $quantity = $form_state['values']['options'][$option_name . ':quantity'] + 1;
+              }
+              if ($option['type'] == ROOMS_OPTION_ONREQUEST) {
+                $option['value'] = 0;
               }
               $price_modifiers[$option_name] = array(
                 '#name' => $option['name'],
@@ -1563,7 +1587,16 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
           $price_modifiers = array();
           foreach (rooms_unit_get_unit_options($units[$units_keys[$c - 1]]['unit']) as $option) {
             $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
-            if (isset($form_state['values'][$type][$price]['fieldset'][$c][$option_name])) {
+
+            if ($option['type'] == ROOMS_OPTION_MANDATORY) {
+              $price_modifiers[$option_name] = array(
+                '#type' => ROOMS_DYNAMIC_MODIFIER,
+                '#op_type' => $option['operation'],
+                '#amount' => $option['value'],
+                '#quantity' => $option['quantity'],
+              );
+            }
+            else if (isset($form_state['values'][$type][$price]['fieldset'][$c][$option_name])) {
 
               $quantity = 1;
               if (isset($form_state['values'][$type][$price]['fieldset'][$c][$option_name . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
@@ -1571,12 +1604,14 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               }
 
               if ($form_state['values'][$type][$price]['fieldset'][$c][$option_name] == 1) {
-                $price_modifiers[$option_name] = array(
-                  '#type' => ROOMS_DYNAMIC_MODIFIER,
-                  '#op_type' => $option['operation'],
-                  '#amount' => $option['value'],
-                  '#quantity' => $quantity,
-                );
+                if ($option['type'] != ROOMS_OPTION_ONREQUEST) {
+                  $price_modifiers[$option_name] = array(
+                    '#type' => ROOMS_DYNAMIC_MODIFIER,
+                    '#op_type' => $option['operation'],
+                    '#amount' => $option['value'],
+                    '#quantity' => $quantity,
+                  );
+                }
               }
             }
           }
@@ -1905,6 +1940,9 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
                 $quantity = 1;
                 if (isset($form_state['values'][$type][$price_level]['fieldset'][$i][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
                   $quantity = $form_state['values'][$type][$price_level]['fieldset'][$i][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] + 1;
+                }
+                if ($option['type'] == ROOMS_OPTION_ONREQUEST) {
+                  $option['value'] = 0;
                 }
                 $price_modifiers[strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
                   '#name' => $option['name'],

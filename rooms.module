@@ -44,6 +44,10 @@ define('FIRST_NIGHT_PAYMENT', 12);
 define('ROOMS_DISPLAY_TYPE_SELECTOR', 1);
 define('ROOMS_DISPLAY_TYPE_SELECTOR_NO', 0);
 
+define('ROOMS_OPTION_OPTIONAL', 'optional');
+define('ROOMS_OPTION_MANDATORY', 'mandatory');
+define('ROOMS_OPTION_ONREQUEST', 'on_request');
+
 /**
  * Implements hook_permission().
  */
@@ -641,6 +645,12 @@ function rooms_options_data_property_info($name = NULL) {
       'getter callback' => 'entity_property_verbatim_get',
       'setter callback' => 'entity_property_verbatim_set',
     ),
+    'type' => array(
+      'label' => 'Type',
+      'type' => 'text',
+      'getter callback' => 'entity_property_verbatim_get',
+      'setter callback' => 'entity_property_verbatim_set',
+    ),
   );
 
   // Add the default values for each of the video_embed_field properties.
@@ -761,6 +771,20 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
       '#element_validate' => array('element_validate_integer_positive'),
       '#attributes' => array(
         'class' => array('rooms-option--value'),
+      ),
+    );
+    $type_options = array(
+      ROOMS_OPTION_OPTIONAL => t('Optional'),
+      ROOMS_OPTION_MANDATORY => t('Mandatory'),
+      ROOMS_OPTION_ONREQUEST => t('On Request'),
+    );
+    $element['type'] = array(
+      '#type' => 'select',
+      '#title' => t('Type'),
+      '#options' => $type_options,
+      '#default_value' => isset($items[$delta]['type']) ? $items[$delta]['type'] : 'optional',
+      '#attributes' => array(
+        'class' => array('rooms-option--type'),
       ),
     );
 

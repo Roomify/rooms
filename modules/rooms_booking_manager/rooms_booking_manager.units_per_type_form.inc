@@ -227,6 +227,11 @@ function _rooms_booking_manager_add_options($form, $type, $price, $c, $option) {
     ),
   );
 
+  if ($option['type'] == ROOMS_OPTION_MANDATORY) {
+    $form[$type][$price]['fieldset'][$c][$option_name]['#default_value'] = '1';
+    $form[$type][$price]['fieldset'][$c][$option_name]['#disabled'] = TRUE;
+  }
+
   // Show quantity field selector if an option quantity is set.
   if (is_numeric($option['quantity'])) {
     if (isset($form_state['values'][$type][$price]['fieldset'][$c][$option_name]) &&
