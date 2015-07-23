@@ -106,6 +106,7 @@ class BookingEvent extends RoomsEvent implements BookingEventInterface {
       }
       elseif ($style == ROOMS_AVAILABILITY_GENERIC_STYLE) {
         $this->id = ROOMS_NOT_AVAILABLE;
+        $event['id'] = ROOMS_NOT_AVAILABLE;
       }
     }
 
