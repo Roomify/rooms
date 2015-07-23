@@ -44,6 +44,10 @@ define('FIRST_NIGHT_PAYMENT', 12);
 define('ROOMS_DISPLAY_TYPE_SELECTOR', 1);
 define('ROOMS_DISPLAY_TYPE_SELECTOR_NO', 0);
 
+define('ROOMS_OPTION_OPTIONAL', 'optional');
+define('ROOMS_OPTION_MANDATORY', 'mandatory');
+define('ROOMS_OPTION_ONREQUEST', 'on_request');
+
 /**
  * Implements hook_permission().
  */
@@ -641,6 +645,12 @@ function rooms_options_data_property_info($name = NULL) {
       'getter callback' => 'entity_property_verbatim_get',
       'setter callback' => 'entity_property_verbatim_set',
     ),
+    'type' => array(
+      'label' => 'Type',
+      'type' => 'text',
+      'getter callback' => 'entity_property_verbatim_get',
+      'setter callback' => 'entity_property_verbatim_set',
+    ),
   );
 
   // Add the default values for each of the video_embed_field properties.
@@ -684,6 +694,10 @@ function rooms_field_formatter_info() {
       'label' => t('Rooms Options Default'),
       'field types' => array('rooms_options'),
     ),
+    'rooms_options_price' => array(
+      'label' => t('Rooms Options Price'),
+      'field types' => array('rooms_options'),
+    ),
     'rooms_options_admin' => array(
       'label' => t('Rooms Options Administrator'),
       'field types' => array('rooms_options'),
@@ -701,6 +715,25 @@ function rooms_field_formatter_view($entity_type, $entity, $field, $instance, $l
     case 'rooms_options_default':
       foreach ($items as $delta => $item) {
         $element[$delta] = array('#markup' => "{$item['quantity']} x {$item['name']}");
+      }
+      break;
+
+    case 'rooms_options_price':
+      $currency_setting = commerce_currency_load(commerce_default_currency());
+      $currency_symbol = $currency_setting['symbol'];
+
+      foreach ($items as $delta => $item) {
+        $price = t('@currency_symbol@amount', array(
+          '@currency_symbol' => $currency_symbol,
+          '@amount' => number_format($item['value'], 2, '.', ''),
+        ));
+
+        if ($item['value'] > 0) {
+          $element[$delta] = array('#markup' => "{$item['quantity']} x {$item['name']} - {$price}");
+        }
+        else {
+          $element[$delta] = array('#markup' => "{$item['quantity']} x {$item['name']}");
+        }
       }
       break;
 
@@ -761,6 +794,20 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
       '#element_validate' => array('element_validate_integer_positive'),
       '#attributes' => array(
         'class' => array('rooms-option--value'),
+      ),
+    );
+    $type_options = array(
+      ROOMS_OPTION_OPTIONAL => t('Optional'),
+      ROOMS_OPTION_MANDATORY => t('Mandatory'),
+      ROOMS_OPTION_ONREQUEST => t('On Request'),
+    );
+    $element['type'] = array(
+      '#type' => 'select',
+      '#title' => t('Type'),
+      '#options' => $type_options,
+      '#default_value' => isset($items[$delta]['type']) ? $items[$delta]['type'] : 'optional',
+      '#attributes' => array(
+        'class' => array('rooms-option--type'),
       ),
     );
 
