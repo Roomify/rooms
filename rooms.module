@@ -694,6 +694,10 @@ function rooms_field_formatter_info() {
       'label' => t('Rooms Options Default'),
       'field types' => array('rooms_options'),
     ),
+    'rooms_options_price' => array(
+      'label' => t('Rooms Options Price'),
+      'field types' => array('rooms_options'),
+    ),
     'rooms_options_admin' => array(
       'label' => t('Rooms Options Administrator'),
       'field types' => array('rooms_options'),
@@ -711,6 +715,25 @@ function rooms_field_formatter_view($entity_type, $entity, $field, $instance, $l
     case 'rooms_options_default':
       foreach ($items as $delta => $item) {
         $element[$delta] = array('#markup' => "{$item['quantity']} x {$item['name']}");
+      }
+      break;
+
+    case 'rooms_options_price':
+      $currency_setting = commerce_currency_load(commerce_default_currency());
+      $currency_symbol = $currency_setting['symbol'];
+
+      foreach ($items as $delta => $item) {
+        $price = t('@currency_symbol@amount', array(
+          '@currency_symbol' => $currency_symbol,
+          '@amount' => number_format($item['value'], 2, '.', ''),
+        ));
+
+        if ($item['value'] > 0) {
+          $element[$delta] = array('#markup' => "{$item['quantity']} x {$item['name']} - {$price}");
+        }
+        else {
+          $element[$delta] = array('#markup' => "{$item['quantity']} x {$item['name']}");
+        }
       }
       break;
 
