@@ -445,7 +445,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   $unit_selected = isset($booking->unit_id) ? t('Currently assigned unit: @unit_name / @type', array('@type' => $type_obj->label, '@unit_name' => $unit->name)) : '';
 
   if ($options_list != '') {
-    $unit_selected .= t('(Options: !options)', array('!options' => substr($options_list, 0, strlen($options_list) - 2)));
+    $unit_selected .= ' ' . t('(Options: !options)', array('!options' => substr($options_list, 0, strlen($options_list) - 2)));
   }
   if (isset($booking->price)) {
     $unit_selected .= '<br />' . t('Price') . ': ' .
