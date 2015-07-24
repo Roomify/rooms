@@ -244,6 +244,10 @@ function rooms_entity_access($op, $entity, $account, $entity_type) {
   // be an integer, use either nid or type as the static cache id.
   $cid = is_object($entity) ? $entity->{$entity_info['entity keys']['id']} : $entity;
 
+  if ($op == 'create' && $cid == '') {
+    $cid = $entity->type;
+  }
+
   // If we've already checked access for this node, user and op, return from
   // cache.
   if (isset($rights[$account->uid][$cid][$op])) {
