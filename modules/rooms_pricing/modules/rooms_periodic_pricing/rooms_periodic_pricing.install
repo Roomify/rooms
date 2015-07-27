@@ -4,14 +4,14 @@
 /**
  * Implements hook_requirements().
  */
-function rooms_period_pricing_requirements($phase) {
+function rooms_periodic_pricing_requirements($phase) {
   $requirements = array();
   $t = get_t();
 
   if ($phase == 'runtime') {
     if (!db_field_exists('rooms_units', 'weekly_price') || !db_field_exists('rooms_units', 'monthly_price')) {
-      $requirements['rooms_period_pricing'] = array(
-        'title' => $t('Rooms Period Pricing'),
+      $requirements['rooms_periodic_pricing'] = array(
+        'title' => $t('Rooms periodic Pricing'),
         'description' => $t('You need to run <a href="@url">@url</a>', array('@url' => 'update.php')),
         'value' => 'Weekly, Monthly fields missing',
         'severity' => REQUIREMENT_ERROR,

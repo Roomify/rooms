@@ -1,4 +1,4 @@
-name = Rooms Period Pricing
+name = Rooms Weekly/Monthly Pricing
 description = Manages Weekly and Monthly pricing information for Rooms.
 core = 7.x
 
