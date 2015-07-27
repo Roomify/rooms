@@ -1,10 +1,9 @@
 <?php
 
-
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function rooms_period_pricing_form_rooms_unit_edit_form_alter(&$form, &$form_state) {
+function rooms_periodic_pricing_form_rooms_unit_edit_form_alter(&$form, &$form_state) {
   $unit = $form['#entity'];
 
   $form['weekly_monthly_price'] = array(
@@ -36,13 +35,13 @@ function rooms_period_pricing_form_rooms_unit_edit_form_alter(&$form, &$form_sta
     '#maxlength' => 10,
   );
 
-  $form['#attached']['css'][] = drupal_get_path('module', 'rooms_period_pricing') . '/css/rooms_period_pricing.css';
+  $form['#attached']['css'][] = drupal_get_path('module', 'rooms_periodic_pricing') . '/css/rooms_periodic_pricing.css';
 }
 
 /**
  * Implements hook_rooms_string_alter().
  */
-function rooms_period_pricing_rooms_string_alter(&$string_suggestions, $context) {
+function rooms_periodic_pricing_rooms_string_alter(&$string_suggestions, $context) {
   if ($context['#purpose'] == 'display_base_price') {
     $string_suggestion = reset($string_suggestions);
 
@@ -56,7 +55,7 @@ function rooms_period_pricing_rooms_string_alter(&$string_suggestions, $context)
     $start_date = $context['#data']['arrival'];
     $end_date = $context['#data']['departure'];
 
-    $weeks_months_days = rooms_period_pricing_calculate_weeks_months_days($start_date, $end_date);
+    $weeks_months_days = rooms_periodic_pricing_calculate_weeks_months_days($start_date, $end_date);
 
     $monthly_price = commerce_currency_amount_to_decimal($unit->monthly_price * 100, commerce_default_currency());
     $weekly_price = commerce_currency_amount_to_decimal($unit->weekly_price * 100, commerce_default_currency());
@@ -118,9 +117,9 @@ function rooms_period_pricing_rooms_string_alter(&$string_suggestions, $context)
 /**
  * Implements hook_rooms_price_modifier_alter().
  */
-function rooms_period_pricing_rooms_price_modifier_alter(&$price_modifiers, $booking_info) {
-  if (isset($price_modifiers['rooms_period_pricing'])) {
-    unset($price_modifiers['rooms_period_pricing']);
+function rooms_periodic_pricing_rooms_price_modifier_alter(&$price_modifiers, $booking_info) {
+  if (isset($price_modifiers['rooms_periodic_pricing'])) {
+    unset($price_modifiers['rooms_periodic_pricing']);
   }
 
   $amount = 0;
@@ -130,7 +129,7 @@ function rooms_period_pricing_rooms_price_modifier_alter(&$price_modifiers, $boo
   $start_date = $booking_info['start_date'];
   $booking_parameters = $booking_info['booking_parameters'];
 
-  $weeks_months_days = rooms_period_pricing_calculate_weeks_months_days($start_date, $end_date);
+  $weeks_months_days = rooms_periodic_pricing_calculate_weeks_months_days($start_date, $end_date);
 
   // If "Weekly price" is set.
   if ($unit->weekly_price > 0) {
@@ -197,7 +196,7 @@ function rooms_period_pricing_rooms_price_modifier_alter(&$price_modifiers, $boo
 
   // Add a new price modifier to replace the old price with new calculated price.
   if ($amount > 0) {
-    $price_modifiers['rooms_period_pricing'] = array(
+    $price_modifiers['rooms_periodic_pricing'] = array(
       '#type' => ROOMS_DYNAMIC_MODIFIER,
       '#quantity' => 1,
       '#op_type' => ROOMS_REPLACE,
@@ -217,7 +216,7 @@ function rooms_period_pricing_rooms_price_modifier_alter(&$price_modifiers, $boo
  *
  * @return array
  */
-function rooms_period_pricing_calculate_weeks_months_days($start_date, $end_date) {
+function rooms_periodic_pricing_calculate_weeks_months_days($start_date, $end_date) {
   $days = $end_date->diff($start_date)->days;
 
   $weeks = floor($days / 7);
