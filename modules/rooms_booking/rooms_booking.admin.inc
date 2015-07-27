@@ -445,7 +445,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   $unit_selected = isset($booking->unit_id) ? t('Currently assigned unit: @unit_name / @type', array('@type' => $type_obj->label, '@unit_name' => $unit->name)) : '';
 
   if ($options_list != '') {
-    $unit_selected .= t('(Options: !options)', array('!options' => substr($options_list, 0, strlen($options_list) - 2)));
+    $unit_selected .= ' ' . t('(Options: !options)', array('!options' => substr($options_list, 0, strlen($options_list) - 2)));
   }
   if (isset($booking->price)) {
     $unit_selected .= '<br />' . t('Price') . ': ' .
@@ -650,6 +650,11 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
                   ),
                 );
 
+                if ($option['type'] == ROOMS_OPTION_MANDATORY) {
+                  $form['availability_fieldset']['unit_fieldset']['options_fieldset'][$option_name]['#default_value'] = '1';
+                  $form['availability_fieldset']['unit_fieldset']['options_fieldset'][$option_name]['#disabled'] = TRUE;
+                }
+
                 // Show quantity field selector if an option quantity is set.
                 if (is_numeric($option['quantity']) && isset($form_state['values'][$option_name]) && $form_state['values'][$option_name] == 1 && $option['quantity'] > 1) {
                   $form['availability_fieldset']['unit_fieldset']['options_fieldset'][$option_name . ':quantity'] = array(
@@ -670,19 +675,34 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
               foreach (rooms_unit_get_unit_options($unit) as $option) {
                 $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
 
-                if (isset($form_state['values'][$option_name])) {
+                if ($option['type'] == ROOMS_OPTION_MANDATORY) {
+                  $quantity = 1;
+                  if (isset($form_state['values'][$option_name . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
+                    $quantity = $form_state['values'][$option_name . ':quantity'] + 1;
+                  }
+
+                  $price_modifiers[$option_name] = array(
+                    '#type' => ROOMS_DYNAMIC_MODIFIER,
+                    '#op_type' => $option['operation'],
+                    '#amount' => $option['value'],
+                    '#quantity' => $quantity,
+                  );
+                }
+                elseif (isset($form_state['values'][$option_name])) {
                   if ($form_state['values'][$option_name] == 1) {
                     $quantity = 1;
                     if (isset($form_state['values'][$option_name . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
                       $quantity = $form_state['values'][$option_name . ':quantity'] + 1;
                     }
 
-                    $price_modifiers[$option_name] = array(
-                      '#type' => ROOMS_DYNAMIC_MODIFIER,
-                      '#op_type' => $option['operation'],
-                      '#amount' => $option['value'],
-                      '#quantity' => $quantity,
-                    );
+                    if ($option['type'] != ROOMS_OPTION_ONREQUEST) {
+                      $price_modifiers[$option_name] = array(
+                        '#type' => ROOMS_DYNAMIC_MODIFIER,
+                        '#op_type' => $option['operation'],
+                        '#amount' => $option['value'],
+                        '#quantity' => $quantity,
+                      );
+                    }
                   }
                 }
               }
