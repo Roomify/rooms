@@ -8,16 +8,16 @@ Feature: Once rooms_booking correctly installed
 Scenario: I can create a booking
   Given I am logged in as a user with the "administrator" role
 
-  #Creating a unit type and some units.
+  # Creating a unit type and some units.
   Given unit types:
-  |type     |label    |base_price|min_sleeps|max_sleeps|min_children|max_children|
-  |standard |Standard |100       |2         |3         |0           |1           |
+  | type     | label    | base_price | min_sleeps | max_sleeps | min_children | max_children |
+  | standard | Standard | 100        | 2          | 3          | 0            | 1            |
 
   # Creating a bunch of units programmatically.
   Given "standard" units:
-  |name       |base_price|min_sleeps|max_sleeps|
-  |Normal     |120       |1         |2         |
-  |Special    |130       |2         |3         |
+  | name       | base_price | min_sleeps | max_sleeps |
+  | Normal     | 120        | 1          | 2          |
+  | Special    | 130        | 2          | 3          |
 
   # Checking that Standard booking type exists.
   When I am on "admin/rooms/bookings/booking-types"
@@ -52,27 +52,27 @@ Scenario: I can create a booking
   Then select "Standard" from "unit_type"
   And I wait for AJAX to finish
 
-  Then I should see the text "Normal - Cost: \$ 480"
-  And I should see the text "Special - Cost: \$ 520"
+  Then I should see the text "Normal - Cost: $ 480"
+  And I should see the text "Special - Cost: $ 520"
 
   #Playing with the number of guests to check restrictions.
   Then select "1" from "data[group_size]"
   And I wait for AJAX to finish
 
-  Then I should see the text "Normal - Cost: \$ 480"
-  And I should see the text "Special - Cost: \$ 520"
+  Then I should see the text "Normal - Cost: $ 480"
+  And I should see the text "Special - Cost: $ 520"
 
   Then select "3" from "data[group_size]"
   And I wait for AJAX to finish
 
-  Then I should not see the text "Normal - Cost: \$ 480"
-  And I should see the text "Special - Cost: \$ 520"
+  Then I should not see the text "Normal - Cost: $ 480"
+  And I should see the text "Special - Cost: $ 520"
 
   Then select "2" from "data[group_size]"
   And I wait for AJAX to finish
 
-  Then I should see the text "Normal - Cost: \$ 480"
-  And I should see the text "Special - Cost: \$ 520"
+  Then I should see the text "Normal - Cost: $ 480"
+  And I should see the text "Special - Cost: $ 520"
 
   # Selecting the desired unit.
   Then I select the radio button "Normal - Cost: $ 480"
@@ -82,7 +82,7 @@ Scenario: I can create a booking
   And I press the "Save Booking" button
 
   # Checking that the unit has been locked.
-  Then the "Normal" unit should be Unconfirmed by the last booking between "2015-06-29" and "2015-06-22"
+  Then the "Normal" unit should be Unconfirmed by the last booking between "2015-06-19" and "2015-06-23"
 
   # Editing the booking to mark it as confirmed.
   When I am on "admin/rooms/bookings"
@@ -98,7 +98,7 @@ Scenario: I can create a booking
   And I press the "Save Booking" button
 
   # Checking that the unit has been locked and the booking confirmed..
-  Then the "Normal" unit should be Confirmed by the last booking between "2015-06-29" and "2015-06-22"
+  Then the "Normal" unit should be Confirmed by the last booking between "2015-06-19" and "2015-06-23"
 
   # Editing the booking and changing the unit assigned.
   When I am on "admin/rooms/bookings"
@@ -117,7 +117,7 @@ Scenario: I can create a booking
   And I press the "Save Booking" button
 
   # Checking that the prior unit has been released and the new one locked.
-  Then the "Special" unit should be Confirmed by the last booking between "2015-06-29" and "2015-06-22"
+  Then the "Special" unit should be Confirmed by the last booking between "2015-06-19" and "2015-06-23"
   And the state for "Normal" between "2015-06-19" and "2015-06-23" should be "1"
 
   # Deleting created entities to keep installation clean.
@@ -134,33 +134,33 @@ Scenario: I can create a booking
 Scenario: I can create a booking programmatically
   Given I am logged in as a user with the "administrator" role
 
-   #Creating a unit type and some units.
+  # Creating a unit type and some units.
   Given unit types:
-  |type     |label    |base_price|min_sleeps|max_sleeps|min_children|max_children|
-  |standard |Standard |100       |2         |3         |0           |1           |
+  | type     | label    | base_price | min_sleeps | max_sleeps | min_children | max_children |
+  | standard | Standard | 100        | 2          | 3          | 0            | 1            |
 
   # Creating a bunch of units programmatically.
   Given "standard" units:
-  |name       |base_price|
-  |Normal     |120       |
-  |Special    |130       |
+  | name       | base_price |
+  | Normal     | 120        |
+  | Special    | 130        |
 
   # Creating a customer profile.
   Given customer profiles:
-  |profile_id |name        |country |locality |address      |postal_code|
-  |profile1   |User test 1 |US      |Austin   |1900 David St|78705      |
-  |profile2   |User test 2 |US      |Austin   |1900 David St|78705      |
+  | profile_id | name        | country | locality | address       | postal_code |
+  | profile1   | User test 1 | US      | Austin   | 1900 David St | 78705       |
+  | profile2   | User test 2 | US      | Austin   | 1900 David St | 78705       |
 
   # Creating a booking.
   Given "standard_booking" bookings:
-  |profile_id|guests|children|start_date|end_date  |unit   |status|
-  |profile2  |1     |1       |2015-05-19|2015-05-23|Normal |1     |
+  | profile_id | guests | children | start_date | end_date   | unit   | status |
+  | profile2   | 1      | 1        | 2015-05-19 | 2015-05-23 | Normal | 1      |
 
   Then the "Normal" unit should be Confirmed by the last booking between "2015-05-19" and "2015-05-22"
 
   # Creating a booking.
   Given "standard_booking" bookings:
-  |profile_id|guests|children|start_date|end_date  |unit   |status|
-  |profile1  |3     |0       |2015-05-19|2015-05-23|Special|0     |
+  | profile_id | guests | children | start_date | end_date   | unit    | status |
+  | profile1   | 3      | 0        | 2015-05-19 | 2015-05-23 | Special | 0      |
 
   Then the "Special" unit should be Unconfirmed by the last booking between "2015-05-19" and "2015-05-22"
