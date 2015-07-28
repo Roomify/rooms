@@ -1,30 +1,37 @@
 <?php
 
-use Drupal\DrupalExtension\Context\DrupalContext,
-  Drupal\Component\Utility\Random;
+use Drupal\DrupalExtension\Context\DrupalSubContextBase,
+    Drupal\Component\Utility\Random;
 
 use Behat\Behat\Context\ClosuredContextInterface,
     Behat\Behat\Context\Step\Given,
     Behat\Behat\Context\Step\Then,
     Behat\Behat\Context\TranslatedContextInterface,
     Behat\Behat\Context\BehatContext,
-    Behat\Behat\Exception\PendingException
-  ;
+    Behat\Behat\Exception\PendingException;
+
 use Behat\Gherkin\Node\PyStringNode,
     Behat\Gherkin\Node\TableNode;
 
-//
-// Require 3rd-party libraries here:
-//
-//   require_once 'PHPUnit/Autoload.php';
-//   require_once 'PHPUnit/Framework/Assert/Functions.php';
-//
+use Behat\Behat\Hook\Scope\BeforeScenarioScope,
+    Behat\Behat\Hook\Scope\AfterScenarioScope;
+
+use Behat\Behat\Context\CustomSnippetAcceptingContext;
+
+use Drupal\DrupalDriverManager;
+
 
 /**
  * Features context.
  */
-class FeatureContext extends DrupalContext
-{
+class FeatureContext extends DrupalSubContextBase implements CustomSnippetAcceptingContext {
+
+  /**
+   * The Mink context
+   *
+   * @var Drupal\DrupalExtension\Context\MinkContext
+   */
+  private $minkContext;
 
   /**
    * Keep track of bookable units so they can be cleaned up.
@@ -86,13 +93,27 @@ class FeatureContext extends DrupalContext
    * Initializes context.
    * Every scenario gets its own context object.
    *
-   * @param array $parameters context parameters (set them up through behat.yml)
+   * @param \Drupal\DrupalDriverManager $drupal
+   *   The Drupal driver manager.
    */
-  public function __construct(array $parameters) {
-    // Initialize your context here
+  public function __construct(DrupalDriverManager $drupal) {
+    parent::__construct($drupal);
   }
 
-  public function afterScenario($event) {
+  public static function getAcceptedSnippetType() { return 'regex'; }
+
+  /**
+   * @BeforeScenario
+   */
+  public function before(BeforeScenarioScope $scope) {
+    $environment = $scope->getEnvironment();
+    $this->minkContext = $environment->getContext('Drupal\DrupalExtension\Context\MinkContext');
+  }
+
+  /**
+   * @AfterScenario
+   */
+  public function after(AfterScenarioScope $scope) {
     foreach ($this->users as $user) {
       $query = new EntityFieldQuery();
       $query->entityCondition('entity_type', 'commerce_order')
@@ -111,8 +132,6 @@ class FeatureContext extends DrupalContext
         rooms_booking_delete_multiple($booking_ids);
       }
     }
-
-    parent::afterScenario($event);
 
     if (!empty($this->units)) {
       foreach ($this->units as $unit) {
@@ -251,6 +270,30 @@ class FeatureContext extends DrupalContext
   }
 
   /**
+   * @Given /^(\d+) units of type "([^"]*)"$/
+   */
+  public function createUnitsOfType($count, $type) {
+    $random = new Random();
+
+    for ($i=0; $i<$count; $i++) {
+      $unit = rooms_unit_create(
+        array(
+          'name' => $random->name(8),
+          'type' => $type,
+          'default_state' => 1,
+        )
+      );
+
+      if (isset($this->user->uid)) {
+        $unit->uid = $this->user->uid;
+      }
+
+      $unit->save();
+      $this->units[] = $unit;
+    }
+  }
+
+  /**
    * @Given /^"(?P<type>[^"]*)" units:$/
    */
   public function createUnits($type, TableNode $nodesTable) {
@@ -272,11 +315,13 @@ class FeatureContext extends DrupalContext
    * @Given /^unit types:$/
    */
   public function createUnitTypes(TableNode $nodesTable) {
+    $random = new Random();
+
     foreach ($nodesTable->getHash() as $nodeHash) {
       $unit_type_definition = array();
 
-      $unit_type_definition['type'] = isset($nodeHash['type']) ? $nodeHash['type'] :drupal_strtolower($this->getDrupal()->random->name(8));
-      $unit_type_definition['label'] = isset($nodeHash['label']) ? $nodeHash['label'] : $this->getDrupal()->random->name(8);
+      $unit_type_definition['type'] = isset($nodeHash['type']) ? $nodeHash['type'] :drupal_strtolower($random->name(8));
+      $unit_type_definition['label'] = isset($nodeHash['label']) ? $nodeHash['label'] : $random->name(8);
 
       $other_properties = array('base_price', 'min_children', 'max_children', 'min_sleeps', 'max_sleeps');
       foreach ($other_properties as $property) {
@@ -339,13 +384,11 @@ class FeatureContext extends DrupalContext
         $event_start = new DateTime($event->start);
         $event_end = new DateTime($event->end);
 
-        // Discard events out of the range to check.
-        if (($start_format > $event_end->format('Y-m-d')) || ($end_format < $event_start->format('Y-m-d'))) {
-          continue;
-        }
-        // Throw exception if the event id is not the desired.
-        if ($event->id != $expected_value) {
-          throw new RuntimeException("The $type for unit $unit_name between $start_date and $end_date is not always $expected_value");
+        if (($start_format >= $event_start->format('Y-m-d')) && ($end_format <= $event_end->format('Y-m-d'))) {
+          // Throw exception if the event id is not the desired.
+          if ($event->id != $expected_value) {
+            throw new RuntimeException("The $type for unit $unit_name between $start_date and $end_date is not always $expected_value");
+          }
         }
       }
     }
@@ -371,6 +414,94 @@ class FeatureContext extends DrupalContext
     $period = new DatePeriod($period_start, $interval, $period_end);
 
     return $period;
+  }
+
+  /**
+   * @Given /^(\d+) bookings of type "([^"]*)" for all "([^"]*)" units$/
+   */
+  public function bookingsOfTypeForAllUnits($count, $type, $unit_type) {
+    $efq = new EntityFieldQuery();
+    $efq->entityCondition('entity_type', 'rooms_unit')
+      ->propertyCondition('type', $unit_type);
+    $results = $efq->execute();
+    if ($results && isset($results['rooms_unit'])) {
+      foreach ($results['rooms_unit'] as $unit_id => $unit) {
+        $this->createBookingsForUnit($count, $type, $unit_id);
+      }
+    }
+  }
+
+  private function createBookingsForUnit($count, $type, $unit_id) {
+    $now = new DateTime();
+
+    $end_date = clone($now);
+    $end_date->sub(new DateInterval('P4D'));
+
+    $start_date = clone($now);
+    $start_date->sub(new DateInterval('P7D'));
+
+    for ($i=0; $i<$count; $i++) {
+      $profile_id = reset($this->customerProfiles);
+
+      $profile = commerce_customer_profile_load($profile_id);
+      $client_name = isset($profile->commerce_customer_address['und'][0]['name_line']) ? $profile->commerce_customer_address['und'][0]['name_line'] : '';
+
+      // Save customer in rooms_customers table.
+      db_merge('rooms_customers')
+        ->key(array('name' => $client_name))
+        ->fields(array(
+          'name' => $client_name,
+          'commerce_customer_id' => $profile_id,
+        ))
+        ->execute();
+
+      // Get customer id from rooms_customers table.
+      $client_id = db_select('rooms_customers')
+        ->fields('rooms_customers', array('id'))
+        ->condition('name', $client_name, '=')
+        ->execute()->fetchField();
+
+      $unit = rooms_unit_load($unit_id);
+      $unit_type = $unit->type;
+
+      $data = array(
+        'type' => $type,
+        'name' => $client_name,
+        'customer_id' => $client_id,
+        'unit_id' => $unit_id,
+        'unit_type' => $unit_type,
+        'start_date' => $start_date->format('Y-m-d'),
+        'end_date' => $end_date->format('Y-m-d'),
+        'price' => $unit->base_price * 300,
+        'booking_status' => 1,
+      );
+      $booking = rooms_booking_create($data);
+      $booking->save();
+
+      $booking_parameters = array('adults' => 2, 'children' => 0);
+      $order = rooms_booking_manager_create_order($start_date, $end_date, $booking_parameters, $unit, $booking, $client_id);
+
+      $booking->order_id = $order->order_number;
+      $booking->save();
+
+      $this->bookings[] = $booking->booking_id;
+
+      if ($i + 1 == floor($count/2)) {
+        $end_date = clone($now);
+        $end_date->add(new DateInterval('P7D'));
+
+        $start_date = clone($now);
+        $start_date->add(new DateInterval('P4D'));
+      }
+      elseif ($i + 1 < floor($count/2)) {
+        $end_date->sub(new DateInterval('P7D'));
+        $start_date->sub(new DateInterval('P7D'));
+      }
+      else {
+        $end_date->add(new DateInterval('P7D'));
+        $start_date->add(new DateInterval('P7D'));
+      }
+    }
   }
 
   /**
@@ -457,11 +588,13 @@ class FeatureContext extends DrupalContext
    * @Given /^booking types:$/
    */
   public function createBookingTypes(TableNode $nodesTable) {
+    $random = new Random();
+
     foreach ($nodesTable->getHash() as $nodeHash) {
       $booking_type_definition = array();
 
-      $booking_type_definition['type'] = isset($nodeHash['type']) ? $nodeHash['type'] :drupal_strtolower($this->getDrupal()->random->name(8));
-      $booking_type_definition['label'] = isset($nodeHash['label']) ? $nodeHash['label'] : $this->getDrupal()->random->name(8);
+      $booking_type_definition['type'] = isset($nodeHash['type']) ? $nodeHash['type'] :drupal_strtolower($random->name(8));
+      $booking_type_definition['label'] = isset($nodeHash['label']) ? $nodeHash['label'] : $random->name(8);
 
       $booking_type = rooms_boking_type_create($booking_type_definition);
       $booking_type->save();
@@ -544,19 +677,8 @@ class FeatureContext extends DrupalContext
     $element_name = 'rooms_package_units[und][' . $delta . '][target_id]';
     $this->fillFieldByJS($element_name, $text);
 
-    $this->pressButton('rooms_package_units_add_more');
-    $this->iWaitForAjaxToFinish();
-  }
-
-  /**
-   * @Then /^I should see the button "(?<button>[^"]*)"$/
-   */
-  public function iShouldSeeTheButton($button) {
-    $element = $this->getSession()->getPage();
-    $submit = $element->findButton($button);
-    if (empty($submit)) {
-      throw new \Exception(sprintf("No submit button at %s", $this->getSession()->getCurrentUrl()));
-    }
+    $this->minkContext->pressButton('rooms_package_units_add_more');
+    $this->minkContext->iWaitForAjaxToFinish();
   }
 
   /**
@@ -732,8 +854,8 @@ class FeatureContext extends DrupalContext
     foreach (explode(',', $unit_names) as $unit_name) {
       $unit_id = $this->findBookableUnitByName($unit_name);
       $this->fillFieldByJS('availability_ref[und][' . $delta . '][unit_id]', $unit_name. " [unit_id:$unit_id]");
-      $this->pressButton($field_name . '_add_more');
-      $this->iWaitForAjaxToFinish();
+      $this->minkContext->pressButton($field_name . '_add_more');
+      $this->minkContext->iWaitForAjaxToFinish();
       $delta++;
     }
   }
@@ -744,7 +866,7 @@ class FeatureContext extends DrupalContext
   public function iNavigateInTheFullcalendarTo($month) {
     $today = new DateTime();
     $final = new DateTime($month . '-1');
-    $button_selector = ($today > $final) ? '.fc-button-prev' : '.fc-button-next';
+    $button_selector = ($today > $final) ? '.fc-prev-button' : '.fc-next-button';
 
     if ($today > $final) {
       $start = $final->add(new DateInterval('P2M'));;
@@ -755,12 +877,12 @@ class FeatureContext extends DrupalContext
       $end = $final->sub(new DateInterval('P1M'));
     }
     foreach ($this->monthsBetweenDates($start, $end) as $month) {
-      $element = $this->getSession()->getPage()->find('css', 'span' . $button_selector);
+      $element = $this->getSession()->getPage()->find('css', 'button' . $button_selector);
       if ($element === NULL) {
         throw new \InvalidArgumentException(sprintf('Cannot find button: "%s"', $button_selector));
       }
       $element->click();
-      $this->iWaitForAjaxToFinish();
+      $this->minkContext->iWaitForAjaxToFinish();
     }
   }
 
@@ -777,7 +899,7 @@ class FeatureContext extends DrupalContext
     $this->getSession()->visit($this->locatePath('/node/' . $saved->nid . '/edit'));
   }
 
-    /**
+  /**
    * Fill commerce address form fields in a single step.
    */
   private function fillCommerceAddress($args, $type) {
@@ -790,10 +912,10 @@ class FeatureContext extends DrupalContext
     }
 
     // Need to manually fill country to trigger the AJAX refresh of fields for given country
-    $country_field = $this->fixStepArgument("{$type}[commerce_customer_address][und][0][country]");
-    $country_value = $this->fixStepArgument($args[4]);
+    $country_field = str_replace('\\"', '"', "{$type}[commerce_customer_address][und][0][country]");
+    $country_value = str_replace('\\"', '"', $args[4]);
     $this->getSession()->getPage()->fillField($country_field, $country_value);
-    $this->iWaitForAjaxToFinish();
+    $this->minkContext->iWaitForAjaxToFinish();
 
     return array(
       new Given("I fill in \"{$type}[commerce_customer_address][und][0][locality]\" with \"$args[1]\""),
@@ -875,28 +997,28 @@ class FeatureContext extends DrupalContext
     $delta = count($items) - 1;
 
     if (!isset($start) || !isset($end)) {
-      $this->checkOption('rooms_constraints_range[und][' . $delta . '][always]');
+      $this->minkContext->checkOption('rooms_constraints_range[und][' . $delta . '][always]');
     }
     else {
       $start_date = new DateTime($start);
       $end_date = new DateTime($end);
-      $this->fillField('rooms_constraints_range[und][' . $delta . '][start_date][date]', $start_date->format('d/m/Y'));
-      $this->fillField('rooms_constraints_range[und][' . $delta . '][end_date][date]', $end_date->format('d/m/Y'));
+      $this->minkContext->fillField('rooms_constraints_range[und][' . $delta . '][start_date][date]', $start_date->format('d/m/Y'));
+      $this->minkContext->fillField('rooms_constraints_range[und][' . $delta . '][end_date][date]', $end_date->format('d/m/Y'));
     }
     if (isset($constraint_type)){
-      $this->selectOption('rooms_constraints_range[und][' . $delta . '][constraint_type]', $constraint_type);
+      $this->minkContext->selectOption('rooms_constraints_range[und][' . $delta . '][constraint_type]', $constraint_type);
     }
     if (isset($start_day)){
-      $this->selectOption('rooms_constraints_range[und][' . $delta . '][start_day]', $start_day);
+      $this->minkContext->selectOption('rooms_constraints_range[und][' . $delta . '][start_day]', $start_day);
     }
     if (isset($minimum)){
-      $this->fillField('rooms_constraints_range[und][' . $delta . '][minimum_stay]', $minimum);
+      $this->minkContext->fillField('rooms_constraints_range[und][' . $delta . '][minimum_stay]', $minimum);
     }
     if (isset($maximum)){
-      $this->fillField('rooms_constraints_range[und][' . $delta . '][maximum_stay]', $maximum);
+      $this->minkContext->fillField('rooms_constraints_range[und][' . $delta . '][maximum_stay]', $maximum);
     }
-    $this->pressButton('rooms_constraints_range_add_more');
-    $this->iWaitForAjaxToFinish();
+    $this->minkContext->pressButton('rooms_constraints_range_add_more');
+    $this->minkContext->iWaitForAjaxToFinish();
   }
 
   /**
@@ -934,8 +1056,8 @@ class FeatureContext extends DrupalContext
    *
    */
   protected function fillFieldByJS($field, $value) {
-    $field = $this->fixStepArgument($field);
-    $value = $this->fixStepArgument($value);
+    $field = str_replace('\\"', '"', $field);
+    $value = str_replace('\\"', '"', $value);
     $xpath = $this->getSession()->getPage()->findField($field)->getXpath();
 
     $element = $this->getSession()->getDriver()->getWebDriverSession()->element('xpath', $xpath);
