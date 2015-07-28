@@ -1,0 +1,2 @@
+#ignore environment specific behat files
+test/behat.yml
