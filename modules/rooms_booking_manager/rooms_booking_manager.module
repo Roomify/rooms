@@ -2315,7 +2315,7 @@ function rooms_booking_manager_alter_rooms_booking_settings(&$form, &$form_state
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#title' => t('Commerce checkout form settings'),
+    '#title' => t('Commerce checkout cart availability settings'),
     '#states' => array(
       'visible' => array(
         ':input[name="rooms_checkout_style"]' => array('value' => ROOMS_COMMERCE_CHECKOUT),
