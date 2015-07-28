@@ -19,16 +19,16 @@ Scenario: Bulk creation of units and bookings
   | suite    | Suite    | 200        | 2          | 3          | 0            | 1            |
   | single   | Single   | 140        | 1          | 1          | 0            | 1            |
 
-  Given 20 units of type "standard"
-  Given 20 units of type "special"
-  Given 20 units of type "deluxe"
-  Given 20 units of type "suite"
-  Given 20 units of type "single"
+  Given 2 units of type "standard"
+  Given 2 units of type "special"
+  Given 2 units of type "deluxe"
+  Given 2 units of type "suite"
+  Given 2 units of type "single"
 
-  Given 20 bookings of type "standard_booking" for all "standard" units
-  Given 20 bookings of type "standard_booking" for all "special" units
-  Given 20 bookings of type "standard_booking" for all "deluxe" units
-  Given 20 bookings of type "standard_booking" for all "suite" units
-  Given 20 bookings of type "standard_booking" for all "single" units
+  Given 2 bookings of type "standard_booking" for all "standard" units
+  Given 2 bookings of type "standard_booking" for all "special" units
+  Given 2 bookings of type "standard_booking" for all "deluxe" units
+  Given 2 bookings of type "standard_booking" for all "suite" units
+  Given 2 bookings of type "standard_booking" for all "single" units
 
   And I break
