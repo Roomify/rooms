@@ -5,16 +5,16 @@ Feature: Once rooms_unit and rooms_booking are installed
 
 @api @javascript
 Scenario: Creating some units, adding options at both unit and unit type levels, then create bookings and check that everything works properly.
-  #Creating a unit type programmatically.
+  # Creating a unit type programmatically.
   Given unit types:
-  |type     |label    |base_price|min_sleeps|max_sleeps|min_children|max_children|
-  |standard |Standard |100       |2         |3         |0           |1           |
+  | type     | label    | base_price | min_sleeps | max_sleeps | min_children | max_children |
+  | standard | Standard | 100        | 2          | 3          | 0            | 1            |
 
   # Creating a bunch of units programmatically.
   Given "standard" units:
-  |name   |base_price|min_sleeps|max_sleeps|
-  |Normal |120      |1         |2         |
-  |Deluxe |140      |2         |4         |
+  | name   | base_price | min_sleeps | max_sleeps |
+  | Normal | 120        | 1          | 2          |
+  | Deluxe | 140        | 2          | 4          |
 
   Given I am logged in as a user with the "administrator" role
   When I am on the "Normal" unit
@@ -115,15 +115,15 @@ Scenario: Creating some units, adding options at both unit and unit type levels,
   And the "rooms_booking_unit_options[und][6][operation]" field should contain "decrease"
   And the "rooms_booking_unit_options[und][6][value]" field should contain "15"
 
-  #Creating a booking to play with it
+  # Creating a booking to play with it
   Given customer profiles:
-  |profile_id |name      |country |locality |address      |postal_code|
-  |profile    |User test |US      |Austin   |1900 David St|78705      |
+  | profile_id | name      | country | locality | address       | postal_code |
+  | profile    | User test | US      | Austin   | 1900 David St | 78705       |
 
   # Creating a booking.
   Given "standard_booking" bookings:
-  |profile_id|guests|children|start_date|end_date  |unit   |status|
-  |profile   |1     |1       |2015-05-19|2015-05-23|Normal |1     |
+  | profile_id | guests | children | start_date | end_date   | unit   | status |
+  | profile    | 1      | 1        | 2015-05-19 | 2015-05-23 | Normal | 1      |
 
   Given I am on "admin/rooms/bookings"
   Then I should see the text "19-05-2015"
@@ -230,7 +230,7 @@ Scenario: Creating some units, adding options at both unit and unit type levels,
 
   Then I should see the text "Options: Breakfast : 1, Coupon : 3"
   And I should see the text "Currently assigned unit: Normal / Standard"
-  And I should see the text "Price: \$ 483.00"
+  And I should see the text "Price: $ 483.00"
 
   Then I press the "Save Booking" button
 
@@ -240,7 +240,7 @@ Scenario: Creating some units, adding options at both unit and unit type levels,
 
   Then I should see the text "Options: Breakfast : 1, Coupon : 3"
   And I should see the text "Currently assigned unit: Normal / Standard"
-  And I should see the text "Price: \$ 483.00"
+  And I should see the text "Price: $ 483.00"
 
   # Adding some new options at unit type level.
   Given I am on "admin/rooms/units/unit-types/manage/standard"
@@ -298,44 +298,44 @@ Scenario: Creating some units, adding options at both unit and unit type levels,
 
   Then I should see the text "Options: Scotch Whisky : 3"
   And I should see the text "Currently assigned unit: Deluxe / Standard"
-  And I should see the text "Price: \$ 635.00"
+  And I should see the text "Price: $ 635.00"
 
 @api @javascript
 Scenario: Adding options from tables for testing purposes.
-  #Creating a unit type programmatically.
+  # Creating a unit type programmatically.
   Given unit types:
-  |type     |label    |base_price|min_sleeps|max_sleeps|min_children|max_children|
-  |standard |Standard |100       |2         |3         |0           |1           |
+  | type     | label    | base_price | min_sleeps | max_sleeps | min_children | max_children |
+  | standard | Standard | 100        | 2          | 3          | 0            | 1            |
 
   # Creating a bunch of units programmatically.
   Given "standard" units:
-  |name   |base_price|min_sleeps|max_sleeps|
-  |Normal |120      |1         |2         |
-  |Deluxe |140      |2         |4         |
+  | name   | base_price | min_sleeps | max_sleeps |
+  | Normal | 120        | 1          | 2          |
+  | Deluxe | 140        | 2          | 4          |
 
   Given options for "standard" unit type:
-  |name         |quantity|operation|value|
-  |Scotch Whisky|5       |add      |25   |
+  | name          | quantity | operation | value |
+  | Scotch Whisky | 5        | add       | 25    |
 
   Given options for "Normal" unit:
-  |name         |quantity|operation|value|
-  |Champagne    |5       |add      |10   |
-  |Breakfast    |1       |add-daily|12    |
-  |Coupon       |3       |sub      |15   |
-  |No towels    |1       |sub-daily|10   |
-  |Special offer|1       |replace  |100  |
-  |Extra bed    |1       |increase |20   |
-  |Single use   |1       |decrease |15   |
+  | name          | quantity | operation | value |
+  | Champagne     | 5        | add       | 10    |
+  | Breakfast     | 1        | add-daily | 12    |
+  | Coupon        | 3        | sub       | 15    |
+  | No towels     | 1        | sub-daily | 10    |
+  | Special offer | 1        | replace   | 100   |
+  | Extra bed     | 1        | increase  | 20    |
+  | Single use    | 1        | decrease  | 15    |
 
-  #Creating a booking to play with it
+  # Creating a booking to play with it
   Given customer profiles:
-  |profile_id |name      |country |locality |address      |postal_code|
-  |profile    |User test |US      |Austin   |1900 David St|78705      |
+  | profile_id | name      | country | locality | address       | postal_code |
+  | profile    | User test | US      | Austin   | 1900 David St | 78705       |
 
   # Creating a booking.
   Given "standard_booking" bookings:
-  |profile_id|guests|children|start_date|end_date  |unit   |status|
-  |profile   |1     |0       |2015-05-19|2015-05-23|Normal |1     |
+  | profile_id | guests | children | start_date | end_date   | unit   | status |
+  | profile    | 1      | 0        | 2015-05-19 | 2015-05-23 | Normal | 1      |
 
   Given I am logged in as a user with the "administrator" role
 

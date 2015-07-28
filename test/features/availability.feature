@@ -5,22 +5,22 @@ Feature: Once rooms_availability is installed
 
 @api @javascript
 Scenario: Availability manager user should be able to modify the availability state of units both in bulk availability page and per unit.
-  #Creating a unit type and some units.
+  # Creating a unit type and some units.
   Given unit types:
-  |type     |label    |base_price|min_sleeps|max_sleeps|min_children|max_children|
-  |standard |Standard |100       |2         |3         |0           |1           |
+  | type     | label    | base_price | min_sleeps | max_sleeps | min_children | max_children |
+  | standard | Standard | 100        | 2          | 3          | 0            | 1            |
 
   # Creating a bunch of units programmatically.
   Given "standard" units:
-  |name       |default_state|
-  |Unavailable|0            |
-  |Available  |1            |
-  |On Request |2            |
-  |An. Booking|3            |
+  | name        | default_state |
+  | Unavailable | 0             |
+  | Available   | 1             |
+  | On Request  | 2             |
+  | An. Booking | 3             |
 
   # Checking the initial conditions.
   Given the cache has been cleared
-  And I am logged in as a user with the "access administration pages,view any rooms_unit entity of bundle standard,administer rooms_unit availability,update availability any rooms_unit entity of bundle standard" permission
+  And I am logged in as a user with the "access administration pages,view any rooms_unit entity of bundle standard,administer rooms_unit availability,update availability any rooms_unit entity of bundle standard" permissions
   Then the state for "Unavailable" between "2014-05-05" and "2014-07-07" should be "0"
   And the state for "Available" between "2014-05-05" and "2014-07-07" should be "1"
   And the state for "On Request" between "2014-05-05" and "2014-07-07" should be "2"
