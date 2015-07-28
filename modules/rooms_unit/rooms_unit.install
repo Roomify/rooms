@@ -87,6 +87,22 @@ function rooms_unit_schema() {
         'scale' => 2,
         'default' => 0,
       ),
+      'weekly_price' => array(
+        'description' => 'The default cost per week for the unit',
+        'type' => 'numeric',
+        'not null' => TRUE,
+        'precision' => 10,
+        'scale' => 2,
+        'default' => 0,
+      ),
+      'monthly_price' => array(
+        'description' => 'The default cost per month for the unit',
+        'type' => 'numeric',
+        'not null' => TRUE,
+        'precision' => 10,
+        'scale' => 2,
+        'default' => 0,
+      ),
       'default_state' => array(
         'description' => 'The default booking state for the room',
         'type' => 'int',
@@ -628,4 +644,27 @@ function rooms_unit_update_7010() {
  */
 function rooms_unit_update_7011() {
   rooms_unit_install_create_options_field();
+}
+
+/**
+ * Adds weekly_price and monthly_price to Bookable units.
+ */
+function rooms_unit_update_7012() {
+  db_add_field('rooms_units', 'weekly_price', array(
+    'description' => 'The default cost per week for the unit',
+    'type' => 'numeric',
+    'not null' => TRUE,
+    'precision' => 10,
+    'scale' => 2,
+    'default' => 0,
+  ));
+
+  db_add_field('rooms_units', 'monthly_price', array(
+    'description' => 'The default cost per month for the unit',
+    'type' => 'numeric',
+    'not null' => TRUE,
+    'precision' => 10,
+    'scale' => 2,
+    'default' => 0,
+  ));
 }

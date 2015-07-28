@@ -19,7 +19,7 @@ function rooms_booking_manager_views_default_views() {
 }
 
 function rooms_booking_manager_cart_view_views_default_views() {
-  $view = new view;
+  $view = new view();
   $view->name = 'booking_cart_form';
   $view->description = 'Display a shopping cart update form.';
   $view->tag = 'commerce';
@@ -32,6 +32,7 @@ function rooms_booking_manager_cart_view_views_default_views() {
   /* Display: Defaults */
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->display->display_options['title'] = 'Shopping cart';
+  $handler->display->display_options['use_more_always'] = FALSE;
   $handler->display->display_options['access']['type'] = 'none';
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
@@ -80,18 +81,26 @@ function rooms_booking_manager_cart_view_views_default_views() {
       'separator' => '',
     ),
   );
-  $handler->display->display_options['style_options']['override'] = 1;
-  $handler->display->display_options['style_options']['sticky'] = 0;
   /* Footer: Commerce Order: Order total */
   $handler->display->display_options['footer']['order_total']['id'] = 'order_total';
   $handler->display->display_options['footer']['order_total']['table'] = 'commerce_order';
   $handler->display->display_options['footer']['order_total']['field'] = 'order_total';
-  $handler->display->display_options['footer']['order_total']['empty'] = FALSE;
-  /* Relationship: Commerce Order: Referenced line item */
+  /* Relationship: Commerce Order: Referenced line items */
   $handler->display->display_options['relationships']['commerce_line_items_line_item_id']['id'] = 'commerce_line_items_line_item_id';
   $handler->display->display_options['relationships']['commerce_line_items_line_item_id']['table'] = 'field_data_commerce_line_items';
   $handler->display->display_options['relationships']['commerce_line_items_line_item_id']['field'] = 'commerce_line_items_line_item_id';
-  $handler->display->display_options['relationships']['commerce_line_items_line_item_id']['required'] = 1;
+  $handler->display->display_options['relationships']['commerce_line_items_line_item_id']['required'] = TRUE;
+  /* Field: Commerce Line item: Booking Options */
+  $handler->display->display_options['fields']['rooms_booking_options']['id'] = 'rooms_booking_options';
+  $handler->display->display_options['fields']['rooms_booking_options']['table'] = 'field_data_rooms_booking_options';
+  $handler->display->display_options['fields']['rooms_booking_options']['field'] = 'rooms_booking_options';
+  $handler->display->display_options['fields']['rooms_booking_options']['relationship'] = 'commerce_line_items_line_item_id';
+  $handler->display->display_options['fields']['rooms_booking_options']['label'] = '';
+  $handler->display->display_options['fields']['rooms_booking_options']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['rooms_booking_options']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['rooms_booking_options']['type'] = 'rooms_options_price';
+  $handler->display->display_options['fields']['rooms_booking_options']['delta_offset'] = '0';
+  $handler->display->display_options['fields']['rooms_booking_options']['multi_type'] = 'ul';
   /* Field: Commerce Line item: Display path */
   $handler->display->display_options['fields']['commerce_display_path']['id'] = 'commerce_display_path';
   $handler->display->display_options['fields']['commerce_display_path']['table'] = 'field_data_commerce_display_path';
@@ -99,112 +108,36 @@ function rooms_booking_manager_cart_view_views_default_views() {
   $handler->display->display_options['fields']['commerce_display_path']['relationship'] = 'commerce_line_items_line_item_id';
   $handler->display->display_options['fields']['commerce_display_path']['label'] = '';
   $handler->display->display_options['fields']['commerce_display_path']['exclude'] = TRUE;
-  $handler->display->display_options['fields']['commerce_display_path']['alter']['alter_text'] = 0;
-  $handler->display->display_options['fields']['commerce_display_path']['alter']['make_link'] = 0;
-  $handler->display->display_options['fields']['commerce_display_path']['alter']['absolute'] = 0;
-  $handler->display->display_options['fields']['commerce_display_path']['alter']['external'] = 0;
-  $handler->display->display_options['fields']['commerce_display_path']['alter']['nl2br'] = 0;
-  $handler->display->display_options['fields']['commerce_display_path']['alter']['word_boundary'] = 1;
-  $handler->display->display_options['fields']['commerce_display_path']['alter']['ellipsis'] = 1;
-  $handler->display->display_options['fields']['commerce_display_path']['alter']['strip_tags'] = 0;
-  $handler->display->display_options['fields']['commerce_display_path']['alter']['trim'] = 0;
-  $handler->display->display_options['fields']['commerce_display_path']['alter']['html'] = 0;
-  $handler->display->display_options['fields']['commerce_display_path']['element_label_colon'] = 1;
-  $handler->display->display_options['fields']['commerce_display_path']['element_default_classes'] = 1;
-  $handler->display->display_options['fields']['commerce_display_path']['hide_empty'] = 0;
-  $handler->display->display_options['fields']['commerce_display_path']['empty_zero'] = 0;
-  $handler->display->display_options['fields']['commerce_display_path']['field_api_classes'] = 0;
   /* Field: Commerce Line Item: Label */
   $handler->display->display_options['fields']['line_item_label']['id'] = 'line_item_label';
   $handler->display->display_options['fields']['line_item_label']['table'] = 'commerce_line_item';
   $handler->display->display_options['fields']['line_item_label']['field'] = 'line_item_label';
   $handler->display->display_options['fields']['line_item_label']['relationship'] = 'commerce_line_items_line_item_id';
   $handler->display->display_options['fields']['line_item_label']['label'] = 'Booking';
-  $handler->display->display_options['fields']['line_item_label']['alter']['alter_text'] = 0;
-  $handler->display->display_options['fields']['line_item_label']['alter']['make_link'] = 0;
-  $handler->display->display_options['fields']['line_item_label']['alter']['absolute'] = 0;
-  $handler->display->display_options['fields']['line_item_label']['alter']['external'] = 0;
-  $handler->display->display_options['fields']['line_item_label']['alter']['replace_spaces'] = 0;
-  $handler->display->display_options['fields']['line_item_label']['alter']['trim_whitespace'] = 0;
-  $handler->display->display_options['fields']['line_item_label']['alter']['nl2br'] = 0;
-  $handler->display->display_options['fields']['line_item_label']['alter']['word_boundary'] = 1;
-  $handler->display->display_options['fields']['line_item_label']['alter']['ellipsis'] = 1;
-  $handler->display->display_options['fields']['line_item_label']['alter']['more_link'] = 0;
-  $handler->display->display_options['fields']['line_item_label']['alter']['strip_tags'] = 0;
-  $handler->display->display_options['fields']['line_item_label']['alter']['trim'] = 0;
-  $handler->display->display_options['fields']['line_item_label']['alter']['html'] = 0;
-  $handler->display->display_options['fields']['line_item_label']['element_label_colon'] = 1;
-  $handler->display->display_options['fields']['line_item_label']['element_default_classes'] = 1;
-  $handler->display->display_options['fields']['line_item_label']['hide_empty'] = 0;
-  $handler->display->display_options['fields']['line_item_label']['empty_zero'] = 0;
-  $handler->display->display_options['fields']['line_item_label']['hide_alter_empty'] = 1;
+  $handler->display->display_options['fields']['line_item_label']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['line_item_label']['alter']['text'] = '[line_item_label]
+  <br>[rooms_booking_options]';
   /* Field: Commerce Line item: Unit price */
   $handler->display->display_options['fields']['commerce_unit_price']['id'] = 'commerce_unit_price';
   $handler->display->display_options['fields']['commerce_unit_price']['table'] = 'field_data_commerce_unit_price';
   $handler->display->display_options['fields']['commerce_unit_price']['field'] = 'commerce_unit_price';
   $handler->display->display_options['fields']['commerce_unit_price']['relationship'] = 'commerce_line_items_line_item_id';
   $handler->display->display_options['fields']['commerce_unit_price']['label'] = 'Price';
-  $handler->display->display_options['fields']['commerce_unit_price']['alter']['alter_text'] = 0;
-  $handler->display->display_options['fields']['commerce_unit_price']['alter']['make_link'] = 0;
-  $handler->display->display_options['fields']['commerce_unit_price']['alter']['absolute'] = 0;
-  $handler->display->display_options['fields']['commerce_unit_price']['alter']['external'] = 0;
-  $handler->display->display_options['fields']['commerce_unit_price']['alter']['nl2br'] = 0;
-  $handler->display->display_options['fields']['commerce_unit_price']['alter']['word_boundary'] = 1;
-  $handler->display->display_options['fields']['commerce_unit_price']['alter']['ellipsis'] = 1;
-  $handler->display->display_options['fields']['commerce_unit_price']['alter']['strip_tags'] = 0;
-  $handler->display->display_options['fields']['commerce_unit_price']['alter']['trim'] = 0;
-  $handler->display->display_options['fields']['commerce_unit_price']['alter']['html'] = 0;
   $handler->display->display_options['fields']['commerce_unit_price']['element_class'] = 'price';
-  $handler->display->display_options['fields']['commerce_unit_price']['element_label_colon'] = 1;
-  $handler->display->display_options['fields']['commerce_unit_price']['element_default_classes'] = 1;
-  $handler->display->display_options['fields']['commerce_unit_price']['hide_empty'] = 0;
-  $handler->display->display_options['fields']['commerce_unit_price']['empty_zero'] = 0;
   $handler->display->display_options['fields']['commerce_unit_price']['click_sort_column'] = 'amount';
-  $handler->display->display_options['fields']['commerce_unit_price']['type'] = 'commerce_price_formatted_amount';
-  $handler->display->display_options['fields']['commerce_unit_price']['field_api_classes'] = 0;
   /* Field: Commerce Line Item: Delete button */
   $handler->display->display_options['fields']['edit_delete']['id'] = 'edit_delete';
   $handler->display->display_options['fields']['edit_delete']['table'] = 'commerce_line_item';
   $handler->display->display_options['fields']['edit_delete']['field'] = 'edit_delete';
   $handler->display->display_options['fields']['edit_delete']['relationship'] = 'commerce_line_items_line_item_id';
   $handler->display->display_options['fields']['edit_delete']['label'] = 'Remove';
-  $handler->display->display_options['fields']['edit_delete']['alter']['alter_text'] = 0;
-  $handler->display->display_options['fields']['edit_delete']['alter']['make_link'] = 0;
-  $handler->display->display_options['fields']['edit_delete']['alter']['absolute'] = 0;
-  $handler->display->display_options['fields']['edit_delete']['alter']['external'] = 0;
-  $handler->display->display_options['fields']['edit_delete']['alter']['nl2br'] = 0;
-  $handler->display->display_options['fields']['edit_delete']['alter']['word_boundary'] = 1;
-  $handler->display->display_options['fields']['edit_delete']['alter']['ellipsis'] = 1;
-  $handler->display->display_options['fields']['edit_delete']['alter']['strip_tags'] = 0;
-  $handler->display->display_options['fields']['edit_delete']['alter']['trim'] = 0;
-  $handler->display->display_options['fields']['edit_delete']['alter']['html'] = 0;
-  $handler->display->display_options['fields']['edit_delete']['element_label_colon'] = 1;
-  $handler->display->display_options['fields']['edit_delete']['element_default_classes'] = 1;
-  $handler->display->display_options['fields']['edit_delete']['hide_empty'] = 0;
-  $handler->display->display_options['fields']['edit_delete']['empty_zero'] = 0;
   /* Field: Commerce Line item: Total */
   $handler->display->display_options['fields']['commerce_total']['id'] = 'commerce_total';
   $handler->display->display_options['fields']['commerce_total']['table'] = 'field_data_commerce_total';
   $handler->display->display_options['fields']['commerce_total']['field'] = 'commerce_total';
   $handler->display->display_options['fields']['commerce_total']['relationship'] = 'commerce_line_items_line_item_id';
-  $handler->display->display_options['fields']['commerce_total']['alter']['alter_text'] = 0;
-  $handler->display->display_options['fields']['commerce_total']['alter']['make_link'] = 0;
-  $handler->display->display_options['fields']['commerce_total']['alter']['absolute'] = 0;
-  $handler->display->display_options['fields']['commerce_total']['alter']['external'] = 0;
-  $handler->display->display_options['fields']['commerce_total']['alter']['nl2br'] = 0;
-  $handler->display->display_options['fields']['commerce_total']['alter']['word_boundary'] = 1;
-  $handler->display->display_options['fields']['commerce_total']['alter']['ellipsis'] = 1;
-  $handler->display->display_options['fields']['commerce_total']['alter']['strip_tags'] = 0;
-  $handler->display->display_options['fields']['commerce_total']['alter']['trim'] = 0;
-  $handler->display->display_options['fields']['commerce_total']['alter']['html'] = 0;
   $handler->display->display_options['fields']['commerce_total']['element_class'] = 'price';
-  $handler->display->display_options['fields']['commerce_total']['element_label_colon'] = 1;
-  $handler->display->display_options['fields']['commerce_total']['element_default_classes'] = 1;
-  $handler->display->display_options['fields']['commerce_total']['hide_empty'] = 0;
-  $handler->display->display_options['fields']['commerce_total']['empty_zero'] = 0;
   $handler->display->display_options['fields']['commerce_total']['click_sort_column'] = 'amount';
-  $handler->display->display_options['fields']['commerce_total']['type'] = 'commerce_price_formatted_amount';
-  $handler->display->display_options['fields']['commerce_total']['field_api_classes'] = 0;
   /* Sort criterion: Commerce Line Item: Line item ID */
   $handler->display->display_options['sorts']['line_item_id']['id'] = 'line_item_id';
   $handler->display->display_options['sorts']['line_item_id']['table'] = 'commerce_line_item';
@@ -219,8 +152,6 @@ function rooms_booking_manager_cart_view_views_default_views() {
   $handler->display->display_options['arguments']['order_id']['summary']['number_of_records'] = '0';
   $handler->display->display_options['arguments']['order_id']['summary']['format'] = 'default_summary';
   $handler->display->display_options['arguments']['order_id']['summary_options']['items_per_page'] = '25';
-  $handler->display->display_options['arguments']['order_id']['break_phrase'] = 0;
-  $handler->display->display_options['arguments']['order_id']['not'] = 0;
   /* Filter criterion: Commerce Line Item: Line item is of a product line item type */
   $handler->display->display_options['filters']['product_line_item_type']['id'] = 'product_line_item_type';
   $handler->display->display_options['filters']['product_line_item_type']['table'] = 'commerce_line_item';
