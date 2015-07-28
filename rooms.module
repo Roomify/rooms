@@ -244,6 +244,8 @@ function rooms_entity_access($op, $entity, $account, $entity_type) {
   // be an integer, use either nid or type as the static cache id.
   $cid = is_object($entity) ? $entity->{$entity_info['entity keys']['id']} : $entity;
 
+  // If we are creating a new entity make sure we set the type so permissions get
+  // applied
   if ($op == 'create' && $cid == '') {
     $cid = $entity->type;
   }
