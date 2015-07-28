@@ -259,8 +259,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   );
 
   if (module_exists('commerce_customer')) {
-    ctools_include('modal');
-    ctools_modal_add_js();
+    $form['#after_build'][] = 'rooms_booking_edit_form_add_modal_js';
 
     $form['client']['#description'] = t('Customer profiles are saved in the <a href="@store-profile">store</a>. Search for an existing one by typing the customer name or <a href="@profile-create" class="ctools-use-modal">create a new profile</a>.', array('@store-profile' => url('admin/commerce/customer-profiles'), '@profile-create' => url('admin/rooms/add_customers')));
 
@@ -874,6 +873,16 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   // is used to add validate handlers earlier.
   $form['#validate'][] = 'rooms_form_start_end_dates_validate';
   $form['#validate'][] = 'rooms_booking_edit_form_validate';
+  return $form;
+}
+
+/**
+ * After build callback for the rooms_booking_edit_form.
+ */
+function rooms_booking_edit_form_add_modal_js($form, &$form_state) {
+  ctools_include('modal');
+  ctools_modal_add_js();
+
   return $form;
 }
 
