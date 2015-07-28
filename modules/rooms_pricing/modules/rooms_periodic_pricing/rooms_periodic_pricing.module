@@ -35,7 +35,35 @@ function rooms_periodic_pricing_form_rooms_unit_edit_form_alter(&$form, &$form_s
     '#maxlength' => 10,
   );
 
+  if (isset($unit->weekly_price) && $unit->weekly_price == '0.00') {
+    $form['weekly_monthly_price']['weekly_price']['#default_value'] = '';
+  }
+  if (isset($unit->monthly_price) && $unit->monthly_price == '0.00') {
+    $form['weekly_monthly_price']['monthly_price']['#default_value'] = '';
+  }
+
+  $form['#validate'][] = 'rooms_periodic_pricing_form_rooms_unit_edit_form_validate';
+
   $form['#attached']['css'][] = drupal_get_path('module', 'rooms_periodic_pricing') . '/css/rooms_periodic_pricing.css';
+}
+
+/**
+ * Validate 'Weekly price' and 'Monthly price'.
+ */
+function rooms_periodic_pricing_form_rooms_unit_edit_form_validate(&$form, &$form_state) {
+  if (empty($form_state['values']['weekly_price'])) {
+    $form_state['values']['weekly_price'] = '0';
+  }
+  elseif (!empty($form_state['values']['weekly_price']) && !is_numeric($form_state['values']['weekly_price'])) {
+    form_set_error('weekly_price', t('%name: you must enter a numeric value for the price.', array('%name' => t('Weekly price'))));
+  }
+
+  if (empty($form_state['values']['monthly_price'])) {
+    $form_state['values']['monthly_price'] = '0';
+  }
+  elseif (!empty($form_state['values']['monthly_price']) && !is_numeric($form_state['values']['monthly_price'])) {
+    form_set_error('monthly_price', t('%name: you must enter a numeric value for the price.', array('%name' => t('Monthly price'))));
+  }
 }
 
 /**
@@ -158,12 +186,20 @@ function rooms_periodic_pricing_rooms_price_modifier_alter(&$price_modifiers, $b
       $months = $weeks_months_days['months'];
       $more_weeks = $weeks_months_days['more_weeks'];
 
-      $amount = commerce_currency_amount_to_decimal(($unit->monthly_price * $months + $unit->weekly_price * $more_weeks + $price_more_days) * 100, commerce_default_currency());
+      $reply = array();
+      $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
+      $weekly_monthly_price = $price_calendar->applyPriceModifiers($unit->monthly_price * $months + $unit->weekly_price * $more_weeks, $months * 28 + $more_weeks * 7, $reply);
+
+      $amount = commerce_currency_amount_to_decimal(($weekly_monthly_price + $price_more_days) * 100, commerce_default_currency());
     }
     else {
       $weeks = $weeks_months_days['total_weeks'];
 
-      $amount = commerce_currency_amount_to_decimal(($unit->weekly_price * $weeks + $price_more_days) * 100, commerce_default_currency());
+      $reply = array();
+      $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
+      $weekly_monthly_price = $price_calendar->applyPriceModifiers($unit->weekly_price * $weeks, $weeks * 7, $reply);
+
+      $amount = commerce_currency_amount_to_decimal(($weekly_monthly_price + $price_more_days) * 100, commerce_default_currency());
     }
   }
   // If "Monthly price" is set and the current period is greater than or equal to 28 days.
@@ -191,7 +227,11 @@ function rooms_periodic_pricing_rooms_price_modifier_alter(&$price_modifiers, $b
       $price_more_days = 0;
     }
 
-    $amount = commerce_currency_amount_to_decimal(($unit->monthly_price * $months + $price_more_days) * 100, commerce_default_currency());
+    $reply = array();
+    $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
+    $weekly_monthly_price = $price_calendar->applyPriceModifiers($unit->monthly_price * $months, $months * 28, $reply);
+
+    $amount = commerce_currency_amount_to_decimal(($weekly_monthly_price + $price_more_days) * 100, commerce_default_currency());
   }
 
   // Add a new price modifier to replace the old price with new calculated price.
