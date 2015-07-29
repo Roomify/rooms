@@ -268,6 +268,13 @@ class FeatureContext extends DrupalSubContextBase implements CustomSnippetAccept
   }
 
   /**
+   * @Given /^CommerceCart Availability Filter is not active$/
+   */
+  public function commerceCartAvailabilityFilterNotActive() {
+    variable_set('rooms_use_commerce_filter', '0');
+  }
+
+  /**
    * @Given /^(\d+) units of type "([^"]*)"$/
    */
   public function createUnitsOfType($count, $type) {
