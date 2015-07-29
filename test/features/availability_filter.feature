@@ -100,3 +100,5 @@ Scenario: Replacing overlapping bookings
   And I press "Continue"
   Then I should see "Booking for Standard (8 Nights; Arrival: 03-01-2016 Departure: 11-01-2016)"
   And I should see "$800.00"
+  And I should not see "Booking for Standard (3 Nights; Arrival: 05-01-2016 Departure: 08-01-2016)"
+  And I should not see "$300.00"
