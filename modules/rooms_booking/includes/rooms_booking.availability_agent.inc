@@ -320,8 +320,10 @@ class AvailabilityAgent {
     }
 
     // Apply AvailabilityAgentCommerceFilter.
-    $av_commercefilter = new AvailabilityAgentCommerceFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date));
-    $units = $av_commercefilter->applyFilter();
+    if (variable_get('rooms_use_commerce_filter', '1')) {
+      $av_commercefilter = new AvailabilityAgentCommerceFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date));
+      $units = $av_commercefilter->applyFilter();
+    }
 
     ctools_include('plugins');
     $filters = ctools_get_plugins('rooms_booking', 'availabilityagent_filter');
