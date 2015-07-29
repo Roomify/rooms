@@ -50,6 +50,15 @@ function rooms_booking_manager_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  $items['booking-override-confirmation/%start_date/%end_date'] = array(
+    'title' => 'Select your stay',
+    'page callback' =>  'rooms_booking_manager_override_confirmation_page',
+    'page arguments' => array(1, 2),
+    'file' => 'rooms_booking_manager.confirmation_override.inc',
+    'access arguments' => array('book units'),
+    'type' => MENU_CALLBACK,
+  );
+
   $items['enquiry/%start_date/%end_date'] = array(
     'title' => 'Ask about availability',
     'page callback' => 'rooms_booking_manager_enquiry_page',
@@ -806,8 +815,7 @@ function rooms_booking_manager_forms($form_id, $args) {
  * rooms_booking_manager_results_page.
  */
 function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_date, $booking_parameters, $status, $price) {
-  // Add stylesheets and classes.
-  $from['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
+  // Add classes.
   $form['#attributes']['class'][] = 'rooms-book-unit-form';
 
   $currency_setting = commerce_currency_load(commerce_default_currency());
@@ -1228,29 +1236,62 @@ function book_unit_form_submit(&$form, &$form_state) {
         }
       }
 
-      rooms_booking_manager_remove_duplicated_line_item($sd, $ed, $unit['unit']->unit_id);
+      // Check if there are line_items with overlapping dates.
+      module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.confirmation_override');
+      $line_items = rooms_booking_manager_find_overlapping_line_items($sd, $ed, $unit['unit']->unit_id);
 
-      // Create line item.
-      if (isset($form_state['values']['children'])) {
-        $children = $form_state['values']['children'];
-        if (isset($form_state['values']['childrens_age'])) {
-          $childrens_age = $form_state['values']['childrens_age'];
-          $line_item = rooms_create_line_item($unit, $agent, array('adults' => $group_size, 'children' => $children, 'childrens_age' => $childrens_age), $price_modifiers);
+      if (!empty($line_items)) {
+        // Redirect user to the override confirmation page.
+        $booking_parameters = array(
+          'unit_id' => $unit_id,
+          'group_size' => $group_size,
+        );
+        $options = array();
+        if (isset($form_state['values']['options'])) {
+          foreach ($form_state['values']['options'] as $option => $value) {
+            if (strpos($option, ':quantity') === FALSE && $value) {
+              if (isset($form_state['values']['options'][$option . ':quantity'])) {
+                $options[$option] = ($form_state['values']['options'][$option . ':quantity'] + 1);
+              }
+              else {
+                $options[$option] = 1;
+              }
+            }
+          }
+
+          $booking_parameters['options'] = $options;
         }
-        else {
-          $line_item = rooms_create_line_item($unit, $agent, array('adults' => $group_size, 'children' => $children), $price_modifiers);
-        }
+
+        $form_state['redirect'] = array(
+          'booking-override-confirmation/' . $start_date . '/' . $end_date . '/' . $unit_id,
+          array(
+            'query' => $booking_parameters,
+          ),
+        );
       }
       else {
-        $line_item = rooms_create_line_item($unit, $agent, array('adults' => $group_size, 'children' => 0), $price_modifiers);
+        // Create line item.
+        if (isset($form_state['values']['children'])) {
+          $children = $form_state['values']['children'];
+          if (isset($form_state['values']['childrens_age'])) {
+            $childrens_age = $form_state['values']['childrens_age'];
+            $line_item = rooms_create_line_item($unit, $agent, array('adults' => $group_size, 'children' => $children, 'childrens_age' => $childrens_age), $price_modifiers);
+          }
+          else {
+            $line_item = rooms_create_line_item($unit, $agent, array('adults' => $group_size, 'children' => $children), $price_modifiers);
+          }
+        }
+        else {
+          $line_item = rooms_create_line_item($unit, $agent, array('adults' => $group_size, 'children' => 0), $price_modifiers);
+        }
+
+        // Add line item to cart.
+        $line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
+
+        // Refresh line items price and redirect to bookings page.
+        commerce_cart_order_refresh(commerce_cart_order_load($user->uid));
+        $form_state['redirect'] = 'bookings';
       }
-
-      // Add line item to cart.
-      $line_item = commerce_cart_product_add($user->uid, $line_item, FALSE);
-
-      // Refresh line items price and redirect to bookings page.
-      commerce_cart_order_refresh(commerce_cart_order_load($user->uid));
-      $form_state['redirect'] = 'bookings';
     }
     elseif (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT) {
       $booking_parameters = array();
@@ -1288,6 +1329,20 @@ function book_unit_form_submit(&$form, &$form_state) {
  * Book units per type booking form callback.
  */
 function book_units_per_type_form($form, $form_state, $units_per_type, $start_date, $end_date, $booking_parameters, $b_units, $type = '') {
+
+  if (isset($form_state['storage']['confirm'])) {
+    $form['#attached']['css'][] = array(
+      'data' => '.rooms-current-search__info { float: none; }',
+      'type' => 'inline',
+    );
+
+    $current_path = array(
+      'path' => current_path(),
+      'query' => drupal_get_query_parameters(),
+    );
+    return confirm_form($form, 'You have a booking request with overlapping dates, continuing will replace it.', $current_path, '', t('Continue'), ('Go Back To Search'));
+  }
+
   module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.units_per_type_form');
 
   // Add stylesheets and classes.
@@ -1742,6 +1797,11 @@ function rooms_booking_manager_children_change_callback(&$form, $form_state) {
  * Validate callback for book_units_per_type_form form.
  */
 function book_units_per_type_form_validate(&$form, &$form_state) {
+  if (isset($form_state['storage']['values'])) {
+    $form_state['values'] = $form_state['storage']['values'];
+    unset($form_state['storage']['values']);
+  }
+
   if (isset($form_state['complete form']['comments'])) {
     return;
   }
@@ -1857,7 +1917,29 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
             }
           }
 
-          rooms_booking_manager_remove_duplicated_line_item($start_date, $end_date, $unit['unit']->unit_id);
+          // Check if there are line_items with overlapping dates.
+          module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.confirmation_override');
+          $line_items = rooms_booking_manager_find_overlapping_line_items($start_date, $end_date, $unit['unit']->unit_id);
+
+          if (!empty($line_items)) {
+            if (isset($form_state['storage']['confirm'])) {
+              $commerce_order = commerce_cart_order_load($user->uid);
+
+              foreach ($line_items as $line_item_id) {
+                commerce_cart_order_product_line_item_delete($commerce_order, $line_item_id);
+              }
+            }
+            else {
+              // Save the current form_state.
+              $form_state['storage']['values'] = $form_state['values'];
+
+              // Rebuild this form to show the confirmation form. 
+              $form_state['storage']['confirm'] = TRUE;
+              $form_state['rebuild'] = TRUE;
+
+              return;
+            }
+          }
 
           // Create line item.
           $line_item = rooms_create_line_item($unit, $agent, $group_size, $price_modifiers);
@@ -1874,31 +1956,6 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
   // Refresh line items price and redirect to bookings page.
   commerce_cart_order_refresh(commerce_cart_order_load($user->uid));
   $form_state['redirect'] = 'bookings';
-}
-
-/**
- * Find and remove line_items from cart using start_date, end_date, unit_id.
- */
-function rooms_booking_manager_remove_duplicated_line_item($start_date, $end_date, $unit_id) {
-  global $user;
-
-  $sd = $start_date->format('Y-m-d');
-  $ed = $end_date->format('Y-m-d');
-
-  $commerce_order = commerce_cart_order_load($user->uid);
-
-  foreach ($commerce_order->commerce_line_items as $lang => $item) {
-    foreach ($item as $item_id) {
-      $line_item = commerce_line_item_load($item_id['line_item_id']);
-      if ($line_item->type == 'rooms_booking') {
-        if ($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value'] == $sd && $line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2'] == $ed) {
-          if ($line_item->rooms_booked_unit_id[LANGUAGE_NONE][0]['value'] == $unit_id) {
-            commerce_cart_order_product_line_item_delete($commerce_order, $item_id['line_item_id']);
-          }
-        }
-      }
-    }
-  }
 }
 
 /**
@@ -2023,6 +2080,9 @@ function rooms_booking_manager_theme() {
   return array(
     'rooms_booking_results' => array(
       'template' => 'rooms_booking_results',
+    ),
+    'rooms_booking_override_confirmation_page' => array(
+      'template' => 'rooms_booking_override_confirmation_page',
     ),
     'rooms_booking_email' => array(
       'template' => 'rooms_booking_email',
