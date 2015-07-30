@@ -31,3 +31,5 @@ files[] = views/rooms_booking_handler_booking_type_field.inc
 files[] = views/rooms_booking_handler_date_filter.inc
 files[] = views/rooms_booking_handler_field_booking_status.inc
 files[] = views/rooms_booking_handler_filter_booking_status.inc
+files[] = views/rooms_booking_handler_unit_filter.inc
+files[] = views/rooms_booking_handler_nights_field.inc

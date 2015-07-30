@@ -69,6 +69,10 @@ function rooms_booking_views_data_alter(&$data) {
     'field' => array(
       'handler' => 'rooms_booking_handler_unit_field',
     ),
+    'filter' => array(
+      'title' => t('Unit'),
+      'handler' => 'rooms_booking_handler_unit_filter',
+    ),
     'sort' => array(
       'handler' => 'views_handler_sort',
     ),
@@ -120,6 +124,14 @@ function rooms_booking_views_data_alter(&$data) {
 
   $data['rooms_bookings']['booking_status']['field']['handler'] = 'rooms_booking_handler_field_booking_status';
   $data['rooms_bookings']['booking_status']['filter']['handler'] = 'rooms_booking_handler_filter_booking_status';
+
+  $data['rooms_bookings']['nights'] = array(
+    'title' => t('Nights'),
+    'help' => t("Booking's number of nights."),
+    'field' => array(
+      'handler' => 'rooms_booking_handler_nights_field',
+    ),
+  );
 
 }
 
@@ -306,4 +318,49 @@ function rooms_booking_views_default_views() {
 
   $views['bookings'] = $view;
   return $views;
+}
+
+/**
+ * Page callback for views rooms_unit autocomplete.
+ *
+ * @param $units_typed
+ *   The typed string of the user.
+ */
+function rooms_booking_views_ajax_autocomplete_unit($units_typed = '') {
+  // The user enters a comma-separated list of units. We only autocomplete the last unit.
+  $units_typed = drupal_explode_tags($units_typed);
+  $unit_last = drupal_strtolower(array_pop($units_typed));
+
+  $matches = array();
+  if ($unit_last != '') {
+
+    $query = db_select('rooms_units', 't');
+
+    // Do not select already entered units.
+    if (!empty($units_typed)) {
+      $query->condition('t.name', $units_typed, 'NOT IN');
+    }
+    // Select rows that match by unit name.
+    $units_return = $query
+      ->fields('t', array('unit_id', 'name'))
+      ->condition('t.name', '%' . db_like($unit_last) . '%', 'LIKE')
+      ->range(0, 10)
+      ->execute()
+      ->fetchAllKeyed();
+
+    $prefix = count($units_typed) ? drupal_implode_tags($units_typed) . ', ' : '';
+
+    $unit_matches = array();
+    foreach ($units_return as $unit_id => $name) {
+      $n = $name;
+      // Unit names containing commas or quotes must be wrapped in quotes.
+      if (strpos($name, ',') !== FALSE || strpos($name, '"') !== FALSE) {
+        $n = '"' . str_replace('"', '""', $name) . '"';
+      }
+      // Add unit name to list of matches.
+      $unit_matches[$prefix . $n] = check_plain($name);
+    }
+  }
+
+  drupal_json_output($unit_matches);
 }
