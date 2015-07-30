@@ -55,6 +55,15 @@ function rooms_booking_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
+  $items['admin/views/ajax/autocomplete/rooms_unit'] = array(
+    'page callback' => 'rooms_booking_views_ajax_autocomplete_unit',
+    'theme callback' => 'ajax_base_page_theme',
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => 'views/rooms_booking.views.inc',
+  );
+
   return $items;
 }
 
