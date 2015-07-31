@@ -51,6 +51,21 @@ class rooms_booking_handler_unit_filter extends views_handler_filter_many_to_one
       );
     }
     else {
+      $options = array();
+      $query = db_select('rooms_units', 't');
+      $query->fields('t');
+      $query->orderby('t.name');
+      $result = $query->execute();
+
+      $unit_ids = array();
+      foreach ($result as $unit) {
+        $unit_ids[] = $unit->unit_id;
+      }
+      $entities = rooms_unit_load_multiple($unit_ids);
+      foreach ($entities as $entity) {
+        $options[$entity->unit_id] = entity_label('rooms_unit', $entity);
+      }
+
       $default_value = (array) $this->value;
 
       if (!empty($form_state['exposed'])) {
