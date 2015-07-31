@@ -129,7 +129,9 @@ function rooms_booking_views_data_alter(&$data) {
     'title' => t('Nights'),
     'help' => t("Booking's number of nights."),
     'field' => array(
+      'float' => TRUE,
       'handler' => 'rooms_booking_handler_nights_field',
+      'click sortable' => TRUE,
     ),
   );
 

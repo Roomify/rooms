@@ -4,29 +4,30 @@
  * @file
  */
 
-class rooms_booking_handler_nights_field extends views_handler_field {
+class rooms_booking_handler_nights_field extends views_handler_field_numeric {
   function construct() {
     parent::construct();
+  }
 
-    $this->additional_fields['start_date'] = array(
-      'table' => 'rooms_bookings',
-      'field' => 'start_date',
-    );
-    $this->additional_fields['end_date'] = array(
-      'table' => 'rooms_bookings',
-      'field' => 'end_date',
-    );
+  function click_sort($order) {
+    $params = $this->options['group_type'] != 'group' ? array('function' => $this->options['group_type']) : array();
+    $this->query->add_orderby(NULL, NULL, $order, $this->field_alias, $params);
   }
 
   function query() {
     $this->ensure_my_table();
+
+    $this->field_alias = $this->table_alias . '_nights';
+
+    // Add the field.
+    $params = $this->options['group_type'] != 'group' ? array('function' => $this->options['group_type']) : array();
+    $this->query->add_field(NULL, '(TO_DAYS(' . $this->table_alias . '.end_date) - TO_DAYS(' . $this->table_alias . '.start_date))', $this->field_alias, $params);
+
     $this->add_additional_fields();
   }
 
   function render($values) {
-    $start_date = DateTime::createFromFormat('Y-m-d', $this->sanitize_value($values->rooms_bookings_start_date));
-    $end_date = DateTime::createFromFormat('Y-m-d', $this->sanitize_value($values->rooms_bookings_end_date));
-
-    return $start_date->diff($end_date)->d;
+    $value = number_format($values->{$this->field_alias}, $this->options['precision'], $this->options['decimal'], $this->options['separator']);
+    return $this->sanitize_value($value);
   }
 }
