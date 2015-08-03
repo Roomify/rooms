@@ -775,8 +775,6 @@ function rooms_booking_page_title(RoomsBooking $booking) {
 
 /**
  * Get a list of Booking keyed by id and name in value.
- *
- * @todo - double check utility of this and perhaps use rooms_booking_load_multiple
  */
 function rooms_booking_ids($conditions = array()) {
   $bookings = array();
@@ -787,7 +785,7 @@ function rooms_booking_ids($conditions = array()) {
                     ->execute();
 
   if (count($result) > 0) {
-    $entities = entity_load('rooms_booking', array_keys($result['rooms_booking']));
+    $entities = rooms_booking_load_multiple(array_keys($result['rooms_booking']), $conditions);
     foreach ($entities as $booking) {
       $wrapper = entity_metadata_wrapper('rooms_booking', $booking);
       $bookings[$wrapper->booking_id->value()] = $wrapper->name->value();
