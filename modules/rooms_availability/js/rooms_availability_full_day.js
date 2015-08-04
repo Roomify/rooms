@@ -41,7 +41,7 @@ Drupal.behaviors.rooms_availability = {
     calendars[2] = new Array('#calendar2', month3, year3);
 
     // refresh the events once the modal is closed
-    $("#modalContent a.close").once().bind('click', function(e) {
+    $(document).one("CToolsDetachBehaviors", function() {
       $.each(calendars, function(key, value) {
         $(value[0]).fullCalendar('refetchEvents');
       });
