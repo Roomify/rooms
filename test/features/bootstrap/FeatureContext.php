@@ -4,8 +4,6 @@ use Drupal\DrupalExtension\Context\DrupalSubContextBase,
     Drupal\Component\Utility\Random;
 
 use Behat\Behat\Context\ClosuredContextInterface,
-    Behat\Behat\Context\Step\Given,
-    Behat\Behat\Context\Step\Then,
     Behat\Behat\Context\TranslatedContextInterface,
     Behat\Behat\Context\BehatContext,
     Behat\Behat\Exception\PendingException;
@@ -917,12 +915,10 @@ class FeatureContext extends DrupalSubContextBase implements CustomSnippetAccept
     $this->getSession()->getPage()->fillField($country_field, $country_value);
     $this->minkContext->iWaitForAjaxToFinish();
 
-    return array(
-      new Given("I fill in \"{$type}[commerce_customer_address][und][0][locality]\" with \"$args[1]\""),
-      new Given("I fill in \"{$type}[commerce_customer_address][und][0][administrative_area]\" with \"$args[2]\""),
-      new Given("I fill in \"{$type}[commerce_customer_address][und][0][postal_code]\" with \"$args[3]\""),
-      new Given("I fill in \"{$type}[commerce_customer_address][und][0][thoroughfare]\" with \"$args[0]\""),
-    );
+    $this->minkContext->fillField("{$type}[commerce_customer_address][und][0][locality]", $args[1]);
+    $this->minkContext->fillField("{$type}[commerce_customer_address][und][0][administrative_area]", $args[2]);
+    $this->minkContext->fillField("{$type}[commerce_customer_address][und][0][postal_code]", $args[3]);
+    $this->minkContext->fillField("{$type}[commerce_customer_address][und][0][thoroughfare]", $args[0]);
   }
 
   /**
