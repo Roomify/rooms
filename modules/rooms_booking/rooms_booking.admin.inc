@@ -884,10 +884,20 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
     );
   }
-  $form['actions']['cancel'] = array(
-    '#markup' => l(t('Cancel'), 'admin/rooms/bookings', array('attributes' => array('class' => array('ctools-close-modal')))),
-    '#weight' => 50,
-  );
+
+  // Depending on whether the form is in a popup or a normal page we need to change
+  // the behavior of the cancel button
+  if (isset($form_state['ajax']) && $form_state['ajax'] == TRUE) {
+    $form['actions']['cancel'] = array(
+      '#markup' => l(t('Cancel'), 'admin/rooms/bookings', array('attributes' => array('class' => array('ctools-close-modal')))),
+      '#weight' => 50,
+    );
+  } else {
+    $form['actions']['cancel'] = array(
+      '#markup' => l(t('Cancel'), 'admin/rooms/bookings'),
+      '#weight' => 50,
+    );
+  }
 
   // We append the validate handler to #validate in case a form callback_wrapper
   // is used to add validate handlers earlier.
