@@ -77,8 +77,14 @@ function rooms_periodic_pricing_rooms_string_alter(&$string_suggestions, $contex
     $currency_symbol = $currency_setting['symbol'];
 
     $price = $context['#data']['price'];
-    $units = reset($context['#data']['units'][$price]);
-    $unit = $units['unit'];
+
+    if ($context['#component'] == 'units_per_type_form') {
+      $units = reset($context['#data']['units'][$price]);
+      $unit = $units['unit'];
+    }
+    elseif ($context['#component'] == 'book_unit_form_builder') {
+      $unit = $context['#data']['unit'];
+    }
 
     $start_date = $context['#data']['arrival'];
     $end_date = $context['#data']['departure'];
