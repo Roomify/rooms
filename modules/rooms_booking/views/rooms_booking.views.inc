@@ -333,7 +333,7 @@ function rooms_booking_views_ajax_autocomplete_unit($units_typed = '') {
   $units_typed = drupal_explode_tags($units_typed);
   $unit_last = drupal_strtolower(array_pop($units_typed));
 
-  $matches = array();
+  $unit_matches = array();
   if ($unit_last != '') {
 
     $query = db_select('rooms_units', 't');
@@ -352,15 +352,18 @@ function rooms_booking_views_ajax_autocomplete_unit($units_typed = '') {
 
     $prefix = count($units_typed) ? drupal_implode_tags($units_typed) . ', ' : '';
 
-    $unit_matches = array();
     foreach ($units_return as $unit_id => $name) {
-      $n = $name;
-      // Unit names containing commas or quotes must be wrapped in quotes.
-      if (strpos($name, ',') !== FALSE || strpos($name, '"') !== FALSE) {
-        $n = '"' . str_replace('"', '""', $name) . '"';
+      $unit = rooms_unit_load($unit_id);
+
+      if (rooms_unit_access('update', $unit)) {
+        $n = $name;
+        // Unit names containing commas or quotes must be wrapped in quotes.
+        if (strpos($name, ',') !== FALSE || strpos($name, '"') !== FALSE) {
+          $n = '"' . str_replace('"', '""', $name) . '"';
+        }
+        // Add unit name to list of matches.
+        $unit_matches[$prefix . $n] = check_plain($name);
       }
-      // Add unit name to list of matches.
-      $unit_matches[$prefix . $n] = check_plain($name);
     }
   }
 
