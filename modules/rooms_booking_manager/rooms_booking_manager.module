@@ -2739,14 +2739,6 @@ function rooms_booking_manager_create_order($start_date, $end_date, $booking_par
 
   $line_item->rooms_booking_reference['und'][0]['target_id'] = $booking->booking_id;
 
-  $line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
-
-  $line_item_wrapper->commerce_unit_price->amount = $booking->price;
-  $data = $line_item_wrapper->commerce_unit_price->data->value();
-  $data['components'][0]['price']['amount'] = $booking->price;
-
-  $line_item_wrapper->commerce_unit_price->data = $data;
-
   commerce_line_item_save($line_item);
 
   // Add the line item to the order.
@@ -2766,10 +2758,27 @@ function rooms_booking_manager_create_order($start_date, $end_date, $booking_par
   // Save the order again to update its line item reference field.
   commerce_order_save($order);
 
+  $line_item_wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
   $line_item_wrapper->order_id = $order->order_id;
-  commerce_line_item_save($line_item);
+  $line_item_wrapper->save();
 
   commerce_cart_order_refresh($order);
+
+  $line_item_wrapper->commerce_unit_price->amount = $booking->price;
+  $data = $line_item_wrapper->commerce_unit_price->data->value();
+  $data['components'][0]['price']['amount'] = $booking->price;
+
+  $line_item_wrapper->commerce_unit_price->data = $data;
+
+  $line_item_wrapper->save();
+
+  $order_wrapper->commerce_order_total->amount = $booking->price;
+  $data = $order_wrapper->commerce_order_total->data->value();
+  $data['components'][0]['price']['amount'] = $booking->price;
+  
+  $order_wrapper->commerce_order_total->data = $data;
+
+  $order_wrapper->save();
 
   return $order;
 }
