@@ -121,8 +121,8 @@ class BookingEvent extends RoomsEvent implements BookingEventInterface {
         break;
 
       case ROOMS_AVAILABLE:
-        $event['color'] = variable_get('rooms_available_color', '#8ba175');
-        $event['borderColor'] = '#8ba175';
+        $event['color'] = variable_get('rooms_available_color', '#8BA175');
+        $event['borderColor'] = '#8BA175';
         $event['title'] = variable_get('rooms_available_text', 'AV');
         break;
 
