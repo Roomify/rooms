@@ -103,7 +103,9 @@ class UnitCalendar extends RoomsCalendar implements UnitCalendarInterface {
           $sd = new DateTime("$year-$mid-$start");
           $ed = new DateTime("$year-$mid-$end");
 
-          $event = new BookingEvent($this->unit_id,
+          $bookingevent_class = variable_get('rooms_bookingevent_class', 'BookingEvent');
+
+          $event = new $bookingevent_class($this->unit_id,
             $state['state'],
             $sd,
             $ed);
