@@ -390,6 +390,24 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
       }
     }
 
+    // We store -1 instead of the default price in the DB so this is our chance to get the default price back
+    // cycling through the data and replace -1 with the current default price of the unit.
+    foreach ($results[$this->unit_id] as $year => $months) {
+      foreach ($months as $mid => $days) {
+        // The number of days in the month we are interested in eventing.
+        $j = count($days);
+        // The start date.
+        $i = substr(key($days['days']), 1);
+        while ($j <= count($days['days'])) {
+          if ($days['days']['d' . $i] == -1){
+            $results[$this->unit_id][$year][$mid]['days']['d' . $i] = commerce_currency_decimal_to_amount($this->default_price, commerce_default_currency());
+          }
+          $i++;
+          $j++;
+        }
+      }
+    }
+
     // With the results in place we do a states array with the start and
     // end dates of each event.
     foreach ($results[$this->unit_id] as $year => $months) {
@@ -488,7 +506,10 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
         $days['d' . $i] = commerce_currency_decimal_to_amount($event->amount, commerce_default_currency());
       }
       else {
-        $days['d' . $i] = commerce_currency_decimal_to_amount($this->default_price, commerce_default_currency());
+        // When we are writing a new month to the DB make sure to have the placeholder value -1 for the days where the
+        // default price is in effect. This means as a user changes the default price we will take it into account even
+        // though the price data is now in a DB row.
+        $days['d' . $i] = -1;
       }
     }
     return $days;
