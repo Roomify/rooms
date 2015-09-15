@@ -293,7 +293,7 @@ function rooms_booking_add_customer_profile() {
       '#title' => t('Customer'),
       '#maxlength' => 60,
       '#autocomplete_path' => 'admin/rooms/bookings/customers',
-      '#value' => $form_state['build_info']['args'][0]->commerce_customer_address['und'][0]['name_line'],
+      '#value' => $form_state['build_info']['args'][0]->commerce_customer_address[LANGUAGE_NONE][0]['name_line'],
       '#weight' => -1,
       '#required' => TRUE,
       '#prefix' => '<div class="form-wrapper" id="edit-customer-wrapper">',
