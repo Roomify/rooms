@@ -21,11 +21,9 @@
  * calendar to be changed.
  */
 function hook_rooms_availability_update($response, $events) {
-  // Check
-  foreach ($response as $code => $event_id) {
-    if ($code == ROOMS_UPDATE) {
-      // Get the event id
-        $unit_affected = $events[$event_id]->$unit;
+  foreach ($events as $event) {
+    if ($response[$event->id] == ROOMS_UPDATED) {
+      $unit_affected = rooms_unit_load($event->unit_id);
     }
   }
 }
