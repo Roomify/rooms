@@ -93,7 +93,7 @@ If you wish to uninstall Rooms, you must disable and uninstall the modules
 it provides in reverse order of dependencies. After disabling each module
 that is available to be disabled, visit the 'uninstall' tab and uninstall it.
 
-   [1]: http://www.drupalrooms.com/sites/default/files/rooms_fullcalendar-2.1.1.zip "Rooms Fullcalendar fork"
+   [1]: https://github.com/Roomify/fullcalendar/archive/master.zip "Rooms Fullcalendar fork"
    [2]: http://momentjs.com/downloads/moment.min.js *Moment JS Library*
    [3]: http://drupal.org/project/drush "Drush, the Drupal shell"
    [4]: http://drupal.org/project/issues/rooms "Rooms issue queue on Drupal.org"
