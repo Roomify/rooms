@@ -632,48 +632,7 @@ function rooms_booking_load_multiple($booking_ids = array(), $conditions = array
  *   Flag indicating if the associated line_item should be deleted or not.
  */
 function rooms_booking_delete(RoomsBooking $booking, $delete_line_item = TRUE) {
-  // Check if the booking had a unit associated with it and if so update the
-  // availability calendar.
-  if (isset($booking->unit_id) && isset($booking->start_date) && isset($booking->end_date)) {
-    $uc = new UnitCalendar($booking->unit_id);
-    // We are not concerned with the state of the event id (confirmed or
-    // unconfirmed here) because we will unlock it no matter what (we look for
-    // absolute value).
-    $event_id = rooms_availability_assign_id($booking->booking_id);
-    // Create an event representing the event to remove.
-    $start_date = $booking->start_date_object;
-    $end_date = $booking->end_date_object;
-    // Remove a day from end date to represent the actual event.
-    $end_date->sub(new DateInterval('P1D'));
-    $be = new BookingEvent($booking->unit_id, $event_id, $start_date, $end_date);
-    $uc->removeEvents(array($be));
-    // We've updated the calendar so mark the booking as deleted.
-    $booking->type = ROOMS_BOOKING_DELETED;
-    $booking->save();
-  }
-
-  if ($booking->order_id != '' && $delete_line_item) {
-    $order = commerce_order_load($booking->order_id);
-
-    if (isset($order->commerce_line_items[LANGUAGE_NONE])) {
-      foreach ($order->commerce_line_items[LANGUAGE_NONE] as $value) {
-        $line_item = commerce_line_item_load($value['line_item_id']);
-
-        if ($line_item->rooms_booking_reference[LANGUAGE_NONE][0]['target_id'] == $booking->booking_id) {
-          commerce_line_item_delete($line_item->line_item_id);
-          if (count($order->commerce_line_items) == 0) {
-            commerce_order_delete($order->order_number);
-          }
-
-          break;
-        }
-      }
-    }
-  }
-
-  if ($booking->type = ROOMS_BOOKING_DELETED) {
-    $booking->delete();
-  }
+  rooms_booking_delete_multiple(array($booking->booking_id), $delete_line_item);
 }
 
 /**
@@ -723,8 +682,10 @@ function rooms_booking_commerce_order_delete($order) {
  *
  * @param array $booking_ids
  *   An array of booking IDs.
+ * @param bool $delete_line_item
+ *   Flag indicating if the associated line_item should be deleted or not.
  */
-function rooms_booking_delete_multiple(array $booking_ids) {
+function rooms_booking_delete_multiple(array $booking_ids, $delete_line_item = TRUE) {
   entity_get_controller('rooms_booking')->delete($booking_ids);
 }
 
@@ -969,6 +930,10 @@ class RoomsBooking extends Entity {
     }
   }
 
+  public function delete_event() {
+    entity_get_controller($this->entityType)->delete_event($this);
+  }
+
   protected function defaultLabel() {
     return $this->name;
   }
@@ -1069,6 +1034,66 @@ class RoomsBookingController extends EntityAPIController {
 
       if ($responses[$event_id] == ROOMS_UPDATED) {
         $be->lock();
+      }
+    }
+  }
+
+  public function delete($ids, $delete_line_item = TRUE) {
+    foreach ($ids as $id) {
+      $booking = rooms_booking_load($id);
+
+      // Update the availability calendar.
+      $this->delete_event($booking);
+
+      // We've updated the calendar so mark the booking as deleted.
+      $booking->type = ROOMS_BOOKING_DELETED;
+      $booking->save();
+
+      if ($delete_line_item) {
+        // Delete the line_item associated with this booking.
+        $this->delete_line_item($booking);
+      }
+    }
+
+    parent::delete($ids);
+  }
+
+  public function delete_event($booking) {
+    // Check if the booking had a unit associated with it and if so update the
+    // availability calendar.
+    if (isset($booking->unit_id) && isset($booking->start_date) && isset($booking->end_date)) {
+      $uc = new UnitCalendar($booking->unit_id);
+      // We are not concerned with the state of the event id (confirmed or
+      // unconfirmed here) because we will unlock it no matter what (we look for
+      // absolute value).
+      $event_id = rooms_availability_assign_id($booking->booking_id);
+      // Create an event representing the event to remove.
+      $start_date = $booking->start_date_object;
+      $end_date = $booking->end_date_object;
+      // Remove a day from end date to represent the actual event.
+      $end_date->sub(new DateInterval('P1D'));
+      $be = new BookingEvent($booking->unit_id, $event_id, $start_date, $end_date);
+      $uc->removeEvents(array($be));
+    }
+  }
+
+  protected function delete_line_item($booking) {
+    if ($booking->order_id != '') {
+      $order = commerce_order_load($booking->order_id);
+
+      if (isset($order->commerce_line_items[LANGUAGE_NONE])) {
+        foreach ($order->commerce_line_items[LANGUAGE_NONE] as $value) {
+          $line_item = commerce_line_item_load($value['line_item_id']);
+
+          if ($line_item->rooms_booking_reference[LANGUAGE_NONE][0]['target_id'] == $booking->booking_id) {
+            commerce_line_item_delete($line_item->line_item_id);
+            if (count($order->commerce_line_items) == 0) {
+              commerce_order_delete($order->order_number);
+            }
+
+            break;
+          }
+        }
       }
     }
   }
