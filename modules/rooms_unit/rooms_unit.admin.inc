@@ -290,7 +290,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
 
   // Add the field related form elements.
   $form_state['rooms_unit'] = $unit;
-  field_attach_form('rooms_unit', $unit, $form, $form_state);
+  field_attach_form('rooms_unit', $unit, $form, $form_state, isset($unit->language)? $unit->language : NULL);
 
   $form['additional_settings'] = array(
     '#type' => 'vertical_tabs',
