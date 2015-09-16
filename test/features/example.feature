@@ -30,5 +30,3 @@ Scenario: Bulk creation of units and bookings
   Given 2 bookings of type "standard_booking" for all "deluxe" units
   Given 2 bookings of type "standard_booking" for all "suite" units
   Given 2 bookings of type "standard_booking" for all "single" units
-
-  And I break
