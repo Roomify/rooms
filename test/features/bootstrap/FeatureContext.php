@@ -449,7 +449,7 @@ class FeatureContext extends DrupalSubContextBase implements CustomSnippetAccept
       $profile_id = reset($this->customerProfiles);
 
       $profile = commerce_customer_profile_load($profile_id);
-      $client_name = isset($profile->commerce_customer_address['und'][0]['name_line']) ? $profile->commerce_customer_address['und'][0]['name_line'] : '';
+      $client_name = isset($profile->commerce_customer_address[LANGUAGE_NONE][0]['name_line']) ? $profile->commerce_customer_address[LANGUAGE_NONE][0]['name_line'] : '';
 
       // Save customer in rooms_customers table.
       db_merge('rooms_customers')
@@ -517,7 +517,7 @@ class FeatureContext extends DrupalSubContextBase implements CustomSnippetAccept
       $profile_id = $this->customerProfiles[$nodeHash['profile_id']];
 
       $profile = commerce_customer_profile_load($profile_id);
-      $client_name = isset($profile->commerce_customer_address['und'][0]['name_line']) ? $profile->commerce_customer_address['und'][0]['name_line'] : $nodeHash['profile_id'];
+      $client_name = isset($profile->commerce_customer_address[LANGUAGE_NONE][0]['name_line']) ? $profile->commerce_customer_address[LANGUAGE_NONE][0]['name_line'] : $nodeHash['profile_id'];
 
       // Save customer in rooms_customers table.
       db_merge('rooms_customers')
