@@ -304,6 +304,116 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['fields']['operations']['table'] = 'rooms_bookings';
   $handler->display->display_options['fields']['operations']['field'] = 'operations';
   $handler->display->display_options['fields']['operations']['hide_alter_empty'] = FALSE;
+  /* Filter criterion: Bookings: Bookings ID */
+  $handler->display->display_options['filters']['booking_id']['id'] = 'booking_id';
+  $handler->display->display_options['filters']['booking_id']['table'] = 'rooms_bookings';
+  $handler->display->display_options['filters']['booking_id']['field'] = 'booking_id';
+  $handler->display->display_options['filters']['booking_id']['group'] = 1;
+  $handler->display->display_options['filters']['booking_id']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['booking_id']['expose']['operator_id'] = 'booking_id_op';
+  $handler->display->display_options['filters']['booking_id']['expose']['label'] = 'Booking ID';
+  $handler->display->display_options['filters']['booking_id']['expose']['operator'] = 'booking_id_op';
+  $handler->display->display_options['filters']['booking_id']['expose']['identifier'] = 'booking_id';
+  $handler->display->display_options['filters']['booking_id']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Bookings: Name */
+  $handler->display->display_options['filters']['name']['id'] = 'name';
+  $handler->display->display_options['filters']['name']['table'] = 'rooms_bookings';
+  $handler->display->display_options['filters']['name']['field'] = 'name';
+  $handler->display->display_options['filters']['name']['group'] = 1;
+  $handler->display->display_options['filters']['name']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['name']['expose']['operator_id'] = 'name_op';
+  $handler->display->display_options['filters']['name']['expose']['label'] = 'Customer';
+  $handler->display->display_options['filters']['name']['expose']['operator'] = 'name_op';
+  $handler->display->display_options['filters']['name']['expose']['identifier'] = 'name';
+  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Bookings: Unit */
+  $handler->display->display_options['filters']['unit_id']['id'] = 'unit_id';
+  $handler->display->display_options['filters']['unit_id']['table'] = 'rooms_bookings';
+  $handler->display->display_options['filters']['unit_id']['field'] = 'unit_id';
+  $handler->display->display_options['filters']['unit_id']['value'] = '';
+  $handler->display->display_options['filters']['unit_id']['group'] = 1;
+  $handler->display->display_options['filters']['unit_id']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['unit_id']['expose']['operator_id'] = 'unit_id_op';
+  $handler->display->display_options['filters']['unit_id']['expose']['label'] = 'Unit';
+  $handler->display->display_options['filters']['unit_id']['expose']['operator'] = 'unit_id_op';
+  $handler->display->display_options['filters']['unit_id']['expose']['identifier'] = 'unit_id';
+  $handler->display->display_options['filters']['unit_id']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: User: Name */
+  $handler->display->display_options['filters']['uid']['id'] = 'uid';
+  $handler->display->display_options['filters']['uid']['table'] = 'users';
+  $handler->display->display_options['filters']['uid']['field'] = 'uid';
+  $handler->display->display_options['filters']['uid']['relationship'] = 'uid';
+  $handler->display->display_options['filters']['uid']['value'] = '';
+  $handler->display->display_options['filters']['uid']['group'] = 1;
+  $handler->display->display_options['filters']['uid']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['uid']['expose']['operator_id'] = 'uid_op';
+  $handler->display->display_options['filters']['uid']['expose']['label'] = 'Owner';
+  $handler->display->display_options['filters']['uid']['expose']['operator'] = 'uid_op';
+  $handler->display->display_options['filters']['uid']['expose']['identifier'] = 'uid';
+  $handler->display->display_options['filters']['uid']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Bookings: Order_id */
+  $handler->display->display_options['filters']['order_id']['id'] = 'order_id';
+  $handler->display->display_options['filters']['order_id']['table'] = 'rooms_bookings';
+  $handler->display->display_options['filters']['order_id']['field'] = 'order_id';
+  $handler->display->display_options['filters']['order_id']['group'] = 1;
+  $handler->display->display_options['filters']['order_id']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['order_id']['expose']['operator_id'] = 'order_id_op';
+  $handler->display->display_options['filters']['order_id']['expose']['label'] = 'Order';
+  $handler->display->display_options['filters']['order_id']['expose']['operator'] = 'order_id_op';
+  $handler->display->display_options['filters']['order_id']['expose']['identifier'] = 'order_id';
+  $handler->display->display_options['filters']['order_id']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Bookings: Start Date */
+  $handler->display->display_options['filters']['start_date']['id'] = 'start_date';
+  $handler->display->display_options['filters']['start_date']['table'] = 'rooms_bookings';
+  $handler->display->display_options['filters']['start_date']['field'] = 'start_date';
+  $handler->display->display_options['filters']['start_date']['operator'] = '>=';
+  $handler->display->display_options['filters']['start_date']['group'] = 1;
+  $handler->display->display_options['filters']['start_date']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['start_date']['expose']['operator_id'] = 'start_date_op';
+  $handler->display->display_options['filters']['start_date']['expose']['label'] = 'Arriving after';
+  $handler->display->display_options['filters']['start_date']['expose']['operator'] = 'start_date_op';
+  $handler->display->display_options['filters']['start_date']['expose']['identifier'] = 'start_date';
+  $handler->display->display_options['filters']['start_date']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Bookings: End Date */
+  $handler->display->display_options['filters']['end_date']['id'] = 'end_date';
+  $handler->display->display_options['filters']['end_date']['table'] = 'rooms_bookings';
+  $handler->display->display_options['filters']['end_date']['field'] = 'end_date';
+  $handler->display->display_options['filters']['end_date']['operator'] = '>=';
+  $handler->display->display_options['filters']['end_date']['group'] = 1;
+  $handler->display->display_options['filters']['end_date']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['end_date']['expose']['operator_id'] = 'end_date_op';
+  $handler->display->display_options['filters']['end_date']['expose']['label'] = 'Departing after';
+  $handler->display->display_options['filters']['end_date']['expose']['operator'] = 'end_date_op';
+  $handler->display->display_options['filters']['end_date']['expose']['identifier'] = 'end_date';
+  $handler->display->display_options['filters']['end_date']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');

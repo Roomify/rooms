@@ -470,6 +470,29 @@ function rooms_booking_form_rooms_booking_settings_alter(&$form, &$form_state, $
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * FORM_ID = views_exposed_form
+ */
+function rooms_booking_form_views_exposed_form_alter(&$form, &$form_state, $form_id) {
+  // Bookings admin view exposed filters.
+  if ($form['#id'] == 'views-exposed-form-bookings-page-1') {
+    $form['start_date']['#type'] = 'date_popup';
+    $form['start_date']['#date_format'] = 'd/m/Y';
+    $form['start_date']['#date_label_position'] = 'before';
+
+    $form['end_date']['#type'] = 'date_popup';
+    $form['end_date']['#date_format'] = 'd/m/Y';
+    $form['end_date']['#date_label_position'] = 'before';
+
+    $form['#attached']['css'][] = array(
+      'data' => '.views-exposed-form .views-exposed-widget { height: 70px; }',
+      'type' => 'inline',
+    );
+  }
+}
+
+/**
  * Implements hook_rules_action_info_alter().
  */
 function rooms_booking_rules_action_info_alter(&$actions) {
