@@ -18,11 +18,13 @@ interface UnitPricingCalendarInterface extends RoomsCalendarInterface {
    *   The price to modify.
    * @param int $days
    *   The event duration.
+   * @param array $reply
+   *   A log of prices changes
    *
    * @return float
    *   The modified price.
    */
-  public function applyPriceModifiers($base_price, $days);
+  public function applyPriceModifiers($base_price, $days, &$reply);
 
   /**
    * Get a set of PricingEvent between start_date and end_date filtered by days.

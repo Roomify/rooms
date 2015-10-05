@@ -61,15 +61,31 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
     }
 
     $price = 0;
+    $booking_price = 0;
+    $booking_days = 0;
+
+    // Setup pricing reply and log
+    $reply = array(
+      'full_price' => $price,
+      'booking_price' => $booking_price,
+      'log' => '',
+    );
+
+    // Get settings to add to log
+    $reply['log']['rooms_children_discount_options'] = variable_get('rooms_children_discount_options', array());
+    $reply['log']['rooms_price_calculation'] = variable_get('rooms_price_calculation', ROOMS_PER_NIGHT);
+
     $pricing_events = $this->getEvents($start_date, $end_date);
+    $reply['log']['pricing_events'] = $pricing_events;
     foreach ($pricing_events as $event) {
       $days = $event->diff()->days + 1;
+      $booking_days += $days;
       if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
         $children_discount_options = variable_get('rooms_children_discount_options', array());
-
         $price = $price + ($days * $event->amount * ($persons - $children));
 
         foreach ($children_ages as $age) {
+          $reply['log']['children'][$age]['pre'] = $price;
           if (is_array($age)) {
             $age = $age['value'];
           }
@@ -82,6 +98,7 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
           }
 
           $price = $price + ($days * $event->amount * (100 - $discount) / 100);
+          $reply['log']['children'][$age]['post'] = $price;
         }
       }
       else {
@@ -89,64 +106,102 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
       }
     }
 
-    $price = $this->applyPriceModifiers($price, $days);
+    $booking_info = array(
+      'unit' => $this->unit,
+      'start_date' => $start_date,
+      'end_date' => $end_date,
+      'booking_parameters' => array(
+        'group_size' => $persons,
+        'group_size_children' => $children,
+        'childrens_age' => $children_ages,
+      ),
+    );
 
+    drupal_alter('rooms_booking_amount_before_modifiers', $price, $booking_info);
+
+    $price = $this->applyPriceModifiers($price, $booking_days, $reply);
     $payment_option = variable_get('rooms_payment_options', FULL_PAYMENT);
+    $reply['rooms_payment_option'] = variable_get('rooms_payment_options', FULL_PAYMENT);
     switch ($payment_option) {
       case FULL_PAYMENT:
         $booking_price = $price;
         break;
 
       case PERCENT_PAYMENT:
+        $reply['rooms_payment_option'][PERCENT_PAYMENT] = variable_get('rooms_payment_options_percentual');
         $booking_price = $price / 100 * variable_get('rooms_payment_options_percentual');
         break;
 
       case FIRST_NIGHT_PAYMENT:
         $booking_price = $pricing_events[0]->amount;
+        $reply['rooms_payment_option'][FIRST_NIGHT_PAYMENT] = $booking_price;
         break;
     }
-
-    return array('full_price' => $price, 'booking_price' => $booking_price);
+    $reply['full_price'] = $price;
+    $reply['booking_price'] = $booking_price;
+    return $reply;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function applyPriceModifiers($base_price, $days) {
+  public function applyPriceModifiers($base_price, $days, &$reply) {
     $price = $base_price;
     if (!empty($this->price_modifiers)) {
-      foreach ($this->price_modifiers as $modifier) {
+      foreach ($this->price_modifiers as $source => $modifier) {
+
         if ($modifier['#type'] == ROOMS_PRICE_SINGLE_OCCUPANCY) {
+          $reply['log']['modifiers'][$source][$mod_count][ROOMS_PRICE_SINGLE_OCCUPANCY]['pre'] = $price;
+          $reply['log']['modifiers'][$source][$mod_count][ROOMS_PRICE_SINGLE_OCCUPANCY]['amount'] = $this->unit->data['singlediscount'];
+          $reply['log']['modifiers'][$source][$mod_count][ROOMS_PRICE_SINGLE_OCCUPANCY]['modifier'] = $modifier;
+            $this->unit->data['singlediscount'];
           $price -= $base_price * $this->unit->data['singlediscount'] / 100;
+          $reply['log']['modifiers'][$source][ROOMS_PRICE_SINGLE_OCCUPANCY]['post'] = $price;
         }
         elseif ($modifier['#type'] == ROOMS_DYNAMIC_MODIFIER) {
+          $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['modifier'] = $modifier;
+          $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['pre'] = $price;
           switch ($modifier['#op_type']) {
             case ROOMS_ADD:
               $price += $modifier['#amount'] * $modifier['#quantity'];
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['op'] = ROOMS_ADD;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['post'] = $price;
               break;
 
             case ROOMS_ADD_DAILY:
               $price += $modifier['#amount'] * $modifier['#quantity'] * $days;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['op'] = ROOMS_ADD_DAILY;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['post'] = $price;
               break;
 
             case ROOMS_SUB:
               $price -= $modifier['#amount'] * $modifier['#quantity'];
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['op'] = ROOMS_SUB;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['post'] = $price;
               break;
 
             case ROOMS_SUB_DAILY:
               $price -= $modifier['#amount'] * $modifier['#quantity'] * $days;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['op'] = ROOMS_SUB_DAILY;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['post'] = $price;
               break;
 
             case ROOMS_REPLACE:
               $price = $modifier['#amount'];
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['op'] = ROOMS_REPLACE;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['post'] = $price;
               break;
 
             case ROOMS_INCREASE:
               $price += $base_price * ($modifier['#amount'] * $modifier['#quantity']) / 100;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['op'] = ROOMS_INCREASE;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['post'] = $price;
               break;
 
             case ROOMS_DECREASE:
               $price -= $base_price * ($modifier['#amount'] * $modifier['#quantity']) / 100;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['op'] = ROOMS_DECREASE;
+              $reply['log']['modifiers'][$source][ROOMS_DYNAMIC_MODIFIER]['post'] = $price;
               break;
           }
         }
@@ -185,6 +240,12 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
    * {@inheritdoc}
    */
   public function getRawDayData(DateTime $start_date, DateTime $end_date) {
+    // To handle single-day bookings (Tours) we pretend that they are overnight
+    // bookings.
+    if ($end_date < $start_date) {
+      $end_date->add(new DateInterval('P1D'));
+    }
+
     // Create a dummy PricingEvent to represent the range we are searching over.
     // This gives us access to handy functions that PricingEvents have.
     $s = new PricingEvent($this->unit_id, 0, $start_date, $end_date);
@@ -329,6 +390,24 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
       }
     }
 
+    // We store -1 instead of the default price in the DB so this is our chance to get the default price back
+    // cycling through the data and replace -1 with the current default price of the unit.
+    foreach ($results[$this->unit_id] as $year => $months) {
+      foreach ($months as $mid => $days) {
+        // The number of days in the month we are interested in eventing.
+        $j = count($days);
+        // The start date.
+        $i = substr(key($days['days']), 1);
+        while ($j <= count($days['days'])) {
+          if ($days['days']['d' . $i] == -1){
+            $results[$this->unit_id][$year][$mid]['days']['d' . $i] = commerce_currency_decimal_to_amount($this->default_price, commerce_default_currency());
+          }
+          $i++;
+          $j++;
+        }
+      }
+    }
+
     // With the results in place we do a states array with the start and
     // end dates of each event.
     foreach ($results[$this->unit_id] as $year => $months) {
@@ -383,11 +462,9 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
         $monthly_events = array();
 
         foreach ($affected_events as $a_event) {
-          $days = $event->diff()->days + 1;
-
+          /** @var PricingEventInterface $a_event */
           // Apply the operation.
-          $a_event->applyOperation($event->amount, $event->operation, $days);
-
+          $a_event->applyOperation($event->amount, $event->operation);
           // If the event is in the same month span just queue to be added.
           if ($a_event->sameMonth()) {
             $monthly_events[] = $a_event;
@@ -429,7 +506,10 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
         $days['d' . $i] = commerce_currency_decimal_to_amount($event->amount, commerce_default_currency());
       }
       else {
-        $days['d' . $i] = commerce_currency_decimal_to_amount($this->default_price, commerce_default_currency());
+        // When we are writing a new month to the DB make sure to have the placeholder value -1 for the days where the
+        // default price is in effect. This means as a user changes the default price we will take it into account even
+        // though the price data is now in a DB row.
+        $days['d' . $i] = -1;
       }
     }
     return $days;

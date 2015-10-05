@@ -259,8 +259,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   );
 
   if (module_exists('commerce_customer')) {
-    ctools_include('modal');
-    ctools_modal_add_js();
+    $form['#after_build'][] = 'rooms_booking_edit_form_add_modal_js';
 
     $form['client']['#description'] = t('Customer profiles are saved in the <a href="@store-profile">store</a>. Search for an existing one by typing the customer name or <a href="@profile-create" class="ctools-use-modal">create a new profile</a>.', array('@store-profile' => url('admin/commerce/customer-profiles'), '@profile-create' => url('admin/rooms/add_customers')));
 
@@ -445,7 +444,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   $unit_selected = isset($booking->unit_id) ? t('Currently assigned unit: @unit_name / @type', array('@type' => $type_obj->label, '@unit_name' => $unit->name)) : '';
 
   if ($options_list != '') {
-    $unit_selected .= t('(Options: !options)', array('!options' => substr($options_list, 0, strlen($options_list) - 2)));
+    $unit_selected .= ' ' . t('(Options: !options)', array('!options' => substr($options_list, 0, strlen($options_list) - 2)));
   }
   if (isset($booking->price)) {
     $unit_selected .= '<br />' . t('Price') . ': ' .
@@ -542,7 +541,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     );
     unset($form['unit_id']);
 
-    // This is where the available untis will pop up.
+    // This is where the available units will pop up.
     $form['availability_fieldset']['unit_fieldset'] = array(
       '#type' => 'fieldset',
       '#prefix' => '<div class="rooms-booking-unit-wrapper" id="unit-wrapper">',
@@ -650,6 +649,11 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
                   ),
                 );
 
+                if ($option['type'] == ROOMS_OPTION_MANDATORY) {
+                  $form['availability_fieldset']['unit_fieldset']['options_fieldset'][$option_name]['#default_value'] = '1';
+                  $form['availability_fieldset']['unit_fieldset']['options_fieldset'][$option_name]['#disabled'] = TRUE;
+                }
+
                 // Show quantity field selector if an option quantity is set.
                 if (is_numeric($option['quantity']) && isset($form_state['values'][$option_name]) && $form_state['values'][$option_name] == 1 && $option['quantity'] > 1) {
                   $form['availability_fieldset']['unit_fieldset']['options_fieldset'][$option_name . ':quantity'] = array(
@@ -670,19 +674,34 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
               foreach (rooms_unit_get_unit_options($unit) as $option) {
                 $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
 
-                if (isset($form_state['values'][$option_name])) {
+                if ($option['type'] == ROOMS_OPTION_MANDATORY) {
+                  $quantity = 1;
+                  if (isset($form_state['values'][$option_name . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
+                    $quantity = $form_state['values'][$option_name . ':quantity'] + 1;
+                  }
+
+                  $price_modifiers[$option_name] = array(
+                    '#type' => ROOMS_DYNAMIC_MODIFIER,
+                    '#op_type' => $option['operation'],
+                    '#amount' => $option['value'],
+                    '#quantity' => $quantity,
+                  );
+                }
+                elseif (isset($form_state['values'][$option_name])) {
                   if ($form_state['values'][$option_name] == 1) {
                     $quantity = 1;
                     if (isset($form_state['values'][$option_name . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
                       $quantity = $form_state['values'][$option_name . ':quantity'] + 1;
                     }
 
-                    $price_modifiers[$option_name] = array(
-                      '#type' => ROOMS_DYNAMIC_MODIFIER,
-                      '#op_type' => $option['operation'],
-                      '#amount' => $option['value'],
-                      '#quantity' => $quantity,
-                    );
+                    if ($option['type'] != ROOMS_OPTION_ONREQUEST) {
+                      $price_modifiers[$option_name] = array(
+                        '#type' => ROOMS_DYNAMIC_MODIFIER,
+                        '#op_type' => $option['operation'],
+                        '#amount' => $option['value'],
+                        '#quantity' => $quantity,
+                      );
+                    }
                   }
                 }
               }
@@ -774,7 +793,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#title' => t('User information'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#access' => user_access('administer rooms_booking entities'),
+    '#access' => user_access('bypass rooms_booking entities access'),
     '#group' => 'additional_settings',
     '#attached' => array(
       'js' => array(
@@ -865,15 +884,35 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
     );
   }
-  $form['actions']['cancel'] = array(
-    '#markup' => l(t('Cancel'), 'admin/rooms/bookings', array('attributes' => array('class' => array('ctools-close-modal')))),
-    '#weight' => 50,
-  );
+
+  // Depending on whether the form is in a popup or a normal page we need to change
+  // the behavior of the cancel button
+  if (isset($form_state['ajax']) && $form_state['ajax'] == TRUE) {
+    $form['actions']['cancel'] = array(
+      '#markup' => l(t('Cancel'), 'admin/rooms/bookings', array('attributes' => array('class' => array('ctools-close-modal')))),
+      '#weight' => 50,
+    );
+  } else {
+    $form['actions']['cancel'] = array(
+      '#markup' => l(t('Cancel'), 'admin/rooms/bookings'),
+      '#weight' => 50,
+    );
+  }
 
   // We append the validate handler to #validate in case a form callback_wrapper
   // is used to add validate handlers earlier.
   $form['#validate'][] = 'rooms_form_start_end_dates_validate';
   $form['#validate'][] = 'rooms_booking_edit_form_validate';
+  return $form;
+}
+
+/**
+ * After build callback for the rooms_booking_edit_form.
+ */
+function rooms_booking_edit_form_add_modal_js($form, &$form_state) {
+  ctools_include('modal');
+  ctools_modal_add_js();
+
   return $form;
 }
 
@@ -1028,7 +1067,7 @@ function rooms_booking_edit_form_get_rooms($unit_type, $current_booking, $start_
     $current_booking_state = rooms_availability_assign_id($current_booking->booking_id, $current_booking->booking_status);
   }
 
-  $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST))));
+  $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', drupal_map_assoc(array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)))));
 
   if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
     $booking_parameters = array(array('adults' => $group_size, 'children' => $group_size_children, 'childrens_age' => $children_age));
@@ -1113,7 +1152,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
         // Check if a locked event is blocking the update.
         $states_confirmed = $uc->getStates($start_date, $adjusted_end_date);
 
-        $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST))));
+        $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', drupal_map_assoc(array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)))));
         $valid_states = array_merge($valid_states, array(ROOMS_UNCONFIRMED_BOOKINGS, $be->id));
 
         $state_diff_confirmed = array_diff($states_confirmed, $valid_states);
@@ -1131,7 +1170,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
         // Check if this booking overlap with an unconfirmed booking.
         $states_unconfirmed = $uc->getStates($start_date, $adjusted_end_date, TRUE);
 
-        $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST))));
+        $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', drupal_map_assoc(array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)))));
         $valid_states = array_merge($valid_states, array($be->id));
 
         $state_diff_unconfirmed = array_diff($states_unconfirmed, $valid_states);

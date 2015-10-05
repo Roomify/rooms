@@ -128,7 +128,9 @@ abstract class AvailabilityAgentFilterBase implements AvailabilityAgentFilterInt
   /**
    * {@inheritdoc}
    */
-  public static function availabilitySearchParameters() { }
+  public static function availabilitySearchParameters() {
+    return array();
+  }
 
   /**
    * {@inheritdoc}
@@ -221,7 +223,7 @@ class AvailabilityAgentDateFilter extends AvailabilityAgentFilterBase {
       $valid_states = $this->parameters['valid_states'];
     }
     else {
-      $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE => ROOMS_AVAILABLE, ROOMS_ON_REQUEST => ROOMS_ON_REQUEST))));
+      $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', drupal_map_assoc(array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)))));
       $valid_states = array_merge($valid_states, array(ROOMS_UNCONFIRMED_BOOKINGS));
     }
 
@@ -244,10 +246,18 @@ class AvailabilityAgentDateFilter extends AvailabilityAgentFilterBase {
       $states = $rc->getStates($start_date, $end_date, $confirmed);
       $state_diff = array_diff($states, $valid_states);
 
-      if (count($state_diff) != 0) {
-        unset($results['rooms_unit'][$key]);
+      if ($this->parameters['revert_valid_states']){
+        // $valid_states match completely with existing states so remove if we are looking
+        // for the opposite.
+        if (count($state_diff) == 0) {
+          unset($results['rooms_unit'][$key]);
+        }
       }
-    }
+      // $valid_states don't match with all existing states so remove unit.
+      elseif (count($state_diff) != 0) {
+          unset($results['rooms_unit'][$key]);
+        }
+      }
 
     if (empty($this->units)) {
       return $results['rooms_unit'];
@@ -259,6 +269,28 @@ class AvailabilityAgentDateFilter extends AvailabilityAgentFilterBase {
 
   }
 
+}
+
+/**
+ * Filter units by unit id.
+ */
+class AvailabilityAgentSingleUnitFilter extends AvailabilityAgentFilterBase {
+
+  public function applyFilter() {
+    if (variable_get('rooms_presentation_style') == ROOMS_INDIVIDUAL && isset($_GET['rooms_id']) && $requested_unit = rooms_unit_load($_GET['rooms_id'])) {
+
+      foreach ($this->units as $unit) {
+        if ($unit->unit_id != $requested_unit->unit_id) {
+          unset($this->units[$unit->unit_id]);
+        }
+      }
+      if (empty($this->units)) {
+        drupal_set_message('Unfortunately ' . $requested_unit->name . ' is not available - try other dates if possible', 'warning');
+      }
+
+    }
+    return $this->units;
+  }
 }
 
 /**

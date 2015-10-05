@@ -16,7 +16,7 @@ function rooms_booking_availability_search_form_builder($form, &$form_state) {
   form_load_include($form_state, 'inc', 'rooms_booking_manager', 'rooms_booking_manager.availability_search');
 
   $form['#attributes']['class'][] = 'rooms-management-form rooms-availability-search';
-  $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/booking_search.css');
+  $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_booking_manager') . '/css/rooms_booking_search.css');
 
   $rooms_number = 1;
 
@@ -133,13 +133,12 @@ function rooms_booking_availability_search_form_builder($form, &$form_state) {
   if (variable_get('rooms_booking_manager_type_selector', ROOMS_DISPLAY_TYPE_SELECTOR_NO) == ROOMS_DISPLAY_TYPE_SELECTOR) {
     $searchable_unit_types = variable_get('rooms_unit_type_selector', array());
     if (!empty($searchable_unit_types)) {
-      $unit_types = variable_get('rooms_unit_type_selector', array());
 
       $form['unit_type'] = array(
         '#title' => variable_get_value('rooms_booking_manager_select_type'),
         '#type' => 'select',
         '#empty_option' => t('Select All'),
-        '#options' => $unit_types,
+        '#options' => _rooms_booking_manager_get_unit_type_labels($searchable_unit_types),
         '#default_value' => 0,
       );
 
@@ -225,9 +224,7 @@ function rooms_booking_availability_search_form_validate(&$form, &$form_state) {
  * Submit callback for rooms_booking_availability_search_form form.
  */
 function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
-
-  $start_date = new DateTime($form_state['values']['rooms_start_date']);
-  $end_date = new DateTime($form_state['values']['rooms_end_date']);
+  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
 
   $units = $form_state['values']['rooms'];
 
@@ -240,6 +237,11 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
     else {
       $rooms_query['type'] = 'all';
     }
+  }
+
+  // Get parameter for AvailabilityAgentSingleUnitFilter.
+  if (isset($form_state['values']['rooms_id'])) {
+    $rooms_query['rooms_id'] = $form_state['values']['rooms_id'];
   }
 
   $rooms_query += rooms_booking_manager_get_plugin_parameters($form_state);
@@ -259,9 +261,30 @@ function rooms_booking_availability_search_form_submit(&$form, &$form_state) {
   }
 
   $form_state['redirect'] = array(
-    'booking/' . $start_date->format('Y-m-d') . '/' . $end_date->format('Y-m-d') . '/' . $units,
+    'booking/' . $start_date->format('Y-m-d') . '/' . $end_date->format('Y-m-d') . '/' . $units . '/' . $form_state['single_day_bookings'],
     array(
       'query' => $rooms_query,
     ),
   );
+}
+
+/**
+ * Returns the actual labels of for the given rooms unit types.
+ *
+ * @param array $unit_type_ids
+ *   A list of machine names to get the labels for.
+ *
+ * @return array
+ *   A list of labels keys by machine name.
+ */
+function _rooms_booking_manager_get_unit_type_labels($unit_type_ids) {
+  // Get all labels
+  $unit_types = rooms_unit_get_types();
+
+  $unit_type_labels = array();
+  foreach ($unit_type_ids as $label) {
+    $unit_type_labels[$label] = $unit_types[$label]->label;
+  }
+
+  return $unit_type_labels;
 }

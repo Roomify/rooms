@@ -74,6 +74,17 @@ class AvailabilityAgent {
    */
   public $valid_rooms_combination = array();
 
+  /**
+   * Standard availability search returns a unit as available only if in one of the
+   * valid availability states. This switch reverts the behaviour to return a
+   * unit as availability if a state not defined in valid_states within the
+   * date range provided. This is particularly useful if looking for unknown state
+   * values within a given date range (e.g. search for any bookings within a date range).
+   *
+   * @var boolean
+   */
+  public $revert_valid_states = FALSE;
+
 
   /**
    * Construct the AvailabilityAgent instance.
@@ -90,8 +101,10 @@ class AvailabilityAgent {
    *   Valid states to perform the availability search.
    * @param array $unit_types
    *   Unit types to perform the search.
+   * @param boolean $revert_valid_states
+   *  If true availability is return if states other than the valid ones exist in date range
    */
-  public function __construct($start_date, $end_date, $booking_parameters = array(), $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS), $unit_types = array()) {
+  public function __construct($start_date, $end_date, $booking_parameters = array(), $booking_units = 1, $valid_states = array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST, ROOMS_UNCONFIRMED_BOOKINGS), $unit_types = array(), $revert_valid_states = FALSE) {
     $this->valid_states = $valid_states;
     $this->start_date = $start_date;
     // For availability purposes the end date is a day earlier than checkout.
@@ -100,6 +113,7 @@ class AvailabilityAgent {
     $this->booking_parameters = $booking_parameters;
     $this->booking_units = $booking_units;
     $this->unit_types = $unit_types;
+    $this->revert_valid_states = $revert_valid_states;
   }
 
 
@@ -293,8 +307,12 @@ class AvailabilityAgent {
       return array();
     }
 
+    // Apply AvailabilityAgentSingleUnitFilter.
+    $av_singleunitfilter = new AvailabilityAgentSingleUnitFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date));
+    $units = $av_singleunitfilter->applyFilter();
+
     // Apply AvailabilityAgentDateFilter.
-    $av_datefilter = new AvailabilityAgentDateFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date, 'valid_states' => $this->valid_states, 'confirmed' => $confirmed));
+    $av_datefilter = new AvailabilityAgentDateFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date, 'valid_states' => $this->valid_states, 'confirmed' => $confirmed, 'revert_valid_states' => $this->revert_valid_states));
     $units = $av_datefilter->applyFilter();
 
     if (empty($units)) {
@@ -302,8 +320,10 @@ class AvailabilityAgent {
     }
 
     // Apply AvailabilityAgentCommerceFilter.
-    $av_commercefilter = new AvailabilityAgentCommerceFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date));
-    $units = $av_commercefilter->applyFilter();
+    if (variable_get('rooms_use_commerce_filter', '1')) {
+      $av_commercefilter = new AvailabilityAgentCommerceFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date));
+      $units = $av_commercefilter->applyFilter();
+    }
 
     ctools_include('plugins');
     $filters = ctools_get_plugins('rooms_booking', 'availabilityagent_filter');
@@ -361,16 +381,20 @@ class AvailabilityAgent {
         $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
 
         if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON && count($this->booking_parameters) == 1 && isset($this->booking_parameters[0]) && is_array($this->booking_parameters)) {
-          $price = $price_calendar->calculatePrice($this->start_date, $this->end_date, $this->booking_parameters[0]['adults'], $this->booking_parameters[0]['children'], $this->booking_parameters[0]['childrens_age']);
+          $price_log = $price_calendar->calculatePrice($this->start_date,
+            $this->end_date, $this->booking_parameters[0]['adults'], $this->booking_parameters[0]['children'], $this->booking_parameters[0]['childrens_age']);
         }
         else {
-          $price = $price_calendar->calculatePrice($this->start_date, $this->end_date);
+          $price_log = $price_calendar->calculatePrice($this->start_date,
+            $this->end_date);
         }
-        $full_price = $price['full_price'];
+        $full_price = $price_log['full_price'];
 
         $units[$unit->type][$full_price][$unit->unit_id]['unit'] = $unit;
         $units[$unit->type][$full_price][$unit->unit_id]['price'] = $full_price;
-        $units[$unit->type][$full_price][$unit->unit_id]['booking_price'] = $price['booking_price'];
+        $units[$unit->type][$full_price][$unit->unit_id]['booking_price'] = $price_log['booking_price'];
+        $units[$unit->type][$full_price][$unit->unit_id]['price_log'] = $price_log['log'];
+
 
         if (in_array(ROOMS_ON_REQUEST, $states)) {
           $units[$unit->type][$full_price][$unit->unit_id]['state'] = ROOMS_ON_REQUEST;

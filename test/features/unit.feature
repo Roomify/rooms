@@ -48,11 +48,11 @@ Scenario: Unit type manager can access the Bookable unit types page and create, 
 
 @api @javascript
 Scenario: Unit type manager creates two unit types and two unit admin creates and edit it
-  #Creating a unit type programmatically.
+  # Creating a unit type programmatically.
   Given unit types:
-  |type     |label    |base_price|min_sleeps|max_sleeps|min_children|max_children|
-  |standard |Standard |100       |2         |3         |0           |1           |
-  |deluxe   |Deluxe   |150       |1         |2         |0           |1           |
+  | type     | label    | base_price | min_sleeps | max_sleeps | min_children | max_children |
+  | standard | Standard | 100        | 2          | 3          | 0            | 1            |
+  | deluxe   | Deluxe   | 150        | 1          | 2          | 0            | 1            |
 
   # Standard unit manager manages the unit type.
   Given the cache has been cleared
@@ -78,7 +78,7 @@ Scenario: Unit type manager creates two unit types and two unit admin creates an
   When I am on the "Standard one edited" unit
   Then I should see the text "Standard one edited"
   When I am editing the "Standard one edited" unit
-  Then the "base_price" field should contain "150"
+  Then the "base_price" field should contain "150.00"
   And the "min_sleeps" field should contain "3"
   And the "max_sleeps" field should contain "8"
   And the "min_children" field should contain "1"
@@ -110,7 +110,7 @@ Scenario: Unit type manager creates two unit types and two unit admin creates an
   When I am on the "Deluxe one edited" unit
   Then I should see the text "Deluxe one edited"
   When I am editing the "Deluxe one edited" unit
-  Then the "base_price" field should contain "150"
+  Then the "base_price" field should contain "150.00"
   And the "min_sleeps" field should contain "3"
   And the "max_sleeps" field should contain "8"
   And the "min_children" field should contain "1"
@@ -121,16 +121,16 @@ Scenario: Unit type manager creates two unit types and two unit admin creates an
 
 @api @javascript
 Scenario: Creating a bunch of units for testing purposes.
-  #Creating a unit type programmatically.
+  # Creating a unit type programmatically.
   Given unit types:
-  |type     |label    |base_price|min_sleeps|max_sleeps|min_children|max_children|
-  |standard |Standard |100       |2         |3         |0           |1           |
+  | type     | label    | base_price | min_sleeps | max_sleeps | min_children | max_children |
+  | standard | Standard | 100        | 2          | 3          | 0            | 1            |
 
   # Creating a bunch of units programmatically.
   Given "standard" units:
-  |name|base_price|min_sleeps|max_sleeps|
-  |test1|120      |1         |2         |
-  |test2|140      |2         |4         |
+  | name  | base_price | min_sleeps | max_sleeps |
+  | test1 | 120        | 1          | 2          |
+  | test2 | 140        | 2          | 4          |
 
   Given I am logged in as a user with the "administrator" role
   When I am on the "test1" unit

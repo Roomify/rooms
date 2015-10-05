@@ -8,22 +8,22 @@ Feature: Once rooms_package correctly installed
 Scenario: I can create a booking
   Given I am logged in as a user with the "administrator" role
 
-  #Creating a unit type and some units.
+  # Creating a unit type and some units.
   Given unit types:
-  |type     |label    |base_price|min_sleeps|max_sleeps|min_children|max_children|
-  |standard |Standard |100       |2         |3         |0           |1           |
-  |deluxe   |Deluxe   |150       |1         |4         |0           |0           |
+  | type     | label    | base_price | min_sleeps | max_sleeps | min_children | max_children |
+  | standard | Standard | 100        | 2          | 3          | 0            | 1            |
+  | deluxe   | Deluxe   | 150        | 1          | 4          | 0            | 0            |
 
   # Creating a bunch of units programmatically.
   Given "standard" units:
-  |name       |base_price|min_sleeps|max_sleeps|
-  |Normal     |120       |1         |2         |
-  |Special    |130       |2         |3         |
+  | name       | base_price | min_sleeps | max_sleeps |
+  | Normal     | 120        | 1          | 2          |
+  | Special    | 130        | 2          | 3          |
 
   # Creating a bunch of units programmatically.
   Given "deluxe" units:
-  |name       |base_price|min_sleeps|max_sleeps|
-  |Suite      |120       |1         |2         |
+  | name       | base_price | min_sleeps | max_sleeps |
+  | Suite      | 120        | 1          | 2          |
 
   # Checking that Standard booking type exists.
   When I should be able to edit a "rooms_package" product
@@ -183,8 +183,8 @@ Scenario: I can create a booking
 
   When I am on "admin/rooms/bookings"
   Then I should see values in row table:
-  |Customer |Arrival   |Departure |Unit   |
-  |User test|05-04-2015|15-04-2015|Suite  |
-  |User test|05-04-2015|15-04-2015|Normal |
-  |User test|05-04-2015|15-04-2015|Special|
-  |User test|05-06-2015|15-06-2015|       |
+  | Customer  | Arrival    | Departure  | Unit    |
+  | User test | 05-04-2015 | 15-04-2015 | Suite   |
+  | User test | 05-04-2015 | 15-04-2015 | Normal  |
+  | User test | 05-04-2015 | 15-04-2015 | Special |
+  | User test | 05-06-2015 | 15-06-2015 |         |

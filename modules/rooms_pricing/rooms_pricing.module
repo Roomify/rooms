@@ -174,18 +174,20 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
   // Unset a js setting that is not relevant for pricing.
   drupal_add_js(array('rooms' => array('roomsBookingStartDay' => 0)), 'setting');
 
+  $day_options = array(
+    '1' => t('Sun'),
+    '2' => t('Mon'),
+    '3' => t('Tue'),
+    '4' => t('Wed'),
+    '5' => t('Thu'),
+    '6' => t('Fri'),
+    '7' => t('Sat'),
+  );
   $form['rooms_update_pricing']['day_options'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Days of the Week applicable'),
-    '#options' => array(
-      '1' => t('Sun'),
-      '2' => t('Mon'),
-      '3' => t('Tue'),
-      '4' => t('Wed'),
-      '5' => t('Thu'),
-      '6' => t('Fri'),
-      '7' => t('Sat'),
-    ),
+    '#options' => $day_options,
+    '#default_value' => array_keys($day_options),
   );
 
   $form['rooms_update_pricing']['op'] = array(
@@ -193,6 +195,8 @@ function update_unit_pricing_form($form, &$form_state, $unit_id) {
   );
 
   $price_options = rooms_price_options_options();
+  unset($price_options[ROOMS_ADD_DAILY]);
+  unset($price_options[ROOMS_SUB_DAILY]);
   $form['rooms_update_pricing']['op']['operation'] = array(
     '#type' => 'select',
     '#title' => t('Operation'),
@@ -432,18 +436,20 @@ function rooms_pricing_update_form($form, &$form_state, $month, $year, $type, $r
 
   $form['rooms_pricing_update']['rooms_date_range'] = rooms_date_range_fields($year, $month);
 
+  $day_options = array(
+    '1' => t('Sun'),
+    '2' => t('Mon'),
+    '3' => t('Tue'),
+    '4' => t('Wed'),
+    '5' => t('Thu'),
+    '6' => t('Fri'),
+    '7' => t('Sat'),
+  );
   $form['rooms_pricing_update']['day_options'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Days of the Week applicable'),
-    '#options' => array(
-      '1' => t('Sun'),
-      '2' => t('Mon'),
-      '3' => t('Tue'),
-      '4' => t('Wed'),
-      '5' => t('Thu'),
-      '6' => t('Fri'),
-      '7' => t('Sat'),
-    ),
+    '#options' => $day_options,
+    '#default_value' => array_keys($day_options),
   );
 
   $form['rooms_pricing_update']['op'] = array(

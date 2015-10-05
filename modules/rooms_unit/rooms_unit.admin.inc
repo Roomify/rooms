@@ -221,7 +221,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#type' => 'fieldset',
     '#title' => t('Sleeping capacity'),
     '#tree' => FALSE,
-    '#weight' => -97,
+    '#weight' => -96,
     '#attributes' => array('class' => array('rooms-unit-guest-capacity')),
   );
 
@@ -244,7 +244,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#type' => 'fieldset',
     '#title' => t('Child capacity'),
     '#tree' => FALSE,
-    '#weight' => -96,
+    '#weight' => -95,
     '#attributes' => array('class' => array('rooms-unit-child-capacity')),
   );
 
@@ -265,7 +265,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
 
   $form['data'] = array(
     '#tree' => TRUE,
-    '#weight' => -95,
+    '#weight' => -94,
   );
 
   $form['data']['bed_arrangement'] = array(
@@ -290,7 +290,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
 
   // Add the field related form elements.
   $form_state['rooms_unit'] = $unit;
-  field_attach_form('rooms_unit', $unit, $form, $form_state);
+  field_attach_form('rooms_unit', $unit, $form, $form_state, isset($unit->language)? $unit->language : NULL);
 
   $form['additional_settings'] = array(
     '#type' => 'vertical_tabs',
@@ -331,7 +331,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
   // Unit author information for administrators.
   $form['author'] = array(
     '#type' => 'fieldset',
-    '#access' => user_access('administer bookable units'),
+    '#access' => user_access('bypass rooms_unit entities access'),
     '#title' => t('Authoring information'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
@@ -372,7 +372,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
   // Unit publishing options for administrators.
   $form['options'] = array(
     '#type' => 'fieldset',
-    '#access' => user_access('administer bookable units'),
+    '#access' => user_access('bypass rooms_unit entities access'),
     '#title' => t('Publishing options'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,

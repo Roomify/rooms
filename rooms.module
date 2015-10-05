@@ -44,6 +44,10 @@ define('FIRST_NIGHT_PAYMENT', 12);
 define('ROOMS_DISPLAY_TYPE_SELECTOR', 1);
 define('ROOMS_DISPLAY_TYPE_SELECTOR_NO', 0);
 
+define('ROOMS_OPTION_OPTIONAL', 'optional');
+define('ROOMS_OPTION_MANDATORY', 'mandatory');
+define('ROOMS_OPTION_ONREQUEST', 'on_request');
+
 /**
  * Implements hook_permission().
  */
@@ -57,6 +61,24 @@ function rooms_permission() {
   );
 
   return $permissions;
+}
+
+/**
+ * Implements hook_menu().
+ */
+function rooms_menu() {
+  $items['rooms_options/ajax'] = array(
+    'title' => 'Remove item callback',
+    'page callback' => 'rooms_options_remove_js',
+    'delivery callback' => 'ajax_deliver',
+    'access callback' => TRUE,
+    'theme callback' => 'ajax_base_page_theme',
+    'type' => MENU_CALLBACK,
+    'file path' => 'includes',
+    'file' => 'form.inc',
+  );
+
+  return $items;
 }
 
 /**
@@ -222,6 +244,12 @@ function rooms_entity_access($op, $entity, $account, $entity_type) {
   // be an integer, use either nid or type as the static cache id.
   $cid = is_object($entity) ? $entity->{$entity_info['entity keys']['id']} : $entity;
 
+  // If we are creating a new entity make sure we set the type so permissions get
+  // applied
+  if ($op == 'create' && $cid == '') {
+    $cid = $entity->type;
+  }
+
   // If we've already checked access for this node, user and op, return from
   // cache.
   if (isset($rights[$account->uid][$cid][$op])) {
@@ -229,7 +257,7 @@ function rooms_entity_access($op, $entity, $account, $entity_type) {
   }
 
   // Grant generic administrator level access.
-  if (user_access('bypass ' . $entity_type . ' entities', $account)) {
+  if (user_access('bypass ' . $entity_type . ' entities access', $account)) {
     $rights[$account->uid][$cid][$op] = TRUE;
     return TRUE;
   }
@@ -338,13 +366,6 @@ function rooms_entity_access_permissions($entity_type) {
   $permissions['bypass ' . $entity_type . ' entities access'] = array(
     'title' => t('Bypass access to @entity_type', array('@entity_type' => $labels['plural'])),
     'description' => t('Allows users to perform any action on @entity_type.', array('@entity_type' => $labels['plural'])),
-    'restrict access' => TRUE,
-  );
-
-  // General 'administer' permission.
-  $permissions['administer ' . $entity_type . ' entities'] = array(
-    'title' => t('Administer @entity_type', array('@entity_type' => $labels['plural'])),
-    'description' => t('Allows users to perform administrative tasks on @entity_type.', array('@entity_type' => $labels['plural'])),
     'restrict access' => TRUE,
   );
 
@@ -623,6 +644,12 @@ function rooms_options_data_property_info($name = NULL) {
       'getter callback' => 'entity_property_verbatim_get',
       'setter callback' => 'entity_property_verbatim_set',
     ),
+    'type' => array(
+      'label' => 'Type',
+      'type' => 'text',
+      'getter callback' => 'entity_property_verbatim_get',
+      'setter callback' => 'entity_property_verbatim_set',
+    ),
   );
 
   // Add the default values for each of the video_embed_field properties.
@@ -666,6 +693,10 @@ function rooms_field_formatter_info() {
       'label' => t('Rooms Options Default'),
       'field types' => array('rooms_options'),
     ),
+    'rooms_options_price' => array(
+      'label' => t('Rooms Options Price'),
+      'field types' => array('rooms_options'),
+    ),
     'rooms_options_admin' => array(
       'label' => t('Rooms Options Administrator'),
       'field types' => array('rooms_options'),
@@ -686,6 +717,25 @@ function rooms_field_formatter_view($entity_type, $entity, $field, $instance, $l
       }
       break;
 
+    case 'rooms_options_price':
+      $currency_setting = commerce_currency_load(commerce_default_currency());
+      $currency_symbol = $currency_setting['symbol'];
+
+      foreach ($items as $delta => $item) {
+        $price = t('@currency_symbol@amount', array(
+          '@currency_symbol' => $currency_symbol,
+          '@amount' => number_format($item['value'], 2, '.', ''),
+        ));
+
+        if ($item['value'] > 0) {
+          $element[$delta] = array('#markup' => "{$item['quantity']} x {$item['name']} - {$price}");
+        }
+        else {
+          $element[$delta] = array('#markup' => "{$item['quantity']} x {$item['name']}");
+        }
+      }
+      break;
+
     case 'rooms_options_admin':
       foreach ($items as $delta => $item) {
         $element[$delta] = array('#markup' => "{$item['quantity']} x {$item['name']} - {$item['operation']} {$item['value']}");
@@ -701,6 +751,12 @@ function rooms_field_formatter_view($entity_type, $entity, $field, $instance, $l
  */
 function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   if ($instance['widget']['type'] == 'rooms_options_combined') {
+    $field_parents = $element['#field_parents'];
+    $field_name = $element['#field_name'];
+    $language = $element['#language'];
+
+    $parents = array_merge($field_parents, array($field_name, $language, $delta));
+
     $element['name'] = array(
       '#type' => 'textfield',
       '#title' => t('Name'),
@@ -739,15 +795,38 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
         'class' => array('rooms-option--value'),
       ),
     );
+    $type_options = array(
+      ROOMS_OPTION_OPTIONAL => t('Optional'),
+      ROOMS_OPTION_MANDATORY => t('Mandatory'),
+      ROOMS_OPTION_ONREQUEST => t('On Request'),
+    );
+    $element['type'] = array(
+      '#type' => 'select',
+      '#title' => t('Type'),
+      '#options' => $type_options,
+      '#default_value' => isset($items[$delta]['type']) ? $items[$delta]['type'] : 'optional',
+      '#attributes' => array(
+        'class' => array('rooms-option--type'),
+      ),
+    );
 
     $element['remove'] = array(
+      '#delta' => $delta,
+      '#name' => implode('_', $parents) . '_remove_button',
       '#type' => 'submit',
       '#value' => t('Remove'),
+      '#validate' => array(),
+      '#submit' => array('rooms_options_remove_submit'),
+      '#limit_validation_errors' => array(),
+      '#ajax' => array(
+        'path' => 'rooms_options/ajax',
+        'effect' => 'fade',
+      ),
       '#attributes' => array(
         'class' => array('rooms-option--remove-button'),
       ),
     );
-    $element['#attached']['js'] = array(drupal_get_path('module', 'rooms') . '/js/rooms_options_widget.js');
+
     $element['#attached']['css'] = array(drupal_get_path('module', 'rooms') . '/css/rooms_options_widget.css');
 
     return $element;
@@ -907,8 +986,17 @@ function rooms_date_range_fields($year = NULL, $month = NULL) {
  * instantiate and return DateTime objects.
  */
 function rooms_form_input_get_start_end_dates($form_state) {
-  $start = DateTime::createFromFormat('d/m/Y', $form_state['input']['rooms_start_date']['date']);
-  $end = DateTime::createFromFormat('d/m/Y', $form_state['input']['rooms_end_date']['date']);
+  // If form_state['values']['rooms_X_date'] is not set it is an empty array
+  // hence the need to check and set values so that _constructor below will not
+  // fail.
+  if (is_array($form_state['values']['rooms_start_date']) || is_array($form_state['values']['rooms_end_date'])) {
+    $form_state['values']['rooms_start_date'] = '';
+    $form_state['values']['rooms_end_date'] = '';
+  }
+
+  $start = new DateTime($form_state['values']['rooms_start_date']);
+  $end = new DateTime($form_state['values']['rooms_end_date']);
+
   return array($start, $end);
 }
 
@@ -943,6 +1031,7 @@ function rooms_form_values_get_start_end_dates($form_state) {
 function rooms_form_start_end_dates_validate($form, &$form_state) {
   list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
   $today_greater = FALSE;
+  $single_day_bookings = FALSE;
   // Skip if no dates are provided.
   if (empty($start_date) || empty($end_date)) {
     form_set_error('date_range', t('Please choose dates.'));
@@ -954,8 +1043,16 @@ function rooms_form_start_end_dates_validate($form, &$form_state) {
     $today_greater = TRUE;
   }
 
+  // In case that this value is set trigger the today greater validation.
+  if (isset($form_state['single_day_bookings'])) {
+    $single_day_bookings = TRUE;
+  } else {
+    // Set the form state so that we can carry the value over to the results page
+    $form_state['single_day_bookings'] = $single_day_bookings;
+  }
+
   // Check date validity.
-  $errors = rooms_check_dates_validity($start_date, $end_date, $today_greater);
+  $errors = rooms_check_dates_validity($start_date, $end_date, $today_greater, $single_day_bookings);
 
   // For some forms as rooms_availability_pricing_update_form and
   // rooms_availability_update_status_form we need to validate that the selected
@@ -985,18 +1082,40 @@ function rooms_form_start_end_dates_validate($form, &$form_state) {
  * @param DateTime $end_date
  *   The end date
  * @param bool $today_greater
- *   TRUE in case to enable the validation that start_date must be greater than
+ *   TRUE in to enforce validating that start_date must be greater than
  *   today.
  *
  * @return array
  *   An array with error messages.
  */
-function rooms_check_dates_validity(DateTime $start_date, DateTime $end_date, $today_greater = FALSE) {
+function rooms_check_dates_validity(DateTime $start_date, DateTime $end_date, $today_greater = FALSE, $single_day_bookings = FALSE) {
   $errors = array();
-  // End date must be greater than start date.
-  if ($end_date <= $start_date) {
-    $errors[] = t('End date must be after start date.');
+  // End date must be greater than start date unless single day bookings are
+  // enabled, in which case it must not be before the start date.
+  if (($end_date < $start_date) || (($end_date == $start_date) && !$single_day_bookings)) {
+    if ($single_day_bookings) {
+      $errors[] = t('End date must be on or after the start date.');
+    }
+    else {
+      $errors[] = t('End date must be after start date.');
+    }
   }
+
+  // End date must not be more that the allowed number of days in advance for booking
+  $current_date = new DateTime();
+  $booking_interval = $current_date->diff($end_date);
+
+  // The following necessary to get a properly instantiated date interval when starting with
+  // just seconds
+  $d1 = new DateTime();
+  $d2 = new DateTime();
+  $d2->add(new DateInterval('PT'.variable_get('rooms_advance_bookings_period', 15552000).'S'));
+  $advanced_bookings_interval = $d2->diff($d1);
+
+  if (($booking_interval->format('%a') > $advanced_bookings_interval->format('%a')) && (!user_access('book in advance without limitation'))) {
+    $errors[] = 'You cannot book that far into the future - bookings can only be made ' . $advanced_bookings_interval->format('%a') . ' days in advance';
+  }
+
   // In case the date should be grater than today.
   if ($today_greater) {
     $now = new DateTime();
@@ -1069,7 +1188,7 @@ function _rooms_select_rooms_validation($form_state) {
   }
 }
 
-function rooms_filter_month_form($form, &$form_state, $month, $year) {
+function rooms_filter_month_form($form, &$form_state, $month, $year, $unit_types = NULL) {
 
   $form['#attributes']['class'][] = 'rooms-management-form rooms-filter-month-form';
 
@@ -1104,12 +1223,10 @@ function rooms_filter_month_form($form, &$form_state, $month, $year) {
     '#default_value' => $year - date('Y', time()) + 2,
   );
 
-  $query = db_select('rooms_unit_type', 'n')->fields('n', array('type', 'label'));
-  $unit_type = $query->execute()->fetchAll();
-
   $type_options['all'] = t('All types');
-  foreach ($unit_type as $unit) {
-    $type_options[$unit->type] = $unit->label;
+  $unit_types = isset($unit_types) ? $unit_types : rooms_unit_get_types();
+  foreach ($unit_types as $unit_type_name => $unit_type) {
+    $type_options[$unit_type_name] = $unit_type->label;
   }
 
   $form['rooms_availability_filter_month']['type'] = array(
@@ -1231,4 +1348,146 @@ function rooms_element_validate_integer_positive_less_than_100($element, &$form_
       form_error($element, t('%name must be less than 100.', array('%name' => $element['#title'])));
     }
   }
+}
+
+/**
+ * A string transformation function specific to Rooms to allow modules to use
+ * contextual information about bookings to change what is shown to the user.
+ *
+ * @param $string - The string to be altered.
+ * @param $context - Contextual information about the string.
+ *
+ * @return mixed
+ */
+function rooms_string($string, $context) {
+
+  // The string_suggestions array will hold information about all the
+  // suggestions coming from modules. The default behaviour now is to simply
+  // return the suggestion made by the module with the highest weight.
+  $string_suggestions = array();
+  $string_suggestions[] = $string;
+  drupal_alter('rooms_string', $string_suggestions, $context);
+
+  // Return the highest option string.
+  return max($string_suggestions);
+}
+
+/**
+ * Page callback to handle AJAX for removing a rooms options item.
+ *
+ * This is a direct page callback. The actual job of deleting the item is
+ * done in the submit handler for the button, so all we really need to
+ * do is process the form and then generate output. We generate this
+ * output by doing a replace command on the id of the entire form element.
+ */
+function rooms_options_remove_js() {
+  // drupal_html_id() very helpfully ensures that all html IDS are unique
+  // on a page. Unfortunately what it doesn't realize is that the IDs
+  // we are generating are going to replace IDs that already exist, so
+  // this actually works against us.
+  if (isset($_POST['ajax_html_ids'])) {
+    unset($_POST['ajax_html_ids']);
+  }
+
+  list($form, $form_state, $form_id, $form_build_id, $commands) = ajax_get_form();
+  drupal_process_form($form['#form_id'], $form, $form_state);
+
+  // Get the information on what we're removing.
+  $button = $form_state['triggering_element'];
+  // Go two levels up in the form, to the whole widget.
+  $element = drupal_array_get_nested_value($form, array_slice($button['#array_parents'], 0, -3));
+  // Now send back the proper AJAX command to replace it.
+  $commands[] = ajax_command_replace('#' . $element['#id'], drupal_render($element));
+  $return = array(
+    '#type' => 'ajax',
+    '#commands' => $commands,
+  );
+
+  // Because we're doing this ourselves, messages aren't automatic. We have
+  // to add them.
+  $messages = theme('status_messages');
+  if ($messages) {
+    $return['#commands'][] = ajax_command_prepend('#' . $element['#id'], $messages);
+  }
+
+  return $return;
+}
+
+/**
+ * Submit callback to remove an item from the field UI multiple wrapper.
+ *
+ * When a remove button is submitted, we need to find the item that it
+ * referenced and delete it. Since field UI has the deltas as a straight
+ * unbroken array key, we have to renumber everything down. Since we do this
+ * we *also* need to move all the deltas around in the $form_state['values'],
+ * $form_state['input'], and $form_state['field'] so that user changed values
+ * follow. This is a bit of a complicated process.
+ */
+function rooms_options_remove_submit($form, &$form_state) {
+  $button = $form_state['triggering_element'];
+  $delta = $button['#delta'];
+
+  // Where in the form we'll find the parent element.
+  $address = array_slice($button['#array_parents'], 0, -2);
+
+  // Go one level up in the form, to the widgets container.
+  $parent_element = drupal_array_get_nested_value($form, $address);
+  $field_name = $parent_element['#field_name'];
+  $langcode = $parent_element['#language'];
+  $parents = $parent_element['#field_parents'];
+
+  $field_state = field_form_get_state($parents, $field_name, $langcode, $form_state);
+
+  // Go ahead and renumber everything from our delta to the last
+  // item down one. This will overwrite the item being removed.
+  for ($i = $delta; $i <= $field_state['items_count']; $i++) {
+    $old_element_address = array_merge($address, array($i + 1));
+    $new_element_address = array_merge($address, array($i));
+
+    $moving_element = drupal_array_get_nested_value($form, $old_element_address);
+    $moving_element_value = drupal_array_get_nested_value($form_state['values'], $old_element_address);
+    $moving_element_input = drupal_array_get_nested_value($form_state['input'], $old_element_address);
+    $moving_element_field = drupal_array_get_nested_value($form_state['field'], $old_element_address);
+
+    // Tell the element where it's being moved to.
+    $moving_element['#parents'] = $new_element_address;
+
+    // Move the element around.
+    form_set_value($moving_element, $moving_element_value, $form_state);
+    drupal_array_set_nested_value($form_state['input'], $moving_element['#parents'], $moving_element_input);
+    drupal_array_set_nested_value($form_state['field'], $moving_element['#parents'], $moving_element_field);
+  }
+
+  $form_state['rooms_unit_type']->rooms_booking_unit_options = array();
+
+  // Then remove the last item. But we must not go negative.
+  if ($field_state['items_count'] > 0) {
+    $field_state['items_count']--;
+  }
+
+  // Fix the weights. Field UI lets the weights be in a range of
+  // (-1 * item_count) to (item_count). This means that when we remove one,
+  // the range shrinks; weights outside of that range then get set to
+  // the first item in the select by the browser, floating them to the top.
+  // We use a brute force method because we lost weights on both ends
+  // and if the user has moved things around, we have to cascade because
+  // if I have items weight weights 3 and 4, and I change 4 to 3 but leave
+  // the 3, the order of the two 3s now is undefined and may not match what
+  // the user had selected.
+  $input = drupal_array_get_nested_value($form_state['input'], $address);
+  // Sort by weight
+  uasort($input, '_field_sort_items_helper');
+
+  // Reweight everything in the correct order.
+  $weight = -1 * $field_state['items_count'];
+  foreach ($input as $key => $item) {
+    if ($item) {
+      $input[$key]['_weight'] = $weight++;
+    }
+  }
+
+  drupal_array_set_nested_value($form_state['input'], $address, $input);
+  field_form_set_state($parents, $field_name, $langcode, $form_state, $field_state);
+
+  $form_state['rebuild'] = TRUE;
 }

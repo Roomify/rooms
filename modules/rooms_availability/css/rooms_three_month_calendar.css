@@ -1,6 +1,7 @@
 .rooms-three-month-calendar {
   margin-bottom: 20px;
   position: relative;
+  overflow-x: hidden;
 }
 .rooms-three-month-calendar ::-moz-selection {
   color: inherit;
@@ -65,4 +66,48 @@
 }
 .calendar-forward {
   text-align: right; /* LTR */
+}
+
+.page-admin-rooms-units{
+    font: normal 81.3%/1.538em "Lucida Grande", "Lucida Sans Unicode", sans-serif;
+}
+.rooms-three-month-calendar .fc-content-skeleton .fc-event-container a {
+  border-radius: 0px;
+}
+
+.rooms-three-month-calendar .fc-content-skeleton .fc-event-container .event-start {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-color: transparent;
+  border-bottom: 0;
+  bottom: -8px;
+  left: 0px;
+  border-width: 8px;
+}
+
+.rooms-three-month-calendar .fc-content-skeleton .fc-event-container .event-end {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-color: transparent;
+  border-bottom: 0;
+  bottom: -12px;
+  left: 0px;
+  border-width: 8px;
+}
+
+.rooms-three-month-calendar .fc-content-skeleton .fc-event-container .event-end {
+  margin-bottom: 26px;
+  transform: rotate(180deg);
+  -ms-transform: rotate(180deg); /* IE 9 */
+  -webkit-transform: rotate(180deg);
+}
+
+.rooms-three-month-calendar .rooms-calendar-second-row-events {
+  margin-top: -15px;
 }

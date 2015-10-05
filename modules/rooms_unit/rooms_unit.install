@@ -87,6 +87,22 @@ function rooms_unit_schema() {
         'scale' => 2,
         'default' => 0,
       ),
+      'weekly_price' => array(
+        'description' => 'The default cost per week for the unit',
+        'type' => 'numeric',
+        'not null' => TRUE,
+        'precision' => 10,
+        'scale' => 2,
+        'default' => 0,
+      ),
+      'monthly_price' => array(
+        'description' => 'The default cost per month for the unit',
+        'type' => 'numeric',
+        'not null' => TRUE,
+        'precision' => 10,
+        'scale' => 2,
+        'default' => 0,
+      ),
       'default_state' => array(
         'description' => 'The default booking state for the room',
         'type' => 'int',
@@ -628,4 +644,79 @@ function rooms_unit_update_7010() {
  */
 function rooms_unit_update_7011() {
   rooms_unit_install_create_options_field();
+}
+
+/**
+ * Adds weekly_price and monthly_price to Bookable units.
+ */
+function rooms_unit_update_7012() {
+  db_add_field('rooms_units', 'weekly_price', array(
+    'description' => 'The default cost per week for the unit',
+    'type' => 'numeric',
+    'not null' => TRUE,
+    'precision' => 10,
+    'scale' => 2,
+    'default' => 0,
+  ));
+
+  db_add_field('rooms_units', 'monthly_price', array(
+    'description' => 'The default cost per month for the unit',
+    'type' => 'numeric',
+    'not null' => TRUE,
+    'precision' => 10,
+    'scale' => 2,
+    'default' => 0,
+  ));
+}
+
+/**
+ * Update permission name for administer rooms_unit entities.
+ */
+function rooms_unit_update_7013() {
+  $map = array(
+    'administer rooms_unit entities' => 'bypass rooms_unit entities access',
+  );
+
+  // Easy part: rename the permissions in {role_permission}.
+  foreach ($map as $old_name => $new_name) {
+    $roles = db_select('role_permission', 'r')
+              ->fields('r', array('rid', 'permission'))
+              ->condition('permission', $old_name)
+              ->execute()
+              ->fetchAllKeyed();
+
+    foreach (array_keys($roles) as $rid) {
+      db_merge('role_permission')
+        ->key(array('rid' => $rid, 'permission' => $new_name))
+        ->fields(array('rid' => $rid, 'permission' => $new_name, 'module' => 'rooms_unit'))
+        ->execute();
+
+      db_delete('role_permission')
+        ->condition('rid', $rid)
+        ->condition('permission', $old_name)
+        ->execute();
+    }
+  }
+
+  // Trickier: rename the permission for the in-database Views.
+  foreach (views_get_all_views() as $view) {
+    if ($view->type == t('Default')) {
+      continue;
+    }
+
+    $save_view = FALSE;
+    foreach ($view->display as $display_name => $display) {
+      if (!empty($display->display_options['access']['type']) && $display->display_options['access']['type'] == 'perm') {
+        $permission_name = $display->display_options['access']['perm'];
+        if (isset($map[$permission_name])) {
+          $display->display_options['access']['perm'] = $map[$permission_name];
+          $save_view = TRUE;
+        }
+      }
+    }
+
+    if ($save_view) {
+      $view->save();
+    }
+  }
 }

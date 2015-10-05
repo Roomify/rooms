@@ -6,7 +6,7 @@
  */
 
 /**
- * Implements hook_views_data().
+ * Implements hook_views_data_alter().
  */
 function rooms_booking_views_data_alter(&$data) {
   $data['rooms_bookings']['link_booking'] = array(
@@ -47,6 +47,9 @@ function rooms_booking_views_data_alter(&$data) {
       'handler' => 'rooms_booking_handler_date_field',
       'click sortable' => TRUE,
     ),
+    'filter' => array(
+      'handler' => 'rooms_booking_handler_date_filter',
+    ),
   );
   $data['rooms_bookings']['end_date'] = array(
     'title' => t('End Date'),
@@ -56,12 +59,31 @@ function rooms_booking_views_data_alter(&$data) {
       'handler' => 'rooms_booking_handler_date_field',
       'click sortable' => TRUE,
     ),
+    'filter' => array(
+      'handler' => 'rooms_booking_handler_date_filter',
+    ),
   );
   $data['rooms_bookings']['unit_id'] = array(
     'title' => t('Unit'),
     'help' => t('The unit for which this booking was made.'),
     'field' => array(
       'handler' => 'rooms_booking_handler_unit_field',
+    ),
+    'filter' => array(
+      'title' => t('Unit'),
+      'handler' => 'rooms_booking_handler_unit_filter',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'relationship' => array(
+      'title' => t('Unit ID'),
+      'help' => t("Relate this booking to its bookable unit"),
+      'handler' => 'views_handler_relationship',
+      'base' => 'rooms_units',
+      'base field' => 'unit_id',
+      'field' => 'unit_id',
+      'label' => t('Booking unit'),
     ),
   );
   $data['rooms_bookings']['type']['field'] = array(
@@ -100,6 +122,19 @@ function rooms_booking_views_data_alter(&$data) {
     ),
   );
 
+  $data['rooms_bookings']['booking_status']['field']['handler'] = 'rooms_booking_handler_field_booking_status';
+  $data['rooms_bookings']['booking_status']['filter']['handler'] = 'rooms_booking_handler_filter_booking_status';
+
+  $data['rooms_bookings']['nights'] = array(
+    'title' => t('Nights'),
+    'help' => t("Booking's number of nights."),
+    'field' => array(
+      'float' => TRUE,
+      'handler' => 'rooms_booking_handler_nights_field',
+      'click sortable' => TRUE,
+    ),
+  );
+
 }
 
 
@@ -124,7 +159,7 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['title'] = 'Bookings';
   $handler->display->display_options['use_more_always'] = FALSE;
   $handler->display->display_options['access']['type'] = 'perm';
-  $handler->display->display_options['access']['perm'] = 'administer rooms_booking entities';
+  $handler->display->display_options['access']['perm'] = 'bypass rooms_booking entities access';
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
   $handler->display->display_options['query']['options']['query_comment'] = FALSE;
@@ -133,19 +168,73 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['columns'] = array(
     'booking_id' => 'booking_id',
+    'name' => 'name',
+    'start_date' => 'start_date',
+    'end_date' => 'end_date',
+    'unit_id' => 'unit_id',
+    'type' => 'type',
+    'name_1' => 'name_1',
+    'order_id' => 'order_id',
     'operations' => 'operations',
   );
-  $handler->display->display_options['style_options']['default'] = '-1';
+  $handler->display->display_options['style_options']['default'] = 'booking_id';
   $handler->display->display_options['style_options']['info'] = array(
     'booking_id' => array(
-      'sortable' => 0,
+      'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
+      'empty_column' => 0,
+    ),
+    'name' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'start_date' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'end_date' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'unit_id' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'type' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'name_1' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'order_id' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
     ),
     'operations' => array(
       'align' => '',
       'separator' => '',
+      'empty_column' => 0,
     ),
   );
   /* No results behavior: Global: Text area */
@@ -215,11 +304,116 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['fields']['operations']['table'] = 'rooms_bookings';
   $handler->display->display_options['fields']['operations']['field'] = 'operations';
   $handler->display->display_options['fields']['operations']['hide_alter_empty'] = FALSE;
-  /* Sort criterion: Bookings: Bookings ID */
-  $handler->display->display_options['sorts']['booking_id']['id'] = 'booking_id';
-  $handler->display->display_options['sorts']['booking_id']['table'] = 'rooms_bookings';
-  $handler->display->display_options['sorts']['booking_id']['field'] = 'booking_id';
-  $handler->display->display_options['sorts']['booking_id']['order'] = 'DESC';
+  /* Filter criterion: Bookings: Bookings ID */
+  $handler->display->display_options['filters']['booking_id']['id'] = 'booking_id';
+  $handler->display->display_options['filters']['booking_id']['table'] = 'rooms_bookings';
+  $handler->display->display_options['filters']['booking_id']['field'] = 'booking_id';
+  $handler->display->display_options['filters']['booking_id']['group'] = 1;
+  $handler->display->display_options['filters']['booking_id']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['booking_id']['expose']['operator_id'] = 'booking_id_op';
+  $handler->display->display_options['filters']['booking_id']['expose']['label'] = 'Booking ID';
+  $handler->display->display_options['filters']['booking_id']['expose']['operator'] = 'booking_id_op';
+  $handler->display->display_options['filters']['booking_id']['expose']['identifier'] = 'booking_id';
+  $handler->display->display_options['filters']['booking_id']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Bookings: Name */
+  $handler->display->display_options['filters']['name']['id'] = 'name';
+  $handler->display->display_options['filters']['name']['table'] = 'rooms_bookings';
+  $handler->display->display_options['filters']['name']['field'] = 'name';
+  $handler->display->display_options['filters']['name']['group'] = 1;
+  $handler->display->display_options['filters']['name']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['name']['expose']['operator_id'] = 'name_op';
+  $handler->display->display_options['filters']['name']['expose']['label'] = 'Customer';
+  $handler->display->display_options['filters']['name']['expose']['operator'] = 'name_op';
+  $handler->display->display_options['filters']['name']['expose']['identifier'] = 'name';
+  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Bookings: Unit */
+  $handler->display->display_options['filters']['unit_id']['id'] = 'unit_id';
+  $handler->display->display_options['filters']['unit_id']['table'] = 'rooms_bookings';
+  $handler->display->display_options['filters']['unit_id']['field'] = 'unit_id';
+  $handler->display->display_options['filters']['unit_id']['value'] = '';
+  $handler->display->display_options['filters']['unit_id']['group'] = 1;
+  $handler->display->display_options['filters']['unit_id']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['unit_id']['expose']['operator_id'] = 'unit_id_op';
+  $handler->display->display_options['filters']['unit_id']['expose']['label'] = 'Unit';
+  $handler->display->display_options['filters']['unit_id']['expose']['operator'] = 'unit_id_op';
+  $handler->display->display_options['filters']['unit_id']['expose']['identifier'] = 'unit_id';
+  $handler->display->display_options['filters']['unit_id']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: User: Name */
+  $handler->display->display_options['filters']['uid']['id'] = 'uid';
+  $handler->display->display_options['filters']['uid']['table'] = 'users';
+  $handler->display->display_options['filters']['uid']['field'] = 'uid';
+  $handler->display->display_options['filters']['uid']['relationship'] = 'uid';
+  $handler->display->display_options['filters']['uid']['value'] = '';
+  $handler->display->display_options['filters']['uid']['group'] = 1;
+  $handler->display->display_options['filters']['uid']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['uid']['expose']['operator_id'] = 'uid_op';
+  $handler->display->display_options['filters']['uid']['expose']['label'] = 'Owner';
+  $handler->display->display_options['filters']['uid']['expose']['operator'] = 'uid_op';
+  $handler->display->display_options['filters']['uid']['expose']['identifier'] = 'uid';
+  $handler->display->display_options['filters']['uid']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Bookings: Order_id */
+  $handler->display->display_options['filters']['order_id']['id'] = 'order_id';
+  $handler->display->display_options['filters']['order_id']['table'] = 'rooms_bookings';
+  $handler->display->display_options['filters']['order_id']['field'] = 'order_id';
+  $handler->display->display_options['filters']['order_id']['group'] = 1;
+  $handler->display->display_options['filters']['order_id']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['order_id']['expose']['operator_id'] = 'order_id_op';
+  $handler->display->display_options['filters']['order_id']['expose']['label'] = 'Order';
+  $handler->display->display_options['filters']['order_id']['expose']['operator'] = 'order_id_op';
+  $handler->display->display_options['filters']['order_id']['expose']['identifier'] = 'order_id';
+  $handler->display->display_options['filters']['order_id']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Bookings: Start Date */
+  $handler->display->display_options['filters']['start_date']['id'] = 'start_date';
+  $handler->display->display_options['filters']['start_date']['table'] = 'rooms_bookings';
+  $handler->display->display_options['filters']['start_date']['field'] = 'start_date';
+  $handler->display->display_options['filters']['start_date']['operator'] = '>=';
+  $handler->display->display_options['filters']['start_date']['group'] = 1;
+  $handler->display->display_options['filters']['start_date']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['start_date']['expose']['operator_id'] = 'start_date_op';
+  $handler->display->display_options['filters']['start_date']['expose']['label'] = 'Arriving after';
+  $handler->display->display_options['filters']['start_date']['expose']['operator'] = 'start_date_op';
+  $handler->display->display_options['filters']['start_date']['expose']['identifier'] = 'start_date';
+  $handler->display->display_options['filters']['start_date']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Bookings: End Date */
+  $handler->display->display_options['filters']['end_date']['id'] = 'end_date';
+  $handler->display->display_options['filters']['end_date']['table'] = 'rooms_bookings';
+  $handler->display->display_options['filters']['end_date']['field'] = 'end_date';
+  $handler->display->display_options['filters']['end_date']['operator'] = '>=';
+  $handler->display->display_options['filters']['end_date']['group'] = 1;
+  $handler->display->display_options['filters']['end_date']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['end_date']['expose']['operator_id'] = 'end_date_op';
+  $handler->display->display_options['filters']['end_date']['expose']['label'] = 'Departing after';
+  $handler->display->display_options['filters']['end_date']['expose']['operator'] = 'end_date_op';
+  $handler->display->display_options['filters']['end_date']['expose']['identifier'] = 'end_date';
+  $handler->display->display_options['filters']['end_date']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
@@ -236,4 +430,52 @@ function rooms_booking_views_default_views() {
 
   $views['bookings'] = $view;
   return $views;
+}
+
+/**
+ * Page callback for views rooms_unit autocomplete.
+ *
+ * @param $units_typed
+ *   The typed string of the user.
+ */
+function rooms_booking_views_ajax_autocomplete_unit($units_typed = '') {
+  // The user enters a comma-separated list of units. We only autocomplete the last unit.
+  $units_typed = drupal_explode_tags($units_typed);
+  $unit_last = drupal_strtolower(array_pop($units_typed));
+
+  $unit_matches = array();
+  if ($unit_last != '') {
+
+    $query = db_select('rooms_units', 't');
+
+    // Do not select already entered units.
+    if (!empty($units_typed)) {
+      $query->condition('t.name', $units_typed, 'NOT IN');
+    }
+    // Select rows that match by unit name.
+    $units_return = $query
+      ->fields('t', array('unit_id', 'name'))
+      ->condition('t.name', '%' . db_like($unit_last) . '%', 'LIKE')
+      ->range(0, 10)
+      ->execute()
+      ->fetchAllKeyed();
+
+    $prefix = count($units_typed) ? drupal_implode_tags($units_typed) . ', ' : '';
+
+    foreach ($units_return as $unit_id => $name) {
+      $unit = rooms_unit_load($unit_id);
+
+      if (rooms_unit_access('update', $unit)) {
+        $n = $name;
+        // Unit names containing commas or quotes must be wrapped in quotes.
+        if (strpos($name, ',') !== FALSE || strpos($name, '"') !== FALSE) {
+          $n = '"' . str_replace('"', '""', $name) . '"';
+        }
+        // Add unit name to list of matches.
+        $unit_matches[$prefix . $n] = check_plain($name);
+      }
+    }
+  }
+
+  drupal_json_output($unit_matches);
 }

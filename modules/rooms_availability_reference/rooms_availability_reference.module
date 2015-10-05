@@ -96,6 +96,10 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
       }
       rooms_fullcalendar_loaded();
       drupal_add_js(drupal_get_path('module', 'rooms_availability_reference') . '/js/rooms_availability_reference.js');
+      drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/fullcalendar.theme.css');
+      drupal_add_css(drupal_get_path('module',
+          'rooms_availability_reference') . '/css/rooms_availability_reference_calendar.css');
+
 
       $unit_names = array();
       $unit_ids = array();

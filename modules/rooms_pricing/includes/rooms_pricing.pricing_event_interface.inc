@@ -17,7 +17,7 @@ interface PricingEventInterface extends RoomsEventInterface {
    * @param int $days
    *   The number of days the event lasts.
    */
-  public function applyOperation($amount, $operation, $days);
+  public function applyOperation($amount, $operation);
 
   /**
    * Returns event in a format amenable to FullCalendar display or generally

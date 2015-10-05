@@ -42,7 +42,7 @@ Drupal.behaviors.rooms_availability = {
     calendars[2] = new Array('#calendar2', month3, year3);
 
     // refresh the events once the modal is closed
-    $("#modalContent a.close").once().bind('click', function(e) {
+    $(document).one("CToolsDetachBehaviors", function() {
       $.each(calendars, function(key, value) {
         $(value[0]).fullCalendar('refetchEvents');
       });
@@ -56,6 +56,7 @@ Drupal.behaviors.rooms_availability = {
         ignoreTimezone: false,
         editable: false,
         selectable: true,
+        handleWindowResize: true,
         height: 400,
         dayNamesShort:[Drupal.t("Sun"), Drupal.t("Mon"), Drupal.t("Tue"), Drupal.t("Wed"), Drupal.t("Thu"), Drupal.t("Fri"), Drupal.t("Sat")],
         monthNames:[Drupal.t("January"), Drupal.t("February"), Drupal.t("March"), Drupal.t("April"), Drupal.t("May"), Drupal.t("June"), Drupal.t("July"), Drupal.t("August"), Drupal.t("September"), Drupal.t("October"), Drupal.t("November"), Drupal.t("December")],
@@ -64,7 +65,10 @@ Drupal.behaviors.rooms_availability = {
         header:{
           left: 'title',
           center: '',
-          right: ''
+          right: '',
+        },
+        windowResize: function(view) {
+          $(value[0]).fullCalendar('refetchEvents');
         },
         events: Drupal.settings.basePath + '?q=rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/availability/json/' + value[2] + '/' + phpmonth,
         eventClick: function(calEvent, jsEvent, view) {
@@ -74,6 +78,7 @@ Drupal.behaviors.rooms_availability = {
             calEvent.end = calEvent.start;
           }
 
+          calEvent.end.subtract(1, 'days');
           var sd = calEvent.start.unix();
           var ed = calEvent.end.unix();
           // Open the modal for edit
@@ -87,9 +92,56 @@ Drupal.behaviors.rooms_availability = {
           Drupal.RoomsAvailability.Modal(this, -2, sd, ed);
           $(value[0]).fullCalendar('unselect');
         },
-        //Remove Time from events
         eventRender: function(event, el) {
+          // Remove Time from events.
           el.find('.fc-time').remove();
+
+          // Add a class if the event start it is not "AV" or "N/A".
+          if (el.hasClass('fc-start') && this.id != 1 && this.id != 0) {
+            el.append('<div class="event-start"/>');
+            el.find('.event-start').css('border-top-color', this.color);
+          }
+
+          // Add a class if the event end and it is not "AV" or "N/A".
+          if (el.hasClass('fc-end') && this.id != 1 && this.id != 0) {
+            el.append('<div class="event-end"/>');
+            el.find('.event-end').css('border-top-color', this.color);
+          }
+        },
+        eventAfterRender: function( event, element, view ) { 
+          // Event width.
+          var width = element.parent().width()
+          // Event colspan number.
+          var colspan = element.parent().get(0).colSpan;
+          // Single cell width.
+          var cell_width = width/colspan;
+          var half_cell_width = cell_width/2;
+          // Adding a class to the second row of events to use for theme.
+          element.closest('tbody').find('tr:eq(1) .fc-content').addClass('rooms-calendar-second-row-events');
+
+          // Move events between table margins.
+          element.css('margin-left', half_cell_width);
+          element.css('margin-right', half_cell_width);
+
+          // Calculate width event to add end date triangle.
+          width_event = element.children('.fc-content').width();
+
+          // Add a margin left to the top triangle.
+          element.children().closest('.event-end').css('margin-left', width_event-16);
+
+          // If the event end in a next row.
+          if(element.hasClass('fc-not-end')) {
+            element.css('margin-right', 0);
+          }
+          // If the event start in a previous row.
+          if(element.hasClass('fc-not-start')) {
+            // Fixes to work well with jquery 1.7.
+            if (colspan == 1) {
+              width_event = 0;
+            }
+            element.css('margin-left', 0);
+            element.children().closest('.event-end').css('margin-left', ((colspan - 1) * cell_width) + half_cell_width - 16);
+          }
         }
       });
     });

@@ -187,6 +187,12 @@ function rooms_availability_bulk_unit_management($year = '', $month = '', $type 
     }
   }
 
+  $js_file = drupal_get_path('module', 'rooms_availability') . '/js/rooms_unit_management.js';
+  $css_file = drupal_get_path('module', 'rooms_availability') . '/css/rooms_availability.css';
+  // Show full day events on calendar.
+  if (variable_get('rooms_calendar_events_view', '0') == '1') {
+    $js_file = drupal_get_path('module', 'rooms_availability') . '/js/rooms_unit_management_full_day.js';
+  }
   // Return the full render array.
   return array(
     drupal_get_form('rooms_filter_month_form', $month, $year),
@@ -195,9 +201,9 @@ function rooms_availability_bulk_unit_management($year = '', $month = '', $type 
       '#theme' => 'pager',
     ),
     '#attached' => array(
-      'css' => array(drupal_get_path('module', 'rooms_availability') . '/css/rooms_availability.css'),
+      'css' => array($css_file),
       'js' => array(
-        drupal_get_path('module', 'rooms_availability') . '/js/rooms_unit_management.js',
+        $js_file,
         array(
           'data' => array(
             'roomsUnitManagement' => array(
@@ -383,6 +389,12 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year = '', $month = '')
   // unit/%/availability  or  admin/rooms/units/unit/%/availability
   list($url) = explode('/' . $year . '/' . $month, current_path());
 
+  $js_file = drupal_get_path('module', 'rooms_availability') . '/js/rooms_availability.js';
+  $css_file = drupal_get_path('module', 'rooms_availability') . '/css/rooms_availability.css';
+  // Show full day events on calendar.
+  if (variable_get('rooms_calendar_events_view', '0') == '1') {
+    $js_file = drupal_get_path('module', 'rooms_availability') . '/js/rooms_availability_full_day.js';
+  }
   return array(
     '#theme' => 'rooms_three_month_calendar',
     '#url' => $url,
@@ -391,10 +403,10 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year = '', $month = '')
     '#month' => $month,
     '#attached' => array(
       'css' => array(
-        drupal_get_path('module', 'rooms_availability') . '/css/rooms_availability.css',
+        $css_file,
       ),
       'js' => array(
-        drupal_get_path('module', 'rooms_availability') . '/js/rooms_availability.js',
+        $js_file,
         array(
           'data' => array('roomsAvailability' => array('roomID' => $rooms_unit->unit_id)),
           'type' => 'setting',
@@ -470,6 +482,8 @@ function update_availability_calendar_form_submit(&$form, &$form_state) {
   $event_id = $form_state['values']['unit_state'];
   $unit_id = $form_state['values']['unit_id'];
 
+  // Consider right START DATE and END DATE for all events.
+  $end_date->sub(new DateInterval('P1D'));
   // Create a new Booking Event.
   $be = new BookingEvent($unit_id, $event_id, $start_date, $end_date);
   $events = array($be);
@@ -551,7 +565,11 @@ function rooms_availability_generate_json($unit, $start_year = '', $start_month 
 
   $events = $rc->getEvents($start_date, $end_date);
   $event_style = rooms_availability_get_style($event_style, $unit);
+
   foreach ($events as $event) {
+    if (variable_get('rooms_calendar_events_view', '0') == '0') {
+      $event->end_date->add(new DateInterval('P1D'));
+    }
     $json_events[] = $event->formatJson($event_style, $unit->name);
   }
 
@@ -859,7 +877,7 @@ function rooms_availability_form_rooms_booking_settings_alter(&$form, &$form_sta
     '#title' => t('"@availability_status" color', array('@availability_status' => t('Unavailable'))),
     '#size' => 10,
     '#maxlength' => 7,
-    '#default_value' => variable_get('rooms_not_available_color', '#FF0000'),
+    '#default_value' => variable_get('rooms_not_available_color', '#CC2727'),
     '#element_validate' => array('rooms_availability_validate_hex_color'),
     '#dependency' => array('edit-row-options-colors-legend' => array('type')),
     '#prefix' => '<div class="rooms-colorpicker-wrapper form-wrapper">',
@@ -888,7 +906,7 @@ function rooms_availability_form_rooms_booking_settings_alter(&$form, &$form_sta
     '#title' => t('"@availability_status" color', array('@availability_status' => t('Available'))),
     '#size' => 10,
     '#maxlength' => 7,
-    '#default_value' => variable_get('rooms_available_color', '#8CBF62'),
+    '#default_value' => variable_get('rooms_available_color', '#8BA175'),
     '#element_validate' => array('rooms_availability_validate_hex_color'),
     '#dependency' => array('edit-row-options-colors-legend' => array('type')),
     '#prefix' => '<div class="rooms-colorpicker-wrapper">',
@@ -946,7 +964,7 @@ function rooms_availability_form_rooms_booking_settings_alter(&$form, &$form_sta
     '#title' => t('"@availability_status" color', array('@availability_status' => t('Anonymous booking'))),
     '#size' => 10,
     '#maxlength' => 7,
-    '#default_value' => variable_get('rooms_anon_booking_color', '#481600'),
+    '#default_value' => variable_get('rooms_anon_booking_color', '#8C6A5A'),
     '#element_validate' => array('rooms_availability_validate_hex_color'),
     '#dependency' => array('edit-row-options-colors-legend' => array('type')),
     '#prefix' => '<div class="rooms-colorpicker-wrapper">',
@@ -975,7 +993,7 @@ function rooms_availability_form_rooms_booking_settings_alter(&$form, &$form_sta
     '#title' => t('"@availability_status" color', array('@availability_status' => t('Unconfirmed booking'))),
     '#size' => 10,
     '#maxlength' => 7,
-    '#default_value' => variable_get('rooms_unconfirmed_booking_color', '#481600'),
+    '#default_value' => variable_get('rooms_unconfirmed_booking_color', '#6D8C9C'),
     '#element_validate' => array('rooms_availability_validate_hex_color'),
     '#dependency' => array('edit-row-options-colors-legend' => array('type')),
     '#prefix' => '<div class="rooms-colorpicker-wrapper">',
@@ -1005,6 +1023,16 @@ function rooms_availability_form_rooms_booking_settings_alter(&$form, &$form_sta
       '1' => t('Display unit name in place of availability state label.'),
     ),
     '#default_value' => variable_get('rooms_view_unit_name', array('')),
+  );
+  $form['label_settings']['rooms_calendar_events_view'] = array(
+    '#type' => 'radios',
+    '#title' => t('Calendar Events Display Mode'),
+    '#description' => t('Select how to display events on calendars.'),
+    '#default_value' => variable_get('rooms_calendar_events_view', '0'),
+    '#options' => array (
+      '0' => t('Display events as starting at middle of day (check-in day) and ending at middle of check-out day'),
+      '1' => t('Display events occupying full day box at start and ending on day of last night (day before check-out date)'),
+    )
   );
 }
 

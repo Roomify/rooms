@@ -40,6 +40,7 @@ function rooms_booking_manager_variable_info($options) {
     'title' => t('Create your booking'),
     'default' => 'Create your booking',
     'description' => t('Change text : Create your booking'),
+    'localize' => TRUE,
     'group' => 'rooms_booking_manager',
   );
 
@@ -138,6 +139,15 @@ function rooms_booking_manager_variable_info($options) {
     'title' => t('Nights'),
     'default' => 'Nights',
     'description' => t('Change text : Nights'),
+    'localize' => TRUE,
+    'group' => 'rooms_booking_manager',
+  );
+
+  $variables['rooms_booking_manager_onrequest_option'] = array(
+    'type' => 'string',
+    'title' => t('On Request Option Description'),
+    'default' => 'we will be in touch regarding availability and costs for this option',
+    'description' => t('Change on request option description'),
     'localize' => TRUE,
     'group' => 'rooms_booking_manager',
   );

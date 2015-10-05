@@ -167,3 +167,13 @@
 .rooms-search-result__new-price {
   font-weight: bold;
 }
+.rooms-search-result__unit_options .no-unit-fieldset {
+  border: 0px;
+}
+.rooms-search-result__unit_options .no-unit-fieldset .fieldset-legend {
+  display: none;
+}
+.rooms-search-result__unit_options .no-unit-fieldset legend{
+  background:none;
+  border:none;
+}

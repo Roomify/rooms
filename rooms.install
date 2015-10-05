@@ -30,6 +30,11 @@ function rooms_field_schema($field) {
           'type' => 'float',
           'not null' => FALSE,
         ),
+        'type' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => FALSE,
+        ),
       ),
     );
   }
@@ -44,13 +49,17 @@ function rooms_requirements($phase) {
   switch ($phase) {
     case 'runtime':
       if (!rooms_library_loaded('rooms_fullcalendar', 'minified')) {
-        $description = $t('Could not load the Rooms FullCalendar Library');
+        $description = array();
+        $fullcalendar_library = libraries_detect('rooms_fullcalendar');
+        if (!$fullcalendar_library['installed']) {
+          $description[] = $t('Could not load the Rooms FullCalendar Library');
+        }
         if (!rooms_library_loaded('moment')) {
-          $description .= '<br />' . $t('Could not load the Moment Library');
+          $description[] = $t('Could not load the Moment Library');
         }
         $requirements['rooms_fullcalendar'] = array(
           'title' => $t('Rooms FullCalendar'),
-          'description' => $description,
+          'description' => implode('<br />', $description),
           'value' => 'FullCalendar Missing',
           'severity' => REQUIREMENT_ERROR,
         );
@@ -58,8 +67,8 @@ function rooms_requirements($phase) {
       else {
         $requirements['rooms_fullcalendar'] = array(
           'title' => $t('Rooms FullCalendar'),
-          'description' => $t('The FullCalendar Library is installed'),
-          'value' => 'FullCalendar Installed',
+          'description' => $t('The FullCalendar Library and the Moment Library are installed'),
+          'value' => 'FullCalendar and Moment Installed',
           'severity' => REQUIREMENT_OK,
         );
       }
@@ -125,4 +134,31 @@ function rooms_update_7001() {
     db_change_field($revision_table, $field, $field, $spec);
   }
   return t('Field structure updated.');
+}
+
+/**
+ * Add the booking option Type column.
+ */
+function rooms_update_7002() {
+  $fields = field_info_fields();
+
+  foreach ($fields as $field) {
+    if ($field['type'] == 'rooms_options') {
+      $revision_table = key($field['storage']['details']['sql']['FIELD_LOAD_REVISION']);
+      $field_name = $field['storage']['details']['sql']['FIELD_LOAD_REVISION'][$revision_table]['type'];
+      if (!db_field_exists($revision_table, $field_name)) {
+        $field_spec = $field['columns']['type'];
+        $field_spec['initial'] = 'optional';
+        db_add_field($revision_table, $field_name, $field_spec);
+      }
+
+      $current_table = key($field['storage']['details']['sql']['FIELD_LOAD_CURRENT']);
+      $field_name = $field['storage']['details']['sql']['FIELD_LOAD_CURRENT'][$current_table]['type'];
+      if (!db_field_exists($current_table, $field_name)) {
+        $field_spec = $field['columns']['type'];
+        $field_spec['initial'] = 'optional';
+        db_add_field($current_table, $field_name, $field_spec);
+      }
+    }
+  }
 }
