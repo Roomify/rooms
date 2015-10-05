@@ -20,21 +20,21 @@ function rooms_booking_menu() {
   $items['admin/rooms/bookings/customers'] = array(
     'title' => 'Customers',
     'page callback' => 'rooms_booking_get_client_profiles',
-    'access arguments' => array('administer rooms_booking entities'),
+    'access arguments' => array('bypass rooms_booking entities access'),
     'type' => MENU_CALLBACK,
   );
 
   $items['admin/rooms/bookings/room_types'] = array(
     // This is a json request to list booking room_types.
     'page callback' => 'rooms_booking_get_room_types',
-    'access arguments' => array('administer rooms_booking entities'),
+    'access arguments' => array('bypass rooms_booking entities access'),
     'type' => MENU_CALLBACK,
   );
 
   $items['admin/rooms/add_customers'] = array(
     'title' => 'Add customer profile',
     'page callback' => 'rooms_booking_add_customer_profile',
-    'access arguments' => array('administer rooms_booking entities'),
+    'access arguments' => array('bypass rooms_booking entities access'),
     'type' => MENU_CALLBACK,
   );
 
@@ -42,7 +42,7 @@ function rooms_booking_menu() {
     'title' => 'Edit customer profile',
     'page callback' => 'rooms_booking_edit_customer_profile',
     'page arguments' => array(3),
-    'access arguments' => array('administer rooms_booking entities'),
+    'access arguments' => array('bypass rooms_booking entities access'),
     'type' => MENU_CALLBACK,
   );
 

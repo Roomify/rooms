@@ -793,7 +793,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#title' => t('User information'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#access' => user_access('administer rooms_booking entities'),
+    '#access' => user_access('bypass rooms_booking entities access'),
     '#group' => 'additional_settings',
     '#attached' => array(
       'js' => array(

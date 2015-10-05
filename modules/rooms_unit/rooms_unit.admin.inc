@@ -331,7 +331,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
   // Unit author information for administrators.
   $form['author'] = array(
     '#type' => 'fieldset',
-    '#access' => user_access('administer bookable units'),
+    '#access' => user_access('bypass rooms_unit entities access'),
     '#title' => t('Authoring information'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
@@ -372,7 +372,7 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
   // Unit publishing options for administrators.
   $form['options'] = array(
     '#type' => 'fieldset',
-    '#access' => user_access('administer bookable units'),
+    '#access' => user_access('bypass rooms_unit entities access'),
     '#title' => t('Publishing options'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,

@@ -369,13 +369,6 @@ function rooms_entity_access_permissions($entity_type) {
     'restrict access' => TRUE,
   );
 
-  // General 'administer' permission.
-  $permissions['administer ' . $entity_type . ' entities'] = array(
-    'title' => t('Administer @entity_type', array('@entity_type' => $labels['plural'])),
-    'description' => t('Allows users to perform administrative tasks on @entity_type.', array('@entity_type' => $labels['plural'])),
-    'restrict access' => TRUE,
-  );
-
   // Generic create and edit permissions.
   $permissions['create ' . $entity_type . ' entities'] = array(
     'title' => t('Create @entity_type of any type', array('@entity_type' => $labels['plural'])),

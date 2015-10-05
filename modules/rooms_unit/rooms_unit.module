@@ -32,7 +32,7 @@ function rooms_unit_menu() {
   $items['admin/rooms/unit-type/description-source'] = array(
     'title' => 'Unit type description source',
     'page callback' => 'rooms_unit_type_description_source',
-    'access arguments' => array('administer bookable units'),
+    'access arguments' => array('bypass rooms_unit entities access'),
     'type' => MENU_CALLBACK,
   );
 
@@ -136,7 +136,7 @@ function rooms_unit_entity_info_alter(&$entity_info) {
         'path' => 'admin/rooms/units/unit-types/manage/%rooms_unit_type',
         'real path' => 'admin/rooms/units/unit-types/manage/' . $type,
         'bundle argument' => 5,
-        'access arguments' => array('administer bookable units'),
+        'access arguments' => array('bypass rooms_unit entities access'),
       ),
     );
   }
