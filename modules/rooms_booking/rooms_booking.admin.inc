@@ -541,7 +541,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     );
     unset($form['unit_id']);
 
-    // This is where the available untis will pop up.
+    // This is where the available units will pop up.
     $form['availability_fieldset']['unit_fieldset'] = array(
       '#type' => 'fieldset',
       '#prefix' => '<div class="rooms-booking-unit-wrapper" id="unit-wrapper">',
