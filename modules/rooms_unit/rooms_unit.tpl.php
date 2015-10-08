@@ -37,10 +37,6 @@
 
   <div class="content"<?php print $content_attributes; ?>>
     <?php
-      unset ($content['state']);
-      unset ($content['type']);
-      unset ($content['sleeps']);
-      unset ($content['bed_arrangement']);
       print render($content);
     ?>
   </div>

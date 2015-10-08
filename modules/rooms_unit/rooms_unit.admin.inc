@@ -206,88 +206,6 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
     '#weight' => -99,
   );
 
-  $form['base_price'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Base price'),
-    '#default_value' => isset($unit->base_price) ? $unit->base_price : '',
-    '#size' => '5',
-    '#field_suffix' => t('Per unit per night'),
-    '#maxlength' => 10,
-    '#required' => TRUE,
-    '#weight' => -98,
-  );
-
-  $form['guest_capacity'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Sleeping capacity'),
-    '#tree' => FALSE,
-    '#weight' => -96,
-    '#attributes' => array('class' => array('rooms-unit-guest-capacity')),
-  );
-
-  $form['guest_capacity']['min_sleeps'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($unit->min_sleeps) ? $unit->min_sleeps : 1,
-    '#field_suffix' => t('Person minimum'),
-  );
-
-  $form['guest_capacity']['max_sleeps'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($unit->max_sleeps) ? $unit->max_sleeps : 1,
-    '#field_suffix' => t('Person maximum'),
-    '#description' => t('The total number of guests (adults and children) allowed in this unit.'),
-  );
-
-  $form['child_capacity'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Child capacity'),
-    '#tree' => FALSE,
-    '#weight' => -95,
-    '#attributes' => array('class' => array('rooms-unit-child-capacity')),
-  );
-
-  $form['child_capacity']['min_children'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($unit->min_children) ? $unit->min_children : 0,
-    '#field_suffix' => t('Child minimum'),
-  );
-
-  $form['child_capacity']['max_children'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($unit->max_children) ? $unit->max_children : 0,
-    '#field_suffix' => t('Child maximum'),
-    '#description' => t('The number of children allowed in this unit.'),
-  );
-
-  $form['data'] = array(
-    '#tree' => TRUE,
-    '#weight' => -94,
-  );
-
-  $form['data']['bed_arrangement'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Bed arrangement'),
-    '#attributes' => array('class' => array('rooms-unit-bed-arrangement')),
-  );
-
-  $form['data']['bed_arrangement']['singles'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($unit->data['bed_arrangement']['singles']) ? $unit->data['bed_arrangement']['singles'] : '',
-    '#field_suffix' => t('Single beds'),
-  );
-
-  $form['data']['bed_arrangement']['doubles'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($unit->data['bed_arrangement']['doubles']) ? $unit->data['bed_arrangement']['doubles'] : '',
-    '#field_suffix' => t('Double beds'),
-  );
-
   // Add the field related form elements.
   $form_state['rooms_unit'] = $unit;
   field_attach_form('rooms_unit', $unit, $form, $form_state, isset($unit->language)? $unit->language : NULL);
@@ -459,11 +377,6 @@ function rooms_unit_edit_form_validate(&$form, &$form_state) {
 
   // Notify field widgets to validate their data.
   field_attach_form_validate('rooms_unit', $unit, $form, $form_state);
-
-  // Validate price field.
-  if (!empty($form_state['values']['base_price']) && !is_numeric($form_state['values']['base_price'])) {
-    form_set_error('Base price error', t('%name: you must enter a numeric value for the price.', array('%name' => t('Base price'))));
-  }
 
   if (!empty($form_state['values']['multiple']) && (!is_numeric($form_state['values']['multiple'])|| $form_state['values']['multiple'] < 1)) {
     form_set_error('Multiple units error', t('%name: you must enter at least 1 as the number of multiple units.', array('%name' => t('Multiple units'))));

@@ -51,6 +51,7 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     '#size' => 30,
     '#weight' => -100,
   );
+
   // Machine-readable type name.
   $form['type'] = array(
     '#type' => 'machine_name',
@@ -62,93 +63,6 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
     ),
     '#description' => t('A unique machine-readable name for this unit type. It must only contain lowercase letters, numbers, and underscores.'),
     '#weight' => -99,
-  );
-
-  $form['unit_defaults'] = array(
-    '#type' => 'fieldset',
-    '#description' => '<strong>' . t('Unit defaults') . '</strong> - ' . t('Values specified below will be pre-populated as the defaults when creating units of this type.'),
-    '#tree' => FALSE,
-    '#weight' => -98,
-    '#attributes' => array('class' => array('rooms-unit-type-defaults')),
-  );
-
-  $form['unit_defaults']['data']['#tree'] = TRUE;
-
-  $form['unit_defaults']['data']['base_price'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Default base price'),
-    '#default_value' => isset($unit_type->data['base_price']) ? $unit_type->data['base_price'] : '',
-    '#size' => 5,
-    '#field_suffix' => t('Per unit per night'),
-    '#description' => t('The default base price is used for all units of this type and may be changed on the edit form of each unit individually.'),
-    '#maxlength' => 10,
-  );
-
-  $form['unit_defaults']['guest_capacity'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Default sleeping capacity'),
-    '#tree' => FALSE,
-    '#attributes' => array('class' => array('rooms-unit-type-guest-capacity')),
-  );
-
-  $form['unit_defaults']['guest_capacity']['data']['#tree'] = TRUE;
-
-  $form['unit_defaults']['guest_capacity']['data']['min_sleeps'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($unit_type->data['min_sleeps']) ? $unit_type->data['min_sleeps'] : '',
-    '#field_suffix' => t('Person minimum'),
-  );
-
-  $form['unit_defaults']['guest_capacity']['data']['max_sleeps'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($unit_type->data['max_sleeps']) ? $unit_type->data['max_sleeps'] : '',
-    '#description' => t('The default number of guests (including adults and children) for each unit of this type.'),
-    '#field_suffix' => t('Person maximum'),
-  );
-
-  $form['unit_defaults']['child_capacity'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Default child capacity'),
-    '#tree' => FALSE,
-    '#attributes' => array('class' => array('rooms-unit-type-child-capacity')),
-  );
-
-  $form['unit_defaults']['child_capacity']['data']['#tree'] = TRUE;
-
-  $form['unit_defaults']['child_capacity']['data']['min_children'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($unit_type->data['min_children']) ? $unit_type->data['min_children'] : '',
-    '#field_suffix' => t('Child minimum'),
-  );
-
-  $form['unit_defaults']['child_capacity']['data']['max_children'] = array(
-    '#type' => 'textfield',
-    '#size' => 5,
-    '#default_value' => isset($unit_type->data['max_children']) ? $unit_type->data['max_children'] : '',
-    '#description' => t('The default number of children per unit of this type.'),
-    '#field_suffix' => t('Child maximum'),
-  );
-
-  $form['reference'] = array(
-    '#type' => 'fieldset',
-    '#tree' => FALSE,
-    '#weight' => -97,
-    '#attributes' => array('class' => array('rooms-unit-type-reference')),
-  );
-
-  $form['reference']['data']['#tree'] = TRUE;
-
-  $form['reference']['data']['rooms_description_source'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Unit type description source'),
-    '#description' => t('The node you choose here will be rendered in the booking results.'),
-    '#size' => 30,
-    '#maxlength' => 60,
-    '#autocomplete_path' => 'admin/rooms/unit-type/description-source',
-    '#default_value' => isset($unit_type->data['rooms_description_source']) ? $unit_type->data['rooms_description_source'] : '',
   );
 
   // Add the field related form elements.
@@ -195,36 +109,6 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
  * @see rooms_unit_type_form()
  */
 function rooms_unit_type_form_validate(&$form, &$form_state) {
-
-  // Validate price field.
-  if (!empty($form_state['values']['data']['base_price']) && !is_numeric($form_state['values']['data']['base_price'])) {
-    form_set_error('data][base_price', t('%name: you must enter a numeric value for the price.', array('%name' => t('Base price'))));
-  }
-
-  // Validate room unit description.
-  if (!empty($form_state['values']['data']['rooms_description_source'])) {
-    $source_ref = explode(':', $form_state['values']['data']['rooms_description_source']);
-    if (isset($source_ref[1])) {
-      $node = node_load($source_ref[1]);
-      if ($node === FALSE) {
-        form_set_error('data][rooms_description_source', t('You must enter a valid node.'));
-      }
-    }
-    else {
-      $result = db_select('node', 'n')
-        ->fields('n', array('title', 'nid'))
-        ->condition('title', $source_ref[0])
-        ->condition('n.type', 'unit_description')
-        ->range(0, 1)
-        ->execute()
-        ->fetchField();
-
-      if (empty($result)) {
-        form_set_error('data][rooms_description_source', t('You must enter a valid node.'));
-      }
-    }
-  }
-
   $unit_type = $form_state['rooms_unit_type'];
   field_attach_form_validate('rooms_unit_type', $unit_type, $form, $form_state);
 }

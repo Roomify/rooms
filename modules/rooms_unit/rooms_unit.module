@@ -24,22 +24,6 @@ define ('ROOMS_UPDATED', 200);
 define ('ROOMS_WRONG_UNIT', 300);
 
 /**
- * Implements hook_menu().
- */
-function rooms_unit_menu() {
-  $items = array();
-
-  $items['admin/rooms/unit-type/description-source'] = array(
-    'title' => 'Unit type description source',
-    'page callback' => 'rooms_unit_type_description_source',
-    'access arguments' => array('bypass rooms_unit entities access'),
-    'type' => MENU_CALLBACK,
-  );
-
-  return $items;
-}
-
-/**
  * Implements hook_entity_info().
  */
 function rooms_unit_entity_info() {
@@ -341,7 +325,7 @@ function rooms_unit_types_ids() {
  */
 function rooms_unit_entity_insert($entity, $type) {
   if ($type == 'rooms_unit_type') {
-
+  /*
     // Create field ('rooms_booking_unit_options') if not exist.
     if (field_read_field('rooms_booking_unit_options') === FALSE) {
       $field = array(
@@ -366,7 +350,9 @@ function rooms_unit_entity_insert($entity, $type) {
       );
       field_create_instance($instance);
     }
+  */
   }
+
 }
 
 /**
@@ -574,26 +560,6 @@ function rooms_unit_theme() {
 }
 
 /**
- * Helper function for Unit Description autocomplete.
- */
-function rooms_unit_type_description_source($string = '') {
-  $matches = array();
-
-  if ($string) {
-    $result = db_select('node', 'n')
-      ->fields('n', array('title', 'nid'))
-      ->condition('title', db_like($string) . '%', 'LIKE')
-      ->condition('n.type', 'unit_description')
-      ->range(0, 10)
-      ->execute();
-    foreach ($result as $description) {
-      $matches[$description->title . ':' . $description->nid] = check_plain($description->title);
-    }
-  }
-  drupal_json_output($matches);
-}
-
-/**
  * Implements hook_menu_local_tasks_alter().
  */
 function rooms_unit_menu_local_tasks_alter(&$data, $router_item, $root_path) {
@@ -653,36 +619,7 @@ function rooms_unit_state_options() {
   );
 }
 
-/**
- * Returns tha available room options given a bookable unit.
- *
- * @param RoomsUnit $unit
- *   The bookable unit to get options.
- *
- * @return array
- *   The available options for the given bookable unit.
- */
-function rooms_unit_get_unit_options($unit) {
-  $options = &drupal_static(__FUNCTION__);
 
-  if (isset($options['units'][$unit->unit_id])) {
-    return $options['units'][$unit->unit_id];
-  }
-
-  if (isset($options['unit_types'][$unit->type])) {
-    $unit_type_options = $options['unit_types'][$unit->type];
-  }
-  else {
-    $unit_type = rooms_unit_type_load($unit->type);
-    $unit_type_options = is_array(field_get_items('rooms_unit_type', $unit_type, 'rooms_booking_unit_options')) ? field_get_items('rooms_unit_type', $unit_type, 'rooms_booking_unit_options') : array();
-    $options['unit_types'][$unit->type] = $unit_type_options;
-  }
-
-  $unit_options = is_array(field_get_items('rooms_unit', $unit, 'rooms_booking_unit_options')) ? field_get_items('rooms_unit', $unit, 'rooms_booking_unit_options') : array();
-  $options['units'][$unit->unit_id] = array_merge($unit_type_options, $unit_options);
-
-  return $options['units'][$unit->unit_id];
-}
 
 /**
  * The class used for room entities
@@ -760,14 +697,6 @@ class RoomsUnitController extends EntityAPIController {
       'title' => '',
       'created' => '',
       'changed' => '',
-      'base_price' => (isset($unit_type->data['base_price'])) ? $unit_type->data['base_price'] : 0,
-      'min_sleeps' => (isset($unit_type->data['min_sleeps'])) ? $unit_type->data['min_sleeps'] : 0,
-      'max_sleeps' => (isset($unit_type->data['max_sleeps'])) ? $unit_type->data['max_sleeps'] : 0,
-      'min_children' => (isset($unit_type->data['min_children'])) ? $unit_type->data['min_children'] : 0,
-      'max_children' => (isset($unit_type->data['max_children'])) ? $unit_type->data['max_children'] : 0,
-      'data' => array(
-        'cot_surcharge' => (isset($unit_type->data['cot_surcharge'])) ? $unit_type->data['cot_surcharge'] : 0,
-      ),
     );
 
     $unit = parent::create($values);
@@ -779,24 +708,6 @@ class RoomsUnitController extends EntityAPIController {
    */
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
     $content = parent::buildContent($entity, $view_mode, $langcode, $content);
-
-    $content['state'] = array(
-      '#markup' => t('State') . ': ' . $entity->bookable . '<br/>',
-    );
-
-    $content['type'] = array(
-      '#markup' => t('Type') . ': ' . $entity->type . '<br/>',
-    );
-
-    $content['sleeps'] = array(
-      '#markup' => t('Sleeps') . ': ' . $entity->max_sleeps . '<br/>',
-    );
-
-    if (isset($entity->data['bed_arrangement'])) {
-      $content['bed_arrangement'] = array(
-        '#markup' => t('Double beds') . ': ' . $entity->data['bed_arrangement']['doubles'] . '<br/>' . t('Single beds') . ': ' . $entity->data['bed_arrangement']['singles'] . '<br/>',
-      );
-    }
 
     return $content;
   }
