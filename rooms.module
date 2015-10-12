@@ -615,10 +615,10 @@ function rooms_options_property_info_callback(&$info, $entity_type, $field, $ins
 }
 
 /**
- * Defines info for the properties of the video_embed_field data structure.
+ * Defines info for the properties of the rooms_options data structure.
  */
 function rooms_options_data_property_info($name = NULL) {
-  // Build an array of basic property information for video_embed_field.
+  // Build an array of basic property information for rooms_options.
   $properties = array(
     'name' => array(
       'label' => 'Name',
@@ -652,7 +652,7 @@ function rooms_options_data_property_info($name = NULL) {
     ),
   );
 
-  // Add the default values for each of the video_embed_field properties.
+  // Add the default values for each of the rooms_options properties.
   foreach ($properties as &$value) {
     $value += array(
       'description' => !empty($name) ? t('!label of field %name', array('!label' => $value['label'], '%name' => $name)) : '',
