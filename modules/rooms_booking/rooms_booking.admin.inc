@@ -242,66 +242,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     $client = $booking->name . ':' . $booking->customer_id;
   }
 
-  $form['client'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Customer'),
-    '#maxlength' => 60,
-    '#autocomplete_path' => 'admin/rooms/bookings/customers',
-    '#default_value' => $client,
-    '#weight' => -1,
-    '#required' => TRUE,
-    '#prefix' => '<div class="rooms-booking-customer-wrapper" id="edit-customer-wrapper">',
-    '#suffix' => '</div>',
-    '#ajax' => array(
-      'callback' => 'rooms_booking_edit_profile_callback',
-      'wrapper' => 'edit-customer-wrapper',
-    ),
-  );
-
-  if (module_exists('commerce_customer')) {
-    $form['#after_build'][] = 'rooms_booking_edit_form_add_modal_js';
-
-    $form['client']['#description'] = t('Customer profiles are saved in the <a href="@store-profile">store</a>. Search for an existing one by typing the customer name or <a href="@profile-create" class="ctools-use-modal">create a new profile</a>.', array('@store-profile' => url('admin/commerce/customer-profiles'), '@profile-create' => url('admin/rooms/add_customers')));
-
-    if (isset($booking->customer_id)) {
-      $commerce_customer_id = db_select('rooms_customers')
-        ->fields('rooms_customers', array('commerce_customer_id'))
-        ->condition('id', $booking->customer_id, '=')
-        ->execute()->fetchField();
-
-      if ($commerce_customer_id != NULL) {
-        $form['client']['#field_suffix'] = t('<a href="@edit-profile" class="ctools-use-modal">edit profile</a>', array('@edit-profile' => url('admin/rooms/customer-profiles/' . $commerce_customer_id . '/edit')));
-      }
-    }
-  }
-
   $form['data']['#tree'] = TRUE;
-  $form['data']['group_size'] = array(
-    '#type' => 'select',
-    '#title' => t('Guests'),
-    '#options' => rooms_assoc_range(1, 10),
-    '#default_value' => isset($booking->data['group_size']) ? $booking->data['group_size'] : '2',
-    '#description' => t('The total number of people staying in this unit (including adults and children).'),
-    '#ajax' => array(
-      'callback' => 'rooms_booking_group_size_ajax_callback',
-      'wrapper' => 'rooms_booking_group_size_children_container',
-    ),
-  );
-
-  $persons = 2;
-  if (isset($form_state['values']['data']['group_size'])) {
-    $persons = $form_state['values']['data']['group_size'];
-  }
-
-  $form['data']['group_size_children'] = array(
-    '#type' => 'select',
-    '#title' => t('Children'),
-    '#options' => rooms_range(0, $persons),
-    '#default_value' => isset($booking->data['group_size_children']) ? $booking->data['group_size_children'] : '0',
-    '#description' => t('The number of children staying in this unit.'),
-    '#prefix' => '<div class="rooms-booking-group-size-children-container" id="rooms_booking_group_size_children_container">',
-    '#suffix' => '</div>',
-  );
 
   // If price calculation is set to 'Price per person per night'.
   if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
@@ -460,40 +401,6 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#prefix' => '<div class="rooms-booking-availability-wrapper" id="availability-wrapper">',
     '#suffix' => '</div>',
   );
-
-  $form['b_status'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Booking status'),
-    '#attributes' => array('class' => array('rooms-booking-status-wrapper')),
-  );
-  $form['b_status']['booking_status'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Booking Confirmed'),
-    '#options' => array(
-      '0' => '0',
-      '1' => '1',
-    ),
-    '#default_value' => isset($booking->booking_status) ? $booking->booking_status : '0',
-  );
-
-  if ($booking->booking_id != '') {
-    if ($booking->order_id != '') {
-      $order = commerce_order_load($booking->order_id);
-      $order_states = commerce_order_statuses();
-
-      if ($order !== FALSE) {
-        $form['order'] = array(
-          '#type' => 'fieldset',
-          '#title' => t('Order'),
-          '#attributes' => array('class' => array('rooms-booking-order-wrapper')),
-        );
-        $form['order']['order_link'] = array(
-          '#type' => 'markup',
-          '#markup' => t('Order status: @order_status', array('@order_status' => $order_states[$order->status]['title'])) . '<br />' . t('Edit <a href="@url">order</a> associated with this booking', array('@url' => url('admin/commerce/orders/' . $booking->order_id . '/edit'))),
-        );
-      }
-    }
-  }
 
   // If submit above pressed and we have dates we can process to assign a unit.
   if (isset($form_state['show_availability_options']) || $unitid != '') {
@@ -785,6 +692,23 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
   $form['additional_settings'] = array(
     '#type' => 'vertical_tabs',
     '#weight' => 99,
+  );
+
+  $form['b_status'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Booking status'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#group' => 'additional_settings',
+  );
+  $form['b_status']['booking_status'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Booking Confirmed'),
+    '#options' => array(
+      '0' => '0',
+      '1' => '1',
+    ),
+    '#default_value' => isset($booking->booking_status) ? $booking->booking_status : '0',
   );
 
   // Add the user account and e-mail fields.
@@ -1215,13 +1139,6 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
     }
   }
 
-  $client = explode(':', $form_state['values']['client']);
-  $client_name = $client[0];
-  $commerce_customer_id = rooms_booking_find_customer_by_name($client_name);
-  if ($commerce_customer_id === FALSE) {
-    form_set_error('client', t('Enter a valid customer.'));
-  }
-
   // Notify field widgets to validate their data.
   field_attach_form_validate('rooms_booking', $booking, $form, $form_state);
 }
@@ -1232,30 +1149,6 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
  * @todo remove hard-coded link
  */
 function rooms_booking_edit_form_submit(&$form, &$form_state) {
-  // Get the client name and client id.
-  $client = explode(':', $form_state['values']['client']);
-  $client_name = $client[0];
-  $commerce_customer_id = rooms_booking_find_customer_by_name($client_name);
-
-  // Save customer in rooms_customers table.
-  db_merge('rooms_customers')
-    ->key(array('name' => $client_name))
-    ->fields(array(
-      'name' => $client_name,
-      'commerce_customer_id' => $commerce_customer_id,
-    ))
-    ->execute();
-
-  // Get customer id from rooms_customers table.
-  $client_id = db_select('rooms_customers')
-    ->fields('rooms_customers', array('id'))
-    ->condition('name', $client_name, '=')
-    ->execute()->fetchField();
-
-  // Put them back in $form_state so the entity controller builds the entity.
-  $form_state['values']['name'] = $client_name;
-  $form_state['values']['customer_id'] = $client_id;
-
   // We also need appropriate named variables for start and end date.
   // It's simpler to do this than change all the other code for now.
   $form_state['values']['start_date'] = $form_state['values']['rooms_start_date'];

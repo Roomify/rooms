@@ -101,24 +101,6 @@ function _rooms_booking_manager_line_item_type_fields() {
           'text_processing' => 0,
         ),
       ),
-      'rooms_booking_options' => array(
-        'field_name' => 'rooms_booking_options',
-        'label' => t('Booking Options'),
-        'cardinality' => -1,
-        'required' => 0,
-        'type' => 'rooms_options',
-        'module' => 'rooms',
-        'settings' => array(
-          'user_register_form' => FALSE,
-        ),
-        'widget' => array(
-          'active' => 0,
-          'module' => 'rooms_unit',
-          'settings' => array(),
-          'type' => 'rooms_options_combined',
-          'weight' => '0',
-        ),
-      ),
       'rooms_booking_children_ages' => array(
         'field_name' => 'rooms_booking_children_ages',
         'label' => t('Booking Children Ages'),

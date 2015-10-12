@@ -133,4 +133,3 @@ function rooms_ui_terminology_form() {
 
   return drupal_get_form('variable_edit_form', $variable_list);
 }
-

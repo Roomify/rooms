@@ -62,12 +62,6 @@ function rooms_booking_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'customer_id' => array(
-        'description' => 'The customer_id this booking is tied to.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-      ),
       'uid' => array(
         'description' => 'The {users}.uid that owns this booking.',
         'type' => 'int',
@@ -88,28 +82,16 @@ function rooms_booking_schema() {
         'default' => 0,
       ),
       'start_date' => array(
-        'type' => 'varchar',
-        'length' => 20,
+        'type' => 'datetime',
+        'mysql_type' => 'datetime',
         'not null' => FALSE,
         'description' => 'The start date for the booking.',
       ),
       'end_date' => array(
-        'type' => 'varchar',
-        'length' => 20,
+        'type' => 'datetime',
+        'mysql_type' => 'datetime',
         'not null' => FALSE,
         'description' => 'The end date for the booking.',
-      ),
-      'order_id' => array(
-        'description' => 'The order_id this booking may be tied to.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-      'price' => array(
-        'description' => 'The total price for the booking.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
       ),
       'booking_status' => array(
         'description' => 'The booking status (1 published, 0 unpublished).',
@@ -129,7 +111,6 @@ function rooms_booking_schema() {
     'indexes' => array(
       'booking_id' => array('booking_id'),
       'type' => array('type'),
-      'customer_id' => array('customer_id'),
       'uid' => array('uid'),
     ),
   );
@@ -189,34 +170,6 @@ function rooms_booking_schema() {
     ),
   );
 
-  // Stores the customer name and potentially relates it to a Commerce
-  // customer profile.
-  $schema['rooms_customers'] = array(
-    'description' => 'Stores information about customers.',
-    'fields' => array(
-      'id' => array(
-        'type' => 'serial',
-        'not null' => TRUE,
-        'description' => 'Primary Key: Unique booking type identifier.',
-      ),
-      'name' => array(
-        'description' => 'Customer\'s name.',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-      ),
-      'commerce_customer_id' => array(
-        'type' => 'int',
-        'not null' => FALSE,
-        'description' => 'Commerce customer id.',
-      ),
-    ),
-    'primary key' => array('id'),
-    'unique keys' => array(
-      'type' => array('name'),
-    ),
-  );
-
   return $schema;
 }
 
@@ -229,168 +182,4 @@ function rooms_booking_create_standard_booking_type() {
     'type' => 'standard_booking',
   ));
   rooms_booking_type_save($booking);
-}
-
-/**
- * Create booking_status field in rooms_booking table.
- */
-function rooms_booking_update_7001() {
-  $booking_status = array(
-    'description' => 'The booking status (1 published, 0 unpublished).',
-    'type' => 'int',
-    'not null' => TRUE,
-    'default' => 0,
-    'initial' => 1,
-  );
-
-  db_add_field('rooms_bookings', 'booking_status', $booking_status);
-
-  return t('Add field booking_status in Rooms Booking table.');
-}
-
-/**
- * Create customers table.
- */
-function rooms_booking_update_7002() {
-  $schema['rooms_customers'] = array(
-    'description' => 'Stores information about customers.',
-    'fields' => array(
-      'id' => array(
-        'type' => 'serial',
-        'not null' => TRUE,
-        'description' => 'Primary Key: Unique customer identifier.',
-      ),
-      'name' => array(
-        'description' => 'Customer\'s name.',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-      ),
-      'commerce_customer_id' => array(
-        'type' => 'int',
-        'not null' => FALSE,
-        'description' => 'Commerce customer id.',
-      ),
-    ),
-    'primary key' => array('id'),
-    'unique keys' => array(
-      'type' => array('name'),
-    ),
-  );
-
-  db_create_table('rooms_customers', $schema['rooms_customers']);
-}
-
-/**
- * Create price field in rooms_booking table.
- */
-function rooms_booking_update_7003() {
-  $price = array(
-    'description' => 'The total price for the booking.',
-    'type' => 'int',
-    'not null' => TRUE,
-    'default' => 0,
-    'initial' => 0,
-  );
-
-  db_add_field('rooms_bookings', 'price', $price);
-
-  return t('Add field price in Rooms Booking table.');
-}
-
-/**
- * Create owner field in rooms_booking table.
- */
-function rooms_booking_update_7004() {
-  db_add_field('rooms_bookings', 'uid', array(
-    'description' => 'The {users}.uid that owns this booking.',
-    'type' => 'int',
-    'not null' => TRUE,
-    'default' => 0,
-  ));
-
-  db_add_index('rooms_bookings', 'uid', array('uid'));
-
-  // Set all the bookings owned by admin user.
-  db_update('rooms_bookings')
-    ->fields(array(
-      'uid' => 1,
-    ))
-    ->execute();
-
-  return t('New columns added to rooms_units table');
-}
-
-/**
- * Update permission names for rooms_booking entity management.
- */
-function rooms_booking_update_7005() {
-  // Load utility functions.
-  module_load_install('rooms');
-
-  $map = array(
-    'administer booking types' => 'administer rooms_booking_type entities',
-    'administer bookings' => 'bypass rooms_booking entities access',
-  );
-  $entity_info = entity_get_info('rooms_booking');
-  foreach ($entity_info['bundles'] as $bundle_name => $bundle_info) {
-    $map['view any ' . $bundle_name . ' booking'] = 'view any rooms_booking entity of bundle ' . $bundle_name;
-    $map['edit any ' . $bundle_name . ' booking'] = 'update any rooms_booking entity of bundle ' . $bundle_name;
-  }
-
-  commerce_update_rename_permissions($map);
-
-  return t('Role and custom View permissions updated for order entity management. Access checks in modules and permissions on default Views must be updated manually.');
-}
-
-/**
- * Update permission name for administer rooms_booking entities.
- */
-function rooms_booking_update_7006() {
-  $map = array(
-    'administer rooms_booking entities' => 'bypass rooms_booking entities access',
-  );
-
-  // Easy part: rename the permissions in {role_permission}.
-  foreach ($map as $old_name => $new_name) {
-    $roles = db_select('role_permission', 'r')
-              ->fields('r', array('rid', 'permission'))
-              ->condition('permission', $old_name)
-              ->execute()
-              ->fetchAllKeyed();
-
-    foreach (array_keys($roles) as $rid) {
-      db_merge('role_permission')
-        ->key(array('rid' => $rid, 'permission' => $new_name))
-        ->fields(array('rid' => $rid, 'permission' => $new_name, 'module' => 'rooms_booking'))
-        ->execute();
-
-      db_delete('role_permission')
-        ->condition('rid', $rid)
-        ->condition('permission', $old_name)
-        ->execute();
-    }
-  }
-
-  // Trickier: rename the permission for the in-database Views.
-  foreach (views_get_all_views() as $view) {
-    if ($view->type == t('Default')) {
-      continue;
-    }
-
-    $save_view = FALSE;
-    foreach ($view->display as $display_name => $display) {
-      if (!empty($display->display_options['access']['type']) && $display->display_options['access']['type'] == 'perm') {
-        $permission_name = $display->display_options['access']['perm'];
-        if (isset($map[$permission_name])) {
-          $display->display_options['access']['perm'] = $map[$permission_name];
-          $save_view = TRUE;
-        }
-      }
-    }
-
-    if ($save_view) {
-      $view->save();
-    }
-  }
 }

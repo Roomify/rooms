@@ -1,6 +1,5 @@
 /* Booking edit form */
-.rooms-booking-form .form-actions,
-.rooms-booking-form .rooms-booking-status-wrapper {
+.rooms-booking-form .form-actions {
   float: none;
   clear: both;
 }

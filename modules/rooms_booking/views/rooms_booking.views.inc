@@ -174,7 +174,6 @@ function rooms_booking_views_default_views() {
     'unit_id' => 'unit_id',
     'type' => 'type',
     'name_1' => 'name_1',
-    'order_id' => 'order_id',
     'operations' => 'operations',
   );
   $handler->display->display_options['style_options']['default'] = 'booking_id';
@@ -218,13 +217,6 @@ function rooms_booking_views_default_views() {
       'empty_column' => 0,
     ),
     'name_1' => array(
-      'sortable' => 1,
-      'default_sort_order' => 'asc',
-      'align' => '',
-      'separator' => '',
-      'empty_column' => 0,
-    ),
-    'order_id' => array(
       'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
@@ -293,12 +285,6 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['fields']['name_1']['field'] = 'name';
   $handler->display->display_options['fields']['name_1']['relationship'] = 'uid';
   $handler->display->display_options['fields']['name_1']['label'] = 'Owner';
-  /* Field: Bookings: Order_id */
-  $handler->display->display_options['fields']['order_id']['id'] = 'order_id';
-  $handler->display->display_options['fields']['order_id']['table'] = 'rooms_bookings';
-  $handler->display->display_options['fields']['order_id']['field'] = 'order_id';
-  $handler->display->display_options['fields']['order_id']['label'] = 'Order';
-  $handler->display->display_options['fields']['order_id']['hide_alter_empty'] = FALSE;
   /* Field: Bookings: Operations links */
   $handler->display->display_options['fields']['operations']['id'] = 'operations';
   $handler->display->display_options['fields']['operations']['table'] = 'rooms_bookings';
@@ -363,21 +349,6 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['filters']['uid']['expose']['operator'] = 'uid_op';
   $handler->display->display_options['filters']['uid']['expose']['identifier'] = 'uid';
   $handler->display->display_options['filters']['uid']['expose']['remember_roles'] = array(
-    2 => '2',
-    1 => 0,
-    3 => 0,
-  );
-  /* Filter criterion: Bookings: Order_id */
-  $handler->display->display_options['filters']['order_id']['id'] = 'order_id';
-  $handler->display->display_options['filters']['order_id']['table'] = 'rooms_bookings';
-  $handler->display->display_options['filters']['order_id']['field'] = 'order_id';
-  $handler->display->display_options['filters']['order_id']['group'] = 1;
-  $handler->display->display_options['filters']['order_id']['exposed'] = TRUE;
-  $handler->display->display_options['filters']['order_id']['expose']['operator_id'] = 'order_id_op';
-  $handler->display->display_options['filters']['order_id']['expose']['label'] = 'Order';
-  $handler->display->display_options['filters']['order_id']['expose']['operator'] = 'order_id_op';
-  $handler->display->display_options['filters']['order_id']['expose']['identifier'] = 'order_id';
-  $handler->display->display_options['filters']['order_id']['expose']['remember_roles'] = array(
     2 => '2',
     1 => 0,
     3 => 0,
