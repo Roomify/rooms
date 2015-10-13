@@ -83,6 +83,55 @@ function rooms_pricing_menu() {
   return $items;
 }
 
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function rooms_pricing_form_rooms_unit_edit_form_alter(&$form, &$form_state) {
+  $unit = $form['#entity'];
+
+  $price_fields = array();
+
+  $fields = field_info_instances('rooms_unit', $unit->type);
+  foreach ($fields as $field) {
+    $field_info = field_info_field($field['field_name']);
+
+    if ($field_info['type'] == 'commerce_price') {
+      $price_fields[$field['field_name']] = $field['field_name'];
+    }
+  }
+
+  $form['pricing'] = array(
+    '#type' => 'fieldset',
+    '#group' => 'additional_settings',
+    '#title' => t('Pricing'),
+    '#tree' => FALSE,
+    '#weight' => 80,
+  );
+
+  if (empty($price_fields)) {
+    $form['pricing']['field'] = array(
+      '#markup' => 'You need to add a "Commerce Price" field.',
+    );
+  }
+  else {
+    $form['pricing']['pricing_field'] = array(
+      '#type' => 'select',
+      '#title' => t('Select your price field'),
+      '#options' => $price_fields,
+      '#default_value' => isset($unit->data['pricing_field']) ? $unit->data['pricing_field'] : NULL,
+    );
+
+    $form['actions']['submit']['#submit'][] = 'rooms_pricing_form_rooms_unit_edit_form_submit';
+  }
+}
+
+/**
+ *
+ */
+function rooms_pricing_form_rooms_unit_edit_form_submit($form, &$form_state) {
+  $form_state['rooms_unit']->data['pricing_field'] = $form_state['values']['pricing_field'];
+  $form_state['rooms_unit']->save();
+}
 
 /**
  * Implements hook_query_TAG_alter().
@@ -570,22 +619,17 @@ function rooms_pricing_update_form_submit(&$form, &$form_state) {
 
 // Get all the pricing events for the date range.
 function update_calendar_event($unit_id, $amount, $start_date, $end_date, $operation, $days) {
-
   if (!empty($days)) {
-
     $rc = new UnitPricingCalendar($unit_id);
     $events = $rc->calculatePricingEvents($unit_id, $amount, $start_date, $end_date, $operation, $days);
 
     $rc->updateCalendar($events);
-
   }
   else {
-
     $rc = new UnitPricingCalendar($unit_id);
     $pe = new PricingEvent($unit_id, $amount, $start_date, $end_date, $operation);
     $events = array($pe);
 
     $rc->updateCalendar($events);
-
   }
 }

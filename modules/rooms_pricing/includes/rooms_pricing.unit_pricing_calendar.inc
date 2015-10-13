@@ -45,6 +45,11 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
     $this->unit = rooms_unit_load($unit_id);
     $this->default_state = $this->unit->default_state;
 
+    if (isset($this->unit->data['pricing_field'])) {
+      $field_price = $this->unit->data['pricing_field'];
+      $this->default_price = $this->unit->{$field_price}[LANGUAGE_NONE][0]['amount'] / 100;
+    }
+
     $this->price_modifiers = $price_modifiers;
 
     $this->base_table = 'rooms_pricing';

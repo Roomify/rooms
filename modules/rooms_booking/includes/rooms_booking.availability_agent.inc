@@ -292,14 +292,6 @@ class AvailabilityAgent {
    *   bookable units remaining after the filter, error code otherwise.
    */
   protected function applyAvailabilityFilter($units = array(), $adults = 0, $children = 0, $confirmed = FALSE) {
-    // Apply AvailabilityAgentSizeFilter.
-    $av_sizefilter = new AvailabilityAgentSizeFilter($units, array('group_size' => $adults, 'group_size_children' => $children, 'unit_types' => $this->unit_types));
-    $units = $av_sizefilter->applyFilter();
-
-    if ($units == ROOMS_SIZE_FAILURE) {
-      return array();
-    }
-
     // Apply AvailabilityAgentSingleUnitFilter.
     $av_singleunitfilter = new AvailabilityAgentSingleUnitFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date));
     $units = $av_singleunitfilter->applyFilter();
@@ -310,12 +302,6 @@ class AvailabilityAgent {
 
     if (empty($units)) {
       return array();
-    }
-
-    // Apply AvailabilityAgentCommerceFilter.
-    if (variable_get('rooms_use_commerce_filter', '1')) {
-      $av_commercefilter = new AvailabilityAgentCommerceFilter($units, array('start_date' => $this->start_date, 'end_date' => $this->end_date));
-      $units = $av_commercefilter->applyFilter();
     }
 
     ctools_include('plugins');

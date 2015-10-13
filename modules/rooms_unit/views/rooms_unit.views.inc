@@ -114,7 +114,6 @@ function rooms_unit_views_default_views() {
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['columns'] = array(
     'unit_id' => 'unit_id',
-    'base_price' => 'base_price',
     'bookable' => 'bookable',
     'unit_id_1' => 'unit_id_1',
     'edit_unit' => 'edit_unit',
@@ -124,12 +123,6 @@ function rooms_unit_views_default_views() {
   $handler->display->display_options['style_options']['default'] = '-1';
   $handler->display->display_options['style_options']['info'] = array(
     'unit_id' => array(
-      'sortable' => 0,
-      'default_sort_order' => 'asc',
-      'align' => '',
-      'separator' => '',
-    ),
-    'base_price' => array(
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => '',
@@ -185,11 +178,6 @@ function rooms_unit_views_default_views() {
   $handler->display->display_options['fields']['name']['id'] = 'name';
   $handler->display->display_options['fields']['name']['table'] = 'rooms_units';
   $handler->display->display_options['fields']['name']['field'] = 'name';
-  /* Field: Bookable Units: Base_price */
-  $handler->display->display_options['fields']['base_price']['id'] = 'base_price';
-  $handler->display->display_options['fields']['base_price']['table'] = 'rooms_units';
-  $handler->display->display_options['fields']['base_price']['field'] = 'base_price';
-  $handler->display->display_options['fields']['base_price']['label'] = 'Base price';
   /* Field: Bookable Units: Bookable */
   $handler->display->display_options['fields']['bookable']['id'] = 'bookable';
   $handler->display->display_options['fields']['bookable']['table'] = 'rooms_units';

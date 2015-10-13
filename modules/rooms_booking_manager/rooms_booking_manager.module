@@ -2412,14 +2412,6 @@ function rooms_booking_manager_alter_rooms_booking_settings(&$form, &$form_state
     ),
   );
 
-  $form['rooms_checkout_settings']['commerce_section']['rooms_use_commerce_filter'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Do not show units as available if they are in another user\'s cart'),
-    '#options' => rooms_assoc_range(0, 1),
-    '#description' => t('If this box is checked, Rooms will show units as unavailable once a booking including them has been placed in a user\'s cart. If it is unchecked, multiple users may place the same unit in their cart, and the first user to check out complete their order will successfully complete their booking. For scenarios such as hotels with multiple units of the same type it is recommended to enable this.'),
-    '#default_value' => variable_get('rooms_use_commerce_filter', '1'),
-  );
-
   $form['rooms_checkout_settings']['enquiry_section'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
@@ -2536,14 +2528,6 @@ function rooms_booking_manager_alter_rooms_booking_settings(&$form, &$form_state
       ROOMS_INDIVIDUAL => t('Show availability of individual units.'),
     ),
     '#default_value' => variable_get('rooms_presentation_style', ROOMS_PER_TYPE),
-  );
-
-  $form['rooms_search_settings']['rooms_booking_manager_search_form_max_group_size'] = array(
-    '#type' => 'select',
-    '#title' => t('Maximum group size to display'),
-    '#description' => t('Select the maximum group size to display in the availability search form select list'),
-    '#options' => rooms_assoc_range(1, 20),
-    '#default_value' => variable_get('rooms_booking_manager_search_form_max_group_size', 8),
   );
 
   $form['rooms_search_settings']['rooms_booking_manager_search_form_units'] = array(
