@@ -86,51 +86,61 @@ function rooms_pricing_menu() {
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function rooms_pricing_form_rooms_unit_edit_form_alter(&$form, &$form_state) {
-  $unit = $form['#entity'];
+function rooms_pricing_form_rooms_unit_type_form_alter(&$form, &$form_state) {
+  $unit_type = $form_state['rooms_unit_type'];
 
-  $price_fields = array();
+  if (!isset($unit_type->is_new)) {
+    $price_fields = array();
 
-  $fields = field_info_instances('rooms_unit', $unit->type);
-  foreach ($fields as $field) {
-    $field_info = field_info_field($field['field_name']);
+    $fields = field_info_instances('rooms_unit', $unit_type->type);
+    foreach ($fields as $field) {
+      $field_info = field_info_field($field['field_name']);
 
-    if ($field_info['type'] == 'commerce_price') {
-      $price_fields[$field['field_name']] = $field['field_name'];
+      if ($field_info['type'] == 'commerce_price') {
+        $price_fields[$field['field_name']] = $field['field_name'];
+      }
     }
-  }
 
-  $form['pricing'] = array(
-    '#type' => 'fieldset',
-    '#group' => 'additional_settings',
-    '#title' => t('Pricing'),
-    '#tree' => FALSE,
-    '#weight' => 80,
-  );
+    if (isset($form['additional_settings'])) {
+      $form['additional_settings'] = array(
+        '#type' => 'vertical_tabs',
+        '#weight' => 99,
+      );
+    }
 
-  if (empty($price_fields)) {
-    $form['pricing']['field'] = array(
-      '#markup' => 'You need to add a "Commerce Price" field.',
-    );
-  }
-  else {
-    $form['pricing']['pricing_field'] = array(
-      '#type' => 'select',
-      '#title' => t('Select your price field'),
-      '#options' => $price_fields,
-      '#default_value' => isset($unit->data['pricing_field']) ? $unit->data['pricing_field'] : NULL,
+    $form['pricing'] = array(
+      '#type' => 'fieldset',
+      '#group' => 'additional_settings',
+      '#title' => t('Pricing'),
+      '#tree' => FALSE,
+      '#weight' => 80,
     );
 
-    $form['actions']['submit']['#submit'][] = 'rooms_pricing_form_rooms_unit_edit_form_submit';
+    if (empty($price_fields)) {
+      $form['pricing']['field'] = array(
+        '#markup' => 'You need to add a "Commerce Price" field.',
+      );
+    }
+    else {
+      $form['pricing']['pricing_field'] = array(
+        '#type' => 'select',
+        '#title' => t('Select your price field'),
+        '#options' => $price_fields,
+        '#default_value' => isset($unit_type->data['pricing_field']) ? $unit_type->data['pricing_field'] : NULL,
+      );
+
+      $form['actions']['submit']['#submit'][] = 'rooms_pricing_form_rooms_unit_type_form_submit';
+    }
   }
 }
 
 /**
  *
  */
-function rooms_pricing_form_rooms_unit_edit_form_submit($form, &$form_state) {
-  $form_state['rooms_unit']->data['pricing_field'] = $form_state['values']['pricing_field'];
-  $form_state['rooms_unit']->save();
+function rooms_pricing_form_rooms_unit_type_form_submit($form, &$form_state) {
+  dpm($form_state['rooms_unit_type']);
+  $form_state['rooms_unit_type']->data['pricing_field'] = $form_state['values']['pricing_field'];
+  $form_state['rooms_unit_type']->save();
 }
 
 /**
