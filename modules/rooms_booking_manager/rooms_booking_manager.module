@@ -2188,7 +2188,6 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
         // Load the unit to get its type.
         $unit = rooms_unit_load($booking->unit_id);
         $booking->unit_type = $unit->type;
-        $booking->customer_id = $order->commerce_customer_billing[LANGUAGE_NONE][0]['profile_id'];
         $booking->name = $profile->commerce_customer_address[LANGUAGE_NONE][0]['name_line'];
 
         if (isset($line_item->rooms_booking_options[LANGUAGE_NONE])) {
@@ -2327,9 +2326,6 @@ function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
     rooms_booking_manager_alter_commerce_order_ui_order_form($form, $form_state, $form_id);
   }
 
-  if ($form_id == 'rooms_booking_edit_form') {
-    rooms_booking_manager_alter_rooms_booking_edit_form($form, $form_state, $form_id);
-  }
 }
 
 /**
@@ -2754,57 +2750,6 @@ function rooms_booking_manager_alter_commerce_order_ui_order_form(&$form, &$form
 }
 
 /**
- * Alters for the 'rooms_booking_edit' form.
- */
-function rooms_booking_manager_alter_rooms_booking_edit_form(&$form, $form_state, $form_id) {
-  $form['actions']['submit']['#submit'][] = 'rooms_booking_manager_rooms_booking_edit_form_submit';
-}
-
-/**
- * Submit handler for the 'rooms_booking_edit' form.
- */
-function rooms_booking_manager_rooms_booking_edit_form_submit(&$form, &$form_state) {
-  $booking = $form_state['booking'];
-  list($start_date, $end_date) = rooms_form_values_get_start_end_dates($form_state);
-  $unit_id = isset($form_state['values']['unit_id']) ? $form_state['values']['unit_id'] : 0;
-  $unit = rooms_unit_load($unit_id);
-  // Get the client name and client id.
-  $client = explode(':', $form_state['values']['client']);
-  $client_name = $client[0];
-  $commerce_customer_id = rooms_booking_find_customer_by_name($client_name);
-  $booking_original = entity_load_unchanged('rooms_booking', $booking->booking_id);
-
-  if ($booking->order_id != '') {
-    if (($order = commerce_order_load($booking->order_id)) !== FALSE) {
-      if ($booking_original->unit_id != $booking->unit_id || $booking_original->start_date != $booking->start_date ||
-        $booking_original->end_date != $booking->end_date || $booking_original->price != $booking->price ||
-        $booking_original->data['group_size'] != $booking->data['group_size'] ||
-        $booking_original->data['group_size_children'] != $booking->data['group_size_children']) {
-
-        $order->status = 'canceled';
-
-        commerce_order_save($order);
-
-        $booking->order_id = '';
-      }
-    }
-  }
-
-  if ($booking->order_id == '') {
-    if (variable_get('rooms_manually_booking_create_order', '1')) {
-      $booking_parameters = array('adults' => $form_state['values']['data']['group_size'], 'children' => $form_state['values']['data']['group_size_children']);
-
-      $order = rooms_booking_manager_create_order($start_date, $end_date, $booking_parameters, $unit, $booking, $commerce_customer_id);
-
-      $booking->order_id = $order->order_number;
-
-      // Resave booking to store order reference.
-      $booking->save();
-    }
-  }
-}
-
-/**
  * Creates a Commerce Order for a booking.
  *
  * @param DateTime $start_date
@@ -2834,19 +2779,6 @@ function rooms_booking_manager_create_order($start_date, $end_date, $booking_par
   commerce_order_save($order);
 
   $price_modifiers = array();
-  // Convert Price options to Price modifiers.
-  foreach (rooms_unit_get_unit_options($unit) as $option) {
-    $opt_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
-    if (isset($booking->$opt_name) && $booking->$opt_name) {
-      $price_modifiers[$opt_name] = array(
-        '#name' => $option['name'],
-        '#type' => ROOMS_DYNAMIC_MODIFIER,
-        '#op_type' => $option['operation'],
-        '#amount' => $option['value'],
-        '#quantity' => $option['quantity'],
-      );
-    }
-  }
 
   $agent = new AvailabilityAgent($start_date, $end_date, $booking_parameters, 1, array());
   $agent->setValidStates(variable_get('rooms_valid_availability_states', array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)));

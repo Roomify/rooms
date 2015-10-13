@@ -185,13 +185,6 @@ function rooms_booking_views_default_views() {
       'separator' => '',
       'empty_column' => 0,
     ),
-    'name' => array(
-      'sortable' => 1,
-      'default_sort_order' => 'asc',
-      'align' => '',
-      'separator' => '',
-      'empty_column' => 0,
-    ),
     'start_date' => array(
       'sortable' => 1,
       'default_sort_order' => 'asc',
@@ -246,12 +239,6 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['fields']['booking_id']['table'] = 'rooms_bookings';
   $handler->display->display_options['fields']['booking_id']['field'] = 'booking_id';
   $handler->display->display_options['fields']['booking_id']['label'] = 'Booking';
-  /* Field: Bookings: Name */
-  $handler->display->display_options['fields']['name']['id'] = 'name';
-  $handler->display->display_options['fields']['name']['table'] = 'rooms_bookings';
-  $handler->display->display_options['fields']['name']['field'] = 'name';
-  $handler->display->display_options['fields']['name']['label'] = 'Customer';
-  $handler->display->display_options['fields']['name']['hide_alter_empty'] = FALSE;
   /* Field: Bookings: Start Date */
   $handler->display->display_options['fields']['start_date']['id'] = 'start_date';
   $handler->display->display_options['fields']['start_date']['table'] = 'rooms_bookings';
@@ -301,21 +288,6 @@ function rooms_booking_views_default_views() {
   $handler->display->display_options['filters']['booking_id']['expose']['operator'] = 'booking_id_op';
   $handler->display->display_options['filters']['booking_id']['expose']['identifier'] = 'booking_id';
   $handler->display->display_options['filters']['booking_id']['expose']['remember_roles'] = array(
-    2 => '2',
-    1 => 0,
-    3 => 0,
-  );
-  /* Filter criterion: Bookings: Name */
-  $handler->display->display_options['filters']['name']['id'] = 'name';
-  $handler->display->display_options['filters']['name']['table'] = 'rooms_bookings';
-  $handler->display->display_options['filters']['name']['field'] = 'name';
-  $handler->display->display_options['filters']['name']['group'] = 1;
-  $handler->display->display_options['filters']['name']['exposed'] = TRUE;
-  $handler->display->display_options['filters']['name']['expose']['operator_id'] = 'name_op';
-  $handler->display->display_options['filters']['name']['expose']['label'] = 'Customer';
-  $handler->display->display_options['filters']['name']['expose']['operator'] = 'name_op';
-  $handler->display->display_options['filters']['name']['expose']['identifier'] = 'name';
-  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = array(
     2 => '2',
     1 => 0,
     3 => 0,

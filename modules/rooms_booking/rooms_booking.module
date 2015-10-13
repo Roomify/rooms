@@ -68,42 +68,6 @@ function rooms_booking_menu() {
 }
 
 /**
- * AJAX callback to edit the customer profile via CTools Modal.
- *
- * @param int $customer_id
- *   Profile ID of the customer to edit.
- */
-function rooms_booking_edit_customer_profile($customer_id) {
-  ctools_include('modal');
-
-  module_load_include('inc', 'commerce_customer', 'includes/commerce_customer_profile.forms');
-  $form_state = array(
-    'title' => t('Add customer'),
-    'ajax' => TRUE,
-    'build_info' => array(
-      'args' => array(commerce_customer_profile_load($customer_id)),
-      'files' => array(
-        'commmerce_customer' => array(
-          'module' => 'commmerce_customer',
-          'name' => 'includes/commerce_customer_profile.forms',
-          'type' => 'inc',
-        ),
-      ),
-    ),
-  );
-
-  // Wrap the form via ctools modal.
-  $output = ctools_modal_form_wrapper('commerce_customer_ui_customer_profile_form', $form_state);
-
-  if ($form_state['executed']) {
-    $output = array(ctools_modal_command_dismiss());
-  }
-
-  print ajax_render($output);
-  exit();
-}
-
-/**
  * Form callback for rooms_booking_children_discount form.
  */
 function rooms_booking_children_discount($form, &$form_state) {
@@ -1092,7 +1056,7 @@ class RoomsBookingController extends EntityAPIController {
   }
 
   protected function delete_line_item($booking) {
-    if ($booking->order_id != '') {
+    /*if ($booking->order_id != '') {
       $order = commerce_order_load($booking->order_id);
 
       if (isset($order->commerce_line_items[LANGUAGE_NONE])) {
@@ -1109,7 +1073,7 @@ class RoomsBookingController extends EntityAPIController {
           }
         }
       }
-    }
+    }*/
   }
 
   /**

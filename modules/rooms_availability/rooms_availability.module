@@ -1024,6 +1024,7 @@ function rooms_availability_form_rooms_booking_settings_alter(&$form, &$form_sta
     ),
     '#default_value' => variable_get('rooms_view_unit_name', array('')),
   );
+
   $form['label_settings']['rooms_calendar_events_view'] = array(
     '#type' => 'radios',
     '#title' => t('Calendar Events Display Mode'),
