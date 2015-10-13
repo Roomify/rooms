@@ -418,10 +418,6 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       $unit = rooms_unit_load($unitid);
       $selected = $unit->type;
 
-      if ($unit->max_sleeps <= 1) {
-        $form['data']['group_size']['#default_value'] = 0;
-      }
-
       $form_state['values']['unit_type'] = $selected;
       $form_state['input']['data']['group_size'] = ($unit->max_sleeps <= 1) ? 1 : 2;
       $form_state['input']['data']['group_size_children'] = 0;

@@ -44,7 +44,6 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
     // Load the booking unit.
     $this->unit = rooms_unit_load($unit_id);
     $this->default_state = $this->unit->default_state;
-    $this->default_price = $this->unit->base_price;
 
     $this->price_modifiers = $price_modifiers;
 
@@ -55,10 +54,6 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
    * {@inheritdoc}
    */
   public function calculatePrice(DateTime $start_date, DateTime $end_date, $persons = 0, $children = 0, $children_ages = array()) {
-
-    if ($persons == 0) {
-      $persons = $this->unit->max_sleeps;
-    }
 
     $price = 0;
     $booking_price = 0;

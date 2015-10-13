@@ -165,15 +165,10 @@ class AvailabilityAgentSizeFilter extends AvailabilityAgentFilterBase {
   public function applyFilter() {
 
     // Check parameters.
-    $group_size = isset($this->parameters['group_size']) ? $this->parameters['group_size'] : 0;
-    $group_size_children = isset($this->parameters['group_size_children']) ? $this->parameters['group_size_children'] : 0;
     $unit_types = isset($this->parameters['unit_types']) ? $this->parameters['unit_types'] : NULL;
 
     $query = new EntityFieldQuery();
     $query->entityCondition('entity_type', 'rooms_unit')
-      ->propertyOrderBy('max_sleeps', 'ASC')
-      ->propertyCondition('max_sleeps', $group_size, '>=')
-      ->propertyCondition('max_children', $group_size_children, '>=')
       ->propertyCondition('bookable', 1);
 
     // Add a unit type condition if this has been defined.
@@ -229,7 +224,6 @@ class AvailabilityAgentDateFilter extends AvailabilityAgentFilterBase {
 
     $query = new EntityFieldQuery();
     $query->entityCondition('entity_type', 'rooms_unit')
-      ->propertyOrderBy('max_sleeps', 'ASC')
       ->propertyCondition('bookable', 1);
 
     // Execute the query and collect the results.
@@ -312,7 +306,6 @@ class AvailabilityAgentCommerceFilter extends AvailabilityAgentFilterBase {
     if (empty($this->units)) {
       $query = new EntityFieldQuery();
       $query->entityCondition('entity_type', 'rooms_unit')
-        ->propertyOrderBy('max_sleeps', 'ASC')
         ->propertyCondition('bookable', 1);
 
       // Execute the query and collect the results.

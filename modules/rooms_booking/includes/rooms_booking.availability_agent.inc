@@ -33,13 +33,6 @@ class AvailabilityAgent {
   public $end_date;
 
   /**
-   * How many people we are looking to accommodate.
-   *
-   * @var array
-   */
-  public $booking_parameters;
-
-  /**
    * How many booking units are we looking for.
    *
    * @var int
@@ -372,7 +365,6 @@ class AvailabilityAgent {
           'start_date' => clone($this->start_date),
           'end_date' => $temp_end_date,
           'unit' => $unit,
-          'booking_parameters' => $this->booking_parameters,
         );
 
         // Give other modules a chance to change the price modifiers.
@@ -380,7 +372,7 @@ class AvailabilityAgent {
 
         $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
 
-        if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON && count($this->booking_parameters) == 1 && isset($this->booking_parameters[0]) && is_array($this->booking_parameters)) {
+        if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
           $price_log = $price_calendar->calculatePrice($this->start_date,
             $this->end_date, $this->booking_parameters[0]['adults'], $this->booking_parameters[0]['children'], $this->booking_parameters[0]['childrens_age']);
         }
@@ -404,10 +396,6 @@ class AvailabilityAgent {
         }
       }
     }
-
-    // We order units by optional items to ensure that units with options are
-    // the first to be picked by a user.
-    $units = $this->orderByOptionals($units);
 
     return $units;
   }

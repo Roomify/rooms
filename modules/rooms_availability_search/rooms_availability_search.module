@@ -1,0 +1,288 @@
+<?php
+
+/**
+ * @file
+ */
+
+/**
+ * Implements hook_ctools_plugin_api().
+ */
+function rooms_availability_search_ctools_plugin_api($module = NULL, $api = NULL) {
+  if ($module == "facetapi" && $api == "facetapi_defaults") {
+    return array("version" => "1");
+  }
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function rooms_availability_search_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'rooms_availability_search') . '/views',
+  );
+}
+
+/**
+ * Implements hook_default_search_api_server().
+ */
+function rooms_availability_search_default_search_api_server() {
+  $defaults = array();
+
+  $defaults['db'] = entity_create('search_api_server', array(
+    'name' => 'DB',
+    'machine_name' => 'db',
+    'class' => 'search_api_db_service',
+    'options' => array(
+      'database' => 'default:default',
+      'min_chars' => 1,
+      'partial_matches' => 0,
+    ),
+  ));
+
+  return $defaults;
+}
+
+/**
+ * Implements hook_default_search_api_index().
+ */
+function rooms_availability_search_default_search_api_index() {
+  $defaults = array();
+
+  $defaults['rooms_units'] = entity_create('search_api_index', array(
+    'name' => 'Rooms Units',
+    'machine_name' => 'rooms_units',
+    'server' => 'db',
+    'item_type' => 'rooms_unit',
+    'options' => array(
+      'index_directly' => 1,
+      'fields' => array(
+        'unit_id' => array('type' => 'integer'),
+        'type' => array('type' => 'string'),
+        'name' => array('type' => 'text'),
+        'bookable' => array('type' => 'integer'),
+        'uid' => array('type' => 'integer'),
+        'status' => array('type' => 'integer'),
+        'search_api_language' => array('type' => 'string'),
+      ),
+    ),
+  ));
+
+  return $defaults;
+}
+
+/**
+ * Implements hook_search_api_query_alter().
+ *
+ * @param SearchApiQueryInterface $query
+ *   The search query being executed.
+ */
+function rooms_availability_search_search_api_query_alter($query) {
+  if ($query->getIndex()->getEntityType()) {
+    $info = entity_get_info($query->getIndex()->getEntityType());
+
+    // Only modify the query if this query is against rooms units.
+    if ($info['base table'] = 'rooms_unit') {
+      $params = drupal_get_query_parameters();
+
+      // See if we have dates to search.
+      if (isset($params['rooms_start_date']) &&
+          !empty($params['rooms_start_date']) &&
+          isset($params['rooms_end_date']) &&
+          !empty($params['rooms_end_date'])) {
+        $arrivalDateTime = DateTime::createFromFormat('d/m/Y', $params['rooms_start_date']);
+        $departureDateTime = DateTime::createFromFormat('d/m/Y', $params['rooms_end_date']);
+
+        $options = array();
+        $agent = new AvailabilityAgent($arrivalDateTime, $departureDateTime, $options);
+        $units = $agent->checkAvailability();
+
+        // If no units are available, zero out results.
+        if (!is_array($units)) {
+          $query->condition($info['entity keys']['id'], 1, '<');
+          return;
+        }
+
+        // Make array of unit IDs with availability.
+        $ids = array();
+        foreach ($units as $units_per_type) {
+          foreach ($units_per_type as $units) {
+            foreach ($units as $id => $unit) {
+              $ids[] = $id;
+            }
+          }
+        }
+
+        // Limit the search API query to entity ids with availability.
+        $query->condition($info['entity keys']['id'], $ids, 'IN');
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function rooms_availability_search_block_info() {
+  $blocks = array();
+
+  $blocks['rooms_availability_search'] = array(
+    'info' => t('Rooms Availability Search'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function rooms_availability_search_block_view($block_name = '') {
+  if ($block_name == 'rooms_availability_search') {
+    $form = drupal_get_form('rooms_availability_search_form');
+
+    $block = array(
+      'subject' => t('Rooms Availability Search'),
+      'content' => $form,
+    );
+
+    return $block;
+  }
+}
+
+function rooms_availability_search_form($form, $form_state) {
+  $params = drupal_get_query_parameters();
+  $now = date_create();
+
+  // Year defaults to current year, although we are not filtering yet.
+  $default_year = $now->format('Y');
+
+  // Month doesn't have a default selection.
+  $default_month = '';
+
+  $form['container'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('container-inline'),
+    ),
+  );
+
+  if (isset($params['rooms_start_date']) && !empty($params['rooms_start_date'])) {
+    $arrivalDateTime = DateTime::createFromFormat('d/m/Y', $params['rooms_start_date']);
+    $arrival = $arrivalDateTime->format('Y-m-d');
+  }
+  if (isset($params['rooms_end_date']) && !empty($params['rooms_end_date'])) {
+    $departureDateTime = DateTime::createFromFormat('d/m/Y', $params['rooms_end_date']);
+    $departure = $departureDateTime->format('Y-m-d');
+  }
+
+  // Create unique ids and selectors for each picker.
+  $start_date_id = drupal_html_id('datepicker-start-date');
+  $start_date_selector = '#' . $start_date_id . ' .form-text';
+
+  $end_date_id = drupal_html_id('datepicker-end-date');
+  $end_date_selector = '#' . $start_date_id . ' .form-text';
+
+  // Specify the default datepicker parameters (see date_popup_element_info())
+  $datepicker_options = array(
+    // Limit bookings to X days in advance, depending on the
+    // chosen configuration in your Rooms installation, defaults
+    // to one day in advance.
+    'minDate' => '+' . variable_get('rooms_booking_start_date', 1) . 'd',
+  );
+
+  $form['container']['arrival'] = array(
+    '#type' => 'date_popup',
+    '#description' => '',
+    '#date_format' => variable_get('rooms_date_format', 'd-m-Y'),
+    '#title' => t('Arrival date'),
+    '#default_value' => isset($arrival) ? $arrival : '',
+    '#datepicker_options' => array_merge($datepicker_options, array('endDateSelector' => $end_date_selector)),
+    '#required' => TRUE,
+  );
+
+  $form['container']['departure'] = array(
+    '#type' => 'date_popup',
+    '#description' => '',
+    '#date_format' => variable_get('rooms_date_format', 'd-m-Y'),
+    '#title' => t('Departure date'),
+    '#default_value' => isset($departure) ? $departure : '',
+    '#datepicker_options' => array_merge($datepicker_options, array('startDateSelector' => $start_date_selector)),
+    '#required' => TRUE,
+    '#attached' => array(
+      'js' => array(
+        drupal_get_path('module', 'rooms') . '/js/rooms_date_popup.js',
+        array(
+          'data' => array(
+            'rooms' => array(
+              'roomsBookingStartDay' => variable_get('rooms_booking_start_date', 1),
+              'roomsDateFormat' => 'dd/mm/yy',
+
+              // Here we create a listing of all datepickers registered on the
+              // current page. This is available for use in your own custom
+              // jQuery scripts as Drupal.settings.rooms.datepickers.
+              'datepickers' => array(
+                $start_date_selector => array(
+                  'endDateSelector' => $end_date_selector,
+                ),
+              ),
+            ),
+          ),
+          'type' => 'setting',
+        ),
+      ),
+    ),
+  );
+
+  $form['container']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => variable_get('rooms_booking_manager_button_search_for_availability', 'Search'),
+  );
+
+  $form['#attributes']['class'][] = 'rooms-availability-search';
+  $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_availability_search') . '/css/rooms_availability_search.css');
+
+  return $form;
+}
+
+/**
+ * Validation handler.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function rooms_availability_search_form_validate($form, &$form_state) {
+}
+
+/**
+ * Submit handler.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function rooms_availability_search_form_submit($form, &$form_state) {
+  $params = drupal_get_query_parameters();
+
+  $format = 'd/m/Y';
+
+  // Process stay dates.
+  if (isset($form_state['values']['arrival']) && !empty($form_state['values']['arrival'])) {
+    $arrivalDateTime = DateTime::createFromFormat('Y-m-d', $form_state['values']['arrival']);
+    $arrival = $arrivalDateTime->format($format);
+  }
+  if (isset($form_state['values']['departure']) && !empty($form_state['values']['departure'])) {
+    $departureDateTime = DateTime::createFromFormat('Y-m-d', $form_state['values']['departure']);
+    $departure = $departureDateTime->format($format);
+  }
+
+  // Set the URL parameters for the view.
+  isset($arrival) ? $params['rooms_start_date'] = $arrival : $params['rooms_start_date'] = '';
+  isset($departure) ? $params['rooms_end_date'] = $departure : $params['rooms_end_date'] = '';
+
+  if (arg(0) == 'search') {
+    drupal_goto(current_path(), array('query' => $params));
+  }
+  else {
+    drupal_goto('search', array('query' => $params));
+  }
+}

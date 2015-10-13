@@ -32,7 +32,6 @@ function rooms_variable_info($options) {
 /**
  * Implements hook_variable_group_info().
  */
-
 function rooms_variable_group_info() {
   $groups['rooms'] = array(
     'title' => t('Rooms'),
@@ -42,4 +41,3 @@ function rooms_variable_group_info() {
   );
   return $groups;
 }
-
