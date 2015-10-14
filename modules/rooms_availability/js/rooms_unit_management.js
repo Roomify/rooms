@@ -48,6 +48,19 @@ Drupal.behaviors.roomsAvailability = {
       });
     });
 
+    var events = [];
+    var url = Drupal.settings.basePath + '?q=bam/v1/availability&units=' + Drupal.settings.roomsUnitManagement.roomsId.join() + '&start_date=' + year1 + '-' + (month1+1) + '-01&duration=1M';
+    $.ajax({
+      url: url,
+      success: function(data) {
+        events = data['events'];
+
+        $.each(calendars, function(key, value) {
+          $(value[0]).fullCalendar('refetchEvents');
+        });
+      }
+    });
+
     var c = 0;
     $.each(calendars, function(key, value) {
       // phpmonth is what we send via the url and need to add one since php handles
@@ -69,16 +82,11 @@ Drupal.behaviors.roomsAvailability = {
           center: '',
           right: ''
         },
+        windowResize: function(view) {
+          $(this).fullCalendar('refetchEvents');
+        },
         events: function(start, end, timezone, callback) {
-          var index = c;
-          var url = Drupal.settings.basePath + '?q=bam/v1/availability&units=' + Drupal.settings.roomsUnitManagement.roomsId[index] + '&start_date=' + value[2] + '-' + phpmonth + '-01&duration=1M';
-
-          $.ajax({
-            url: url,
-            success: function(data) {
-              callback(data['events'][Drupal.settings.roomsUnitManagement.roomsId[index]]);
-            }
-          });
+          callback(events[unit_id]);
         },
         eventClick: function(calEvent, jsEvent, view) {
           // Getting the Unix timestamp - JS will only give us milliseconds

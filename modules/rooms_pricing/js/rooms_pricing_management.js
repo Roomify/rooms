@@ -38,9 +38,25 @@ Drupal.behaviors.roomsPricing = {
       calendars[i] = new Array('#calendar' + i, month1, year1);
     }
 
+    var events = [];
+    var url = Drupal.settings.basePath + '?q=bam/v1/pricing&units=' + Drupal.settings.roomsUnitManagement.roomsId.join() + '&start_date=' + year1 + '-' + (month1+1) + '-01&duration=1M';
+    $.ajax({
+      url: url,
+      success: function(data) {
+        events = data['events'];
+
+        $.each(calendars, function(key, value) {
+          $(value[0]).fullCalendar('refetchEvents');
+        });
+      }
+    });
+
     var c = 0;
     $.each(calendars, function(key, value) {
       phpmonth = value[1]+1;
+
+      var unit_id = Drupal.settings.roomsUnitManagement.roomsId[c];
+
       $(value[0]).once().fullCalendar({
         editable:false,
         dayNamesShort:[Drupal.t("Sun"), Drupal.t("Mon"), Drupal.t("Tue"), Drupal.t("Wed"), Drupal.t("Thu"), Drupal.t("Fri"), Drupal.t("Sat")],
@@ -53,15 +69,7 @@ Drupal.behaviors.roomsPricing = {
           right: ''
         },
         events: function(start, end, timezone, callback) {
-          var index = c;
-          var url = Drupal.settings.basePath + '?q=bam/v1/pricing&units=' + Drupal.settings.roomsUnitManagement.roomsId[index] + '&start_date=' + value[2] + '-' + phpmonth + '-01&duration=1M';
-
-          $.ajax({
-            url: url,
-            success: function(data) {
-              callback(data['events'][Drupal.settings.roomsUnitManagement.roomsId[index]]);
-            }
-          });
+          callback(events[unit_id]);
         },
         //Remove Time from events
         eventRender: function(event, el) {

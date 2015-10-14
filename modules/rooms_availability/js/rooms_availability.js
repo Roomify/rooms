@@ -6,6 +6,8 @@ Drupal.RoomsAvailability.Modal = Drupal.RoomsAvailability.Modal || {};
 Drupal.behaviors.rooms_availability = {
   attach: function(context) {
 
+    unit_id = Drupal.settings.roomsAvailability.roomID;
+
     // Current month is whatever comes through -1 since js counts months starting from 0
     currentMonth = Drupal.settings.roomsCalendar.currentMonth - 1;
     currentYear = Drupal.settings.roomsCalendar.currentYear;
@@ -41,10 +43,30 @@ Drupal.behaviors.rooms_availability = {
     calendars[1] = new Array('#calendar1', month2, year2);
     calendars[2] = new Array('#calendar2', month3, year3);
 
+    var events = [];
+    var url = Drupal.settings.basePath + '?q=bam/v1/availability&units=' + unit_id + '&start_date=' + year1 + '-' + (month1+1) + '-01&duration=3M';
+    $.ajax({
+      url: url,
+      success: function(data) {
+        events = data['events'];
+
+        $.each(calendars, function(key, value) {
+          $(value[0]).fullCalendar('refetchEvents');
+        });
+      }
+    });
+
     // refresh the events once the modal is closed
     $(document).one("CToolsDetachBehaviors", function() {
-      $.each(calendars, function(key, value) {
-        $(value[0]).fullCalendar('refetchEvents');
+      $.ajax({
+        url: url,
+        success: function(data) {
+          events = data['events'];
+
+          $.each(calendars, function(key, value) {
+            $(value[0]).fullCalendar('refetchEvents');
+          });
+        }
       });
     });
 
@@ -52,6 +74,7 @@ Drupal.behaviors.rooms_availability = {
       // phpmonth is what we send via the url and need to add one since php handles
       // months starting from 1 not zero
       phpmonth = value[1]+1;
+
       $(value[0]).once().fullCalendar({
         ignoreTimezone: false,
         editable: false,
@@ -67,15 +90,11 @@ Drupal.behaviors.rooms_availability = {
           center: '',
           right: '',
         },
+        windowResize: function(view) {
+          $(this).fullCalendar('refetchEvents');
+        },
         events: function(start, end, timezone, callback) {
-          var url = Drupal.settings.basePath + '?q=bam/v1/availability&units=' + Drupal.settings.roomsAvailability.roomID + '&start_date=' + value[2] + '-' + phpmonth + '-01&duration=1M';
-
-          $.ajax({
-            url: url,
-            success: function(data) {
-              callback(data['events'][Drupal.settings.roomsAvailability.roomID]);
-            }
-          });
+          callback(events[unit_id]);
         },
         eventClick: function(calEvent, jsEvent, view) {
           // Getting the Unix timestamp - JS will only give us milliseconds

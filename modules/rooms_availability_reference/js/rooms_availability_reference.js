@@ -20,26 +20,21 @@ Drupal.behaviors.rooms_availability_reference = {
           center: 'title',
           right: 'prev, next'
         },
-        windowResize: function(view) {
-          $(this).fullCalendar('refetchEvents');
-        },
         viewRender: function(view) {
           if (view.name == 'month') {
-            for (var url in lastSource) {
-              view.calendar.removeEventSource(lastSource[url]);
-            }
-            view.calendar.refetchEvents();
+            view.calendar.removeEvents();
 
-            lastSource = [];
-            for (var index = 0; index < Drupal.settings.roomsAvailabilityRef[cal_id].unitID.length; index++) {
-              url = '?q=rooms/units/unit/' + Drupal.settings.roomsAvailabilityRef[cal_id].unitID[index] + '/availability/json/'
-                + view.intervalStart.get('year') + '/' + (view.intervalStart.get('month') + 1);
+            var url = '?q=bam/v1/availability&units=' + Drupal.settings.roomsAvailabilityRef[cal_id].unitID.join() + '&start_date=' + view.intervalStart.get('year') + '-' + (view.intervalStart.get('month') + 1) + '-01&duration=1M';
+            $.ajax({
+              url: url,
+              success: function(data) {
+                events = data['events'];
 
-                view.calendar.addEventSource(url);
-
-                lastSource[index] = url;
-            }
-
+                for (var index = 0; index < Drupal.settings.roomsAvailabilityRef[cal_id].unitID.length; index++) {
+                  view.calendar.addEventSource(events[Drupal.settings.roomsAvailabilityRef[cal_id].unitID[index]]);
+                }
+              }
+            });
           }
         },
         //Remove Time from events

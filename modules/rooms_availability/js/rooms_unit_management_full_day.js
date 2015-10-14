@@ -48,6 +48,19 @@ Drupal.behaviors.roomsAvailability = {
       });
     });
 
+    var events = [];
+    var url = Drupal.settings.basePath + '?q=bam/v1/availability&units=' + Drupal.settings.roomsUnitManagement.roomsId.join() + '&start_date=' + year1 + '-' + (month1+1) + '-01&duration=1M';
+    $.ajax({
+      url: url,
+      success: function(data) {
+        events = data['events'];
+
+        $.each(calendars, function(key, value) {
+          $(value[0]).fullCalendar('refetchEvents');
+        });
+      }
+    });
+
     var c = 0;
     $.each(calendars, function(key, value) {
       // phpmonth is what we send via the url and need to add one since php handles
@@ -69,7 +82,9 @@ Drupal.behaviors.roomsAvailability = {
           center: '',
           right: ''
         },
-        events: Drupal.settings.basePath + '?q=rooms/units/unit/' + Drupal.settings.roomsUnitManagement.roomsId[c] + '/availability/json/' + value[2] + '/' + phpmonth,
+        events: function(start, end, timezone, callback) {
+          callback(events[unit_id]);
+        },
         windowResize: function(view) {
           $(value[0]).fullCalendar('refetchEvents');
         },
