@@ -55,7 +55,16 @@ Drupal.behaviors.rooms_availability = {
           center: '',
           right: ''
         },
-        events: Drupal.settings.basePath + '?q=rooms/units/unit/' + Drupal.settings.roomsPricing.roomID + '/pricing/json/' + value[2] + '/' + phpmonth,
+        events: function(start, end, timezone, callback) {
+          var url = Drupal.settings.basePath + '?q=bam/v1/pricing&units=' + Drupal.settings.roomsPricing.roomID + '&start_date=' + value[2] + '-' + phpmonth + '-01&duration=1M';
+
+          $.ajax({
+            url: url,
+            success: function(data) {
+              callback(data['events'][Drupal.settings.roomsPricing.roomID]);
+            }
+          });
+        },
         //Remove Time from events
         eventRender: function(event, el) {
           el.find('.fc-time').remove();

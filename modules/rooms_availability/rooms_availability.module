@@ -72,16 +72,6 @@ function rooms_availability_menu() {
     'weight' => '20',
   );
 
-  $items['rooms/units/unit/%rooms_unit/availability/json/%/%'] = array(
-    'title' => 'Availability Event',
-    'page callback' => 'rooms_availability_event',
-    'page arguments' => array(3, 6, 7),
-    'access callback' => 'rooms_unit_access',
-    'access arguments' => array('view', 3),
-    'type' => MENU_CALLBACK,
-    'weight' => 30,
-  );
-
   $items['admin/rooms/units/unit/%rooms_unit/event'] = array(
     'title' => 'Event Management',
     'page callback' => 'rooms_availability_event_manager_page',
@@ -495,85 +485,6 @@ function update_availability_calendar_form_submit(&$form, &$form_state) {
   elseif ($response[$event_id] == ROOMS_UPDATED) {
     drupal_set_message(t('Calendar Updated'));
   }
-}
-
-/**
- * Displays the necessary json for the date range provided - needs at least start
- * year and month at which point it will return the entire month.
- */
-function rooms_availability_event($unit, $start_year = '', $start_month = '', $start_day = '', $end_year = '', $end_month = '', $end_day = '', $event_style = ROOMS_AVAILABILITY_ADMIN_STYLE) {
-
-  // If user don't have 'view anonymous availability information' permission.
-  if (!(user_access('view anonymous availability information') || rooms_unit_access('update availability', $unit))) {
-    echo drupal_json_encode(array());
-    return;
-  }
-
-  $json_events = array();
-  $json_events = rooms_availability_generate_json($unit, $start_year, $start_month, $start_day, $end_year, $end_month, $end_day, $event_style = ROOMS_AVAILABILITY_ADMIN_STYLE);
-
-  echo drupal_json_encode($json_events);
-}
-
-
-/**
- * Generates json based on date range provided.
- */
-function rooms_availability_generate_json($unit, $start_year = '', $start_month = '', $start_day = '', $end_year = '', $end_month = '', $end_day = '', $event_style = ROOMS_AVAILABILITY_ADMIN_STYLE) {
-
-  $start_year = (int) $start_year;
-  $start_month = (int) $start_month;
-  $start_day = (int) $start_day;
-
-  $end_year = (int) $end_year;
-  $end_month = (int) $end_month;
-  $end_day = (int) $end_day;
-
-  $today = new DateTime();
-  $month_start = new DateTime("$start_year-$start_month-1");
-  $previous_month = $today >= $month_start;
-
-  if (!user_access('view past availability information') && $previous_month) {
-    $start_day = date('j');
-    $start_month = date('n');
-    $start_year = date('Y');
-  }
-
-  $eom = rooms_end_of_month_dates($start_year);
-
-  if (($start_year == 0) || ($start_month == 0)) {
-    echo drupal_json_encode('missing basic info');
-    return;
-  }
-  elseif ($start_day == 0) {
-    $start_date = new DateTime("$start_year-$start_month-1");
-    $end_day = $eom[$start_month];
-    $end_date = new DateTime("$start_year-$start_month-$end_day");
-  }
-  elseif ($start_day != 0 && $end_year == 0) {
-    $start_date = new DateTime("$start_year-$start_month-$start_day");
-    $end_day = $eom[$start_month];
-    $end_date = new DateTime("$start_year-$start_month-$end_day");
-  }
-  else {
-    $start_date = new DateTime("$start_year-$start_month-$start_day");
-    $end_date = new DateTime("$end_year-$end_month-$end_day");
-  }
-
-  $json_events  = array();
-  $rc = new UnitCalendar($unit->unit_id, $unit->default_state);
-
-  $events = $rc->getEvents($start_date, $end_date);
-  $event_style = rooms_availability_get_style($event_style, $unit);
-
-  foreach ($events as $event) {
-    if (variable_get('rooms_calendar_events_view', '0') == '0') {
-      $event->end_date->add(new DateInterval('P1D'));
-    }
-    $json_events[] = $event->formatJson($event_style, $unit->name);
-  }
-
-  return $json_events;
 }
 
 /**

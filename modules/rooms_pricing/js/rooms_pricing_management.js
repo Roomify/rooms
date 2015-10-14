@@ -52,7 +52,17 @@ Drupal.behaviors.roomsPricing = {
           center: '',
           right: ''
         },
-        events: Drupal.settings.basePath + '?q=rooms/units/unit/' + Drupal.settings.roomsUnitManagement.roomsId[c] + '/pricing/json/' + value[2] + '/' + phpmonth,
+        events: function(start, end, timezone, callback) {
+          var index = c;
+          var url = Drupal.settings.basePath + '?q=bam/v1/pricing&units=' + Drupal.settings.roomsUnitManagement.roomsId[index] + '&start_date=' + value[2] + '-' + phpmonth + '-01&duration=1M';
+
+          $.ajax({
+            url: url,
+            success: function(data) {
+              callback(data['events'][Drupal.settings.roomsUnitManagement.roomsId[index]]);
+            }
+          });
+        },
         //Remove Time from events
         eventRender: function(event, el) {
           el.find('.fc-time').remove();

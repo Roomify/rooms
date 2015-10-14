@@ -69,9 +69,16 @@ Drupal.behaviors.roomsAvailability = {
           center: '',
           right: ''
         },
-        events: Drupal.settings.basePath + '?q=rooms/units/unit/' + Drupal.settings.roomsUnitManagement.roomsId[c] + '/availability/json/' + value[2] + '/' + phpmonth,
-        windowResize: function(view) {
-          $(value[0]).fullCalendar('refetchEvents');
+        events: function(start, end, timezone, callback) {
+          var index = c;
+          var url = Drupal.settings.basePath + '?q=bam/v1/availability&units=' + Drupal.settings.roomsUnitManagement.roomsId[index] + '&start_date=' + value[2] + '-' + phpmonth + '-01&duration=1M';
+
+          $.ajax({
+            url: url,
+            success: function(data) {
+              callback(data['events'][Drupal.settings.roomsUnitManagement.roomsId[index]]);
+            }
+          });
         },
         eventClick: function(calEvent, jsEvent, view) {
           // Getting the Unix timestamp - JS will only give us milliseconds
@@ -93,7 +100,6 @@ Drupal.behaviors.roomsAvailability = {
           Drupal.RoomsAvailability.Modal(this, unit_id, -2, sd, ed);
           $(value[0]).fullCalendar('unselect');
         },
-
         eventRender: function(event, el) {
           //Remove Time from events
           el.find('.fc-time').remove();

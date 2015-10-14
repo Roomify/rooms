@@ -67,10 +67,16 @@ Drupal.behaviors.rooms_availability = {
           center: '',
           right: '',
         },
-        windowResize: function(view) {
-          $(value[0]).fullCalendar('refetchEvents');
+        events: function(start, end, timezone, callback) {
+          var url = Drupal.settings.basePath + '?q=bam/v1/availability&units=' + Drupal.settings.roomsAvailability.roomID + '&start_date=' + value[2] + '-' + phpmonth + '-01&duration=1M';
+
+          $.ajax({
+            url: url,
+            success: function(data) {
+              callback(data['events'][Drupal.settings.roomsAvailability.roomID]);
+            }
+          });
         },
-        events: Drupal.settings.basePath + '?q=rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/availability/json/' + value[2] + '/' + phpmonth,
         eventClick: function(calEvent, jsEvent, view) {
           // Getting the Unix timestamp - JS will only give us milliseconds
           if (calEvent.end === null) {

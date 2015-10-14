@@ -61,16 +61,6 @@ function rooms_pricing_menu() {
     'weight' => '30',
   );
 
-  $items['rooms/units/unit/%rooms_unit/pricing/json/%/%'] = array(
-    'title' => 'Pricing Info',
-    'page callback' => 'rooms_pricing_json',
-    'page arguments' => array(3, 6, 7),
-    'access callback' => 'rooms_unit_access',
-    'access arguments' => array('update pricing', 3),
-    'type' => MENU_CALLBACK,
-    'weight' => '30',
-  );
-
   $items['admin/rooms/units/bulk_pricing_management'] = array(
     'title' => 'Bulk pricing management',
     'page callback' => 'rooms_pricing_bulk_pricing_management',
@@ -326,59 +316,6 @@ function update_unit_pricing_form_submit(&$form, &$form_state) {
   $days = array_filter($form_state['values']['day_options']);
 
   update_calendar_event($unit_id, $amount, $start_date, $end_date, $operation, $days);
-}
-
-/**
- * Creates the necessary json for the date range provided.
- *
- * Needs at least start year and month at which point it will return the entire
- * month.
- */
-function rooms_pricing_json($unit, $start_year = '', $start_month = '', $start_day = '', $end_year = '', $end_month = '', $end_day = '') {
-
-  $start_year = (int) $start_year;
-  $start_month = (int) $start_month;
-  $start_day = (int) $start_day;
-
-  $end_year = (int) $end_year;
-  $end_month = (int) $end_month;
-  $end_day = (int) $end_day;
-
-  $eom = rooms_end_of_month_dates($start_year);
-
-  if (($start_year == 0) || ($start_month == 0)) {
-    echo drupal_json_encode('missing basic info');
-    return;
-  }
-  elseif ($start_day == 0) {
-    $start_date = new DateTime("$start_year-$start_month-1");
-    $end_day = $eom[$start_month];
-    $end_date = new DateTime("$start_year-$start_month-$end_day");
-  }
-  elseif ($start_day != 0 && $end_year == 0) {
-    $start_date = new DateTime("$start_year-$start_month-$start_day");
-    $end_date = new DateTime("$start_year-$start_month-15");
-    $end_date->add(new DateInterval('P1M'));
-    $end_year = $end_date->format('Y');
-    $end_month = $end_date->format('n');
-    $end_day = $eom[$end_date->format('n')];
-    $end_date = new DateTime("$end_year-$end_month-$end_day");
-  }
-  else {
-    $start_date = new DateTime("$start_year-$start_month-$start_day");
-    $end_date = new DateTime("$end_year-$end_month-$end_day");
-  }
-
-  $rc = new UnitPricingCalendar($unit->unit_id);
-
-  $events = $rc->getEvents($start_date, $end_date);
-  $json_events  = array();
-
-  foreach ($events as $event) {
-    $json_events[] = $event->formatJson();
-  }
-
-  echo drupal_json_encode($json_events);
 }
 
 /**
