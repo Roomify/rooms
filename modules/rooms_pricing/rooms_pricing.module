@@ -124,7 +124,7 @@ function rooms_pricing_form_rooms_unit_type_form_alter(&$form, &$form_state) {
     else {
       $form['pricing']['pricing_field'] = array(
         '#type' => 'select',
-        '#title' => t('Select your price field'),
+        '#title' => t('Select your default price field'),
         '#options' => $price_fields,
         '#default_value' => isset($unit_type->data['pricing_field']) ? $unit_type->data['pricing_field'] : NULL,
       );

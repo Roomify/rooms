@@ -114,9 +114,6 @@ function rooms_booking_manager_cart_view_views_default_views() {
   $handler->display->display_options['fields']['line_item_label']['field'] = 'line_item_label';
   $handler->display->display_options['fields']['line_item_label']['relationship'] = 'commerce_line_items_line_item_id';
   $handler->display->display_options['fields']['line_item_label']['label'] = 'Booking';
-  $handler->display->display_options['fields']['line_item_label']['alter']['alter_text'] = TRUE;
-  $handler->display->display_options['fields']['line_item_label']['alter']['text'] = '[line_item_label]
-  <br>[rooms_booking_options]';
   /* Field: Commerce Line item: Unit price */
   $handler->display->display_options['fields']['commerce_unit_price']['id'] = 'commerce_unit_price';
   $handler->display->display_options['fields']['commerce_unit_price']['table'] = 'field_data_commerce_unit_price';

@@ -409,15 +409,12 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
   // Validate the dates.
   $errors = rooms_check_dates_validity($start_date, $end_date, TRUE, $single_day_bookings);
 
-  // Check validity of the rest of the booking parameters that are stored in
-  // $_GET. Again this is to ensure that any direct links were structured
-  // appropriately.
-  $booking_parameters = rooms_booking_manager_retrieve_booking_parameters($booking_units, $_GET);
+  $booking_parameters = array();
 
   // The array of content to render.
   $content = array();
 
-  if (empty($errors) && is_array($booking_parameters)) {
+  if (empty($errors)) {
 
     $content['booking_results'] = 1;
 
@@ -494,11 +491,6 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
 
       $content = rooms_booking_manager_present_individual_rooms($units_per_type, $content, $start_date, $end_date, $booking_parameters);
     }
-  }
-  else {
-    drupal_set_message(t('Perform a search to get availability information'));
-    drupal_goto('booking');
-    exit;
   }
 
   $type = '';
@@ -1476,15 +1468,12 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
 
         for ($c = 1; $c <= $form_state['values'][$type][$price]['quantity']; $c++) {
 
-          // Looking for unit options.
-          $rooms_unit_options = rooms_unit_get_unit_options($units[$units_keys[$c - 1]]['unit']);
-
           // Display each row as a fieldset.
           $form[$type][$price]['fieldset'][$c]['#type'] = 'fieldset';
 
           // If there are options or pricing is not "PER PERSON" add a css
           // class and remove fieldset style.
-          if (empty($rooms_unit_options) && variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) != ROOMS_PER_PERSON) {
+          if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) != ROOMS_PER_PERSON) {
             $form[$type][$price]['fieldset'][$c]['#attributes']['class'][] = 'no-unit-fieldset';
           }
 
@@ -1515,11 +1504,6 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               );
           }
           $form[$type][$price]['fieldset'][$c]['#title'] = $unit_label;
-
-          // Add options checkboxes.
-          foreach ($rooms_unit_options as $option) {
-            $form = _rooms_booking_manager_add_options($form, $form_state, $type, $price, $c, $option);
-          }
 
           $tmp_unit = $units[$units_keys[$c - 1]]['unit'];
 
@@ -1585,41 +1569,6 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
           }
 
           $price_modifiers = array();
-          foreach (rooms_unit_get_unit_options($units[$units_keys[$c - 1]]['unit']) as $option) {
-            $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
-
-            if ($option['type'] == ROOMS_OPTION_MANDATORY) {
-              $quantity = 1;
-              if (isset($form_state['values'][$type][$price]['fieldset'][$c][$option_name . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
-                $quantity = $form_state['values'][$type][$price]['fieldset'][$c][$option_name . ':quantity'] + 1;
-              }
-
-              $price_modifiers[$option_name] = array(
-                '#type' => ROOMS_DYNAMIC_MODIFIER,
-                '#op_type' => $option['operation'],
-                '#amount' => $option['value'],
-                '#quantity' => $quantity,
-              );
-            }
-            else if (isset($form_state['values'][$type][$price]['fieldset'][$c][$option_name])) {
-
-              $quantity = 1;
-              if (isset($form_state['values'][$type][$price]['fieldset'][$c][$option_name . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
-                $quantity = $form_state['values'][$type][$price]['fieldset'][$c][$option_name . ':quantity'] + 1;
-              }
-
-              if ($form_state['values'][$type][$price]['fieldset'][$c][$option_name] == 1) {
-                if ($option['type'] != ROOMS_OPTION_ONREQUEST) {
-                  $price_modifiers[$option_name] = array(
-                    '#type' => ROOMS_DYNAMIC_MODIFIER,
-                    '#op_type' => $option['operation'],
-                    '#amount' => $option['value'],
-                    '#quantity' => $quantity,
-                  );
-                }
-              }
-            }
-          }
 
           if (isset($form_state['values'][$type][$price]['fieldset'][$c]['persons'])) {
             $group_size = $form_state['values'][$type][$price]['fieldset'][$c]['persons'];
@@ -1916,49 +1865,12 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
         for ($i = 1; $i <= $unit_order['quantity']; $i++) {
           $unit = array_shift($units_per_type[$type][$price_level]);
 
-          $childrens_age = array();
-          if (isset($form_state['values'][$type][$price_level]['fieldset'][$i]['children'])) {
-            for ($t = 1; $t <= $form_state['values'][$type][$price_level]['fieldset'][$i]['children']; $t++) {
-              $childrens_age[] = $form_state['values'][$type][$price_level]['fieldset'][$i]['childrens_age'][$t];
-            }
-          }
-          $persons = (isset($form_state['values'][$type][$price_level]['fieldset'][$i]['persons'])) ?
-            $form_state['values'][$type][$price_level]['fieldset'][$i]['persons'] + $unit['unit']->min_sleeps :
-            ((isset($booking_parameters[$i]['adults'])) ? $booking_parameters[$i]['adults'] : $unit['unit']->min_sleeps);
-
-          $children = (isset($form_state['values'][$type][$price_level]['fieldset'][$i]['children'])) ?
-            $form_state['values'][$type][$price_level]['fieldset'][$i]['children'] + $unit['unit']->min_children :
-            ((isset($booking_parameters[$i]['children'])) ? $booking_parameters[$i]['children'] : 0);
-
           // Fill group_size with unit size.
           $group_size = array(
-            'adults' => $persons,
-            'children' => $children,
-            'childrens_age' => $childrens_age,
+            'adults' => 1,
+            'children' => 0,
+            'childrens_age' => array(),
           );
-
-          // Convert Price options in Price modifiers.
-          $price_modifiers = array();
-          foreach (rooms_unit_get_unit_options($unit['unit']) as $option) {
-            if (isset($form_state['values'][$type][$price_level]['fieldset'][$i][strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
-              if ($form_state['values'][$type][$price_level]['fieldset'][$i][strtolower(str_replace(array(':', ' '), '_', $option['name']))] == 1) {
-                $quantity = 1;
-                if (isset($form_state['values'][$type][$price_level]['fieldset'][$i][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
-                  $quantity = $form_state['values'][$type][$price_level]['fieldset'][$i][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] + 1;
-                }
-                if ($option['type'] == ROOMS_OPTION_ONREQUEST) {
-                  $option['value'] = 0;
-                }
-                $price_modifiers[strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
-                  '#name' => $option['name'],
-                  '#type' => ROOMS_DYNAMIC_MODIFIER,
-                  '#op_type' => $option['operation'],
-                  '#amount' => $option['value'],
-                  '#quantity' => $quantity,
-                );
-              }
-            }
-          }
 
           // Check if there are line_items with overlapping dates.
           module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.confirmation_override');
@@ -1985,7 +1897,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
           }
 
           // Create line item.
-          $line_item = rooms_create_line_item($unit, $agent, $group_size, $price_modifiers);
+          $line_item = rooms_create_line_item($unit, $agent, $group_size);
 
           // Add line item to cart.
           if (!empty($line_item)) {
