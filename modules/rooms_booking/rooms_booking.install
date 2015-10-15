@@ -43,13 +43,6 @@ function rooms_booking_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
-      'name' => array(
-        'description' => 'The name of the Booking - a human-readable identifier.',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
-      ),
       'created' => array(
         'description' => 'The Unix timestamp when the Unit was created.',
         'type' => 'int',
