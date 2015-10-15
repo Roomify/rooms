@@ -38,6 +38,19 @@ Drupal.behaviors.roomsPricing = {
       calendars[i] = new Array('#calendar' + i, month1, year1);
     }
 
+    events = [];
+    var url = Drupal.settings.basePath + '?q=bam/v1/pricing&units=' + Drupal.settings.roomsUnitManagement.roomsId.join() + '&start_date=' + year1 + '-' + (month1+1) + '-01&duration=1M';
+    $.ajax({
+      url: url,
+      success: function(data) {
+        events = data['events'];
+
+        $.each(calendars, function(key, value) {
+          $(value[0]).fullCalendar('refetchEvents');
+        });
+      }
+    });
+
     var c = 0;
     $.each(calendars, function(key, value) {
       phpmonth = value[1]+1;
@@ -52,7 +65,9 @@ Drupal.behaviors.roomsPricing = {
           center: '',
           right: ''
         },
-        events: Drupal.settings.basePath + '?q=rooms/units/unit/' + Drupal.settings.roomsUnitManagement.roomsId[c] + '/pricing/json/' + value[2] + '/' + phpmonth,
+        events: function(start, end, timezone, callback) {
+          callback(events[unit_id]);
+        },
         //Remove Time from events
         eventRender: function(event, el) {
           el.find('.fc-time').remove();

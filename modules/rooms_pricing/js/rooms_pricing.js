@@ -3,6 +3,8 @@
 Drupal.behaviors.rooms_availability = {
   attach: function(context) {
 
+    unit_id = Drupal.settings.roomsPricing.roomID;
+
     // Current month is whatever comes through -1 since js counts months starting
     // from 0
     currentMonth = Drupal.settings.roomsCalendar.currentMonth - 1;
@@ -41,6 +43,19 @@ Drupal.behaviors.rooms_availability = {
     calendars[1] = new Array('#calendar1', month2, year2);
     calendars[2] = new Array('#calendar2', month3, year3);
 
+    events = [];
+    var url = Drupal.settings.basePath + '?q=bam/v1/pricing&units=' + unit_id + '&start_date=' + year1 + '-' + (month1+1) + '-01&duration=3M';
+    $.ajax({
+      url: url,
+      success: function(data) {
+        events = data['events'];
+
+        $.each(calendars, function(key, value) {
+          $(value[0]).fullCalendar('refetchEvents');
+        });
+      }
+    });
+
     $.each(calendars, function(key, value) {
       phpmonth = value[1]+1;
       $(value[0]).once().fullCalendar({
@@ -55,7 +70,9 @@ Drupal.behaviors.rooms_availability = {
           center: '',
           right: ''
         },
-        events: Drupal.settings.basePath + '?q=rooms/units/unit/' + Drupal.settings.roomsPricing.roomID + '/pricing/json/' + value[2] + '/' + phpmonth,
+        events: function(start, end, timezone, callback) {
+          callback(events[unit_id]);
+        },
         //Remove Time from events
         eventRender: function(event, el) {
           el.find('.fc-time').remove();
