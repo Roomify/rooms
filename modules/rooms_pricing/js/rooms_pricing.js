@@ -43,7 +43,7 @@ Drupal.behaviors.rooms_availability = {
     calendars[1] = new Array('#calendar1', month2, year2);
     calendars[2] = new Array('#calendar2', month3, year3);
 
-    var events = [];
+    events = [];
     var url = Drupal.settings.basePath + '?q=bam/v1/pricing&units=' + unit_id + '&start_date=' + year1 + '-' + (month1+1) + '-01&duration=3M';
     $.ajax({
       url: url,

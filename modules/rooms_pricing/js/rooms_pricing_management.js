@@ -38,7 +38,7 @@ Drupal.behaviors.roomsPricing = {
       calendars[i] = new Array('#calendar' + i, month1, year1);
     }
 
-    var events = [];
+    events = [];
     var url = Drupal.settings.basePath + '?q=bam/v1/pricing&units=' + Drupal.settings.roomsUnitManagement.roomsId.join() + '&start_date=' + year1 + '-' + (month1+1) + '-01&duration=1M';
     $.ajax({
       url: url,

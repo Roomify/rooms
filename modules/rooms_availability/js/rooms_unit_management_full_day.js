@@ -41,14 +41,7 @@ Drupal.behaviors.roomsAvailability = {
       calendars[i] = new Array('#calendar' + i, month1, year1);
     }
 
-    // refresh the events once the modal is closed
-    $(document).one("CToolsDetachBehaviors", function() {
-      $.each(calendars, function(key, value) {
-        $(value[0]).fullCalendar('refetchEvents');
-      });
-    });
-
-    var events = [];
+    events = [];
     var url = Drupal.settings.basePath + '?q=bam/v1/availability&units=' + Drupal.settings.roomsUnitManagement.roomsId.join() + '&start_date=' + year1 + '-' + (month1+1) + '-01&duration=1M';
     $.ajax({
       url: url,
