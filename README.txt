@@ -16,8 +16,8 @@ Follow the steps below to install Rooms.
 (http://fullcalendar.io) library. To improve the Rooms user experience,
 we created a specific fork of this library adding some new features.
 
-The required version of FullCalendar is 2.1.1 and you can download
-the specific version from our website[1]. The FullCalendar library should be
+The required version of FullCalendar is 2.4.0 and you can download
+the specific version from the fullcalendar site[1]. The FullCalendar library should be
 placed in sites/all/libraries so that you end up with the file located here:
 sites/all/libraries/rooms_fullcalendar/dist/fullcalendar.js
 
@@ -93,7 +93,7 @@ If you wish to uninstall Rooms, you must disable and uninstall the modules
 it provides in reverse order of dependencies. After disabling each module
 that is available to be disabled, visit the 'uninstall' tab and uninstall it.
 
-   [1]: https://github.com/Roomify/fullcalendar/archive/master.zip "Rooms Fullcalendar fork"
-   [2]: http://momentjs.com/downloads/moment.min.js *Moment JS Library*
+   [1]: https://github.com/arshaw/fullcalendar/releases/download/v2.4.0/fullcalendar-2.4.0.zip "Fullcalendar Library"
+   [2]: http://momentjs.com/downloads/moment.min.js "Moment JS Library"
    [3]: http://drupal.org/project/drush "Drush, the Drupal shell"
    [4]: http://drupal.org/project/issues/rooms "Rooms issue queue on Drupal.org"
