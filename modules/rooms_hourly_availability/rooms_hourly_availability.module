@@ -1,0 +1,207 @@
+<?php
+
+/**
+ * @file
+ * Manages availability for Bookable Units and displaying dates on the jquery
+ * FullCalendar plugin.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function rooms_hourly_availability_menu() {
+   $items = array();
+
+  $items['rooms/units/unit/%rooms_unit/day-availability/json/%'] = array(
+    'title' => 'Availability Event',
+    'page callback' => 'rooms_hourly_availability_event',
+    'page arguments' => array(3, 6),
+    'access callback' => 'rooms_unit_access',
+    'access arguments' => array('view', 3),
+    'type' => MENU_CALLBACK,
+    'weight' => 30,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_menu_alter().
+ */
+function rooms_hourly_availability_menu_alter(&$items) {
+  $items['admin/rooms/units/unit/%rooms_unit/availability']['page callback'] = 'rooms_hourly_availability_page';
+}
+
+/**
+ * Implements hook_theme().
+ */
+function rooms_hourly_availability_theme() {
+  return array(
+    'rooms_two_month_calendar' => array(
+      'template' => 'rooms_two_month_calendar',
+      'variables' => array(
+        'url' => NULL,
+        'form' => NULL,
+        'year' => NULL,
+        'month' => NULL,
+        'link_options' => NULL,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function rooms_hourly_availability_form_rooms_booking_edit_form_alter(&$form, &$form_state) {
+  $form['rooms_date_range']['rooms_start_date']['#date_format'] = 'd/m/Y H:i';
+  $form['rooms_date_range']['rooms_end_date']['#date_format'] = 'd/m/Y H:i';
+
+  $form['actions']['submit']['#submit'][] = 'rooms_hourly_availability_form_rooms_booking_edit_form_submit';
+}
+
+function rooms_hourly_availability_form_rooms_booking_edit_form_submit($form, &$form_state) {
+  $booking = $form_state['rooms_booking'];
+
+  db_insert('rooms_hourly_availability')
+    ->fields(array(
+      'unit_id' => $booking->unit_id,
+      'start_date' => $booking->start_date,
+      'end_date' => $booking->end_date,
+      'state' => 1,
+    ))
+    ->execute();
+}
+
+function rooms_hourly_availability_page(RoomsUnit $rooms_unit, $year = '', $month = '') {
+  // Set the page title.
+  drupal_set_title(t('Edit @unit_name Availability', array('@unit_name' => $rooms_unit->name)));
+
+  // Add styles.
+  rooms_availability_modal_style();
+
+  // Get the current page's URL, striped of the year and month args.
+  // This allows us to place this page anywhere, including at
+  // unit/%/availability  or  admin/rooms/units/unit/%/availability
+  list($url) = explode('/' . $year . '/' . $month, current_path());
+
+  $js_file = drupal_get_path('module', 'rooms_hourly_availability') . '/js/rooms_hourly_availability.js';
+  $css_file = drupal_get_path('module', 'rooms_availability') . '/css/rooms_availability.css';
+  // Show full day events on calendar.
+  if (variable_get('rooms_calendar_events_view', '0') == '1') {
+    $js_file = drupal_get_path('module', 'rooms_availability') . '/js/rooms_availability_full_day.js';
+  }
+  return array(
+    '#theme' => 'rooms_two_month_calendar',
+    '#url' => $url,
+    '#form' => drupal_get_form('update_availability_calendar_form', $rooms_unit->unit_id, $year, $month),
+    '#year' => $year,
+    '#month' => $month,
+    '#attached' => array(
+      'css' => array(
+        $css_file,
+      ),
+      'js' => array(
+        $js_file,
+        array(
+          'data' => array('roomsHourlyAvailability' => array('roomID' => $rooms_unit->unit_id)),
+          'type' => 'setting',
+        ),
+      ),
+    ),
+  );
+}
+
+/**
+ * Default implementation of hook_preprocess_rooms_two_month_calendar().
+ *
+ * Here we setup the three-month calendar based on a specified year,
+ * month, and url.
+ */
+function rooms_hourly_availability_preprocess_rooms_two_month_calendar(&$vars) {
+
+  // Load FullCalendar.
+  rooms_fullcalendar_loaded();
+
+  // Add css styles for three-month-calendar.
+  drupal_add_css(drupal_get_path('module', 'rooms_hourly_availability') . '/css/rooms_two_month_calendar.css');
+  drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/fullcalendar.theme.css');
+
+  // If dates are not provided then use the current date.
+  $year = (empty($vars['year'])) ? date('Y', time()) : check_plain($vars['year']);
+  $month = (empty($vars['month'])) ? date('n', time()) : check_plain($vars['month']);
+
+  // Inject settings in javascript that will be used to setup the three months
+  // display.
+  drupal_add_js(array('roomsCalendar' => array('currentMonth' => intval($month))), 'setting');
+  drupal_add_js(array('roomsCalendar' => array('currentYear' => intval($year))), 'setting');
+  drupal_add_js(array('roomsCalendar' => array('firstDay' => intval(variable_get('date_first_day', 0)))), 'setting');
+
+  // Calculate forward and back dates for the 3-month view calendar.
+  $date1 = new DateTime("$year-$month-1");
+  $date2 = new DateTime("$year-$month-1");
+  $date_current = new DateTime("now");
+
+  $forward = $date1->add(new DateInterval('P2M'));
+  $backward = $date2->sub(new DateInterval('P2M'));
+
+  // Create the links based off the url variable passed in.
+  if (!isset($vars['url'])) {
+    $vars['url'] = '';
+  }
+
+  $forward_path = $vars['url'] . '/' . $forward->format('Y') . '/' . $forward->format('n');
+  $backward_path = $vars['url'] . '/' . $backward->format('Y') . '/' . $backward->format('n');
+  $current_path = $vars['url'] . '/' . $date_current->format('Y') . '/' . $date_current->format('n');
+
+  if (!is_array($vars['link_options']) || empty($vars['link_options'])) {
+    $vars['link_options'] = array();
+  }
+  $vars['forward_link'] = l(t('Forward'), $forward_path, $vars['link_options']);
+  $vars['backward_link'] = l(t('Back'), $backward_path, $vars['link_options']);
+  $vars['current_link'] = l(t('Current'), $current_path, $vars['link_options']);
+}
+
+function rooms_hourly_availability_event($unit, $date, $duration = '1D') {
+
+  // If user don't have 'view anonymous availability information' permission.
+  if (!(user_access('view anonymous availability information') || rooms_unit_access('update availability', $unit))) {
+    echo drupal_json_encode(array());
+    return;
+  }
+
+  $json_events = array();
+  $json_events = rooms_hourly_availability_generate_json($unit, $date, $duration);
+
+  echo drupal_json_encode($json_events);
+}
+
+function rooms_hourly_availability_generate_json($unit, $date, $duration) {
+  $json_events  = array();
+
+  $start_date = new DateTime(substr($date, 0, 10));
+  $end_date = clone($start_date);
+  $end_date->add(new DateInterval('P' . $duration));
+
+  $start = $start_date->format('Y-m-d');
+  $end = $end_date->format('Y-m-d');
+
+  $query = db_select('rooms_hourly_availability', 'n')
+            ->fields('n', array('id', 'start_date', 'end_date', 'state'))
+            ->condition('unit_id', $unit->unit_id)
+            ->where("start_date > '$start' and end_date < '$end'");
+  $results = $query->execute()->fetchAll();
+
+  foreach ($results as $result) {
+    $json_events[] = array(
+      'id' => $result->id,
+      'start' => str_replace(' ', 'T', $result->start_date) . 'Z',
+      'end' => str_replace(' ', 'T', $result->end_date) . 'Z',
+      'title' => $result->id,
+      'color' => variable_get('rooms_not_available_color', '#CC2727'),
+      'borderColor' => variable_get('rooms_not_available_color', '#CC2727'),
+    );
+  }
+
+  return $json_events;
+}

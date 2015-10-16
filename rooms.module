@@ -726,13 +726,29 @@ function rooms_form_input_get_start_end_dates($form_state) {
   // If form_state['values']['rooms_X_date'] is not set it is an empty array
   // hence the need to check and set values so that _constructor below will not
   // fail.
-  if (is_array($form_state['values']['rooms_start_date']) || is_array($form_state['values']['rooms_end_date'])) {
-    $form_state['values']['rooms_start_date'] = '';
-    $form_state['values']['rooms_end_date'] = '';
+  if (is_array($form_state['values']['rooms_start_date'])) {
+    if ($form_state['values']['rooms_start_date']['date'] == '') {
+      $start = new DateTime();
+    }
+    else {
+      $start = new DateTime($form_state['values']['rooms_start_date']['date'] . ' ' . $form_state['values']['rooms_start_date']['time']);
+    }
+  }
+  else {
+    $start = new DateTime($form_state['values']['rooms_start_date']);
   }
 
-  $start = new DateTime($form_state['values']['rooms_start_date']);
-  $end = new DateTime($form_state['values']['rooms_end_date']);
+  if (is_array($form_state['values']['rooms_end_date'])) {
+    if ($form_state['values']['rooms_end_date']['date'] == '') {
+      $end = new DateTime();
+    }
+    else {
+      $end = new DateTime($form_state['values']['rooms_end_date']['date'] . ' ' . $form_state['values']['rooms_end_date']['time']);
+    }
+  }
+  else {
+    $end = new DateTime($form_state['values']['rooms_end_date']);
+  }
 
   return array($start, $end);
 }

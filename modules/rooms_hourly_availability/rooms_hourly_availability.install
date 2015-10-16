@@ -1,0 +1,53 @@
+<?php
+
+/**
+ * @file
+ * Install for Rooms Hourly Availability module
+ */
+
+
+/**
+ * Implements hook_schema().
+ */
+function rooms_hourly_availability_schema() {
+  $schema = array();
+
+  $schema['rooms_hourly_availability'] = array(
+    'description' => 'The base table for hourly availability.',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Primary Key.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'unit_id' => array(
+        'description' => 'The unit_id.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'start_date' => array(
+        'type' => 'datetime',
+        'mysql_type' => 'datetime',
+        'not null' => FALSE,
+        'description' => 'The start date.',
+      ),
+      'end_date' => array(
+        'type' => 'datetime',
+        'mysql_type' => 'datetime',
+        'not null' => FALSE,
+        'description' => 'The end date.',
+      ),
+      'state' => array(
+        'description' => 'State.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  return $schema;
+}

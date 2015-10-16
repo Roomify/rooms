@@ -1,0 +1,8 @@
+name = Rooms Hourly Availability
+description = Manages hourly availability for Rooms.
+core = 7.x
+
+package = Rooms
+
+dependencies[] = rooms_availability
+dependencies[] = rooms_booking
