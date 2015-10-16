@@ -41,7 +41,7 @@ Drupal.behaviors.rooms_availability_reference = {
             });
           }
         },
-        eventRender: function(event, el) {
+        eventRender: function(event, el, view) {
           // Remove Time from events.
           el.find('.fc-time').remove();
 

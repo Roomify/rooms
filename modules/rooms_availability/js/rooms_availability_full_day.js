@@ -98,7 +98,7 @@ Drupal.behaviors.rooms_availability = {
           Drupal.RoomsAvailability.Modal(this, -2, sd, ed);
           $(value[0]).fullCalendar('unselect');
         },
-        eventRender: function(event, el) {
+        eventRender: function(event, el, view) {
           // Remove Time from events.
           el.find('.fc-time').remove();
         },

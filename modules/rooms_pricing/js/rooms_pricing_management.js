@@ -72,7 +72,7 @@ Drupal.behaviors.roomsPricing = {
           callback(events[unit_id]);
         },
         //Remove Time from events
-        eventRender: function(event, el) {
+        eventRender: function(event, el, view) {
           el.find('.fc-time').remove();
         }
       });

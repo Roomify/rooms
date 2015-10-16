@@ -107,7 +107,7 @@ Drupal.behaviors.roomsAvailability = {
           Drupal.RoomsAvailability.Modal(this, unit_id, -2, sd, ed);
           $(value[0]).fullCalendar('unselect');
         },
-        eventRender: function(event, el) {
+        eventRender: function(event, el, view) {
           //Remove Time from events
           el.find('.fc-time').remove();
           // Add a class if the event start it is not "AV" or "N/A".

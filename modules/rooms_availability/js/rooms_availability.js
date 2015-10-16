@@ -104,7 +104,7 @@ Drupal.behaviors.rooms_availability = {
           Drupal.RoomsAvailability.Modal(this, -2, sd, ed);
           $(value[0]).fullCalendar('unselect');
         },
-        eventRender: function(event, el) {
+        eventRender: function(event, el, view) {
           // Remove Time from events.
           el.find('.fc-time').remove();
 
@@ -120,7 +120,7 @@ Drupal.behaviors.rooms_availability = {
             el.find('.event-end').css('border-top-color', this.color);
           }
         },
-        eventAfterRender: function( event, element, view ) { 
+        eventAfterRender: function(event, element, view) { 
           // Event width.
           var width = element.parent().width()
           // Event colspan number.

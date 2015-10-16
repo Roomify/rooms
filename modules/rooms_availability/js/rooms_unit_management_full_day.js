@@ -100,7 +100,7 @@ Drupal.behaviors.roomsAvailability = {
           $(value[0]).fullCalendar('unselect');
         },
 
-        eventRender: function(event, el) {
+        eventRender: function(event, el, view) {
           //Remove Time from events
           el.find('.fc-time').remove();
         },
