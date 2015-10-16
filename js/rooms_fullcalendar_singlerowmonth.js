@@ -13,8 +13,6 @@
 	  },
 
 	  renderDates: function() {
-	    this.title = '';
-
 	    this.dayNumbersVisible = true;
 	    this.dayGrid.numbersVisible = true;
 	    this.dayGrid.colHeadFormat = 'ddd';

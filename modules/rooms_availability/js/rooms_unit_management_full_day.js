@@ -63,7 +63,6 @@ Drupal.behaviors.roomsAvailability = {
       var unit_id = Drupal.settings.roomsUnitManagement.roomsId[c];
 
       $(value[0]).once().fullCalendar({
-        ignoreTimezone:false,
         editable:false,
         selectable: true,
         dayNamesShort:[Drupal.t("Sun"), Drupal.t("Mon"), Drupal.t("Tue"), Drupal.t("Wed"), Drupal.t("Thu"), Drupal.t("Fri"), Drupal.t("Sat")],
@@ -71,7 +70,7 @@ Drupal.behaviors.roomsAvailability = {
         defaultView:'singleRowMonth',
         defaultDate: moment([value[2],phpmonth-1]),
         header:{
-          left: 'title',
+          left: '',
           center: '',
           right: ''
         },

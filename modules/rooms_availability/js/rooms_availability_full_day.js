@@ -21,7 +21,7 @@ Drupal.behaviors.rooms_availability = {
       month2 = 0;
       year2 = year1 + 1;
     }
-    else{
+    else {
       month2 = currentMonth+1;
       year2 = currentYear;
     }
@@ -32,7 +32,7 @@ Drupal.behaviors.rooms_availability = {
       month3 = 0;
       year3 = year2 + 1;
     }
-    else{
+    else {
       month3 = currentMonth+1;
       year3 = year2;
     }
@@ -60,10 +60,8 @@ Drupal.behaviors.rooms_availability = {
       // months starting from 1 not zero
       phpmonth = value[1]+1;
       $(value[0]).once().fullCalendar({
-        ignoreTimezone: false,
         editable: false,
         selectable: true,
-        handleWindowResize: true,
         height: 400,
         dayNamesShort:[Drupal.t("Sun"), Drupal.t("Mon"), Drupal.t("Tue"), Drupal.t("Wed"), Drupal.t("Thu"), Drupal.t("Fri"), Drupal.t("Sat")],
         monthNames:[Drupal.t("January"), Drupal.t("February"), Drupal.t("March"), Drupal.t("April"), Drupal.t("May"), Drupal.t("June"), Drupal.t("July"), Drupal.t("August"), Drupal.t("September"), Drupal.t("October"), Drupal.t("November"), Drupal.t("December")],

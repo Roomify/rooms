@@ -48,6 +48,13 @@ Drupal.behaviors.roomsAvailability = {
       success: function(data) {
         events = data['events'];
 
+        for (j=0;j<Drupal.settings.roomsUnitManagement.roomsNumber;j++) {
+          unitid = Drupal.settings.roomsUnitManagement.roomsId[j];
+          for (i in events[unitid]) {
+            events[unitid][i].end = moment(events[unitid][i].end).subtract(1, 'days').format();
+          }
+        }
+
         $.each(calendars, function(key, value) {
           $(value[0]).fullCalendar('refetchEvents');
         });
@@ -63,7 +70,6 @@ Drupal.behaviors.roomsAvailability = {
       var unit_id = Drupal.settings.roomsUnitManagement.roomsId[c];
 
       $(value[0]).once().fullCalendar({
-        ignoreTimezone:false,
         editable:false,
         selectable: true,
         dayNamesShort:[Drupal.t("Sun"), Drupal.t("Mon"), Drupal.t("Tue"), Drupal.t("Wed"), Drupal.t("Thu"), Drupal.t("Fri"), Drupal.t("Sat")],
@@ -71,7 +77,7 @@ Drupal.behaviors.roomsAvailability = {
         defaultView:'singleRowMonth',
         defaultDate: moment([value[2],phpmonth-1]),
         header:{
-          left: 'title',
+          left: '',
           center: '',
           right: ''
         },
@@ -84,10 +90,10 @@ Drupal.behaviors.roomsAvailability = {
         eventClick: function(calEvent, jsEvent, view) {
           // Getting the Unix timestamp - JS will only give us milliseconds
           if (calEvent.end === null) {
-            //We are probably dealing with a single day event
+            // We are probably dealing with a single day event
             calEvent.end = calEvent.start;
           }
-          calEvent.end.subtract(1, 'days');
+
           var sd = calEvent.start.unix();
           var ed = calEvent.end.unix();
           // Open the modal for edit
@@ -125,23 +131,28 @@ Drupal.behaviors.roomsAvailability = {
           var cell_width = width/colspan;
           var half_cell_width = cell_width/2;
 
-          // Adding a class to the second row of events to use for theme.
-          element.closest('tbody').find('tr:eq(1) .fc-day-grid-event').addClass('rooms-calendar-second-row-events');
           // Move events between table margins.
           element.css('margin-left', half_cell_width);
-          element.css('margin-right', half_cell_width);
+          element.css('margin-right', -(half_cell_width));
 
           // Calculate width event to add end date triangle.
           width_event = element.children('.fc-content').width();
           // Add a margin left to the top triangle.
           element.children().closest('.event-end').css('margin-left', width_event-11);
 
+          if (element.parent().index() == 0) {
+            element.css('margin-left', 0);
+          }
+          if (element.parent().index() == element.parent().parent().children('td').length - 1) {
+            element.css('margin-right', 0);
+          }
+
           // If the event end in a next row.
-          if(element.hasClass('fc-not-end')) {
+          if (element.hasClass('fc-not-end')) {
             element.css('margin-right', 0);
           }
           // If the event start in a previous row.
-          if(element.hasClass('fc-not-start')) {
+          if (element.hasClass('fc-not-start')) {
             element.css('margin-left', 0);
             element.children().closest('.event-end').css('margin-left', width_event);
           }

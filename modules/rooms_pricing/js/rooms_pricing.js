@@ -21,7 +21,7 @@ Drupal.behaviors.rooms_availability = {
       month2 = 0;
       year2 = year1 + 1;
     }
-    else{
+    else {
       month2 = currentMonth+1;
       year2 = currentYear;
     }
@@ -33,7 +33,7 @@ Drupal.behaviors.rooms_availability = {
       month3 = 0;
       year3 = year2 + 1;
     }
-    else{
+    else {
       month3 = currentMonth+1;
       year3 = year2;
     }

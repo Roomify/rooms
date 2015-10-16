@@ -36,17 +36,24 @@
   -webkit-transform: rotate(180deg);
 }
 
-.rooms-availability-field-calendar .rooms-calendar-second-row-events {
-  margin-top: -17px;
-}
-.fc-event .fc-title {
+.rooms-availability-field-calendar .fc-event .fc-title {
   color:white;
 }
 
-.fc-event .fc-title:hover {
+.rooms-availability-field-calendar .fc-event .fc-title:hover {
   color:white;
 }
 
-.fc-unthemed .fc-popover, .fc-unthemed .fc-row, .fc-unthemed hr, .fc-unthemed tbody, .fc-unthemed td, .fc-unthemed th, .fc-unthemed thead{
+.rooms-availability-field-calendar .fc-unthemed .fc-popover,
+.rooms-availability-field-calendar .fc-unthemed .fc-row,
+.rooms-availability-field-calendar .fc-unthemed hr,
+.rooms-availability-field-calendar .fc-unthemed tbody,
+.rooms-availability-field-calendar .fc-unthemed td, .fc-unthemed th,
+.rooms-availability-field-calendar .fc-unthemed thead {
   border-color:white;
+}
+
+.rooms-availability-field-calendar .fc-event-container {
+  padding-top: 2px;
+  padding-bottom: 4px;
 }

@@ -10,7 +10,6 @@ Drupal.behaviors.rooms_availability_reference = {
       var cal_id = $(this).siblings('.availability-title').attr('id');
 
       $(this).fullCalendar({
-        ignoreTimezone:false,
         editable:false,
         dayNamesShort:[Drupal.t("Sun"), Drupal.t("Mon"), Drupal.t("Tue"), Drupal.t("Wed"), Drupal.t("Thu"), Drupal.t("Fri"), Drupal.t("Sat")],
         monthNames:[Drupal.t("January"), Drupal.t("February"), Drupal.t("March"), Drupal.t("April"), Drupal.t("May"), Drupal.t("June"), Drupal.t("July"), Drupal.t("August"), Drupal.t("September"), Drupal.t("October"), Drupal.t("November"), Drupal.t("December")],
@@ -31,14 +30,19 @@ Drupal.behaviors.rooms_availability_reference = {
                 events = data['events'];
 
                 for (var index = 0; index < Drupal.settings.roomsAvailabilityRef[cal_id].unitID.length; index++) {
-                  view.calendar.addEventSource(events[Drupal.settings.roomsAvailabilityRef[cal_id].unitID[index]]);
+                  events_array = events[Drupal.settings.roomsAvailabilityRef[cal_id].unitID[index]];
+
+                  for (i in events_array) {
+                    events_array[i].end = moment(events_array[i].end).subtract(1, 'days').format();
+                  }
+                  view.calendar.addEventSource(events_array);
                 }
               }
             });
           }
         },
-        //Remove Time from events
         eventRender: function(event, el) {
+          // Remove Time from events.
           el.find('.fc-time').remove();
 
           // Add a class if the event start it is not "AV" or "N/A".
@@ -52,8 +56,9 @@ Drupal.behaviors.rooms_availability_reference = {
             el.append('<div class="event-end"/>');
             el.find('.event-end').css('border-top-color', this.color);
           }
+          console.log(el);
         },
-        eventAfterRender: function( event, element, view ) {
+        eventAfterRender: function( event, element, view ) { 
           // Event width.
           var width = element.parent().width()
           // Event colspan number.
@@ -62,27 +67,35 @@ Drupal.behaviors.rooms_availability_reference = {
           var cell_width = width/colspan;
           var half_cell_width = cell_width/2;
 
-          // Adding a class to the second row of events to use for theme.
-          element.closest('tbody').find('tr:eq(1) .fc-content').addClass('rooms-calendar-second-row-events');
-
           // Move events between table margins.
           element.css('margin-left', half_cell_width);
-          element.css('margin-right', half_cell_width);
+          element.css('margin-right', -(half_cell_width));
 
           // Calculate width event to add end date triangle.
           width_event = element.children('.fc-content').width();
 
           // Add a margin left to the top triangle.
-          element.children().closest('.event-end').css('margin-left', width_event - 15);
+          element.children().closest('.event-end').css('margin-left', width_event-16);
+
+          if (element.parent().index('td.fc-event-container') == 0 || element.parent().index() == 0) {
+            element.css('margin-left', 0);
+          }
+          if (element.parent().index() == element.parent().parent().children('td.fc-event-container').length - 1) {
+            element.css('margin-right', 0);
+          }
 
           // If the event end in a next row.
-          if(element.hasClass('fc-not-end')) {
+          if (element.hasClass('fc-not-end')) {
             element.css('margin-right', 0);
           }
           // If the event start in a previous row.
-          if(element.hasClass('fc-not-start')) {
+          if (element.hasClass('fc-not-start')) {
+            // Fixes to work well with jquery 1.7.
+            if (colspan == 1) {
+              width_event = 0;
+            }
             element.css('margin-left', 0);
-            element.children().closest('.event-end').css('margin-left', ((colspan - 1) * cell_width) + half_cell_width - 15);
+            element.children().closest('.event-end').css('margin-left', ((colspan - 1) * cell_width) + half_cell_width - 16);
           }
         }
       });

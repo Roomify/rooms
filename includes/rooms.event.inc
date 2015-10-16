@@ -163,7 +163,7 @@ abstract class RoomsEvent implements RoomsEventInterface {
         $ed->setDate($this->startYear(), $i, $this->endDay());
         $events[$i] = $this->createEvent($sd, $ed);
       }
-      else{
+      else {
         $sd->setDate($this->startYear(), $i, 1);
         $ed->setDate($this->startYear(), $i, $months[$i]);
         $events[$i] = $this->createEvent($sd, $ed);
