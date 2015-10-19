@@ -57,28 +57,46 @@ function rooms_hourly_availability_form_rooms_booking_edit_form_alter(&$form, &$
   $form['rooms_date_range']['rooms_start_date']['#date_format'] = 'd/m/Y H:i';
   $form['rooms_date_range']['rooms_end_date']['#date_format'] = 'd/m/Y H:i';
 
+  if (isset($_GET['startdate'])) {
+    $startdate = (is_numeric(check_plain($_GET['startdate']))) ? check_plain($_GET['startdate']) : '';
+    if ($startdate != '') $form['rooms_date_range']['rooms_start_date']['#default_value'] = gmdate('Y-m-d H:i', $startdate);
+  }
+
+  if (isset($_GET['enddate'])) {
+    $enddate = (is_numeric(check_plain($_GET['enddate']))) ? check_plain($_GET['enddate']) : '';
+    if ($enddate != '') $form['rooms_date_range']['rooms_end_date']['#default_value'] = gmdate('Y-m-d H:i', $enddate);
+  }
+
   $form['actions']['submit']['#submit'][] = 'rooms_hourly_availability_form_rooms_booking_edit_form_submit';
 }
 
 function rooms_hourly_availability_form_rooms_booking_edit_form_submit($form, &$form_state) {
   $booking = $form_state['rooms_booking'];
 
-  db_insert('rooms_hourly_availability')
+  db_merge('rooms_hourly_availability')
+    ->key(array('unit_id' => $booking->unit_id, 'start_date' => $booking->start_date, 'end_date' => $booking->end_date))
     ->fields(array(
       'unit_id' => $booking->unit_id,
       'start_date' => $booking->start_date,
       'end_date' => $booking->end_date,
-      'state' => 1,
+      'state' => rooms_availability_assign_id($booking->booking_id, $booking->booking_status),
     ))
     ->execute();
 }
 
+/**
+ *
+ */
 function rooms_hourly_availability_page(RoomsUnit $rooms_unit, $year = '', $month = '') {
   // Set the page title.
   drupal_set_title(t('Edit @unit_name Availability', array('@unit_name' => $rooms_unit->name)));
 
   // Add styles.
   rooms_availability_modal_style();
+
+  drupal_add_library('system', 'drupal.vertical-tabs');
+
+  $openingtime = rooms_hourly_availability_get_opening_time($rooms_unit);
 
   // Get the current page's URL, striped of the year and month args.
   // This allows us to place this page anywhere, including at
@@ -104,7 +122,7 @@ function rooms_hourly_availability_page(RoomsUnit $rooms_unit, $year = '', $mont
       'js' => array(
         $js_file,
         array(
-          'data' => array('roomsHourlyAvailability' => array('roomID' => $rooms_unit->unit_id)),
+          'data' => array('roomsHourlyAvailability' => array('roomID' => $rooms_unit->unit_id, 'openingTime' => $openingtime)),
           'type' => 'setting',
         ),
       ),
@@ -162,6 +180,9 @@ function rooms_hourly_availability_preprocess_rooms_two_month_calendar(&$vars) {
   $vars['current_link'] = l(t('Current'), $current_path, $vars['link_options']);
 }
 
+/**
+ *
+ */
 function rooms_hourly_availability_event($unit, $date, $duration = '1D') {
 
   // If user don't have 'view anonymous availability information' permission.
@@ -173,9 +194,33 @@ function rooms_hourly_availability_event($unit, $date, $duration = '1D') {
   $json_events = array();
   $json_events = rooms_hourly_availability_generate_json($unit, $date, $duration);
 
+  $opening_time = rooms_hourly_availability_get_opening_time($unit);
+  if (!empty($opening_time)) {
+    $start_date = new DateTime(substr($date, 0, 10));
+    $interval = new DateInterval('P1D');
+    $end_date = clone($start_date);
+    $end_date->add(new DateInterval('P' . $duration));
+
+    $period = new DatePeriod($start_date, $interval, $end_date);
+
+    foreach ($period as $dt) {
+      if (in_array($dt->format('w'), $opening_time['dow'])) {
+        $json_events[] = array(
+          'start' => $dt->format('Y-m-d') . 'T' . $opening_time['opening'] . 'Z',
+          'end' => $dt->format('Y-m-d') . 'T' . $opening_time['closing'] . 'Z',
+          'rendering' => 'background',
+          'background' => variable_get('rooms_available_color', '#8BA175'),
+        );
+      }
+    }
+  }
+
   echo drupal_json_encode($json_events);
 }
 
+/**
+ *
+ */
 function rooms_hourly_availability_generate_json($unit, $date, $duration) {
   $json_events  = array();
 
@@ -193,15 +238,206 @@ function rooms_hourly_availability_generate_json($unit, $date, $duration) {
   $results = $query->execute()->fetchAll();
 
   foreach ($results as $result) {
-    $json_events[] = array(
-      'id' => $result->id,
+    $event = array(
+      'id' => $result->state,
       'start' => str_replace(' ', 'T', $result->start_date) . 'Z',
       'end' => str_replace(' ', 'T', $result->end_date) . 'Z',
       'title' => $result->id,
-      'color' => variable_get('rooms_not_available_color', '#CC2727'),
-      'borderColor' => variable_get('rooms_not_available_color', '#CC2727'),
     );
+
+    switch ($result->state) {
+      case ROOMS_NOT_AVAILABLE:
+        $event['color']  = variable_get('rooms_not_available_color', '#CC2727');
+        $event['title'] = variable_get('rooms_not_available_text', 'N/A');
+        break;
+
+      case ROOMS_AVAILABLE:
+        $event['color'] = variable_get('rooms_available_color', '#8BA175');
+        $event['title'] = variable_get('rooms_available_text', 'AV');
+        break;
+
+      case ($result->state < 0):
+        $event['color'] = variable_get('rooms_unconfirmed_booking_color', '#6D8C9C');
+        $event['title'] = variable_get('rooms_unconfirmed_booking_text', 'UNCONF');
+        break;
+
+      default:
+        $event['color'] = '#017eba';
+    }
+
+    // Check if we are dealing with a booking.
+    if ($result->state > 10 || $result->state < -10) {
+      // Get the actual booking id.
+      $booking_id = rooms_availability_return_id($result->state);
+      $booking = rooms_booking_load($booking_id);
+
+      $name = (isset($booking->name) && !empty($booking->name)) ? $booking->name : t('Booking') . ': ' . $booking->booking_id;
+      $event['title'] = $name;
+    }
+
+    $json_events[] = $event;
   }
 
   return $json_events;
+}
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function rooms_hourly_availability_form_rooms_availability_event_manager_form_alter(&$form, &$form_state) {
+  if (isset($form['change_event_status']['#ajax']['callback'])) {
+    $form['change_event_status']['#ajax']['callback'] = 'rooms_hourly_availability_ajax_event_status_change';
+  }
+}
+
+/**
+ *
+ */
+function rooms_hourly_availability_ajax_event_status_change($form, $form_state) {
+  $start_date = $form_state['values']['rooms_start_date']->format('Y-m-d H:i:s');
+  $end_date = $form_state['values']['rooms_end_date']->format('Y-m-d H:i:s');
+  $unit_id = $form_state['values']['unit_id'];
+  $event_id = $form_state['values']['event_id'];
+  $new_event_id = $form_state['values']['change_event_status'];
+
+  // If we have a new event id go ahead and update event.
+  if (($event_id != $new_event_id) && $new_event_id != -1) {
+    db_merge('rooms_hourly_availability')
+    ->key(array('unit_id' => $unit_id, 'start_date' => $start_date, 'end_date' => $end_date))
+    ->fields(array(
+      'unit_id' => $unit_id,
+      'start_date' => $start_date,
+      'end_date' => $end_date,
+      'state' => $new_event_id,
+    ))
+    ->execute();
+
+    $state_options = rooms_unit_state_options();
+    if ($event_id >= -1) {
+      $form['form_wrapper_bottom']['#markup'] = t('Updated event from <strong>@old_status</strong> to <strong>@new_status</strong>.', array('@old_status' => $state_options[$event_id], '@new_status' => $state_options[$new_event_id]));
+    }
+    else {
+      $form['form_wrapper_bottom']['#markup'] = t('New Event state is <strong>@state</strong>.', array('@state' => $state_options[$new_event_id]));
+    }
+  }
+
+  return $form;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function rooms_hourly_availability_form_rooms_unit_type_form_alter(&$form, &$form_state) {
+  $unit_type = $form_state['rooms_unit_type'];
+
+  if (isset($form['additional_settings'])) {
+    $form['additional_settings'] = array(
+      '#type' => 'vertical_tabs',
+      '#weight' => 99,
+    );
+  }
+
+  $form['hourly_availability'] = array(
+    '#type' => 'fieldset',
+    '#group' => 'additional_settings',
+    '#title' => t('Hourly availability'),
+    '#tree' => FALSE,
+    '#weight' => 80,
+  );
+
+  $form['hourly_availability']['enable_hourly_availability'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable hourly availability'),
+    '#default_value' => isset($unit_type->data['hourly_availability']) ? $unit_type->data['hourly_availability'] : NULL,
+  );
+
+  $form['actions']['submit']['#submit'][] = 'rooms_hourly_availability_form_rooms_unit_type_form_submit';
+}
+
+/**
+ *
+ */
+function rooms_hourly_availability_form_rooms_unit_type_form_submit($form, &$form_state) {
+  $form_state['rooms_unit_type']->data['hourly_availability'] = $form_state['values']['enable_hourly_availability'];
+  $form_state['rooms_unit_type']->save();
+
+  if ($form_state['values']['enable_hourly_availability']) {
+    rooms_hourly_availability_add_opening_time_field('rooms_unit', $form_state['rooms_unit_type']->type);
+  }
+}
+
+function rooms_hourly_availability_get_opening_time($rooms_unit) {
+  $openingtime = array();
+  if (isset($rooms_unit->rooms_opening_time[LANGUAGE_NONE][0]['value']) &&
+      isset($rooms_unit->rooms_opening_time[LANGUAGE_NONE][0]['value2'])) {
+
+    $time_format = array(
+      'hour' => 'H',
+      'minute' => 'i',
+      'separator' => ':',
+      'period' => 'none',
+    );
+
+    $openingtime['opening'] = timefield_integer_to_time($time_format, $rooms_unit->rooms_opening_time[LANGUAGE_NONE][0]['value']);
+    $openingtime['closing'] = timefield_integer_to_time($time_format, $rooms_unit->rooms_opening_time[LANGUAGE_NONE][0]['value2']);
+
+    $dow = array();
+    if ($rooms_unit->rooms_opening_time[LANGUAGE_NONE][0]['mon'] == 1) {
+      $dow[] = 1;
+    }
+    if ($rooms_unit->rooms_opening_time[LANGUAGE_NONE][0]['tue'] == 1) {
+      $dow[] = 2;
+    }
+    if ($rooms_unit->rooms_opening_time[LANGUAGE_NONE][0]['wed'] == 1) {
+      $dow[] = 3;
+    }
+    if ($rooms_unit->rooms_opening_time[LANGUAGE_NONE][0]['thu'] == 1) {
+      $dow[] = 4;
+    }
+    if ($rooms_unit->rooms_opening_time[LANGUAGE_NONE][0]['fri'] == 1) {
+      $dow[] = 5;
+    }
+    if ($rooms_unit->rooms_opening_time[LANGUAGE_NONE][0]['sat'] == 1) {
+      $dow[] = 6;
+    }
+    if ($rooms_unit->rooms_opening_time[LANGUAGE_NONE][0]['sun'] == 1) {
+      $dow[] = 7;
+    }
+    $openingtime['dow'] = $dow;
+  }
+
+  return $openingtime;
+}
+
+function rooms_hourly_availability_add_opening_time_field($entity_type, $bundle) {
+  field_info_cache_clear();
+  // Create field ('rooms_opening_time') if not exists.
+  if (field_read_field('rooms_opening_time') === FALSE) {
+    $field = array(
+      'field_name' => 'rooms_opening_time',
+      'type' => 'timefield',
+      'cardinality' => 1,
+      'settings' => array(
+        'totime' => 'required',
+        'weekly_summary' => 1,
+      ),
+    );
+    field_create_field($field);
+  }
+
+  field_cache_clear();
+
+  if (field_read_instance($entity_type, 'rooms_opening_time', $bundle) === FALSE) {
+    // Create the instance on the bundle.
+    $instance = array(
+      'field_name' => 'rooms_opening_time',
+      'entity_type' => $entity_type,
+      'label' => 'Opening time',
+      'bundle' => $bundle,
+      'required' => FALSE,
+      'widget' => array(
+        'type' => 'timefield_standard',
+      ),
+    );
+    field_create_instance($instance);
+  }
 }

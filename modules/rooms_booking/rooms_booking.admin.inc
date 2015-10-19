@@ -384,8 +384,6 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       $selected = $unit->type;
 
       $form_state['values']['unit_type'] = $selected;
-      $form_state['input']['data']['group_size'] = ($unit->max_sleeps <= 1) ? 1 : 2;
-      $form_state['input']['data']['group_size_children'] = 0;
       $form_state['input']['rooms_start_date']['date'] = gmdate('d/m/Y', $startdate);
       $form_state['input']['rooms_end_date']['date'] = gmdate('d/m/Y', $enddate);
       $form_state['values']['rooms_start_date'] = gmdate('Y-m-d', $startdate);
@@ -438,7 +436,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
         $group_size_children = (isset($form_state['input']['data']['group_size_children'])) ? $form_state['input']['data']['group_size_children'] : 0;
         list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
-        $available_units = rooms_booking_edit_form_get_rooms($search_unit_type, $booking, $start_date, $end_date, $form_state['input']['data']['group_size'], $group_size_children, $childrens_age);
+        $available_units = rooms_booking_edit_form_get_rooms($search_unit_type, $booking, $start_date, $end_date);
         if ($available_units == ROOMS_NO_ROOMS) {
           $form['availability_fieldset']['unit_fieldset']['instructions'] = array(
             '#markup' => t('No @unit_type units are available for specified party size on the chosen dates.', array('@unit_type' => $search_unit_type)),
@@ -807,7 +805,7 @@ function rooms_booking_edit_form_get_room_types() {
  * @return array|int
  *   Array containing available units or integer to indicate error code.
  */
-function rooms_booking_edit_form_get_rooms($unit_type, $current_booking, $start_date, $end_date, $group_size = 1, $group_size_children = 0, $children_age = array()) {
+function rooms_booking_edit_form_get_rooms($unit_type, $current_booking, $start_date, $end_date) {
 
   // Set the unit types,
   $unit_types = array($unit_type);
@@ -823,10 +821,10 @@ function rooms_booking_edit_form_get_rooms($unit_type, $current_booking, $start_
   $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', drupal_map_assoc(array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)))));
 
   if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
-    $booking_parameters = array(array('adults' => $group_size, 'children' => $group_size_children, 'childrens_age' => $children_age));
+    $booking_parameters = array(array('adults' => 1, 'children' => 0, 'childrens_age' => array()));
   }
   else {
-    $booking_parameters = array(array('adults' => $group_size, 'children' => $group_size_children));
+    $booking_parameters = array(array('adults' => 1, 'children' => 0));
   }
 
   if (!empty($current_booking->booking_id)) {

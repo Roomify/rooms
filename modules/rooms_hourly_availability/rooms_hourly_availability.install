@@ -51,3 +51,11 @@ function rooms_hourly_availability_schema() {
 
   return $schema;
 }
+
+/**
+ * Implements hook_install().
+ */
+function rooms_hourly_availability_install() {
+  field_info_cache_clear();
+  rooms_hourly_availability_add_opening_time_field('rooms_unit_type', 'rooms_unit_type');
+}

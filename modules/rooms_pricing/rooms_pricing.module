@@ -128,7 +128,6 @@ function rooms_pricing_form_rooms_unit_type_form_alter(&$form, &$form_state) {
  *
  */
 function rooms_pricing_form_rooms_unit_type_form_submit($form, &$form_state) {
-  dpm($form_state['rooms_unit_type']);
   $form_state['rooms_unit_type']->data['pricing_field'] = $form_state['values']['pricing_field'];
   $form_state['rooms_unit_type']->save();
 }

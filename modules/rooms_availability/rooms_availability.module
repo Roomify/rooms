@@ -143,6 +143,8 @@ function rooms_availability_bulk_unit_management($year = '', $month = '', $type 
   // Modal includes and style.
   rooms_availability_modal_style();
 
+  drupal_add_library('system', 'drupal.vertical-tabs');
+
   // If year is not set then give it the current date.
   $year = ($year != '' && is_numeric($year)) ? $year : date('Y', time());
   $month = ($month != '' && is_numeric($month)) ? $month : date('n', time());
@@ -374,6 +376,8 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year = '', $month = '')
 
   // Add styles.
   rooms_availability_modal_style();
+
+  drupal_add_library('system', 'drupal.vertical-tabs');
 
   // Get the current page's URL, striped of the year and month args.
   // This allows us to place this page anywhere, including at
