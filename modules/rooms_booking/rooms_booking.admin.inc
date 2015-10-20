@@ -643,7 +643,8 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
       '#markup' => l(t('Cancel'), 'admin/rooms/bookings', array('attributes' => array('class' => array('ctools-close-modal')))),
       '#weight' => 50,
     );
-  } else {
+  }
+  else {
     $form['actions']['cancel'] = array(
       '#markup' => l(t('Cancel'), 'admin/rooms/bookings'),
       '#weight' => 50,
@@ -940,8 +941,6 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
 
 /**
  * Form API submit callback for the Booking form.
- *
- * @todo remove hard-coded link
  */
 function rooms_booking_edit_form_submit(&$form, &$form_state) {
   // We also need appropriate named variables for start and end date.

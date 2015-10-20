@@ -385,8 +385,6 @@ function rooms_unit_edit_form_validate(&$form, &$form_state) {
 
 /**
  * Form API submit callback for the Unit form.
- *
- * @todo remove hard-coded link
  */
 function rooms_unit_edit_form_submit(&$form, &$form_state) {
   $units = array();
@@ -437,8 +435,6 @@ function rooms_unit_edit_form_submit(&$form, &$form_state) {
 
 /**
  * Form API submit callback for the delete button.
- *
- * @todo Remove hard-coded path
  */
 function rooms_unit_form_submit_delete(&$form, &$form_state) {
   $form_state['redirect'] = 'admin/rooms/units/unit/' . $form_state['rooms_unit']->unit_id . '/delete';
@@ -485,8 +481,6 @@ function rooms_unit_delete_form_submit($form, &$form_state) {
 
 /**
  * Page to add Rooms.
- *
- * @todo Pass this through a proper theme function
  */
 function rooms_unit_add_page() {
   $controller = entity_ui_controller('rooms_unit');

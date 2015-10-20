@@ -18,7 +18,8 @@ Drupal.behaviors.rooms_sticky_booking_legend = {
         if (y >= top) {
           // Fix the legend in place on the page.
           $('.booking-legend').addClass('is-fixed');
-        } else {
+        }
+        else {
           // Otherwise un-fix it.
           $('.booking-legend').removeClass('is-fixed');
         }

@@ -325,9 +325,6 @@ function rooms_booking_manager_enquiry_page_form_validate($form, $form_state) {
 
 /**
  * Submit callback for rooms_booking_manager_enquiry_page_form form.
- *
- * @todo - check that original availability still holds
- * @todo - fix the user ownership of products
  */
 function rooms_booking_manager_enquiry_page_form_submit(&$form, &$form_state) {
   global $language;
@@ -1188,8 +1185,6 @@ function rooms_booking_manager_price_change_callback(&$form, $form_state) {
 
 /**
  * Validation for cart booking form.
- *
- * @todo Evaluate what to do here
  */
 function book_unit_form_validate(&$form, &$form_state) {
 }
@@ -1812,9 +1807,6 @@ function book_units_per_type_form_validate(&$form, &$form_state) {
 
 /**
  * Submit callback for book_units_per_type_form form.
- *
- * @todo - check that original availability still holds
- * @todo - fix the user ownership of products
  */
 function book_units_per_type_form_submit(&$form, &$form_state) {
   module_load_include('inc', 'rooms_booking_manager', 'rooms_booking_manager.commerce');

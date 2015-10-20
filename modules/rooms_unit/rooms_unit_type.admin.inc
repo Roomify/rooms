@@ -15,6 +15,7 @@ class RoomsUnitTypeUIController extends EntityDefaultUIController {
    */
   public function hook_menu() {
     $items = parent::hook_menu();
+
     foreach ($items as &$item) {
       unset($item['access callback']);
       $item['access arguments'] = array('administer rooms_unit_type entities');
@@ -22,6 +23,7 @@ class RoomsUnitTypeUIController extends EntityDefaultUIController {
     $items[$this->path]['description'] = 'Manage unit types, including adding and removing fields and the display of fields.';
     $items[$this->path]['weight'] = '3';
     $items[$this->path]['type'] = MENU_LOCAL_TASK;
+
     return $items;
   }
 }

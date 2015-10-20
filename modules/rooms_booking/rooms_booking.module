@@ -361,8 +361,6 @@ function rooms_booking_entity_info() {
  *
  * We are adding the info about the booking types via a hook to avoid a
  * recursion issue as loading the room types requires the entity info as well.
- *
- * @todo This needs to be improved
  */
 function rooms_booking_entity_info_alter(&$entity_info) {
   foreach (rooms_booking_get_types() as $type => $info) {
@@ -754,7 +752,6 @@ function rooms_booking_ids($conditions = array()) {
 
 /**
  * Sets up content to show an individual booking.
- * @todo - get rid of drupal_set_title();
  */
 function rooms_booking_page_view($booking, $view_mode = 'full') {
   $controller = entity_get_controller('rooms_booking');

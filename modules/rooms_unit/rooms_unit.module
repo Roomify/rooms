@@ -109,8 +109,6 @@ function rooms_unit_entity_info() {
  *
  * We are adding the info about the unit types via a hook to avoid a recursion
  * issue as loading the room types requires the entity info as well.
- *
- * @todo This needs to be improved
  */
 function rooms_unit_entity_info_alter(&$entity_info) {
   foreach (rooms_unit_get_types() as $type => $info) {
@@ -457,8 +455,6 @@ function rooms_unit_page_title(RoomsUnit $unit) {
 
 /**
  * Gets a list of Units keyed by id and name in value.
- *
- * @todo - double check utility of this and perhaps use rooms_unit_load_multiple
  */
 function rooms_unit_ids($bundle = '') {
   $units = array();
@@ -485,12 +481,13 @@ function rooms_unit_ids($bundle = '') {
 
 /**
  * Sets up content to show an individual unit.
- * @todo - get rid of drupal_set_title();
  */
 function rooms_unit_page_view($unit, $view_mode = 'full') {
   $controller = entity_get_controller('rooms_unit');
   $content = $controller->view(array($unit->unit_id => $unit), $view_mode);
+
   drupal_set_title($unit->name);
+
   return $content;
 }
 
@@ -585,7 +582,6 @@ function rooms_unit_state_options() {
 }
 
 
-
 /**
  * The class used for room entities
  */
@@ -665,6 +661,7 @@ class RoomsUnitController extends EntityAPIController {
     );
 
     $unit = parent::create($values);
+
     return $unit;
   }
 
@@ -705,6 +702,7 @@ class RoomsUnitTypeController extends EntityAPIControllerExportable {
       'data' => '',
     );
     $unit_type = parent::create($values);
+
     return $unit_type;
   }
 

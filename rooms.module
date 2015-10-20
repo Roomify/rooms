@@ -799,7 +799,8 @@ function rooms_form_start_end_dates_validate($form, &$form_state) {
   // In case that this value is set trigger the today greater validation.
   if (isset($form_state['single_day_bookings'])) {
     $single_day_bookings = TRUE;
-  } else {
+  }
+  else {
     // Set the form state so that we can carry the value over to the results page
     $form_state['single_day_bookings'] = $single_day_bookings;
   }
@@ -862,7 +863,7 @@ function rooms_check_dates_validity(DateTime $start_date, DateTime $end_date, $t
   // just seconds
   $d1 = new DateTime();
   $d2 = new DateTime();
-  $d2->add(new DateInterval('PT'.variable_get('rooms_advance_bookings_period', 15552000).'S'));
+  $d2->add(new DateInterval('PT' . variable_get('rooms_advance_bookings_period', 15552000).'S'));
   $advanced_bookings_interval = $d2->diff($d1);
 
   if (($booking_interval->format('%a') > $advanced_bookings_interval->format('%a')) && (!user_access('book in advance without limitation'))) {

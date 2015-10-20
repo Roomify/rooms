@@ -86,10 +86,5 @@ function hook_rooms_entity_access_condition_alter() {
  * @return mixed
  */
 function hook_rooms_string_alter(&$string_suggestions, $context) {
-  if ($context['#purpose'] == 'rooms_create_line_item') {
-
-    // Alter the line item label to add additional information about the unit.
-    $string_suggestions[] = $string_suggestions[0] . ' maximum guests: ' .
-                            $context['#data']['unit']['unit']->max_sleeps;
-  }
+  // No example.
 }
