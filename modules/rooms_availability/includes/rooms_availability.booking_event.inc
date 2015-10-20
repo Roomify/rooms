@@ -121,6 +121,11 @@ class BookingEvent extends RoomsEvent implements BookingEventInterface {
         $event['title'] = variable_get('rooms_on_request_text', 'ON-REQ');
         break;
 
+      case ROOMS_HOURLY_BOOKED:
+        $event['color'] = '#017eba';
+        $event['title'] = 'Hourly bookings';
+        break;
+
       case ($this->id < 0):
         $event['color'] = variable_get('rooms_unconfirmed_booking_color', '#6D8C9C');
         $event['title'] = variable_get('rooms_unconfirmed_booking_text', 'UNCONF');

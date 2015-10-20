@@ -14,6 +14,8 @@ define ('ROOMS_AVAILABLE', 1);
 define ('ROOMS_ON_REQUEST', 2);
 define ('ROOMS_ANON_BOOKED', 3);
 
+define ('ROOMS_HOURLY_BOOKED', 5);
+
 define ('ROOMS_UNCONFIRMED_BOOKINGS', -1);
 
 /**

@@ -6,13 +6,11 @@
  * FullCalendar plugin.
  */
 
-define ('ROOMS_HOURLY_BOOKED', 5);
-
 /**
  * Implements hook_menu().
  */
 function rooms_hourly_availability_menu() {
-   $items = array();
+  $items = array();
 
   $items['rooms/units/unit/%rooms_unit/day-availability/json/%'] = array(
     'title' => 'Availability Event',
