@@ -626,7 +626,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     '#submit' => $submit + array('rooms_booking_edit_form_submit'),
   );
 
-  if (!empty($booking->name) && rooms_booking_access('delete', $booking)) {
+  if (!isset($booking->is_new) && rooms_booking_access('delete', $booking)) {
     $form['actions']['delete'] = array(
       '#type' => 'submit',
       '#value' => t('Delete Booking'),
@@ -1037,7 +1037,7 @@ function rooms_booking_delete_form($form, &$form_state, $booking) {
   $form['#submit'][] = 'rooms_booking_delete_form_submit';
 
   $form = confirm_form($form,
-    t('Are you sure you want to delete Booking %name?', array('%name' => $booking->name)),
+    t('Are you sure you want to delete Booking ?'),
     'admin/rooms/bookings/booking',
     '<p>' . t('This action cannot be undone.') . '</p>',
     t('Delete'),
@@ -1056,8 +1056,8 @@ function rooms_booking_delete_form_submit($form, &$form_state) {
 
   rooms_booking_delete($booking);
 
-  drupal_set_message(t('The booking %name has been deleted.', array('%name' => $booking->name)));
-  watchdog('rooms', 'Deleted booking %name.', array('%name' => $booking->name));
+  drupal_set_message(t('The booking has been deleted.'));
+  watchdog('rooms', 'Deleted booking %booking_id.', array('%booking_id' => $booking->booking_id));
 
   $form_state['redirect'] = 'admin/rooms/bookings';
 }

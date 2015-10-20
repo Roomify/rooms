@@ -19,6 +19,17 @@ Drupal.behaviors.rooms_hourly_availability = {
 
     openingTime = Drupal.settings.roomsHourlyAvailability.openingTime;
 
+    if (openingTime.length === 0) {
+      businessHours = false;
+    }
+    else {
+      businessHours = {
+        start: openingTime.opening,
+        end: openingTime.closing,
+        dow: openingTime.dow
+      };
+    }
+
     // Second month is the next one obviously unless it is 11 in which case we need to move a year ahead
     if (currentMonth == 11) {
       month2 = 0;
@@ -59,15 +70,16 @@ Drupal.behaviors.rooms_hourly_availability = {
           center: 'month, agendaWeek, agendaDay',
           right: 'today, prev, next',
         },
-        businessHours:{
-          start: openingTime.opening,
-          end: openingTime.closing,
-          dow: openingTime.dow
+        businessHours: businessHours,
+        selectConstraint: "businessHours",
+        selectOverlap: function(event) {
+          // allowing selections over background events but not allowing selections over any other types of events
+          return event.rendering === 'background';
         },
         windowResize: function(view) {
           $(this).fullCalendar('refetchEvents');
         },
-        viewRender: function(view) {
+        viewRender: function(view, element) {
           view.calendar.removeEvents();
 
           if (view.name == 'month') {
@@ -120,7 +132,7 @@ Drupal.behaviors.rooms_hourly_availability = {
           // Open the modal for edit
           Drupal.RoomsHourlyAvailability.Modal(view, calEvent.id, sd, ed);
         },
-        select: function(start, end, allDay) {
+        select: function(start, end, jsEvent, view) {
           var ed = end.subtract(1, 'days');
           var sd = start.unix();
           ed = end.unix();

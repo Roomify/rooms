@@ -727,7 +727,7 @@ function rooms_booking_uri(RoomsBooking $booking) {
  * Menu title callback for showing individual entities.
  */
 function rooms_booking_page_title(RoomsBooking $booking) {
-  return $booking->name;
+  return '';
 }
 
 /**
@@ -759,7 +759,6 @@ function rooms_booking_ids($conditions = array()) {
 function rooms_booking_page_view($booking, $view_mode = 'full') {
   $controller = entity_get_controller('rooms_booking');
   $content = $controller->view(array($booking->booking_id => $booking));
-  drupal_set_title($booking->name);
   return $content;
 }
 
@@ -913,7 +912,7 @@ class RoomsBooking extends Entity {
   }
 
   protected function defaultLabel() {
-    return $this->name;
+    return '';
   }
 
   protected function defaultUri() {

@@ -19,7 +19,7 @@ Drupal.behaviors.rooms_availability_reference = {
           center: 'title',
           right: 'prev, next'
         },
-        viewRender: function(view) {
+        viewRender: function(view, element) {
           if (view.name == 'month') {
             view.calendar.removeEvents();
 
@@ -58,7 +58,7 @@ Drupal.behaviors.rooms_availability_reference = {
           }
           console.log(el);
         },
-        eventAfterRender: function( event, element, view ) { 
+        eventAfterRender: function(event, element, view) { 
           // Event width.
           var width = element.parent().width()
           // Event colspan number.

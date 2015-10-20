@@ -99,7 +99,7 @@ Drupal.behaviors.roomsAvailability = {
           // Open the modal for edit
           Drupal.RoomsAvailability.Modal(view, unit_id, calEvent.id, sd, ed);
         },
-        select: function(start, end, allDay) {
+        select: function(start, end, jsEvent, view) {
           var ed = end.subtract(1, 'days');
           var sd = start.unix();
           var ed = end.unix();
@@ -122,7 +122,7 @@ Drupal.behaviors.roomsAvailability = {
             el.find('.event-end').css('border-top-color', this.color);
           }
         },
-        eventAfterRender: function( event, element, view ) {
+        eventAfterRender: function(event, element, view) {
           // Event width.
           var width = element.parent().width()
           // Event colspan number.

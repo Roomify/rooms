@@ -91,7 +91,7 @@ Drupal.behaviors.roomsAvailability = {
           // Open the modal for edit
           Drupal.RoomsAvailability.Modal(view, unit_id, calEvent.id, sd, ed);
         },
-        select: function(start, end, allDay) {
+        select: function(start, end, jsEvent, view) {
           var ed = end.subtract(1, 'days');
           var sd = start.unix();
           var ed = end.unix();

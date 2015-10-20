@@ -95,14 +95,7 @@ class BookingEvent extends RoomsEvent implements BookingEventInterface {
       $booking_id = rooms_availability_return_id($this->id);
       $booking = rooms_booking_load($booking_id);
       if ($style == ROOMS_AVAILABILITY_ADMIN_STYLE) {
-        $name = (isset($booking->name) && !empty($booking->name)) ? $booking->name : t('Booking') . ': ' . $booking->booking_id;
-        $interval = $this->diff();
-        if ((strlen($name) > 7) && ($interval->d < 1)) {
-          $event['title'] = substr($name, 0, 6) . '...';
-        }
-        else {
-          $event['title'] = $name;
-        }
+        $event['title'] = t('Booking') . ': ' . $booking->booking_id;
       }
       elseif ($style == ROOMS_AVAILABILITY_GENERIC_STYLE) {
         $this->id = ROOMS_NOT_AVAILABLE;

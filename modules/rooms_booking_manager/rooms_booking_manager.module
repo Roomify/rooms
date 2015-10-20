@@ -2100,7 +2100,6 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
         // Load the unit to get its type.
         $unit = rooms_unit_load($booking->unit_id);
         $booking->unit_type = $unit->type;
-        $booking->name = $profile->commerce_customer_address[LANGUAGE_NONE][0]['name_line'];
 
         if (isset($line_item->rooms_booking_options[LANGUAGE_NONE])) {
           foreach ($line_item->rooms_booking_options[LANGUAGE_NONE] as $option) {
