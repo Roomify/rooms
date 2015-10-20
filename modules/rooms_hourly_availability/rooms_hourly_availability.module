@@ -221,7 +221,7 @@ function rooms_hourly_availability_form_rooms_booking_edit_form_validate(&$form,
 }
 
 /**
- *
+ * Form API submit callback for the booking form.
  */
 function rooms_hourly_availability_form_rooms_booking_edit_form_submit($form, &$form_state) {
   $booking = $form_state['rooms_booking'];
@@ -247,7 +247,8 @@ function rooms_hourly_availability_form_rooms_booking_edit_form_submit($form, &$
 }
 
 /**
- *
+ * Callback for admin/rooms/units/unit/%unit/availability - builds availability
+ * page by adding calendar and pulling events from availability table.
  */
 function rooms_hourly_availability_page(RoomsUnit $rooms_unit, $year = '', $month = '') {
   $rooms_unit_type = rooms_unit_type_load($rooms_unit->type);
@@ -349,7 +350,7 @@ function rooms_hourly_availability_preprocess_rooms_two_month_calendar(&$vars) {
 }
 
 /**
- *
+ * Displays the necessary json for the date range provided.
  */
 function rooms_hourly_availability_event($unit, $date, $duration = '1D') {
 
@@ -397,7 +398,7 @@ function rooms_hourly_availability_event($unit, $date, $duration = '1D') {
 }
 
 /**
- *
+ * Generates json based on date range provided.
  */
 function rooms_hourly_availability_generate_json($unit, $date, $duration) {
   $json_events  = array();
@@ -496,7 +497,7 @@ function rooms_hourly_availability_form_rooms_availability_event_manager_form_al
 }
 
 /**
- *
+ * The callback for the change_event_status widget of the event manager form.
  */
 function rooms_hourly_availability_ajax_event_status_change($form, $form_state) {
   $start_date = $form_state['values']['rooms_start_date']->format('Y-m-d H:i:s');
@@ -560,7 +561,7 @@ function rooms_hourly_availability_form_rooms_booking_type_form_alter(&$form, &$
 }
 
 /**
- *
+ * Form API submit callback for the booking type form.
  */
 function rooms_hourly_availability_form_rooms_booking_type_form_submit($form, &$form_state) {
   $form_state['rooms_booking_type']->data['hourly_booking'] = $form_state['values']['enable_hourly_booking'];
@@ -598,7 +599,7 @@ function rooms_hourly_availability_form_rooms_unit_type_form_alter(&$form, &$for
 }
 
 /**
- *
+ * Form API submit callback for the unit type form.
  */
 function rooms_hourly_availability_form_rooms_unit_type_form_submit($form, &$form_state) {
   $form_state['rooms_unit_type']->data['hourly_availability'] = $form_state['values']['enable_hourly_availability'];
@@ -609,6 +610,13 @@ function rooms_hourly_availability_form_rooms_unit_type_form_submit($form, &$for
   }
 }
 
+/**
+ * Get opening time.
+ *
+ * @param RoomsUnit $rooms_unit
+ *
+ * @return array
+ */
 function rooms_hourly_availability_get_opening_time($rooms_unit) {
   $openingtime = array();
   if (isset($rooms_unit->rooms_opening_time[LANGUAGE_NONE][0]['value']) &&
@@ -653,7 +661,7 @@ function rooms_hourly_availability_get_opening_time($rooms_unit) {
 }
 
 /**
- *
+ * Add the rooms_opening_time field.
  */
 function rooms_hourly_availability_add_opening_time_field($entity_type, $bundle) {
   field_info_cache_clear();

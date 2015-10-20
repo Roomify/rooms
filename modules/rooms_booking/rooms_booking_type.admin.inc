@@ -72,7 +72,7 @@ function rooms_booking_type_form($form, &$form_state, $booking_type, $op = 'edit
 }
 
 /**
- * Form API submit callback for the type form.
+ * Form API submit callback for the booking type form.
  */
 function rooms_booking_type_form_submit(&$form, &$form_state) {
   $booking_type = entity_ui_form_submit_build_entity($form, $form_state);

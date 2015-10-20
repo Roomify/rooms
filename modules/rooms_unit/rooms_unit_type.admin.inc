@@ -116,7 +116,7 @@ function rooms_unit_type_form_validate(&$form, &$form_state) {
 }
 
 /**
- * Form API submit callback for the type form.
+ * Form API submit callback for the unit type form.
  */
 function rooms_unit_type_form_submit($form, &$form_state) {
   $unit_type = entity_ui_form_submit_build_entity($form, $form_state);
