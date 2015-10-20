@@ -48,9 +48,10 @@ class AvailabilityAgentHourlyFilter extends AvailabilityAgentFilterBase {
       ->propertyCondition('bookable', 1);
 
     // Execute the query and collect the results.
-    $results = $query->execute();
+    $rooms_units = $query->execute();
 
-    foreach ($results['rooms_unit'] as $key => $unit) {
+    $results = array();
+    foreach ($rooms_units['rooms_unit'] as $key => $unit) {
       if (!in_array($unit->unit_id, $not_available_units)) {
         $rc = new UnitCalendar($unit->unit_id);
 

@@ -386,7 +386,7 @@ function rooms_hourly_availability_event($unit, $date, $duration = '1D') {
     foreach ($period as $dt) {
       $json_events[] = array(
         'start' => $dt->format('Y-m-d') . 'T00:00:00Z',
-        'end' => $dt->format('Y-m-d') . 'T23:59:59Z',
+        'end' => $dt->format('Y-m-d') . 'T24:00:00Z',
         'rendering' => 'background',
         'background' => variable_get('rooms_available_color', '#8BA175'),
       );
@@ -463,9 +463,35 @@ function rooms_hourly_availability_generate_json($unit, $date, $duration) {
  */
 function rooms_hourly_availability_form_rooms_availability_event_manager_form_alter(&$form, &$form_state) {
   if (isset($form['change_event_status']['#ajax']['callback'])) {
-    $form['change_event_status']['#ajax']['callback'] = 'rooms_hourly_availability_ajax_event_status_change';
+    $unit = rooms_unit_load($form['unit_id']['#value']);
 
-    $form['event_details']['#markup'] = t('Duration: @startdate to @enddate', array('@startdate' => $form['rooms_start_date']['#value']->format('Y-m-d H:i'), '@enddate' => $form['rooms_end_date']['#value']->format('Y-m-d H:i')));
+    $unit_type = rooms_unit_type_load($unit->type);
+
+    if (isset($unit_type->data['hourly_availability']) && $unit_type->data['hourly_availability']) {
+      $start_date = $form['rooms_start_date']['#value'];
+      $end_date = $form['rooms_end_date']['#value'];
+
+      $form['change_event_status']['#ajax']['callback'] = 'rooms_hourly_availability_ajax_event_status_change';
+
+      $form['event_details']['#markup'] = t('Duration: @startdate to @enddate', array('@startdate' => $start_date->format('Y-m-d H:i'), '@enddate' => $end_date->format('Y-m-d H:i')));
+
+      $booking_types = rooms_booking_get_types();
+
+      foreach ($booking_types as $type) {
+        if (!(isset($type->data['hourly_booking']) && $type->data['hourly_booking'])) {
+          unset($form['order']['order_link'][$type->type]);
+        }
+      }
+    }
+    else {
+      $booking_types = rooms_booking_get_types();
+
+      foreach ($booking_types as $type) {
+        if (isset($type->data['hourly_booking']) && $type->data['hourly_booking']) {
+          unset($form['order']['order_link'][$type->type]);
+        }
+      }
+    }
   }
 }
 

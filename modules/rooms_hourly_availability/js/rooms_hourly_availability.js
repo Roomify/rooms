@@ -20,7 +20,11 @@ Drupal.behaviors.rooms_hourly_availability = {
     openingTime = Drupal.settings.roomsHourlyAvailability.openingTime;
 
     if (openingTime.length === 0) {
-      businessHours = false;
+      businessHours = {
+        start: '00:00',
+        end: '24:00',
+        dow: [0, 1, 2, 3, 4, 5, 6],
+      };
     }
     else {
       businessHours = {
