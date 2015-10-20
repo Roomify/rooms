@@ -90,6 +90,9 @@ Drupal.behaviors.rooms_hourly_availability = {
                 events = data['events'];
 
                 for (i in events[unit_id]) {
+                  if (events[unit_id][i].title == '5') {
+                    events[unit_id][i].title = 'Hourly booked';
+                  }
                   events[unit_id][i].end = moment(events[unit_id][i].end).subtract(1, 'days').format();
                 }
 

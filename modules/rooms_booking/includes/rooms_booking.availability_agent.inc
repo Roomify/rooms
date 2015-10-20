@@ -208,13 +208,6 @@ class AvailabilityAgent {
         $adults = 0;
         $children = 0;
 
-        if (isset($parameter['adults'])) {
-          $adults = $parameter['adults'];
-        }
-        if (isset($parameter['children'])) {
-          $children = $parameter['children'];
-        }
-
         $this->rooms_results[$key] = $this->applyAvailabilityFilter(array(), $adults, $children, $confirmed);
       }
 
@@ -358,14 +351,7 @@ class AvailabilityAgent {
 
         $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
 
-        if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
-          $price_log = $price_calendar->calculatePrice($this->start_date,
-            $this->end_date, $this->booking_parameters[0]['adults'], $this->booking_parameters[0]['children'], $this->booking_parameters[0]['childrens_age']);
-        }
-        else {
-          $price_log = $price_calendar->calculatePrice($this->start_date,
-            $this->end_date);
-        }
+        $price_log = $price_calendar->calculatePrice($this->start_date, $this->end_date);
         $full_price = $price_log['full_price'];
 
         $units[$unit->type][$full_price][$unit->unit_id]['unit'] = $unit;

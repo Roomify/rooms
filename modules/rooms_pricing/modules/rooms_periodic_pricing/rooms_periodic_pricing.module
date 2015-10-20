@@ -175,12 +175,7 @@ function rooms_periodic_pricing_rooms_price_modifier_alter(&$price_modifiers, $b
 
       $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
 
-      if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON && count($booking_parameters) == 1 && isset($booking_parameters[0]) && is_array($booking_parameters)) {
-        $price_log = $price_calendar->calculatePrice($start_date, $end_date, $booking_parameters[0]['adults'], $booking_parameters[0]['children'], $booking_parameters[0]['childrens_age']);
-      }
-      else {
-        $price_log = $price_calendar->calculatePrice($start_date, $end_date);
-      }
+      $price_log = $price_calendar->calculatePrice($start_date, $end_date);
 
       $price_more_days = $price_log['full_price'];
     }
@@ -220,12 +215,7 @@ function rooms_periodic_pricing_rooms_price_modifier_alter(&$price_modifiers, $b
 
       $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
 
-      if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON && count($booking_parameters) == 1 && isset($booking_parameters[0]) && is_array($booking_parameters)) {
-        $price_log = $price_calendar->calculatePrice($start_date, $end_date, $booking_parameters[0]['adults'], $booking_parameters[0]['children'], $booking_parameters[0]['childrens_age']);
-      }
-      else {
-        $price_log = $price_calendar->calculatePrice($start_date, $end_date);
-      }
+      $price_log = $price_calendar->calculatePrice($start_date, $end_date);
 
       $price_more_days = $price_log['full_price'];
     }

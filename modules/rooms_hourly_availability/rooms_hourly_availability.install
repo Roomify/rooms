@@ -58,4 +58,26 @@ function rooms_hourly_availability_schema() {
 function rooms_hourly_availability_install() {
   field_info_cache_clear();
   rooms_hourly_availability_add_opening_time_field('rooms_unit_type', 'rooms_unit_type');
+
+  // Create the Hourly booking type.
+  $booking = new RoomsBookingType(array(
+    'label' => 'Hourly Booking',
+    'type' => 'hourly_booking',
+    'data' => array('hourly_booking' => 1),
+  ));
+  rooms_booking_type_save($booking);
+
+  // Create the Full day booking type.
+  $booking_type = rooms_booking_type_load('standard_booking');
+  if ($booking_type === FALSE) {
+    $booking = new RoomsBookingType(array(
+      'label' => 'Full day booking',
+      'type' => 'standard_booking',
+    ));
+    rooms_booking_type_save($booking);
+  }
+  else {
+    $booking_type->label = 'Full day booking';
+    rooms_booking_type_save($booking_type);
+  }
 }

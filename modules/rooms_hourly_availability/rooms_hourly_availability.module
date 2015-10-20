@@ -65,23 +65,161 @@ function rooms_hourly_availability_entity_delete($entity, $type) {
 }
 
 /**
+ * Implements hook_ctools_plugin_directory().
+ */
+function rooms_hourly_availability_ctools_plugin_directory($module, $plugin) {
+  if (($module == 'rooms_booking') && ($plugin == 'availabilityagent_filter')) {
+    return 'plugins';
+  }
+}
+
+/**
+ * Implements hook_views_default_views_alter().
+ */
+function rooms_hourly_availability_views_default_views_alter(&$views) {
+  if (isset($views['bookings'])) {
+    $handler =& $views['bookings']->display['default']->handler;
+
+    $handler->display->display_options['fields']['start_date']['custom_date_format'] = 'd-m-Y H:i';
+    $handler->display->display_options['fields']['end_date']['custom_date_format'] = 'd-m-Y H:i';
+  }
+}
+
+/**
  * Implements hook_form_FORM_ID_alter().
  */
 function rooms_hourly_availability_form_rooms_booking_edit_form_alter(&$form, &$form_state) {
-  $form['rooms_date_range']['rooms_start_date']['#date_format'] = 'd/m/Y H:i';
-  $form['rooms_date_range']['rooms_end_date']['#date_format'] = 'd/m/Y H:i';
+  $booking_type = rooms_booking_type_load($form_state['rooms_booking']->type);
 
-  if (isset($_GET['startdate'])) {
-    $startdate = (is_numeric(check_plain($_GET['startdate']))) ? check_plain($_GET['startdate']) : '';
-    if ($startdate != '') $form['rooms_date_range']['rooms_start_date']['#default_value'] = gmdate('Y-m-d H:i', $startdate);
+  if (isset($booking_type->data['hourly_booking']) && $booking_type->data['hourly_booking']) {
+    $form['rooms_date_range']['rooms_start_date']['#date_format'] = 'd/m/Y H:i';
+    $form['rooms_date_range']['rooms_end_date']['#date_format'] = 'd/m/Y H:i';
+
+    if (isset($_GET['startdate'])) {
+      $startdate = (is_numeric(check_plain($_GET['startdate']))) ? check_plain($_GET['startdate']) : '';
+      if ($startdate != '') $form['rooms_date_range']['rooms_start_date']['#default_value'] = gmdate('Y-m-d H:i', $startdate);
+    }
+
+    if (isset($_GET['enddate'])) {
+      $enddate = (is_numeric(check_plain($_GET['enddate']))) ? check_plain($_GET['enddate']) : '';
+      if ($enddate != '') $form['rooms_date_range']['rooms_end_date']['#default_value'] = gmdate('Y-m-d H:i', $enddate);
+    }
+
+    $form['actions']['submit']['#submit'][] = 'rooms_hourly_availability_form_rooms_booking_edit_form_submit';
+
+    if (($key = array_search('rooms_booking_edit_form_validate', $form['#validate'])) !== FALSE) {
+      unset($form['#validate'][$key]);
+    }
+    $form['#validate'][] = 'rooms_hourly_availability_form_rooms_booking_edit_form_validate';
+
+    // Display only types of units setted as "Hourly booking".
+    if (isset($form['availability_fieldset']['unit_type']['#options'])) {
+      foreach ($form['availability_fieldset']['unit_type']['#options'] as $type => $name) {
+        $unit_type = rooms_unit_type_load($type);
+        if (!(isset($unit_type->data['hourly_availability']) && $unit_type->data['hourly_availability'])) {
+          unset($form['availability_fieldset']['unit_type']['#options'][$type]);
+        }
+      }
+    }
+  }
+  else {
+    // Display only types of units setted as "Full day booking".
+    if (isset($form['availability_fieldset']['unit_type']['#options'])) {
+      foreach ($form['availability_fieldset']['unit_type']['#options'] as $type => $name) {
+        $unit_type = rooms_unit_type_load($type);
+        if (isset($unit_type->data['hourly_availability']) && $unit_type->data['hourly_availability']) {
+          unset($form['availability_fieldset']['unit_type']['#options'][$type]);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Form API validate callback for the booking form.
+ */
+function rooms_hourly_availability_form_rooms_booking_edit_form_validate(&$form, &$form_state) {
+  $booking = $form_state['rooms_booking'];
+  list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
+
+  if ($start_date && $end_date) {
+    // Convert input format to the same used in the stored dates.
+    $input_start_date = $start_date->format('Y-m-d');
+    $input_end_date = $end_date->format('Y-m-d');
+    // If stored dates differ from input dates check that price was re-assigned.
+    if (isset($booking->start_date) && isset($booking->end_date)) {
+      if ($input_start_date != $booking->start_date || $input_end_date != $booking->end_date) {
+        if (!isset($form_state['values']['unit_id']) || !is_numeric($form_state['values']['unit_id'])) {
+          form_set_error('availability_fieldset', t('A unit must be re-assigned for this booking.'));
+        }
+      }
+    }
   }
 
-  if (isset($_GET['enddate'])) {
-    $enddate = (is_numeric(check_plain($_GET['enddate']))) ? check_plain($_GET['enddate']) : '';
-    if ($enddate != '') $form['rooms_date_range']['rooms_end_date']['#default_value'] = gmdate('Y-m-d H:i', $enddate);
+  // Check if unit assigned.
+  if ((!isset($form_state['values']['unit_id'])) || ($form_state['values']['unit_id'] == '')) {
+    form_set_error('availability_fieldset', t('A unit has not been assigned for this booking.'));
+  }
+  elseif ((isset($form_state['values']['unit_id'])) && ($form_state['values']['unit_id'] == '')) {
+    form_set_error('availability_fieldset', t('A unit has not been assigned for this booking.'));
   }
 
-  $form['actions']['submit']['#submit'][] = 'rooms_hourly_availability_form_rooms_booking_edit_form_submit';
+  $booking = $form_state['rooms_booking'];
+  if (isset($booking->unit_id)) {
+    $new_unit_id = $booking->unit_id;
+    if (isset($form_state['values']['unit_id'])) {
+      $new_unit_id = $form_state['values']['unit_id'];
+    }
+
+    if ($new_unit_id == $booking->unit_id) {
+      // We are going to be updating the event. So the removing the old event.
+      if (($booking->unit_id != 0) && $start_date && $end_date) {
+        // Create a calendar.
+        $uc = new UnitCalendar($booking->unit_id);
+
+        $adjusted_end_date = clone($end_date);
+        $adjusted_end_date->modify('-1 day');
+
+        // Create an event representing the event to remove.
+        $event_id = rooms_availability_assign_id($booking->booking_id, $booking->booking_status);
+        $be = new BookingEvent($booking->unit_id, $event_id, $start_date, $end_date);
+
+        // Check if a locked event is blocking the update.
+        $states_confirmed = $uc->getStates($start_date, $adjusted_end_date);
+
+        $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', drupal_map_assoc(array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)))));
+        $valid_states = array_merge($valid_states, array(ROOMS_UNCONFIRMED_BOOKINGS, ROOMS_HOURLY_BOOKED, $be->id));
+
+        $state_diff_confirmed = array_diff($states_confirmed, $valid_states);
+
+        if (count($state_diff_confirmed) > 0) {
+          $date1 = new DateTime($form['rooms_date_range']['rooms_start_date']['#default_value']);
+          $date2 = new DateTime($form['rooms_date_range']['rooms_end_date']['#default_value']);
+
+          $form['rooms_date_range']['rooms_start_date']['date']['#value'] = $date1->format($form['rooms_date_range']['rooms_start_date']['#date_format']);
+          $form['rooms_date_range']['rooms_end_date']['date']['#value'] = $date2->format($form['rooms_date_range']['rooms_end_date']['#date_format']);
+
+          form_set_error('date_range', t('Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period.'));
+        }
+
+        // Check if this booking overlap with an unconfirmed booking.
+        $states_unconfirmed = $uc->getStates($start_date, $adjusted_end_date, TRUE);
+
+        $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', drupal_map_assoc(array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)))));
+        $valid_states = array_merge($valid_states, array(ROOMS_HOURLY_BOOKED, $be->id));
+
+        $state_diff_unconfirmed = array_diff($states_unconfirmed, $valid_states);
+
+        if (count($state_diff_unconfirmed) > 0) {
+          $booking_id = rooms_availability_return_id(array_pop($state_diff_unconfirmed));
+          form_set_error('date_range', t('Change of dates leads to an overlap with an unconfirmed booking, please resolve issue with booking !booking_link first.', array('!booking_link' => l($booking_id, 'admin/rooms/bookings/booking/' . $booking_id . '/edit'))));
+        }
+      }
+    }
+  }
+
+  // Notify field widgets to validate their data.
+  field_attach_form_validate('rooms_booking', $booking, $form, $form_state);
 }
 
 /**
@@ -90,15 +228,24 @@ function rooms_hourly_availability_form_rooms_booking_edit_form_alter(&$form, &$
 function rooms_hourly_availability_form_rooms_booking_edit_form_submit($form, &$form_state) {
   $booking = $form_state['rooms_booking'];
 
+  $state = rooms_availability_assign_id($booking->booking_id, $booking->booking_status);
+
   db_merge('rooms_hourly_availability')
-    ->key(array('unit_id' => $booking->unit_id, 'start_date' => $booking->start_date, 'end_date' => $booking->end_date))
+    ->key(array('state' => $state))
     ->fields(array(
       'unit_id' => $booking->unit_id,
       'start_date' => $booking->start_date,
       'end_date' => $booking->end_date,
-      'state' => rooms_availability_assign_id($booking->booking_id, $booking->booking_status),
+      'state' => $state,
     ))
     ->execute();
+
+  // Create an event.
+  $be = new BookingEvent($booking->unit_id, ROOMS_HOURLY_BOOKED, new DateTime($booking->start_date), new DateTime($booking->end_date));
+
+  // Create UnitCalendar.
+  $rc = new UnitCalendar($booking->unit_id);
+  $responses = $rc->updateCalendar(array($be));
 }
 
 /**
@@ -361,10 +508,48 @@ function rooms_hourly_availability_ajax_event_status_change($form, $form_state) 
 /**
  * Implements hook_form_FORM_ID_alter().
  */
+function rooms_hourly_availability_form_rooms_booking_type_form_alter(&$form, &$form_state) {
+  $booking_type = $form_state['rooms_booking_type'];
+
+  if (!isset($form['additional_settings'])) {
+    $form['additional_settings'] = array(
+      '#type' => 'vertical_tabs',
+      '#weight' => 99,
+    );
+  }
+
+  $form['hourly_booking'] = array(
+    '#type' => 'fieldset',
+    '#group' => 'additional_settings',
+    '#title' => t('Hourly booking'),
+    '#tree' => FALSE,
+    '#weight' => 80,
+  );
+
+  $form['hourly_booking']['enable_hourly_booking'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable hourly booking'),
+    '#default_value' => isset($booking_type->data['hourly_booking']) ? $booking_type->data['hourly_booking'] : NULL,
+  );
+
+  $form['actions']['submit']['#submit'][] = 'rooms_hourly_availability_form_rooms_booking_type_form_submit';
+}
+
+/**
+ *
+ */
+function rooms_hourly_availability_form_rooms_booking_type_form_submit($form, &$form_state) {
+  $form_state['rooms_booking_type']->data['hourly_booking'] = $form_state['values']['enable_hourly_booking'];
+  $form_state['rooms_booking_type']->save();
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
 function rooms_hourly_availability_form_rooms_unit_type_form_alter(&$form, &$form_state) {
   $unit_type = $form_state['rooms_unit_type'];
 
-  if (isset($form['additional_settings'])) {
+  if (!isset($form['additional_settings'])) {
     $form['additional_settings'] = array(
       '#type' => 'vertical_tabs',
       '#weight' => 99,
@@ -385,7 +570,7 @@ function rooms_hourly_availability_form_rooms_unit_type_form_alter(&$form, &$for
     '#default_value' => isset($unit_type->data['hourly_availability']) ? $unit_type->data['hourly_availability'] : NULL,
   );
 
-  $form['actions']['submit']['#submit'][] = 'rooms_hourly_availability_form_rooms_unit_type_form_submit';
+  $form['#submit'][] = 'rooms_hourly_availability_form_rooms_unit_type_form_submit';
 }
 
 /**
