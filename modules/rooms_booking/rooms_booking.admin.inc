@@ -242,6 +242,11 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     $client = $booking->name . ':' . $booking->customer_id;
   }
 
+  $form['type'] = array(
+    '#type' => 'value',
+    '#value' => $booking->type,
+  );
+
   $form['client'] = array(
     '#type' => 'textfield',
     '#title' => t('Customer'),
@@ -1129,7 +1134,6 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
     form_set_error('availability_fieldset', t('A unit has not been assigned for this booking.'));
   }
 
-  $booking = $form_state['rooms_booking'];
   if (isset($booking->unit_id)) {
     $new_unit_id = $booking->unit_id;
     if (isset($form_state['values']['unit_id'])) {
@@ -1223,7 +1227,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
   }
 
   // Notify field widgets to validate their data.
-  field_attach_form_validate('rooms_booking', $booking, $form, $form_state);
+  entity_form_field_validate('rooms_booking', $form, $form_state);
 }
 
 /**
