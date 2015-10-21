@@ -1,244 +1,388 @@
 <?php
 
 /**
- * Implements hook_form_FORM_ID_alter().
+ * @file
  */
-function rooms_periodic_pricing_form_rooms_unit_edit_form_alter(&$form, &$form_state) {
-  $unit = $form['#entity'];
 
-  $form['weekly_monthly_price'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Weekly/Monthly pricing'),
-    '#tree' => FALSE,
-    '#weight' => -97,
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+/**
+ * Implements hook_menu().
+ */
+function rooms_periodic_pricing_menu() {
+  $items = array();
+
+  $items['admin/rooms/units/unit/%rooms_unit/pricing/daily'] = array(
+    'title' => 'Daily Pricing',
+    'page callback' => 'rooms_pricing_page',
+    'page arguments' => array(4, 7, 8),
+    'access callback' => 'rooms_unit_access',
+    'access arguments' => array('update pricing', 4),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => '30',
   );
 
-  $form['weekly_monthly_price']['weekly_price'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Weekly price'),
-    '#default_value' => isset($unit->weekly_price) ? $unit->weekly_price : '',
-    '#size' => '5',
-    '#field_suffix' => t('Per 7 days'),
-    '#description' => t('This price will override the standard nightly pricing for each continuous 7 day period of a single booking.'),
-    '#maxlength' => 10,
+  $items['admin/rooms/units/unit/%rooms_unit/pricing/weekly'] = array(
+    'title' => 'Weekly Pricing',
+    'page callback' => 'rooms_periodic_pricing_weekly_page',
+    'page arguments' => array(4, 7, 8),
+    'access callback' => 'rooms_unit_access',
+    'access arguments' => array('update pricing', 4),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => '31',
   );
 
-  $form['weekly_monthly_price']['monthly_price'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Monthly price'),
-    '#default_value' => isset($unit->monthly_price) ? $unit->monthly_price : '',
-    '#size' => '5',
-    '#field_suffix' => t('Per 28 days'),
-    '#description' => t('This price will override the standard nightly/weekly pricing for each continuous 28 day period of a single booking.'),
-    '#maxlength' => 10,
+  $items['admin/rooms/units/unit/%rooms_unit/pricing/monthly'] = array(
+    'title' => 'Monthly Pricing',
+    'page callback' => 'rooms_periodic_pricing_monthly_page',
+    'page arguments' => array(4, 7, 8),
+    'access callback' => 'rooms_unit_access',
+    'access arguments' => array('update pricing', 4),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => '32',
   );
 
-  if (isset($unit->weekly_price) && $unit->weekly_price == '0.00') {
-    $form['weekly_monthly_price']['weekly_price']['#default_value'] = '';
-  }
-  if (isset($unit->monthly_price) && $unit->monthly_price == '0.00') {
-    $form['weekly_monthly_price']['monthly_price']['#default_value'] = '';
-  }
+  $items['admin/rooms/units/bulk_pricing_management/daily'] = array(
+    'title' => 'Daily Pricing',
+    'page callback' => 'rooms_pricing_bulk_pricing_management',
+    'page arguments' => array(5, 6, 7),
+    'access arguments' => array('administer rooms_unit pricing'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => '30',
+  );
 
-  $form['#validate'][] = 'rooms_periodic_pricing_form_rooms_unit_edit_form_validate';
+  $items['admin/rooms/units/bulk_pricing_management/weekly'] = array(
+    'title' => 'Weekly Pricing',
+    'page callback' => 'rooms_periodic_pricing_weekly_bulk_pricing_management',
+    'page arguments' => array(5, 6, 7),
+    'access arguments' => array('administer rooms_unit pricing'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => '31',
+  );
 
-  $form['#attached']['css'][] = drupal_get_path('module', 'rooms_periodic_pricing') . '/css/rooms_periodic_pricing.css';
+  $items['admin/rooms/units/bulk_pricing_management/monthly'] = array(
+    'title' => 'Monthly Pricing',
+    'page callback' => 'rooms_periodic_pricing_monthly_bulk_pricing_management',
+    'page arguments' => array(5, 6),
+    'access arguments' => array('administer rooms_unit pricing'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => '32',
+  );
+
+  return $items;
 }
 
 /**
- * Validate 'Weekly price' and 'Monthly price'.
+ * Implements hook_theme().
  */
-function rooms_periodic_pricing_form_rooms_unit_edit_form_validate(&$form, &$form_state) {
-  if (empty($form_state['values']['weekly_price'])) {
-    $form_state['values']['weekly_price'] = '0';
-  }
-  elseif (!empty($form_state['values']['weekly_price']) && !is_numeric($form_state['values']['weekly_price'])) {
-    form_set_error('weekly_price', t('%name: you must enter a numeric value for the price.', array('%name' => t('Weekly price'))));
+function rooms_periodic_pricing_theme() {
+  return array(
+    'rooms_one_month_calendar' => array(
+      'template' => 'rooms_one_month_calendar',
+      'variables' => array(
+        'url' => NULL,
+        'form' => NULL,
+        'year' => NULL,
+        'month' => NULL,
+        'link_options' => NULL,
+      ),
+    ),
+  );
+}
+
+/**
+ * Default implementation of hook_preprocess_rooms_one_month_calendar().
+ */
+function rooms_periodic_pricing_preprocess_rooms_one_month_calendar(&$vars) {
+
+  // Load FullCalendar Scheduler.
+  rooms_fullcalendar_scheduler_loaded();
+
+  // Add css styles for three-month-calendar.
+  drupal_add_css(drupal_get_path('module', 'rooms_periodic_pricing') . '/css/rooms_one_month_calendar.css');
+  drupal_add_css(drupal_get_path('module', 'rooms_availability') . '/css/fullcalendar.theme.css');
+
+  // If dates are not provided then use the current date.
+  $year = (empty($vars['year'])) ? date('Y', time()) : check_plain($vars['year']);
+  $month = (empty($vars['month'])) ? date('n', time()) : check_plain($vars['month']);
+
+  // Inject settings in javascript that will be used to setup the three months
+  // display.
+  drupal_add_js(array('roomsCalendar' => array('currentMonth' => intval($month))), 'setting');
+  drupal_add_js(array('roomsCalendar' => array('currentYear' => intval($year))), 'setting');
+  drupal_add_js(array('roomsCalendar' => array('firstDay' => intval(variable_get('date_first_day', 0)))), 'setting');
+}
+
+function rooms_periodic_pricing_weekly_page(RoomsUnit $rooms_unit, $year = '', $month = '') {
+
+  // Set the page title.
+  drupal_set_title(t('Edit @unit_name Pricing', array('@unit_name' => $rooms_unit->name)));
+
+  // Get the current page's URL, striped of the year and month args.
+  // This allows us to place this page anywhere, including at
+  // unit/%/pricing  or  admin/rooms/units/unit/%/pricing
+  list($url) = explode('/' . $year . '/' . $month, current_path());
+
+  return array(
+    '#theme' => 'rooms_one_month_calendar',
+    '#url' => $url,
+    '#form' => drupal_get_form('update_unit_pricing_form', $rooms_unit->unit_id),
+    '#year' => $year,
+    '#month' => $month,
+    '#attached' => array(
+      'js' => array(
+        drupal_get_path('module', 'rooms_periodic_pricing') . '/js/rooms_weekly_pricing.js',
+        array(
+          'data' => array('roomsPricing' => array('roomID' => $rooms_unit->unit_id)),
+          'type' => 'setting',
+        ),
+      ),
+      'css' => array(
+        drupal_get_path('module', 'rooms_pricing') . '/css/rooms_pricing.css',
+      ),
+    ),
+  );
+}
+
+function rooms_periodic_pricing_monthly_page(RoomsUnit $rooms_unit, $year = '', $month = '') {
+  // Set the page title.
+  drupal_set_title(t('Edit @unit_name Pricing', array('@unit_name' => $rooms_unit->name)));
+
+  // Get the current page's URL, striped of the year and month args.
+  // This allows us to place this page anywhere, including at
+  // unit/%/pricing  or  admin/rooms/units/unit/%/pricing
+  list($url) = explode('/' . $year . '/' . $month, current_path());
+
+  return array(
+    '#theme' => 'rooms_one_month_calendar',
+    '#url' => $url,
+    '#form' => drupal_get_form('update_unit_pricing_form', $rooms_unit->unit_id),
+    '#year' => $year,
+    '#month' => $month,
+    '#attached' => array(
+      'js' => array(
+        drupal_get_path('module', 'rooms_periodic_pricing') . '/js/rooms_monthly_pricing.js',
+        array(
+          'data' => array('roomsPricing' => array('roomID' => $rooms_unit->unit_id)),
+          'type' => 'setting',
+        ),
+      ),
+      'css' => array(
+        drupal_get_path('module', 'rooms_pricing') . '/css/rooms_pricing.css',
+      ),
+    ),
+  );
+}
+
+function rooms_periodic_pricing_weekly_bulk_pricing_management($year = '', $month = '', $type = 'all') {
+  // Load FullCalendar scheduler and relevant js/css.
+  rooms_fullcalendar_scheduler_loaded();
+
+  // If year is not set then give it the current date.
+  $year = ($year == '') ? date('Y', time()) : $year;
+  $month = ($month == '') ? date('n', time()) : $month;
+  $type = ($type == '') ? 'all' : $type;
+
+  // It's not a valid unit type.
+  if (rooms_unit_get_types($type) == FALSE) {
+    $type = 'all';
   }
 
-  if (empty($form_state['values']['monthly_price'])) {
-    $form_state['values']['monthly_price'] = '0';
+  // It's not a valid month or not valid year.
+  $year_options = range(date('Y', time()) - 2, date('Y', time()) + 5);
+  if ($month < 1 || $month > 12 || !in_array($year, $year_options)) {
+    $year = date('Y', time());
+    $month = date('n', time());
   }
-  elseif (!empty($form_state['values']['monthly_price']) && !is_numeric($form_state['values']['monthly_price'])) {
-    form_set_error('monthly_price', t('%name: you must enter a numeric value for the price.', array('%name' => t('Monthly price'))));
+
+  $efq = new EntityFieldQuery();
+  $efq->entityCondition('entity_type', 'rooms_unit');
+  $efq->addTag('rooms_pricing_access');
+  if ($type != 'all') {
+    $efq->entityCondition('bundle', $type, '=');
   }
+  $efq->pager(20);
+  $rooms_units = $efq->execute();
+
+  $rooms_id = $units = array();
+  if ($rooms_units) {
+    $units = array_values(entity_load('rooms_unit', array_keys($rooms_units['rooms_unit'])));
+
+    $rooms_id = array();
+    foreach ($units as $value) {
+      $rooms_id[] = $value->unit_id;
+    }
+  }
+
+  // Return the full render array.
+  return array(
+    drupal_get_form('rooms_filter_month_form', $month, $year),
+    drupal_get_form('rooms_periodic_pricing_weekly_update_form', $month, $year, $type, $units),
+    array(
+      '#theme' => 'pager',
+    ),
+    '#attached' => array(
+      'css' => array(drupal_get_path('module', 'rooms_pricing') . '/css/rooms_pricing.css'),
+      'js' => array(
+        drupal_get_path('module', 'rooms_periodic_pricing') . '/js/rooms_weekly_pricing_management.js',
+        drupal_get_path('module', 'rooms') . '/js/rooms_fullcalendar_singlerowmonth.js',
+        array(
+          'data' => array(
+            'roomsUnitManagement' => array(
+              'roomsNumber' => count($rooms_id),
+              'currentMonth' => $month,
+              'currentYear' => $year,
+              'roomsId' => $rooms_id,
+            ),
+          ),
+          'type' => 'setting',
+        ),
+      ),
+    ),
+  );
+}
+
+function rooms_periodic_pricing_monthly_bulk_pricing_management($year = '', $type = 'all') {
+  // Load FullCalendar scheduler and relevant js/css.
+  rooms_fullcalendar_scheduler_loaded();
+
+  // If year is not set then give it the current date.
+  $year = ($year == '') ? date('Y', time()) : $year;
+  $type = ($type == '') ? 'all' : $type;
+
+  // It's not a valid unit type.
+  if (rooms_unit_get_types($type) == FALSE) {
+    $type = 'all';
+  }
+
+  // It's not a valid month or not valid year.
+  $year_options = range(date('Y', time()) - 2, date('Y', time()) + 5);
+  if (!in_array($year, $year_options)) {
+    $year = date('Y', time());
+  }
+
+  $efq = new EntityFieldQuery();
+  $efq->entityCondition('entity_type', 'rooms_unit');
+  $efq->addTag('rooms_pricing_access');
+  if ($type != 'all') {
+    $efq->entityCondition('bundle', $type, '=');
+  }
+  $efq->pager(20);
+  $rooms_units = $efq->execute();
+
+  $rooms_id = $units = array();
+  if ($rooms_units) {
+    $units = array_values(entity_load('rooms_unit', array_keys($rooms_units['rooms_unit'])));
+
+    $rooms_id = array();
+    foreach ($units as $value) {
+      $rooms_id[] = $value->unit_id;
+    }
+  }
+
+  // Return the full render array.
+  return array(
+    drupal_get_form('rooms_periodic_pricing_filter_year_form', $year),
+    drupal_get_form('rooms_periodic_pricing_monthly_update_form', $year, $type, $units),
+    array(
+      '#theme' => 'pager',
+    ),
+    '#attached' => array(
+      'css' => array(drupal_get_path('module', 'rooms_pricing') . '/css/rooms_pricing.css'),
+      'js' => array(
+        drupal_get_path('module', 'rooms_periodic_pricing') . '/js/rooms_monthly_pricing_management.js',
+        drupal_get_path('module', 'rooms') . '/js/rooms_fullcalendar_singlerowmonth.js',
+        array(
+          'data' => array(
+            'roomsUnitManagement' => array(
+              'roomsNumber' => count($rooms_id),
+              'currentMonth' => '01',
+              'currentYear' => $year,
+              'roomsId' => $rooms_id,
+            ),
+          ),
+          'type' => 'setting',
+        ),
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function rooms_periodic_pricing_form_rooms_unit_type_form_alter(&$form, &$form_state) {
+  $unit_type = $form_state['rooms_unit_type'];
+
+  if (!isset($unit_type->is_new)) {
+    $price_fields = array();
+
+    $fields = field_info_instances('rooms_unit', $unit_type->type);
+    foreach ($fields as $field) {
+      $field_info = field_info_field($field['field_name']);
+
+      if ($field_info['type'] == 'commerce_price') {
+        $price_fields[$field['field_name']] = $field['field_name'];
+      }
+    }
+
+    if (isset($form['additional_settings'])) {
+      $form['additional_settings'] = array(
+        '#type' => 'vertical_tabs',
+        '#weight' => 99,
+      );
+    }
+
+    if (!isset($form['pricing'])) {
+      $form['pricing'] = array(
+        '#type' => 'fieldset',
+        '#group' => 'additional_settings',
+        '#title' => t('Pricing'),
+        '#tree' => FALSE,
+        '#weight' => 80,
+      );
+    }
+
+    if (!empty($price_fields)) {
+      $form['pricing']['pricing_weekly_field'] = array(
+        '#type' => 'select',
+        '#title' => t('Select your default Weekly price field'),
+        '#options' => $price_fields,
+        '#default_value' => isset($unit_type->data['pricing_weekly_field']) ? $unit_type->data['pricing_weekly_field'] : NULL,
+        '#weight' => 2,
+      );
+
+      $form['pricing']['pricing_monthly_field'] = array(
+        '#type' => 'select',
+        '#title' => t('Select your default Monthly price field'),
+        '#options' => $price_fields,
+        '#default_value' => isset($unit_type->data['pricing_monthly_field']) ? $unit_type->data['pricing_monthly_field'] : NULL,
+        '#weight' => 3,
+      );
+
+      $form['actions']['submit']['#submit'][] = 'rooms_periodic_pricing_form_rooms_unit_type_form_submit';
+    }
+  }
+}
+
+/**
+ *
+ */
+function rooms_periodic_pricing_form_rooms_unit_type_form_submit($form, &$form_state) {
+  $form_state['rooms_unit_type']->data['pricing_weekly_field'] = $form_state['values']['pricing_weekly_field'];
+  $form_state['rooms_unit_type']->data['pricing_monthly_field'] = $form_state['values']['pricing_monthly_field'];
+  $form_state['rooms_unit_type']->save();
 }
 
 /**
  * Implements hook_rooms_string_alter().
  */
 function rooms_periodic_pricing_rooms_string_alter(&$string_suggestions, $context) {
-  if ($context['#purpose'] == 'display_base_price') {
-    $string_suggestion = reset($string_suggestions);
-
-    $currency_setting = commerce_currency_load(commerce_default_currency());
-    $currency_symbol = $currency_setting['symbol'];
-
-    $price = $context['#data']['price'];
-
-    if ($context['#component'] == 'units_per_type_form') {
-      $units = reset($context['#data']['units'][$price]);
-      $unit = $units['unit'];
-    }
-    elseif ($context['#component'] == 'book_unit_form_builder') {
-      $unit = $context['#data']['unit'];
-    }
-
-    $start_date = $context['#data']['arrival'];
-    $end_date = $context['#data']['departure'];
-
-    $weeks_months_days = rooms_periodic_pricing_calculate_weeks_months_days($start_date, $end_date);
-
-    $monthly_price = commerce_currency_amount_to_decimal($unit->monthly_price * 100, commerce_default_currency());
-    $weekly_price = commerce_currency_amount_to_decimal($unit->weekly_price * 100, commerce_default_currency());
-
-    if ($weeks_months_days['total_weeks'] > 0 && $unit->weekly_price > 0) {
-      $more_days = $weeks_months_days['more_days'];
-
-      if ($weeks_months_days['months'] > 0 && $unit->monthly_price > 0) {
-        $months = $weeks_months_days['months'];
-        $more_weeks = $weeks_months_days['more_weeks'];
-
-        $string_suggestion .= ' (' . format_plural($months, '1 month', '@count months') . ' @ ' . $currency_symbol . $monthly_price . '/month';
-
-        if ($more_weeks > 0) {
-          $string_suggestion .= ', ';
-          $string_suggestion .= format_plural($more_weeks, '1 week', '@count weeks') . ' @ ' . $currency_symbol . $weekly_price . '/wk';
-        }
-
-        $current_price = $months * $monthly_price + $more_weeks * $weekly_price;
-      }
-      else {
-        $weeks = $weeks_months_days['total_weeks'];
-
-        $string_suggestion .= ' (' . format_plural($weeks, '1 week', '@count weeks') . ' @ ' . $currency_symbol . $weekly_price . '/wk';
-
-        $current_price = $weeks * $weekly_price;
-      }
-
-      if ($more_days > 0) {
-        $day_price = ($price - $current_price) / $more_days;
-
-        $string_suggestion .= ', ' . format_plural($more_days, '1 night', '@count nights') . ' @ ' . $currency_symbol . $day_price . '/night';
-      }
-
-      $string_suggestion .= ')';
-    }
-    elseif ($weeks_months_days['months'] > 0 && $unit->monthly_price > 0) {
-      $months = $weeks_months_days['months'];
-
-      $more_days = $weeks_months_days['more_days'] + $weeks_months_days['more_weeks'] * 7;
-
-      $string_suggestion .= ' (' . $months . ' month @ ' . $currency_symbol . $monthly_price . '/month)';
-
-      $current_price = $months * $monthly_price;
-
-      if ($more_days > 0) {
-        $day_price = ($price - $current_price) / $more_days;
-
-        $string_suggestion .= ', ' . $more_days . ' nights @ ' . $currency_symbol . $day_price . '/night';
-      }
-
-      $string_suggestion .= ')';
-    }
-
-    $string_suggestions[] = $string_suggestion;
-  }
 }
 
 /**
  * Implements hook_rooms_price_modifier_alter().
  */
 function rooms_periodic_pricing_rooms_price_modifier_alter(&$price_modifiers, $booking_info) {
-  if (isset($price_modifiers['rooms_periodic_pricing'])) {
-    unset($price_modifiers['rooms_periodic_pricing']);
-  }
 
-  $amount = 0;
-
-  $unit = $booking_info['unit'];
-  $end_date = $booking_info['end_date'];
-  $start_date = $booking_info['start_date'];
-  $booking_parameters = $booking_info['booking_parameters'];
-
-  $weeks_months_days = rooms_periodic_pricing_calculate_weeks_months_days($start_date, $end_date);
-
-  // If "Weekly price" is set.
-  if ($unit->weekly_price > 0) {
-    $more_days = $weeks_months_days['more_days'];
-
-    if ($more_days > 0) {
-      $start_date = clone($end_date);
-      $start_date->sub(new DateInterval('P' . ($more_days - 1) . 'D'));
-
-      $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
-
-      $price_log = $price_calendar->calculatePrice($start_date, $end_date);
-
-      $price_more_days = $price_log['full_price'];
-    }
-    else {
-      $price_more_days = 0;
-    }
-
-    if ($weeks_months_days['months'] > 0 && $unit->monthly_price > 0) {
-      $months = $weeks_months_days['months'];
-      $more_weeks = $weeks_months_days['more_weeks'];
-
-      $reply = array();
-      $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
-      $weekly_monthly_price = $price_calendar->applyPriceModifiers($unit->monthly_price * $months + $unit->weekly_price * $more_weeks, $months * 28 + $more_weeks * 7, $reply);
-
-      $amount = commerce_currency_amount_to_decimal(($weekly_monthly_price + $price_more_days) * 100, commerce_default_currency());
-    }
-    else {
-      $weeks = $weeks_months_days['total_weeks'];
-
-      $reply = array();
-      $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
-      $weekly_monthly_price = $price_calendar->applyPriceModifiers($unit->weekly_price * $weeks, $weeks * 7, $reply);
-
-      $amount = commerce_currency_amount_to_decimal(($weekly_monthly_price + $price_more_days) * 100, commerce_default_currency());
-    }
-  }
-  // If "Monthly price" is set and the current period is greater than or equal to 28 days.
-  elseif ($weeks_months_days['months'] > 0 && $unit->monthly_price > 0) {
-    $months = $weeks_months_days['months'];
-
-    $more_days = $weeks_months_days['more_days'] + $weeks_months_days['more_weeks'] * 7;
-
-    if ($more_days > 0) {
-      $start_date = clone($end_date);
-      $start_date->sub(new DateInterval('P' . ($more_days - 1) . 'D'));
-
-      $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
-
-      $price_log = $price_calendar->calculatePrice($start_date, $end_date);
-
-      $price_more_days = $price_log['full_price'];
-    }
-    else {
-      $price_more_days = 0;
-    }
-
-    $reply = array();
-    $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
-    $weekly_monthly_price = $price_calendar->applyPriceModifiers($unit->monthly_price * $months, $months * 28, $reply);
-
-    $amount = commerce_currency_amount_to_decimal(($weekly_monthly_price + $price_more_days) * 100, commerce_default_currency());
-  }
-
-  // Add a new price modifier to replace the old price with new calculated price.
-  if ($amount > 0) {
-    $price_modifiers['rooms_periodic_pricing'] = array(
-      '#type' => ROOMS_DYNAMIC_MODIFIER,
-      '#quantity' => 1,
-      '#op_type' => ROOMS_REPLACE,
-      '#amount' => $amount,
-    );
-  }
 }
 
 /**
@@ -268,4 +412,260 @@ function rooms_periodic_pricing_calculate_weeks_months_days($start_date, $end_da
     'more_weeks' => $more_weeks,
     'months' => $months,
   );
+}
+
+function rooms_periodic_pricing_get_iso_weeks_in_year($year) {
+  $date = new DateTime;
+  $date->setISODate($year, 53);
+
+  return ($date->format("W") === "53" ? 53 : 52);
+}
+
+function rooms_periodic_pricing_filter_year_form($form, &$form_state, $year, $unit_types = NULL) {
+
+  $form['#attributes']['class'][] = 'rooms-management-form rooms-filter-month-form';
+
+  $year_options = range(date('Y', time()) - 2, date('Y', time()) + 5);
+
+  $form['rooms_availability_filter_month']['year'] = array(
+    '#title' => t('Year'),
+    '#type' => 'select',
+    '#options' => $year_options,
+    '#default_value' => $year - date('Y', time()) + 2,
+  );
+
+  $type_options['all'] = t('All types');
+  $unit_types = isset($unit_types) ? $unit_types : rooms_unit_get_types();
+  foreach ($unit_types as $unit_type_name => $unit_type) {
+    $type_options[$unit_type_name] = $unit_type->label;
+  }
+
+  $form['rooms_availability_filter_month']['type'] = array(
+    '#title' => t('Type'),
+    '#type' => 'select',
+    '#options' => $type_options,
+    '#default_value' => (arg(6) == '') ? 'all' : arg(6),
+  );
+
+  $form['rooms_availability_filter_month']['actions'] = array(
+    '#type' => 'container',
+    '#attributes' => array('class' => array('form-actions')),
+    '#weight' => 400,
+  );
+
+  $form['rooms_availability_filter_month']['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Filter'),
+  );
+
+  hide($form['rooms_availability_filter_month']['actions']['submit']);
+
+  return $form;
+}
+
+function rooms_periodic_pricing_filter_year_form_submit(&$form, &$form_state) {
+  $year = $form_state['values']['year'] + date('Y', time()) - 2;
+  $type = $form_state['values']['type'];
+
+  $address = 'admin/rooms/units/' . arg(3) . '/' . arg(4) . '/' . $year;
+  if ($type != 'all') {
+    $address .= '/' . $type;
+  }
+
+  if (arg(7) != '') {
+    $address .= ($type == 'all') ? '/all/' . arg(7) : $type . arg(7);
+  }
+
+  $form_state['redirect'] = $address;
+}
+
+function rooms_periodic_pricing_monthly_update_form($form, &$form_state, $year, $type, $rooms_units) {
+
+  $form['#attributes']['class'][] = 'rooms-management-form rooms-bulk-pricing-form';
+
+  $form['rooms_pricing_update'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Update Pricing'),
+    '#description' => t('Apply a pricing adjustment in bulk to the units selected below for the specified date range.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $form['rooms_pricing_update']['curr_year'] = array(
+    '#type' => 'hidden',
+    '#value' => $year,
+  );
+
+  $form['rooms_pricing_update']['curr_type'] = array(
+    '#type' => 'hidden',
+    '#value' => $type,
+  );
+
+  //$form['rooms_pricing_update']['rooms_date_range'] = rooms_date_range_fields($year, $month);
+
+  $form['rooms_pricing_update']['op'] = array(
+    '#type' => 'fieldset',
+  );
+
+  $price_options = rooms_price_options_options();
+  $form['rooms_pricing_update']['op']['operation'] = array(
+    '#type' => 'select',
+    '#title' => t('Operation'),
+    '#options' => $price_options,
+    '#default_value' => 'replace',
+  );
+
+  $form['rooms_pricing_update']['op']['amount'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Amount'),
+    '#default_value' => '',
+    '#size' => '5',
+    '#description' => t('Amount to apply for rule'),
+    '#maxlength' => 10,
+    '#required' => TRUE,
+  );
+
+  $form['rooms_pricing_update']['actions'] = array(
+    '#type' => 'container',
+    '#attributes' => array('class' => array('form-actions')),
+    '#weight' => 400,
+  );
+
+  $form['rooms_pricing_update']['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Update Unit Pricing'),
+  );
+
+  $form['#validate'][] = 'rooms_pricing_update_form_validate';
+  $form['#validate'][] = 'rooms_form_start_end_dates_validate';
+
+  $form['rooms_data'] = array(
+    '#prefix' => '<table class="rooms-month-manager">',
+    '#type' => 'container',
+    '#suffix' => '</tbody></table>',
+  );
+
+  if (count($rooms_units) > 0) {
+    $date = new DateTime();
+    $date->setDate($year, '01', '01');
+    $form['rooms_data']['select-all'] = array(
+      '#type' => 'select',
+      '#prefix' => '<thead><tr><th class="unit-bulk-select">',
+      '#options' => array(
+        ROOMS_THIS_PAGE => t('All (this page)'),
+        ROOMS_ALL_PAGES => t('All (all pages)'),
+        ROOMS_NONE => t('None')),
+      '#empty_option' => t('- Select -'),
+      '#suffix' => '</th><th class="month-name"><div class="fc-header-title"><h2>' . format_date($date->getTimestamp(), 'custom', 'Y') . '</h2></div></th></tr></thead><tbody>',
+    );
+  }
+
+  foreach ($rooms_units as $key => $value) {
+    $form['rooms_data']['rooms-' . $value->unit_id] = array(
+      '#type' => 'checkbox',
+      '#title' => $value->name,
+      '#prefix' => '<tr><th class="unit-name">',
+      '#suffix' => '</th><td class="unit-days"><div id="calendar' . $key . '"></div></td></tr>',
+    );
+  }
+
+  return $form;
+}
+
+function rooms_periodic_pricing_weekly_update_form($form, &$form_state, $month, $year, $type, $rooms_units) {
+
+  $form['#attributes']['class'][] = 'rooms-management-form rooms-bulk-pricing-form';
+
+  $form['rooms_pricing_update'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Update Pricing'),
+    '#description' => t('Apply a pricing adjustment in bulk to the units selected below for the specified date range.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $form['rooms_pricing_update']['curr_month'] = array(
+    '#type' => 'hidden',
+    '#value' => $month,
+  );
+
+  $form['rooms_pricing_update']['curr_year'] = array(
+    '#type' => 'hidden',
+    '#value' => $year,
+  );
+
+  $form['rooms_pricing_update']['curr_type'] = array(
+    '#type' => 'hidden',
+    '#value' => $type,
+  );
+
+  //$form['rooms_pricing_update']['rooms_date_range'] = rooms_date_range_fields($year, $month);
+
+  $form['rooms_pricing_update']['op'] = array(
+    '#type' => 'fieldset',
+  );
+
+  $price_options = rooms_price_options_options();
+  $form['rooms_pricing_update']['op']['operation'] = array(
+    '#type' => 'select',
+    '#title' => t('Operation'),
+    '#options' => $price_options,
+    '#default_value' => 'replace',
+  );
+
+  $form['rooms_pricing_update']['op']['amount'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Amount'),
+    '#default_value' => '',
+    '#size' => '5',
+    '#description' => t('Amount to apply for rule'),
+    '#maxlength' => 10,
+    '#required' => TRUE,
+  );
+
+  $form['rooms_pricing_update']['actions'] = array(
+    '#type' => 'container',
+    '#attributes' => array('class' => array('form-actions')),
+    '#weight' => 400,
+  );
+
+  $form['rooms_pricing_update']['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Update Unit Pricing'),
+  );
+
+  $form['#validate'][] = 'rooms_pricing_update_form_validate';
+  $form['#validate'][] = 'rooms_form_start_end_dates_validate';
+
+  $form['rooms_data'] = array(
+    '#prefix' => '<table class="rooms-month-manager">',
+    '#type' => 'container',
+    '#suffix' => '</tbody></table>',
+  );
+
+  if (count($rooms_units) > 0) {
+    $date = new DateTime();
+    $date->setDate($year, $month, '01');
+    $form['rooms_data']['select-all'] = array(
+      '#type' => 'select',
+      '#prefix' => '<thead><tr><th class="unit-bulk-select">',
+      '#options' => array(
+        ROOMS_THIS_PAGE => t('All (this page)'),
+        ROOMS_ALL_PAGES => t('All (all pages)'),
+        ROOMS_NONE => t('None')),
+      '#empty_option' => t('- Select -'),
+      '#suffix' => '</th><th class="month-name"><div class="fc-header-title"><h2>' . format_date($date->getTimestamp(), 'custom', 'F Y') . '</h2></div></th></tr></thead><tbody>',
+    );
+  }
+
+  foreach ($rooms_units as $key => $value) {
+    $form['rooms_data']['rooms-' . $value->unit_id] = array(
+      '#type' => 'checkbox',
+      '#title' => $value->name,
+      '#prefix' => '<tr><th class="unit-name">',
+      '#suffix' => '</th><td class="unit-days"><div id="calendar' . $key . '"></div></td></tr>',
+    );
+  }
+
+  return $form;
 }

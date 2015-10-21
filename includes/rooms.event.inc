@@ -46,6 +46,13 @@ abstract class RoomsEvent implements RoomsEventInterface {
   /**
    * {@inheritdoc}
    */
+  public function startWeek($format = 'W') {
+    return $this->start_date->format($format);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function endDay($format = 'j') {
     return $this->end_date->format($format);
   }
@@ -61,6 +68,13 @@ abstract class RoomsEvent implements RoomsEventInterface {
    * {@inheritdoc}
    */
   public function endYear($format = 'Y') {
+    return $this->end_date->format($format);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function endWeek($format = 'W') {
     return $this->end_date->format($format);
   }
 

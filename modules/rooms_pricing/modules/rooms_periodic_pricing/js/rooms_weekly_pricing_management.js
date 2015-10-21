@@ -58,22 +58,23 @@ Drupal.behaviors.roomsPricing = {
       var unit_id = Drupal.settings.roomsUnitManagement.roomsId[c];
 
       $(value[0]).once().fullCalendar({
-        editable:false,
+        schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',
+        contentHeight: 74,
+        views: {
+          timeline8Week: {
+            type: 'timeline',
+            slotDuration: { days: 7 },
+            duration: { days: 64 }
+          }
+        },
+        defaultView: 'timeline8Week',
         dayNamesShort:[Drupal.t("Sun"), Drupal.t("Mon"), Drupal.t("Tue"), Drupal.t("Wed"), Drupal.t("Thu"), Drupal.t("Fri"), Drupal.t("Sat")],
         monthNames:[Drupal.t("January"), Drupal.t("February"), Drupal.t("March"), Drupal.t("April"), Drupal.t("May"), Drupal.t("June"), Drupal.t("July"), Drupal.t("August"), Drupal.t("September"), Drupal.t("October"), Drupal.t("November"), Drupal.t("December")],
-        defaultView:'singleRowMonth',
         defaultDate: moment([value[2],value[1]]),
         header:{
           left: '',
           center: '',
           right: ''
-        },
-        events: function(start, end, timezone, callback) {
-          callback(events[unit_id]);
-        },
-        // Remove Time from events
-        eventRender: function(event, el, view) {
-          el.find('.fc-time').remove();
         }
       });
 

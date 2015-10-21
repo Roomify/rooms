@@ -73,7 +73,7 @@ Drupal.behaviors.rooms_availability = {
         events: function(start, end, timezone, callback) {
           callback(events[unit_id]);
         },
-        //Remove Time from events
+        // Remove Time from events
         eventRender: function(event, el, view) {
           el.find('.fc-time').remove();
         }

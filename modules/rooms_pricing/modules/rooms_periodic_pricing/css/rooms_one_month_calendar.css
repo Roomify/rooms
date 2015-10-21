@@ -1,0 +1,11 @@
+.fc-timeline-event .fc-content {
+	padding: 8px;
+}
+
+.fc-time-area .fc-event-container {
+	padding-bottom: 0;
+}
+
+.fc-scrollpane-inner {
+	padding-bottom: 0 !important;
+}

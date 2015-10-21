@@ -101,7 +101,7 @@ Drupal.behaviors.roomsAvailability = {
         },
 
         eventRender: function(event, el, view) {
-          //Remove Time from events
+          // Remove Time from events
           el.find('.fc-time').remove();
         },
       });

@@ -98,13 +98,15 @@ function rooms_pricing_form_rooms_unit_type_form_alter(&$form, &$form_state) {
       );
     }
 
-    $form['pricing'] = array(
-      '#type' => 'fieldset',
-      '#group' => 'additional_settings',
-      '#title' => t('Pricing'),
-      '#tree' => FALSE,
-      '#weight' => 80,
-    );
+    if (!isset($form['pricing'])) {
+      $form['pricing'] = array(
+        '#type' => 'fieldset',
+        '#group' => 'additional_settings',
+        '#title' => t('Pricing'),
+        '#tree' => FALSE,
+        '#weight' => 80,
+      );
+    }
 
     if (empty($price_fields)) {
       $form['pricing']['field'] = array(
@@ -117,6 +119,7 @@ function rooms_pricing_form_rooms_unit_type_form_alter(&$form, &$form_state) {
         '#title' => t('Select your default price field'),
         '#options' => $price_fields,
         '#default_value' => isset($unit_type->data['pricing_field']) ? $unit_type->data['pricing_field'] : NULL,
+        '#weight' => 1,
       );
 
       $form['actions']['submit']['#submit'][] = 'rooms_pricing_form_rooms_unit_type_form_submit';
@@ -381,6 +384,7 @@ function rooms_pricing_bulk_pricing_management($year = '', $month = '', $type = 
       'css' => array(drupal_get_path('module', 'rooms_pricing') . '/css/rooms_pricing.css'),
       'js' => array(
         drupal_get_path('module', 'rooms_pricing') . '/js/rooms_pricing_management.js',
+        drupal_get_path('module', 'rooms') . '/js/rooms_fullcalendar_singlerowmonth.js',
         array(
           'data' => array(
             'roomsUnitManagement' => array(

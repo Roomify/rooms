@@ -2,8 +2,8 @@
 
 Drupal.behaviors.roomsAvailabilityPrepareForm = {
   attach: function(context) {
-    $("form#rooms-filter-month-form select").once('select').change(function() {
-      $("form#rooms-filter-month-form").submit();
+    $("form#rooms-periodic-pricing-filter-year-form").once('select').change(function() {
+      $("form#rooms-periodic-pricing-filter-year-form").submit();
     });
 
     $('#edit-select-all').once('select').change(function() {
@@ -43,11 +43,11 @@ Drupal.behaviors.roomsPricing = {
     $.ajax({
       url: url,
       success: function(data) {
-        events = data['events'];
+        /*events = data['events'];
 
         $.each(calendars, function(key, value) {
           $(value[0]).fullCalendar('refetchEvents');
-        });
+        });*/
       }
     });
 
@@ -58,22 +58,23 @@ Drupal.behaviors.roomsPricing = {
       var unit_id = Drupal.settings.roomsUnitManagement.roomsId[c];
 
       $(value[0]).once().fullCalendar({
-        editable:false,
+        schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',
+        contentHeight: 47,
+        views: {
+          timeline12Month: {
+            type: 'timeline',
+            slotDuration: { months: 1 },
+            duration: { months: 12 }
+          }
+        },
+        defaultView: 'timeline12Month',
         dayNamesShort:[Drupal.t("Sun"), Drupal.t("Mon"), Drupal.t("Tue"), Drupal.t("Wed"), Drupal.t("Thu"), Drupal.t("Fri"), Drupal.t("Sat")],
         monthNames:[Drupal.t("January"), Drupal.t("February"), Drupal.t("March"), Drupal.t("April"), Drupal.t("May"), Drupal.t("June"), Drupal.t("July"), Drupal.t("August"), Drupal.t("September"), Drupal.t("October"), Drupal.t("November"), Drupal.t("December")],
-        defaultView:'singleRowMonth',
         defaultDate: moment([value[2],value[1]]),
         header:{
           left: '',
           center: '',
           right: ''
-        },
-        events: function(start, end, timezone, callback) {
-          callback(events[unit_id]);
-        },
-        // Remove Time from events
-        eventRender: function(event, el, view) {
-          el.find('.fc-time').remove();
         }
       });
 

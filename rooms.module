@@ -91,7 +91,7 @@ function rooms_libraries_info() {
     'download url' => 'http://momentjs.com/downloads/moment.min.js',
     'version arguments' => array(
       'file' => 'moment.min.js',
-      // 2.8.3
+      // 2.10.6
       'pattern' => '/(\d+\.\d+\.\d)/',
     ),
     'files' => array(
@@ -148,7 +148,7 @@ function rooms_libraries_info() {
             'fullcalendar.min.css',
           ),
         ),
-        'dependencies' => array('moment (>=2.8.3)'),
+        'dependencies' => array('moment (>=2.10.6)'),
       ),
       'source' => array(
         'files' => array(
@@ -160,7 +160,47 @@ function rooms_libraries_info() {
             'fullcalendar.css',
           ),
         ),
-        'dependencies' => array('moment (>=2.8.3)'),
+        'dependencies' => array('moment (>=2.10.6)'),
+      ),
+    ),
+  );
+
+  $libraries['fullcalendar_scheduler'] = array(
+    'name' => 'Fullcalendar scheduler',
+    'vendor url' => 'http://fullcalendar.io',
+    'download url' => 'https://github.com/fullcalendar/fullcalendar-scheduler/releases/download/v1.0.2/fullcalendar-scheduler-1.0.2.zip',
+    'version arguments' => array(
+      'file' => 'scheduler.min.js',
+      // 1.0.2
+      'pattern' => '/(\d+\.\d+\.\d)/',
+    ),
+    'files' => array(
+      'js' => array(
+        'scheduler.min.js',
+      ),
+    ),
+    'variants' => array(
+      'minified' => array(
+        'files' => array(
+          'js' => array(
+            'scheduler.min.js',
+          ),
+          'css' => array(
+            'scheduler.min.css',
+          ),
+        ),
+        'dependencies' => array('moment (>=2.10.6)', 'rooms_fullcalendar (>=2.4.0)'),
+      ),
+      'source' => array(
+        'files' => array(
+          'js' => array(
+            'scheduler.js',
+          ),
+          'css' => array(
+            'scheduler.css',
+          ),
+        ),
+        'dependencies' => array('moment (>=2.10.6)', 'rooms_fullcalendar (>=2.4.0)'),
       ),
     ),
   );
@@ -181,6 +221,20 @@ function rooms_fullcalendar_loaded() {
   else {
     // Alert the authorized user/administrator to the abscence of the library.
     drupal_set_message(t('The FullCalendar Library could not be found.
+                          Please check the installation instructions and the <a href="@status">Status Report</a>. Make sure
+                          to clear cache after updating settings and/or library locations.',
+      array('@status' => url('admin/reports/status'))), 'warning');
+    return FALSE;
+  }
+}
+
+function rooms_fullcalendar_scheduler_loaded() {
+  if (rooms_library_loaded('fullcalendar_scheduler', 'source')) {
+    return TRUE;
+  }
+  else {
+    // Alert the authorized user/administrator to the abscence of the library.
+    drupal_set_message(t('The FullCalendar Scheduler Library could not be found.
                           Please check the installation instructions and the <a href="@status">Status Report</a>. Make sure
                           to clear cache after updating settings and/or library locations.',
       array('@status' => url('admin/reports/status'))), 'warning');

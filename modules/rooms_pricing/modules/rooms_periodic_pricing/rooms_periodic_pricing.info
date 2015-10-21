@@ -4,4 +4,7 @@ core = 7.x
 
 package = Rooms
 
+files[] = includes/rooms_periodic_pricing.unit_weekly_pricing_calendar.inc
+files[] = includes/rooms_periodic_pricing.unit_monthly_pricing_calendar.inc
+
 dependencies[] = rooms_pricing

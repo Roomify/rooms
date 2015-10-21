@@ -19,6 +19,10 @@
 }
 
 /* Bulk pricing form */
+.rooms-bulk-pricing-form .fc-day-grid-container {
+  overflow-y: hidden;
+  height: 60px;
+}
 .rooms-bulk-pricing-form .form-item-day-options {
   float: left;
   margin-right: 20px;
