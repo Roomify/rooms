@@ -328,7 +328,9 @@ function rooms_availability_update_status_form_submit(&$form, &$form_state) {
   list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
   $type = $form_state['values']['curr_type'];
   $event_id = $form_state['values']['change_event_status'];
-
+  // Consider right START DATE and END DATE for all events.
+  $end_date->sub(new DateInterval('P1D'));
+  
   if ($form_state['values']['select-all'] == ROOMS_ALL_PAGES) {
     $query = db_select('rooms_units', 'n')->fields('n', array('unit_id', 'name'));
     if ($type != 'all') {
