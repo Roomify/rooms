@@ -204,6 +204,7 @@ function rooms_availability_bulk_unit_management($year = '', $month = '', $type 
       'css' => array($css_file),
       'js' => array(
         $js_file,
+        drupal_get_path('module', 'rooms') . '/js/rooms_fullcalendar_singlerowmonth.js',
         array(
           'data' => array(
             'roomsUnitManagement' => array(
