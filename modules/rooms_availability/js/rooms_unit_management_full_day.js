@@ -41,11 +41,17 @@ Drupal.behaviors.roomsAvailability = {
       calendars[i] = new Array('#calendar' + i, month1, year1);
     }
 
-    // refresh the events once the modal is closed
-    $(document).one("CToolsDetachBehaviors", function() {
-      $.each(calendars, function(key, value) {
-        $(value[0]).fullCalendar('refetchEvents');
-      });
+    events = [];
+    var url = Drupal.settings.basePath + '?q=bam/v1/availability&units=' + Drupal.settings.roomsUnitManagement.roomsId.join() + '&start_date=' + year1 + '-' + (month1+1) + '-01&duration=1M';
+    $.ajax({
+      url: url,
+      success: function(data) {
+        events = data['events'];
+
+        $.each(calendars, function(key, value) {
+          $(value[0]).fullCalendar('refetchEvents');
+        });
+      }
     });
 
     var c = 0;
@@ -69,9 +75,11 @@ Drupal.behaviors.roomsAvailability = {
           center: '',
           right: ''
         },
-        events: Drupal.settings.basePath + '?q=rooms/units/unit/' + Drupal.settings.roomsUnitManagement.roomsId[c] + '/availability/json/' + value[2] + '/' + phpmonth,
         windowResize: function(view) {
           $(value[0]).fullCalendar('refetchEvents');
+        },
+        events: function(start, end, timezone, callback) {
+          callback(events[unit_id]);
         },
         eventClick: function(calEvent, jsEvent, view) {
           // Getting the Unix timestamp - JS will only give us milliseconds

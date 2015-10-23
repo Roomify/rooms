@@ -17,3 +17,4 @@ dependencies[] = date
 dependencies[] = date_api
 dependencies[] = date_popup
 dependencies[] = ctools
+dependencies[] = bam_api

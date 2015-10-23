@@ -6,6 +6,8 @@ Drupal.RoomsAvailability.Modal = Drupal.RoomsAvailability.Modal || {};
 Drupal.behaviors.rooms_availability = {
   attach: function(context) {
 
+    unit_id = Drupal.settings.roomsAvailability.roomID;
+
     // Current month is whatever comes through -1 since js counts months starting from 0
     currentMonth = Drupal.settings.roomsCalendar.currentMonth - 1;
     currentYear = Drupal.settings.roomsCalendar.currentYear;
@@ -41,11 +43,17 @@ Drupal.behaviors.rooms_availability = {
     calendars[1] = new Array('#calendar1', month2, year2);
     calendars[2] = new Array('#calendar2', month3, year3);
 
-    // refresh the events once the modal is closed
-    $(document).one("CToolsDetachBehaviors", function() {
-      $.each(calendars, function(key, value) {
-        $(value[0]).fullCalendar('refetchEvents');
-      });
+    events = [];
+    var url = Drupal.settings.basePath + '?q=bam/v1/availability&units=' + unit_id + '&start_date=' + year1 + '-' + (month1+1) + '-01&duration=3M';
+    $.ajax({
+      url: url,
+      success: function(data) {
+        events = data['events'];
+
+        $.each(calendars, function(key, value) {
+          $(value[0]).fullCalendar('refetchEvents');
+        });
+      }
     });
 
     $.each(calendars, function(key, value) {
@@ -70,7 +78,9 @@ Drupal.behaviors.rooms_availability = {
         windowResize: function(view) {
           $(value[0]).fullCalendar('refetchEvents');
         },
-        events: Drupal.settings.basePath + '?q=rooms/units/unit/' + Drupal.settings.roomsAvailability.roomID + '/availability/json/' + value[2] + '/' + phpmonth,
+        events: function(start, end, timezone, callback) {
+          callback(events[unit_id]);
+        },
         eventClick: function(calEvent, jsEvent, view) {
           // Getting the Unix timestamp - JS will only give us milliseconds
           if (calEvent.end === null) {
