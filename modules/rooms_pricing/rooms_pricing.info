@@ -11,4 +11,4 @@ files[] = includes/rooms_pricing.pricing_event_interface.inc
 
 dependencies[] = rooms_unit
 dependencies[] = commerce
-dependencies[] = bam_api
+dependencies[] = bat_api

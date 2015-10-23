@@ -42,7 +42,7 @@ Drupal.behaviors.roomsAvailability = {
     }
 
     events = [];
-    var url = Drupal.settings.basePath + '?q=bam/v1/availability&units=' + Drupal.settings.roomsUnitManagement.roomsId.join() + '&start_date=' + year1 + '-' + (month1+1) + '-01&duration=1M';
+    var url = Drupal.settings.basePath + '?q=bat/v1/availability&units=' + Drupal.settings.roomsUnitManagement.roomsId.join() + '&start_date=' + year1 + '-' + (month1+1) + '-01&duration=1M';
     $.ajax({
       url: url,
       success: function(data) {
