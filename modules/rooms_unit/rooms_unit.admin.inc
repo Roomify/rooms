@@ -196,6 +196,11 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
   $form['#attributes']['class'][] = 'rooms-management-form rooms-unit-edit-form';
   $form['#attached']['css'] = array(drupal_get_path('module', 'rooms_unit') . '/css/rooms_unit.css');
 
+  $form['type'] = array(
+    '#type' => 'value',
+    '#value' => $unit->type,
+  );
+
   // Add the default field elements.
   $form['name'] = array(
     '#type' => 'textfield',
@@ -373,10 +378,8 @@ function rooms_unit_edit_form($form, &$form_state, $unit) {
  * Form API validate callback for the booking unit form.
  */
 function rooms_unit_edit_form_validate(&$form, &$form_state) {
-  $unit = $form_state['rooms_unit'];
-
   // Notify field widgets to validate their data.
-  field_attach_form_validate('rooms_unit', $unit, $form, $form_state);
+  entity_form_field_validate('rooms_unit', $form, $form_state);
 
   if (!empty($form_state['values']['multiple']) && (!is_numeric($form_state['values']['multiple'])|| $form_state['values']['multiple'] < 1)) {
     form_set_error('Multiple units error', t('%name: you must enter at least 1 as the number of multiple units.', array('%name' => t('Multiple units'))));

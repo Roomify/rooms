@@ -111,8 +111,8 @@ function rooms_unit_type_form($form, &$form_state, $unit_type, $op = 'edit') {
  * @see rooms_unit_type_form()
  */
 function rooms_unit_type_form_validate(&$form, &$form_state) {
-  $unit_type = $form_state['rooms_unit_type'];
-  field_attach_form_validate('rooms_unit_type', $unit_type, $form, $form_state);
+  // Notify field widgets to validate their data.
+  entity_form_field_validate('rooms_unit_type', $form, $form_state);
 }
 
 /**

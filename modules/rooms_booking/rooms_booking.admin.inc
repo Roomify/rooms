@@ -229,7 +229,10 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     'js' => array(drupal_get_path('module', 'rooms') . '/js/rooms_date_popup.js'),
   );
 
-  $client = '';
+  $form['type'] = array(
+    '#type' => 'value',
+    '#value' => $booking->type,
+  );
 
   $currency_setting = commerce_currency_load(commerce_default_currency());
   $currency_symbol = $currency_setting['symbol'];
@@ -856,7 +859,6 @@ function rooms_booking_edit_form_get_rooms($unit_type, $current_booking, $start_
  * Form API validate callback for the booking form.
  */
 function rooms_booking_edit_form_validate(&$form, &$form_state) {
-  $booking = $form_state['rooms_booking'];
   list($start_date, $end_date) = rooms_form_input_get_start_end_dates($form_state);
 
   if ($start_date && $end_date) {
@@ -936,7 +938,7 @@ function rooms_booking_edit_form_validate(&$form, &$form_state) {
   }
 
   // Notify field widgets to validate their data.
-  field_attach_form_validate('rooms_booking', $booking, $form, $form_state);
+  entity_form_field_validate('rooms_booking', $form, $form_state);
 }
 
 /**
