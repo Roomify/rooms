@@ -37,7 +37,7 @@ Drupal.behaviors.roomsAvailability = {
 
     var calendars = [];
     var i = 0;
-    for (i=0;i<Drupal.settings.roomsUnitManagement.roomsNumber;i++) {
+    for (i=0; i<Drupal.settings.roomsUnitManagement.roomsNumber; i++) {
       calendars[i] = new Array('#calendar' + i, month1, year1);
     }
 
@@ -70,7 +70,7 @@ Drupal.behaviors.roomsAvailability = {
       var unit_id = Drupal.settings.roomsUnitManagement.roomsId[c];
 
       $(value[0]).once().fullCalendar({
-        editable:false,
+        editable: false,
         selectable: true,
         dayNamesShort:[Drupal.t("Sun"), Drupal.t("Mon"), Drupal.t("Tue"), Drupal.t("Wed"), Drupal.t("Thu"), Drupal.t("Fri"), Drupal.t("Sat")],
         monthNames:[Drupal.t("January"), Drupal.t("February"), Drupal.t("March"), Drupal.t("April"), Drupal.t("May"), Drupal.t("June"), Drupal.t("July"), Drupal.t("August"), Drupal.t("September"), Drupal.t("October"), Drupal.t("November"), Drupal.t("December")],

@@ -40,22 +40,26 @@ class UnitWeeklyPricingCalendar extends UnitPricingCalendar {
     // Get the raw day results.
     $results = $this->getRawDayData($start_date, $end_date);
     $events = array();
-    foreach ($results[$this->unit_id] as $year => $months) {
-      foreach ($months as $mid => $month) {
-        // Event array gives us the start days for each event within a month.
-        $start_days = array_keys($month['states']);
-        foreach ($month['states'] as $state) {
-          // Create a booking event.
-          $start = $state['start_day'];
-          $end = $state['end_day'];
-          $sd = new DateTime("$year-$mid-$start");
-          $ed = new DateTime("$year-$mid-$end");
-          $amount = commerce_currency_amount_to_decimal($state['state'], commerce_default_currency());
-          $event = new PricingEvent($this->unit_id, $amount, $sd, $ed);
-          $events[] = $event;
-        }
+
+    foreach ($results[$this->unit_id] as $year => $weeks) {
+      foreach ($weeks['states'] as $state) {
+        // Create a booking event.
+        $start = $state['start_week'];
+        $end = $state['end_week'];
+
+        $sd = new DateTime();
+        $sd->setISODate($year, $start, intval(variable_get('date_first_day', 0)));
+        $ed = new DateTime();
+        $ed->setISODate($year, $end, intval(variable_get('date_first_day', 0)));
+        $ed->modify('+6 days');
+
+        $amount = commerce_currency_amount_to_decimal($state['state'], commerce_default_currency());
+
+        $event = new PricingEvent($this->unit_id, $amount, $sd, $ed);
+        $events[] = $event;
       }
     }
+
     return $events;
   }
 
@@ -63,15 +67,19 @@ class UnitWeeklyPricingCalendar extends UnitPricingCalendar {
    * {@inheritdoc}
    */
   public function getRawDayData(DateTime $start_date, DateTime $end_date) {
-    // To handle single-day bookings (Tours) we pretend that they are overnight
-    // bookings.
-    if ($end_date < $start_date) {
-      $end_date->add(new DateInterval('P1D'));
-    }
-
     // Create a dummy PricingEvent to represent the range we are searching over.
     // This gives us access to handy functions that PricingEvents have.
     $s = new PricingEvent($this->unit_id, 0, $start_date, $end_date);
+
+    $start_year = $s->startYear();
+    if ($s->startWeek() == 1 && $s->startMonth() == 12) {
+      $start_year += 1;
+    }
+
+    $end_year = $s->endYear();
+    if ($s->endWeek() == 53 && $s->endMonth() == 1) {
+      $end_year -= 1;
+    }
 
     $results = array();
 
@@ -80,7 +88,7 @@ class UnitWeeklyPricingCalendar extends UnitPricingCalendar {
       $query = db_select('rooms_weekly_pricing', 'a');
       $query->fields('a');
       $query->condition('a.unit_id', $this->unit_id);
-      $query->condition('a.year', $s->startYear());
+      $query->condition('a.year', $start_year);
       $years = $query->execute()->fetchAll(PDO::FETCH_ASSOC);
       if (count($years) > 0) {
         foreach ($years as $year) {
@@ -95,7 +103,7 @@ class UnitWeeklyPricingCalendar extends UnitPricingCalendar {
     }
     // For multiple years do a query for each year.
     else {
-      for ($j = $s->startYear(); $j <= $s->endYear(); $j++) {
+      for ($j = $start_year; $j <= $end_year; $j++) {
         $query = db_select('rooms_weekly_pricing', 'a');
         $query->fields('a');
         $query->condition('a.unit_id', $this->unit_id);
@@ -115,7 +123,7 @@ class UnitWeeklyPricingCalendar extends UnitPricingCalendar {
 
     // With the results from the db in place fill in any missing months
     // with the default state for the unit.
-    for ($j = $s->startYear(); $j <= $s->endYear(); $j++) {
+    for ($j = $start_year; $j <= $end_year; $j++) {
       if (!isset($results[$this->unit_id][$j])) {
         $results[$this->unit_id][$j]['weeks'] = array();
         for ($w = 1; $w <= 53; $w++) {
@@ -128,14 +136,14 @@ class UnitWeeklyPricingCalendar extends UnitPricingCalendar {
     // right start and end date for each month - this will save code downstream
     // from having to worry about it.
     foreach ($results[$this->unit_id] as $year => $wekks) {
-      if ($year == $s->startYear()) {
+      if ($year == $start_year) {
         $mid = $s->startWeek();
 
         for ($i = 1; $i < $mid; $i++) {
           unset($results[$this->unit_id][$year]['weeks']['w' . $i]);
         }
       }
-      if ($year == $s->endYear()) {
+      if ($year == $end_year) {
         $mid = $s->endWeek();
 
         for ($i = $mid + 1; $i <= 53; $i++) {
@@ -152,6 +160,50 @@ class UnitWeeklyPricingCalendar extends UnitPricingCalendar {
           $results[$this->unit_id][$year]['weeks'][$week] = commerce_currency_decimal_to_amount($this->default_price, commerce_default_currency());
         }
       }
+    }
+
+    // Remove week 53 for years with 52 weeks.
+    foreach ($results[$this->unit_id] as $year => $weeks) {
+      if (rooms_periodic_pricing_get_iso_weeks_in_year($year) == 52) {
+        unset($results[$this->unit_id][$year]['weeks']['w53']);
+      }
+    }
+
+    // With the results in place we do a states array with the start and
+    // end months of each event.
+    foreach ($results[$this->unit_id] as $year => $weeks) {
+      reset($weeks['weeks']);
+
+      $j = 1;
+      $i = substr(key($weeks['weeks']), 1);
+
+      $start_week = $i;
+      $end_week = NULL;
+      $unique_states = array();
+      $old_state = $weeks['weeks']['w' . $i];
+      $state = $weeks['weeks']['w' . $i];
+      while ($j <= count($weeks['weeks'])) {
+        $state = $weeks['weeks']['w' . $i];
+        if ($state != $old_state) {
+          $unique_states[] = array(
+            'state' => $old_state,
+            'start_week' => $start_week,
+            'end_week' => $i - 1,
+          );
+          $end_week = $i - 1;
+          $start_week = $i;
+          $old_state = $state;
+        }
+        $i++;
+        $j++;
+      }
+      // Get the last event in.
+      $unique_states[] = array(
+        'state' => $state,
+        'start_week' => isset($end_week) ? $end_week + 1 : $start_week,
+        'end_week' => $i - 1,
+      );
+      $results[$this->unit_id][$year]['states'] = $unique_states;
     }
 
     return $results;
@@ -173,28 +225,16 @@ class UnitWeeklyPricingCalendar extends UnitPricingCalendar {
           /** @var PricingEventInterface $a_event */
           // Apply the operation.
           $a_event->applyOperation($event->amount, $event->operation);
-          // If the event is in the same month span just queue to be added.
-          if ($a_event->sameMonth()) {
-            $monthly_events[] = $a_event;
-          }
-          else {
-            // Check if multi-year - if not just create monthly events.
-            if ($a_event->sameYear()) {
-              $monthly_events_tmp = $a_event->transformToMonthlyEvents();
-              $monthly_events = array_merge($monthly_events, $monthly_events_tmp);
-            }
-            else {
-              // Else transform to single years and then to monthly.
-              $yearly_events = $a_event->transformToYearlyEvents();
-              foreach ($yearly_events as $ye) {
-                $monthly_events_tmp = $ye->transformToMonthlyEvents();
-                $monthly_events = array_merge($monthly_events, $monthly_events_tmp);
-              }
-            }
-          }
+
+          $monthly_events[] = $a_event;
         }
 
         foreach ($monthly_events as $event) {
+          if (intval(variable_get('date_first_day', 0)) == 0) {
+            $event->start_date->modify('+1 day');
+            $event->end_date->modify('+1 day');
+          }
+
           $this->addWeeklyEvent($event);
         }
       }
@@ -204,12 +244,59 @@ class UnitWeeklyPricingCalendar extends UnitPricingCalendar {
   /**
    * {@inheritdoc}
    */
-  protected function preparePartialMonthArray(RoomsEventInterface $event) {
-    $days = array();
-    for ($i = $event->startWeek(); $i <= $event->endWeek(); $i++) {
-      $days['w' . $i] = commerce_currency_decimal_to_amount($event->amount, commerce_default_currency());
+  protected function prepareFullMonthArray(RoomsEventInterface $event) {
+    $weeks = array();
+
+    for ($i = 1; $i <= 53; $i++) {
+      if (($i >= $event->startWeek()) && ($i <= $event->endWeek())) {
+        $weeks['w' . $i] = commerce_currency_decimal_to_amount($event->amount, commerce_default_currency());
+      }
+      else {
+        // When we are writing a new month to the DB make sure to have the placeholder value -1 for the days where the
+        // default price is in effect. This means as a user changes the default price we will take it into account even
+        // though the price data is now in a DB row.
+        $weeks['w' . $i] = -1;
+      }
     }
-    return $days;
+    return $weeks;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function preparePartialMonthArray(RoomsEventInterface $event) {
+    $weeks = array();
+    for ($i = intval($event->startWeek()); $i <= intval($event->endWeek()); $i++) {
+      $weeks['w' . $i] = commerce_currency_decimal_to_amount($event->amount, commerce_default_currency());
+    }
+    return $weeks;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function calculatePricingEvents($unit_id, $amount, DateTime $start_date, DateTime $end_date, $operation, $days) {
+    $events = array();
+
+    $start = new DateTime();
+    if ($start_date->format('m') == 12 && $start_date->format('W') == 1) {
+      $start->setISODate($start_date->format('Y') + 1, $start_date->format('W'));
+    }
+    else {
+      $start->setISODate($start_date->format('Y'), $start_date->format('W'));
+    }
+
+    do {
+      $end = clone($start);
+      $end->modify('+ 1 week - 1 day');
+
+      $events[] = new PricingEvent($unit_id, $amount, clone($start), clone($end), $operation, $days);
+
+      $start->modify('+ 1 week');
+
+    } while ($start <= $end_date);
+
+    return $events;
   }
 
   /**
@@ -232,24 +319,29 @@ class UnitWeeklyPricingCalendar extends UnitPricingCalendar {
    * {@inheritdoc}
    */
   public function addWeeklyEvent(RoomsEventInterface $event) {
+    $start_year = $event->startYear();
+    if ($event->startWeek() == 1 && $event->startMonth() == 12) {
+      $start_year += 1;
+    }
+
     // First check if the month exists and do an update if so
-    if ($this->YearDefined($event->startYear())) {
+    if ($this->YearDefined($start_year)) {
       $partial_month_row = $this->preparePartialMonthArray($event);
       $update = db_update($this->base_table)
         ->condition('unit_id', $this->unit_id)
-        ->condition('year', $event->startYear())
+        ->condition('year', $start_year)
         ->fields($partial_month_row)
         ->execute();
     }
     // Do an insert for a new month
     else {
-      // Prepare the days array
-      $days = $this->prepareFullMonthArray($event);
+      // Prepare the weeks array
+      $weeks = $this->prepareFullMonthArray($event);
       $month_row = array(
         'unit_id' => $this->unit_id,
-        'year' => $event->startYear(),
+        'year' => $start_year,
       );
-      $month_row = array_merge($month_row, $days);
+      $month_row = array_merge($month_row, $weeks);
       $insert = db_insert($this->base_table)->fields($month_row);
       $insert->execute();
     }

@@ -40,20 +40,21 @@ class UnitMonthlyPricingCalendar extends UnitPricingCalendar {
     // Get the raw day results.
     $results = $this->getRawDayData($start_date, $end_date);
     $events = array();
+
     foreach ($results[$this->unit_id] as $year => $months) {
-      foreach ($months as $mid => $month) {
-        // Event array gives us the start days for each event within a month.
-        $start_days = array_keys($month['states']);
-        foreach ($month['states'] as $state) {
-          // Create a booking event.
-          $start = $state['start_day'];
-          $end = $state['end_day'];
-          $sd = new DateTime("$year-$mid-$start");
-          $ed = new DateTime("$year-$mid-$end");
-          $amount = commerce_currency_amount_to_decimal($state['state'], commerce_default_currency());
-          $event = new PricingEvent($this->unit_id, $amount, $sd, $ed);
-          $events[] = $event;
-        }
+      foreach ($months['states'] as $state) {
+        // Create a booking event.
+        $start = $state['start_month'];
+        $end = $state['end_month'];
+
+        $sd = new DateTime("$year-$start-01");
+        $ed = clone($sd);
+        $ed->modify('+' . ($end - $start + 1) . ' months - 1 day');
+
+        $amount = commerce_currency_amount_to_decimal($state['state'], commerce_default_currency());
+
+        $event = new PricingEvent($this->unit_id, $amount, $sd, $ed);
+        $events[] = $event;
       }
     }
     return $events;
@@ -63,12 +64,6 @@ class UnitMonthlyPricingCalendar extends UnitPricingCalendar {
    * {@inheritdoc}
    */
   public function getRawDayData(DateTime $start_date, DateTime $end_date) {
-    // To handle single-day bookings (Tours) we pretend that they are overnight
-    // bookings.
-    if ($end_date < $start_date) {
-      $end_date->add(new DateInterval('P1D'));
-    }
-
     // Create a dummy PricingEvent to represent the range we are searching over.
     // This gives us access to handy functions that PricingEvents have.
     $s = new PricingEvent($this->unit_id, 0, $start_date, $end_date);
@@ -154,6 +149,43 @@ class UnitMonthlyPricingCalendar extends UnitPricingCalendar {
       }
     }
 
+    // With the results in place we do a states array with the start and
+    // end months of each event.
+    foreach ($results[$this->unit_id] as $year => $months) {
+      reset($months['months']);
+
+      $j = 1;
+      $i = substr(key($months['months']), 1);
+
+      $start_month = $i;
+      $end_month = NULL;
+      $unique_states = array();
+      $old_state = $months['months']['m' . $i];
+      $state = $months['months']['m' . $i];
+      while ($j <= count($months['months'])) {
+        $state = $months['months']['m' . $i];
+        if ($state != $old_state) {
+          $unique_states[] = array(
+            'state' => $old_state,
+            'start_month' => $start_month,
+            'end_month' => $i - 1,
+          );
+          $end_month = $i - 1;
+          $start_month = $i;
+          $old_state = $state;
+        }
+        $i++;
+        $j++;
+      }
+      // Get the last event in.
+      $unique_states[] = array(
+        'state' => $state,
+        'start_month' => isset($end_month) ? $end_month + 1 : $start_month,
+        'end_month' => $i - 1,
+      );
+      $results[$this->unit_id][$year]['states'] = $unique_states;
+    }
+
     return $results;
   }
 
@@ -204,12 +236,53 @@ class UnitMonthlyPricingCalendar extends UnitPricingCalendar {
   /**
    * {@inheritdoc}
    */
-  protected function preparePartialMonthArray(RoomsEventInterface $event) {
-    $days = array();
-    for ($i = $event->startMonth(); $i <= $event->endMonth(); $i++) {
-      $days['m' . $i] = commerce_currency_decimal_to_amount($event->amount, commerce_default_currency());
+  protected function prepareFullMonthArray(RoomsEventInterface $event) {
+    $months = array();
+
+    for ($i = 1; $i <= 12; $i++) {
+      if (($i >= $event->startMonth()) && ($i <= $event->endMonth())) {
+        $months['m' . $i] = commerce_currency_decimal_to_amount($event->amount, commerce_default_currency());
+      }
+      else {
+        // When we are writing a new month to the DB make sure to have the placeholder value -1 for the days where the
+        // default price is in effect. This means as a user changes the default price we will take it into account even
+        // though the price data is now in a DB row.
+        $months['m' . $i] = -1;
+      }
     }
-    return $days;
+    return $months;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function preparePartialMonthArray(RoomsEventInterface $event) {
+    $months = array();
+    for ($i = $event->startMonth(); $i <= $event->endMonth(); $i++) {
+      $months['m' . $i] = commerce_currency_decimal_to_amount($event->amount, commerce_default_currency());
+    }
+    return $months;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function calculatePricingEvents($unit_id, $amount, DateTime $start_date, DateTime $end_date, $operation, $days) {
+    $events = array();
+
+    $start = new DateTime($start_date->format('Y-m') . '-01');
+
+    do {
+      $end = clone($start);
+      $end->modify('+ 1 months - 1 day');
+
+      $events[] = new PricingEvent($unit_id, $amount, clone($start), clone($end), $operation, $days);
+
+      $start->modify('+ 1 month');
+
+    } while ($start <= $end_date);
+
+    return $events;
   }
 
   /**

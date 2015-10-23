@@ -150,7 +150,7 @@ abstract class RoomsEvent implements RoomsEventInterface {
    */
   public function transformToMonthlyEvents() {
     $events = array();
-    //First we need to split into events in separate years
+    // First we need to split into events in separate years
     if (!$this->sameYear()) {
       return FALSE;
     }

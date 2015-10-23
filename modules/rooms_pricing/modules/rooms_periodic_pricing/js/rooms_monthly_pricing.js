@@ -7,27 +7,24 @@ Drupal.behaviors.rooms_availability = {
 
     // Current month is whatever comes through -1 since js counts months starting
     // from 0
-    currentMonth = Drupal.settings.roomsCalendar.currentMonth - 1;
-    currentYear = Drupal.settings.roomsCalendar.currentYear;
+    currentMonth = parseInt(Drupal.settings.roomsCalendar.currentMonth - 1);
+    currentYear = parseInt(Drupal.settings.roomsCalendar.currentYear);
     firstDay = Drupal.settings.roomsCalendar.firstDay;
 
-    // The first month on the calendar
-    month1 = currentMonth;
-    year1 = currentYear;
-
     events = [];
-    var url = Drupal.settings.basePath + '?q=bam/v1/pricing&units=' + unit_id + '&start_date=' + year1 + '-' + (month1+1) + '-01&duration=3M';
+    var url = Drupal.settings.basePath + '?q=rooms/units/unit/' + unit_id + '/monthly-pricing/json/' + (currentYear - 2) + '/' + (currentYear + 5);
     $.ajax({
       url: url,
+      dataType: 'json',
       success: function(data) {
-        events = data['events'];
+        events = data;
 
         $('#calendar').fullCalendar('refetchEvents');
       }
     });
 
 
-    phpmonth = month1+1;
+    phpmonth = currentMonth+1;
     $('#calendar').once().fullCalendar({
       schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',
       contentHeight: 63,
@@ -47,21 +44,33 @@ Drupal.behaviors.rooms_availability = {
         center: 'title',
         right: ''
       },
-      defaultDate: moment([year1,phpmonth-1]),
-      events: [
-        { id: '1', resourceId: 'a', start: '2015-01-01', end: '2015-01-01', color: 'blue', title: '110' },
-        { id: '2', resourceId: 'a', start: '2015-02-01', end: '2015-02-01', color: 'red', title: '100' },
-        { id: '3', resourceId: 'a', start: '2015-03-01', end: '2015-03-01', color: 'red', title: '101' },
-        { id: '4', resourceId: 'a', start: '2015-04-01', end: '2015-04-01', color: 'blue', title: '102' },
-        { id: '5', resourceId: 'a', start: '2015-05-01', end: '2015-05-01', color: 'red', title: '103' },
-        { id: '6', resourceId: 'a', start: '2015-06-01', end: '2015-06-01', color: 'red', title: '104' },
-        { id: '7', resourceId: 'a', start: '2015-07-01', end: '2015-07-01', color: 'red', title: '105' },
-        { id: '8', resourceId: 'a', start: '2015-08-01', end: '2015-08-01', color: 'blue', title: '106' },
-        { id: '9', resourceId: 'a', start: '2015-09-01', end: '2015-09-01', color: 'red', title: '107' },
-        { id: '10', resourceId: 'a', start: '2015-10-01', end: '2015-10-01', color: 'blue', title: '108' },
-        { id: '11', resourceId: 'a', start: '2015-11-01', end: '2015-11-01', color: 'red', title: '109' },
-        { id: '11', resourceId: 'a', start: '2015-12-01', end: '2015-12-01', color: 'red', title: '111' }
-      ]
+      defaultDate: moment([currentYear,phpmonth-1]),
+      events: function(start, end, timezone, callback) {
+        callback(events);
+      },
+      // Remove Time from events
+      eventRender: function(event, el, view) {
+        el.find('.fc-time').remove();
+      },
+      viewRender: function(view, element) {
+        if (view.start.year() == currentYear - 2) {
+          $(".fc-prev-button").prop('disabled', true); 
+          $(".fc-prev-button").addClass('fc-state-disabled'); 
+        }
+        else {
+          $(".fc-prev-button").removeClass('fc-state-disabled'); 
+          $(".fc-prev-button").prop('disabled', false); 
+        }
+
+        if (view.start.year() == currentYear + 5) {
+          $(".fc-next-button").prop('disabled', true); 
+          $(".fc-next-button").addClass('fc-state-disabled'); 
+        }
+        else {
+          $(".fc-next-button").removeClass('fc-state-disabled'); 
+          $(".fc-next-button").prop('disabled', false); 
+        }
+      }
     });
 
 

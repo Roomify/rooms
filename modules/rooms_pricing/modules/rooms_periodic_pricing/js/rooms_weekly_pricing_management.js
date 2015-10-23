@@ -24,32 +24,33 @@ Drupal.behaviors.roomsAvailabilityPrepareForm = {
 Drupal.behaviors.roomsPricing = {
   attach: function(context) {
 
-    // Current month is whatever comes through -1 since js counts months starting from 0
-    currentMonth = Drupal.settings.roomsUnitManagement.currentMonth - 1;
-    currentYear = Drupal.settings.roomsUnitManagement.currentYear;
+    $('#edit-start-week, #edit-end-week').datepicker({
+      showWeek: true,
+      firstDay: 1,
+      onSelect: function(dateText, inst) {
+        var date = new Date(dateText);
+        var date_year = date.getFullYear();
+        var week_number = $.datepicker.iso8601Week(date);
+        if (date.getMonth() == 11 && week_number == 1) {
+          date_year = date_year + 1;
+        }
+        $(this).val('Year ' + date_year + ' - Week ' + week_number);
+      },
+      beforeShowDay: function(date) {
+        var day = date.getDay();
+        return [(day == 1), ''];
+      }
+    });
 
-    // The first month on the calendar
-    month1 = currentMonth;
-    year1 = currentYear;
+    // Current month is whatever comes through -1 since js counts months starting from 0
+    currentMonth = parseInt(Drupal.settings.roomsUnitManagement.currentMonth - 1);
+    currentYear = parseInt(Drupal.settings.roomsUnitManagement.currentYear);
 
     var calendars = [];
     var i = 0;
-    for (i=0;i<Drupal.settings.roomsUnitManagement.roomsNumber;i++) {
-      calendars[i] = new Array('#calendar' + i, month1, year1);
+    for (i=0; i<Drupal.settings.roomsUnitManagement.roomsNumber; i++) {
+      calendars[i] = new Array('#calendar' + i, currentMonth, currentYear);
     }
-
-    events = [];
-    var url = Drupal.settings.basePath + '?q=bam/v1/pricing&units=' + Drupal.settings.roomsUnitManagement.roomsId.join() + '&start_date=' + year1 + '-' + (month1+1) + '-01&duration=1M';
-    $.ajax({
-      url: url,
-      success: function(data) {
-        events = data['events'];
-
-        $.each(calendars, function(key, value) {
-          $(value[0]).fullCalendar('refetchEvents');
-        });
-      }
-    });
 
     var c = 0;
     $.each(calendars, function(key, value) {
@@ -75,7 +76,21 @@ Drupal.behaviors.roomsPricing = {
           left: '',
           center: '',
           right: ''
-        }
+        },
+        events: function(start, end, timezone, callback) {
+          var url = Drupal.settings.basePath + '?q=rooms/units/unit/' + Drupal.settings.roomsUnitManagement.roomsId[c] + '/weekly-pricing/json/' + (currentYear - 1) + '/' + (currentYear + 1);
+          $.ajax({
+            url: url,
+            dataType: 'json',
+            success: function(data) {
+              callback(data);
+            }
+          });
+        },
+        // Remove Time from events
+        eventRender: function(event, el, view) {
+          el.find('.fc-time').remove();
+        },
       });
 
       c++;
