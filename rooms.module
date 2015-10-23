@@ -117,17 +117,17 @@ function rooms_libraries_info() {
     ),
   );
 
-  $libraries['rooms_fullcalendar'] = array(
+  $libraries['fullcalendar'] = array(
     'name' => 'Full Calendar',
     'vendor url' => 'http://fullcalendar.io',
-    'download url' => 'http://www.drupalrooms.com/sites/default/files/rooms_fullcalendar-2.1.1.zip',
+    'download url' => 'https://github.com/arshaw/fullcalendar/releases/download/v2.4.0/fullcalendar-2.4.0.zip',
     'version arguments' => array(
-      'file' => 'dist/fullcalendar.js',
-      // 2.1.1
+      'file' => 'fullcalendar.js',
+      // 2.4.0
       'pattern' => '/v(\d+\.\d+\.\d)/',
       'lines' => 3,
     ),
-    'path' => 'dist',
+   // 'path' => 'dist',
     'files' => array(
       'js' => array(
         'fullcalendar.js',
@@ -175,7 +175,7 @@ function rooms_libraries_info() {
  *   A boolean indicating the FullCalendar status.
  */
 function rooms_fullcalendar_loaded() {
-  if (rooms_library_loaded('rooms_fullcalendar', 'minified')) {
+  if (rooms_library_loaded('fullcalendar', 'minified')) {
     return TRUE;
   }
   else {
