@@ -121,7 +121,7 @@ function rooms_booking_manager_override_confirmation_form_submit($form, &$form_s
 
       // Convert Price options in Price modifiers.
       foreach (rooms_unit_get_unit_options($unit['unit']) as $option) {
-        $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
+        $option_name = rooms_options_machine_name($option['name']);
         if (isset($options[$option_name])) {
           if ($options[$option_name] == 1) {
             $quantity = 1;

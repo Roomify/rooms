@@ -217,7 +217,7 @@ function _rooms_booking_manager_display_book_button($form, $type, $price) {
  * @return mixed
  */
 function _rooms_booking_manager_add_options($form, $form_state, $type, $price, $c, $option) {
-  $option_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
+  $option_name = rooms_options_machine_name($option['name']);
   $form[$type][$price]['fieldset'][$c][$option_name] = array(
     '#type' => 'checkbox',
     '#title' => t($option['name']),

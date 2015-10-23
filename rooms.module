@@ -1168,6 +1168,23 @@ function rooms_assoc_range($start, $end) {
 }
 
 /**
+ * Converts Rooms option human name to its machine name.
+ *
+ * @param string $option_name
+ *   The human option name.
+ * @param string $pattern
+ *   The pattern used to convert. By default "/[^a-z0-9_]+/".
+ * @param string $replacement
+ *   The replacement string. By default "_".
+ *
+ * @return string
+ *   The option machine name.
+ */
+function rooms_options_machine_name($option_name, $pattern = '/[^a-z0-9_]+/', $replacement = '_') {
+  return preg_replace($pattern, $replacement, drupal_strtolower($option_name));
+}
+
+/**
  * Helper validate function to ensure that at least one room is selected.
  */
 function _rooms_select_rooms_validation($form_state) {
