@@ -18,7 +18,7 @@ Scenario: Availability manager user should be able to modify the pricing of unit
 
   # Check the initial conditions.
   Given the cache has been cleared
-  And I am logged in as a user with the "access administration pages,view any rooms_unit entity of bundle standard,administer rooms_unit pricing,update pricing any rooms_unit entity of bundle standard,book in advance without limitation" permissions
+  And I am logged in as a user with the "access administration pages,view any rooms_unit entity of bundle standard,administer rooms_unit pricing,update pricing any rooms_unit entity of bundle standard,book in advance without limitation,access pricing index service" permissions
   Then the price for "Normal" between "2016-05-05" and "2016-07-07" should be "120"
   And the price for "Special" between "2016-05-05" and "2016-07-07" should be "130"
 

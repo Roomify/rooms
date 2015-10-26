@@ -379,13 +379,12 @@ class FeatureContext extends DrupalSubContextBase implements CustomSnippetAccept
     $end_format = $end->format('Y-m-d');
 
     foreach ($this->monthsBetweenDates($start, $end) as $month) {
-      $path = "rooms/units/unit/$unit_id/$type/json/{$month->format('Y/m')}";
+      $path = 'bat/v1/' . $type . '?units=' . $unit_id . '&start_date=' . $month->format('Y-m') . '-01&duration=1M';
       $this->getSession()->visit($this->locatePath($path));
-      $content = $this->getSession()->getPage()->find('xpath', '/body')
-        ->getHtml();
+      $content = $this->getSession()->getPage()->find('xpath', '/body')->getText();
       $events = json_decode($content);
 
-      foreach ($events as $event) {
+      foreach ($events->events->{$unit_id} as $event) {
         $event_start = new DateTime($event->start);
         $event_end = new DateTime($event->end);
 
