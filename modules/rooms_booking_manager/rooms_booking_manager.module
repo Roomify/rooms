@@ -1320,7 +1320,7 @@ function book_unit_form_submit(&$form, &$form_state) {
 
         // Refresh line items price and redirect to bookings page.
         commerce_cart_order_refresh(commerce_cart_order_load($user->uid));
-        $form_state['redirect'] = 'bookings';
+        $form_state['redirect'] = variable_get('rooms_booking_manager_post_add_booking_path', 'bookings');
       }
     }
     elseif (variable_get('rooms_checkout_style', ROOMS_COMMERCE_CHECKOUT) == ROOMS_ENQ_CHECKOUT) {
@@ -2004,7 +2004,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
 
   // Refresh line items price and redirect to bookings page.
   commerce_cart_order_refresh(commerce_cart_order_load($user->uid));
-  $form_state['redirect'] = 'bookings';
+  $form_state['redirect'] = variable_get('rooms_booking_manager_post_add_booking_path', 'bookings');
 }
 
 /**
