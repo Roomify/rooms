@@ -639,6 +639,13 @@ class FeatureContext extends DrupalSubContextBase implements CustomSnippetAccept
   }
 
   /**
+   * @Given /^I add a constraint from "(?P<start>[^"]*)" to "(?P<end>[^"]*)" "(?P<constraint_type>[^"]*)" start on "(?P<start_day>[^"]*)"$/
+   */
+  public function iAddAConstraintFromToMustStartOn($start, $end, $constraint_type, $start_day) {
+    $this->addAvailabilityConstraint(NULL, NULL, $constraint_type, $start_day, $start, $end);
+  }
+
+  /**
    * @Given /^I add a constraint from "(?P<start>[^"]*)" to "(?P<end>[^"]*)" "(?P<constraint_type>[^"]*)" start on "(?P<start_day>[^"]*)" and the minimum is "(?P<minimum>[^"]*)" and the maximum is "(?P<maximum>[^"]*)"$/
    */
   public function iAddAConstraintFromToMustStartOnAndTheMinimumIsAndTheMaximumIs($start, $end, $constraint_type, $start_day, $minimum, $maximum) {
@@ -999,27 +1006,55 @@ class FeatureContext extends DrupalSubContextBase implements CustomSnippetAccept
     $items = $this->getSession()->getPage()->findAll('css', 'table[id^="rooms-constraints-range-values"] tbody tr');
     $delta = count($items) - 1;
 
-    if (!isset($start) || !isset($end)) {
-      $this->minkContext->checkOption('rooms_constraints_range[und][' . $delta . '][always]');
+    if ($constraint_type == 'must') {
+      $this->minkContext->pressButton('add_checkin_day_' . $delta);
     }
     else {
+      $this->minkContext->pressButton('add_min_max_' . $delta);
+    }
+    $this->minkContext->iWaitForAjaxToFinish();
+
+    if (!isset($start) || !isset($end)) {
+      $this->minkContext->selectOption('rooms_constraints_range[und][' . $delta . '][group_conditions][period]', 'always');
+    }
+    else {
+      $this->minkContext->selectOption('rooms_constraints_range[und][' . $delta . '][group_conditions][period]', 'dates');
+      $this->minkContext->iWaitForAjaxToFinish();
+
       $start_date = new DateTime($start);
       $end_date = new DateTime($end);
-      $this->minkContext->fillField('rooms_constraints_range[und][' . $delta . '][start_date][date]', $start_date->format('d/m/Y'));
-      $this->minkContext->fillField('rooms_constraints_range[und][' . $delta . '][end_date][date]', $end_date->format('d/m/Y'));
+      $this->minkContext->fillField('rooms_constraints_range[und][' . $delta . '][group_conditions][start_date][date]', $start_date->format('d/m/Y'));
+      $this->minkContext->fillField('rooms_constraints_range[und][' . $delta . '][group_conditions][end_date][date]', $end_date->format('d/m/Y'));
     }
-    if (isset($constraint_type)){
-      $this->minkContext->selectOption('rooms_constraints_range[und][' . $delta . '][constraint_type]', $constraint_type);
+
+    if (isset($start_day)) {
+      if ($constraint_type == 'must') {
+        $this->minkContext->selectOption('rooms_constraints_range[und][' . $delta . '][group_conditions][booking_must_start]', $start_day);
+      }
+      elseif ($constraint_type == 'if') {
+        $this->minkContext->checkOption('rooms_constraints_range[und][' . $delta . '][group_conditions][booking_if_start]');
+        $this->minkContext->iWaitForAjaxToFinish();
+
+        $this->minkContext->selectOption('rooms_constraints_range[und][' . $delta . '][group_conditions][booking_if_start_day]', $start_day);
+      }
     }
-    if (isset($start_day)){
-      $this->minkContext->selectOption('rooms_constraints_range[und][' . $delta . '][start_day]', $start_day);
+
+    if ($constraint_type != 'must') {
+      if (is_numeric($minimum)) {
+        $this->minkContext->checkOption('rooms_constraints_range[und][' . $delta . '][group_conditions][minimum_stay]');
+        $this->minkContext->iWaitForAjaxToFinish();
+
+        $this->minkContext->fillField('rooms_constraints_range[und][' . $delta . '][group_conditions][minimum_stay_nights]', $minimum);
+      }
+
+      if (is_numeric($maximum)) {
+        $this->minkContext->checkOption('rooms_constraints_range[und][' . $delta . '][group_conditions][maximum_stay]');
+        $this->minkContext->iWaitForAjaxToFinish();
+
+        $this->minkContext->fillField('rooms_constraints_range[und][' . $delta . '][group_conditions][maximum_stay_nights]', $maximum);
+      }
     }
-    if (isset($minimum)){
-      $this->minkContext->fillField('rooms_constraints_range[und][' . $delta . '][minimum_stay]', $minimum);
-    }
-    if (isset($maximum)){
-      $this->minkContext->fillField('rooms_constraints_range[und][' . $delta . '][maximum_stay]', $maximum);
-    }
+
     $this->minkContext->pressButton('rooms_constraints_range_add_more');
     $this->minkContext->iWaitForAjaxToFinish();
   }
