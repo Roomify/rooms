@@ -386,6 +386,7 @@ function rooms_pricing_bulk_pricing_management($year = '', $month = '', $type = 
       'css' => array(drupal_get_path('module', 'rooms_pricing') . '/css/rooms_pricing.css'),
       'js' => array(
         drupal_get_path('module', 'rooms_pricing') . '/js/rooms_pricing_management.js',
+        drupal_get_path('module', 'rooms') . '/js/rooms_fullcalendar_singlerowmonth.js',
         array(
           'data' => array(
             'roomsUnitManagement' => array(

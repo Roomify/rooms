@@ -54,6 +54,9 @@ Drupal.behaviors.roomsPricing = {
     var c = 0;
     $.each(calendars, function(key, value) {
       phpmonth = value[1]+1;
+
+      var unit_id = Drupal.settings.roomsUnitManagement.roomsId[c];
+
       $(value[0]).once().fullCalendar({
         editable:false,
         dayNamesShort:[Drupal.t("Sun"), Drupal.t("Mon"), Drupal.t("Tue"), Drupal.t("Wed"), Drupal.t("Thu"), Drupal.t("Fri"), Drupal.t("Sat")],
