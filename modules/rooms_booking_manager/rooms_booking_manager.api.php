@@ -29,3 +29,11 @@ function hook_rooms_booking_results_alter(&$units_per_type, $start_date, $end_da
     }
   }
 }
+
+/**
+ * @param $line_item
+ * @param array $context
+ */
+function hook_rooms_create_line_item_alter(&$line_item, $context) {
+	// No example.
+}

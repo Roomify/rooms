@@ -160,6 +160,16 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent, $bookin
     $line_item->rooms_booked_bookingprice = $booking_price;
     $line_item->rooms_booking_options = $price_options;
 
+    $context = array(
+      'unit' => $unit_to_book,
+      'unit_id' => $unit_id,
+      'unit_type' => $unit_type->label,
+      'arrival' => $agent->start_date,
+      'departure' => $dd,
+      'nights' => $nights,
+    );
+    drupal_alter('rooms_create_line_item', $line_item, $context);
+
     return $line_item;
   }
 }
