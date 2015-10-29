@@ -1,15 +1,21 @@
-INTRODUCTION
-------------
-Rooms is a family of modules that enable you to manage Booking for hotels,
-B&Bs and vacation rentals.
+ROOMS 7.x-1.x
+-------------
+Rooms is a family of modules that allow you to manage bookings primarily for the accommodation industry it is suitable for hotels, B&Bs, vacation rentals and agencies that manage multiple properties.
 
-It builds on the Drupal CMS (drupal.org) and its modules.
-
-For more extensive documentation and examples check out http://roomify.us/documentation/rooms-module
+If you are looking to create a fully customized booking solution for scenarios such as the ones above from scratch install Rooms on a vanilla Drupal site with all its dependencies. You will be able to use standard Drupal techniques to customize further.
 
 
-INSTALLATION
-------------
+If instead you are looking to get a head start checkout out roomify.us for access to our open-source ready made solutions for:
+
+Vacation Rentals - [Casa](https://roomify.us/roomifycasa)
+
+Hotels and B&Bs - [Locanda](https://roomify.us/roomifylocanda)
+
+Multiple Properties - [Agency](https://roomify.us/roomifyagency)
+
+
+QUICK INSTALLATION
+------------------
 Follow the steps below to install Rooms.
 
 1. To display interactive calendars, Rooms depends on the FullCalendar
@@ -27,14 +33,13 @@ This version of FullCalendar depends on moment.js library minified version
 library should be placed in sites/all/libraries so that you end up with the
 file located here: sites/all/libraries/moment/moment.min.js
 
-*It is not necessary to install a Drupal module called fullcalendar.*
 
 2. Activate all the Rooms modules and their dependencies. Dependencies will
 be automatically downloaded if using [drush][3] to enable the Rooms modules.
 Alternatively please make sure you download all dependencies (which can be
-seen in the modules page).
+seen in the module page).
 
-At this point the module is installed and you should proceed with configuration.
+At this point the module is installed and you can proceed with configuration.
 
 
 CONFIGURATION

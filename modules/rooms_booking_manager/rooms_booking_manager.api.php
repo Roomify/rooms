@@ -31,6 +31,10 @@ function hook_rooms_booking_results_alter(&$units_per_type, $start_date, $end_da
 }
 
 /**
+ * Allows you to change the line item before it is added to the cart - this gives
+ * lots of flexibility to add information to a line item or change the label.
+ *
+ *
  * @param $line_item
  * @param array $context
  */
