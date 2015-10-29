@@ -923,7 +923,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     // Calculate the price per person per night, too.
     $base_price = $price_per_person / $nights;
 
-    $form['price']['#markup'] = rooms_string(format_plural($nights, 'Book this unit for 1 night at <b>@price per person</b> (@base_price per person per night)', 'Book this unit for @count nights at <b>@price per person</b> (@base_price per person per night)', array(
+    $form['price']['#markup'] = rooms_string(format_plural($nights, t('Book this unit for 1 night at <b>@price per person</b> (@base_price per person per night)'), t('Book this unit for @count nights at <b>@price per person</b> (@base_price per person per night)'), array(
       '@price' => t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
         '@currency_symbol' => $currency_symbol,
         '@amount' => $price_per_person)),
@@ -1537,7 +1537,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
           // for all people in the room.
           $unit_type_label = rooms_unit_get_types($units[$units_keys[$c - 1]]['unit']->type)->label;
           if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
-            $label = rooms_string('Subtotal',
+            $label = rooms_string(t('Subtotal'),
               $context = array(
                 '#component' => 'units_per_type_form_subtotal_label',
                 '#purpose' => 'display_base_subtotal_label',
@@ -1550,7 +1550,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             );
           }
           else {
-            $label = rooms_string('Price',
+            $label = rooms_string(t('Price'),
               $context = array(
                 '#component' => 'units_per_type_form_price_label',
                 '#purpose' => 'display_base_price_label',
