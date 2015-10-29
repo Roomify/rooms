@@ -13,6 +13,8 @@ Hotels and B&Bs - [Locanda](https://roomify.us/roomifylocanda)
 
 Multiple Properties - [Agency](https://roomify.us/roomifyagency)
 
+[General Documentation](http://roomify.us/documentation) 
+
 
 QUICK INSTALLATION
 ------------------
