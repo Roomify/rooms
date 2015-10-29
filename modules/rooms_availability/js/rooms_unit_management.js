@@ -117,7 +117,7 @@ Drupal.behaviors.roomsAvailability = {
             el.find('.event-end').css('border-top-color', this.color);
           }
         },
-        eventAfterRender: function( event, element, view ) {
+        eventAfterRender: function(event, element, view) {
           // Event width.
           var width = element.parent().width()
           // Event colspan number.
