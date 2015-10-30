@@ -37,7 +37,7 @@ function rooms_variable_group_info() {
   $groups['rooms'] = array(
     'title' => t('Rooms'),
     'description' => t('Variable examples of different types.'),
-    'access' => 'administer site configuration',
+    'access' => 'configure room settings',
     'path' => array('admin/rooms/'),
   );
   return $groups;

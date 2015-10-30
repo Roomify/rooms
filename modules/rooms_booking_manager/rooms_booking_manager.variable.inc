@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Variable API module. Definition for some xample variables
+ * Variable API module. Definition for some example variables.
  */
 
 /**
@@ -14,16 +14,16 @@ function rooms_booking_manager_variable_info($options) {
     'default' => 'Arrival Date',
     'description' => t('Change text : Arrival Date (text in "Current search legend")'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
-  
+
   $variables['rooms_booking_manager_departure_date'] = array(
     'type' => 'string',
     'title' => t('Departure Date (text in "Current search legend")'),
     'default' => 'Departure Date',
     'description' => t('Change text : Departure Date (text in "Current search legend")'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
 
   $variables['rooms_booking_manager_review_your_reservation'] = array(
@@ -32,7 +32,7 @@ function rooms_booking_manager_variable_info($options) {
     'default' => 'Review your reservation',
     'description' => t('Change text : Review your reservation'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
 
   $variables['rooms_booking_manager_create_your_booking'] = array(
@@ -41,7 +41,7 @@ function rooms_booking_manager_variable_info($options) {
     'default' => 'Create your booking',
     'description' => t('Change text : Create your booking'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
 
   $variables['rooms_booking_manager_units'] = array(
@@ -50,7 +50,7 @@ function rooms_booking_manager_variable_info($options) {
     'default' => 'Units',
     'description' => t('Change text : Units'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
 
   $variables['rooms_booking_manager_unit_type'] = array(
@@ -59,7 +59,7 @@ function rooms_booking_manager_variable_info($options) {
     'default' => 'Unit type',
     'description' => t('Change text : Unit type'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
 
   $variables['rooms_booking_manager_group_size'] = array(
@@ -68,7 +68,7 @@ function rooms_booking_manager_variable_info($options) {
     'default' => 'Group size',
     'description' => t('Change text : Group size'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
 
   $variables['rooms_booking_manager_children'] = array(
@@ -77,7 +77,7 @@ function rooms_booking_manager_variable_info($options) {
     'default' => 'Children',
     'description' => t('Change text : Children'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
 
   $variables['rooms_booking_manager_select_type'] = array(
@@ -86,7 +86,7 @@ function rooms_booking_manager_variable_info($options) {
     'default' => 'Select Type',
     'description' => t('Change text : Select Type'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
 
   $variables['rooms_booking_manager_unit_available_from'] = array(
@@ -95,7 +95,7 @@ function rooms_booking_manager_variable_info($options) {
     'default' => 'unit available from',
     'description' => t('Change text : unit available from'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
 
   $variables['rooms_booking_manager_units_chosen'] = array(
@@ -104,7 +104,7 @@ function rooms_booking_manager_variable_info($options) {
     'default' => 'Units Chosen',
     'description' => t('Change text : Units chosen'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
 
   $variables['rooms_booking_manager_warning_no_units_available'] = array(
@@ -113,7 +113,7 @@ function rooms_booking_manager_variable_info($options) {
     'default' => 'Unfortunately no units are available - try different dates if possible.',
     'description' => t('Change text : Unfortunately no units are available - try different dates if possible.'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
 
   $variables['rooms_booking_manager_select_your_stay'] = array(
@@ -122,7 +122,7 @@ function rooms_booking_manager_variable_info($options) {
     'default' => 'Select your stay',
     'description' => t('Change text : Select your stay'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
 
   $variables['rooms_booking_manager_your_current_search'] = array(
@@ -131,7 +131,7 @@ function rooms_booking_manager_variable_info($options) {
     'default' => 'Your current search',
     'description' => t('Change text : Your current search'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
 
   $variables['rooms_booking_manager_nights'] = array(
@@ -140,7 +140,7 @@ function rooms_booking_manager_variable_info($options) {
     'default' => 'Nights',
     'description' => t('Change text : Nights'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
 
   $variables['rooms_booking_manager_onrequest_option'] = array(
@@ -149,16 +149,16 @@ function rooms_booking_manager_variable_info($options) {
     'default' => 'we will be in touch regarding availability and costs for this option',
     'description' => t('Change on request option description'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
- 
+
   $variables['rooms_booking_manager_error_select_unit'] = array(
     'type' => 'text',
     'title' => t('Error Message : Select a Unit'),
     'default' => 'Please select a unit in order to continue with booking.',
     'description' => t('Change text : Please select a unit in order to continue with booking.'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
 
   $variables['rooms_booking_manager_button_search_for_availability'] = array(
@@ -167,7 +167,7 @@ function rooms_booking_manager_variable_info($options) {
     'default' => 'Search for Availability',
     'description' => t('Change button : Search for Availability'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
 
   $variables['rooms_booking_manager_button_change_search'] = array(
@@ -176,7 +176,7 @@ function rooms_booking_manager_variable_info($options) {
     'default' => 'Change search',
     'description' => t('Change button : Change search'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
 
   $variables['rooms_booking_manager_button_place_booking'] = array(
@@ -185,7 +185,7 @@ function rooms_booking_manager_variable_info($options) {
     'default' => 'Place Booking',
     'description' => t('Change button : Place Booking'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
 
   $variables['rooms_booking_manager_button_checkout'] = array(
@@ -194,7 +194,7 @@ function rooms_booking_manager_variable_info($options) {
     'default' => 'Checkout',
     'description' => t('Change button : Checkout'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
 
   $variables['rooms_booking_manager_button_remove'] = array(
@@ -203,7 +203,7 @@ function rooms_booking_manager_variable_info($options) {
     'default' => 'Remove',
     'description' => t('Change button : Remove'),
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
   );
 
   $variables['rooms_booking_manager_enquiry_form_confirmation'] = array(
@@ -212,10 +212,10 @@ function rooms_booking_manager_variable_info($options) {
     'description' => t('Enquiry form confirmation message', array(), $options),
     'default' => 'Thank you - a reservation has been created in our system for this unit and your enquiry has been sent successfully.',
     'localize' => TRUE,
-    'group' => 'rooms_booking_manager',
+    'group' => 'rooms',
     'required' => TRUE,
   );
-  
+
   return $variables;
 }
 
