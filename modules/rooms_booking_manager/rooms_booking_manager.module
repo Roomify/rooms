@@ -932,7 +932,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
         '@amount' => $base_price))
     )), array(
       '#component' => 'book_unit_form_builder',
-      '#purpose' => 'display_base_price_per_pèrson',
+      '#purpose' => 'display_base_price_per_person',
       '#data' => array(
         'price' => $price,
         'currency_symbol' => $currency_symbol,
@@ -1929,7 +1929,7 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
             }
           }
           $persons = (isset($form_state['values'][$type][$price_level]['fieldset'][$i]['persons'])) ?
-            $form_state['values'][$type][$price_level]['fieldset'][$i]['persons'] + $unit['unit']->min_sleeps :
+            $form_state['values'][$type][$price_level]['fieldset'][$i]['persons'] :
             ((isset($booking_parameters[$i]['adults'])) ? $booking_parameters[$i]['adults'] : $unit['unit']->min_sleeps);
 
           $children = (isset($form_state['values'][$type][$price_level]['fieldset'][$i]['children'])) ?
