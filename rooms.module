@@ -118,7 +118,7 @@ function rooms_libraries_info() {
   );
 
   $libraries['fullcalendar'] = array(
-    'name' => 'Full Calendar',
+    'name' => 'FullCalendar',
     'vendor url' => 'http://fullcalendar.io',
     'download url' => 'https://github.com/arshaw/fullcalendar/releases/download/v2.4.0/fullcalendar-2.4.0.zip',
     'version arguments' => array(
