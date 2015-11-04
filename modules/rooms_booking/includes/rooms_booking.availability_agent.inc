@@ -376,9 +376,10 @@ class AvailabilityAgent {
         );
 
         // Give other modules a chance to change the price modifiers.
-        drupal_alter('rooms_price_modifier', $price_modifiers, $booking_info);
+        $current_price_modifiers = $price_modifiers;
+        drupal_alter('rooms_price_modifier', $current_price_modifiers, $booking_info);
 
-        $price_calendar = new UnitPricingCalendar($unit->unit_id, $price_modifiers);
+        $price_calendar = new UnitPricingCalendar($unit->unit_id, $current_price_modifiers);
 
         if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON && count($this->booking_parameters) == 1 && isset($this->booking_parameters[0]) && is_array($this->booking_parameters)) {
           $price_log = $price_calendar->calculatePrice($this->start_date,
