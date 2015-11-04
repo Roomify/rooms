@@ -1093,7 +1093,7 @@ function rooms_booking_edit_form_get_rooms($unit_type, $current_booking, $start_
     foreach ($available_units as $type => $units_per_price) {
       foreach ($units_per_price as $price => $units) {
         foreach ($units as $unit_id => $unit) {
-          if (rooms_unit_access('update availability', $unit['unit'])) {
+          if (rooms_unit_access('update', $unit['unit'])) {
             $bookable_units[$type][$price][$unit_id] = $unit;
           }
         }
