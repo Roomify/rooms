@@ -14,7 +14,7 @@
           dayNamesShort:[Drupal.t("Sun"), Drupal.t("Mon"), Drupal.t("Tue"), Drupal.t("Wed"), Drupal.t("Thu"), Drupal.t("Fri"), Drupal.t("Sat")],
           monthNames:[Drupal.t("January"), Drupal.t("February"), Drupal.t("March"), Drupal.t("April"), Drupal.t("May"), Drupal.t("June"), Drupal.t("July"), Drupal.t("August"), Drupal.t("September"), Drupal.t("October"), Drupal.t("November"), Drupal.t("December")],
           defaultDate: today,
-          firstDay: Drupal.settings.roomsCalendar.firstDay,
+          firstDay: Drupal.settings.roomsAvailabilityRef[cal_id].firstDay,
           header:{
             left: 'today',
             center: 'title',
@@ -57,7 +57,6 @@
               el.append('<div class="event-end"/>');
               el.find('.event-end').css('border-top-color', this.color);
             }
-            console.log(el);
           },
           eventAfterRender: function(event, element, view) {
             // Event width.

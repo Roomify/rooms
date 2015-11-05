@@ -131,6 +131,7 @@ function rooms_availability_reference_field_formatter_view($entity_type, $entity
         $js_settings[$id] = array(
           'unitID' => $unit_ids,
           'style' => ROOMS_AVAILABILITY_GENERIC_STYLE,
+          'firstDay' => intval(variable_get('date_first_day', 0)),
         );
       }
 
