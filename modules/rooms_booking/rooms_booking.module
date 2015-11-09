@@ -6,11 +6,6 @@
  * Unit ID and Order ID.
  */
 
-// This is a special booking type used to avoid confusion between
-// deleted bookings directly or deleting them because we deleted
-// a line item or an order.
-define('ROOMS_BOOKING_DELETED', 'rooms_booking_deleted');
-
 /**
  * Implements hook_menu().
  */
@@ -1027,7 +1022,7 @@ class RoomsBookingController extends EntityAPIController {
     // the old event unless this is a booking we are deleting - in which case we
     // have already removed the event.
     if ((!isset($entity->is_new)) && ($entity->unit_id != 0) && ($entity->original->start_date != '') &&
-      ($entity->original->end_date != '') && ($entity->type != ROOMS_BOOKING_DELETED)) {
+      ($entity->original->end_date != '')) {
       // Create a calendar.
       $uc = new UnitCalendar($entity->original->unit_id);
       $event_id = rooms_availability_assign_id($entity->booking_id, $entity->booking_status);
@@ -1043,7 +1038,7 @@ class RoomsBookingController extends EntityAPIController {
 
     // We have a unit defined so lets block availability there unless its a
     // booking that is to be deleted.
-    if (($entity->unit_id != 0) && ($entity->type != ROOMS_BOOKING_DELETED)) {
+    if ($entity->unit_id != 0) {
       // Set the event_id.
       $event_id = rooms_availability_assign_id($entity->booking_id, $entity->booking_status);
       // Create an event.
@@ -1067,10 +1062,6 @@ class RoomsBookingController extends EntityAPIController {
 
       // Update the availability calendar.
       $this->delete_event($booking);
-
-      // We've updated the calendar so mark the booking as deleted.
-      $booking->type = ROOMS_BOOKING_DELETED;
-      $booking->save();
 
       if ($delete_line_item) {
         // Delete the line_item associated with this booking.
