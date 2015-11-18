@@ -1694,7 +1694,10 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             $temp_end_date->sub(new DateInterval('P1D'));
             $new_price = $price_calendar->calculatePrice($start_date, $temp_end_date);
           }
+
           $new_price = $new_price['full_price'];
+          $deposit_amount = rooms_booking_manager_check_for_deposit($new_price);
+
           if (empty($deposit_amount)) {
             // Replace old price with the new calculated value.
             $form[$type][$price]['fieldset'][$c]['price']['#markup'] =
@@ -2738,6 +2741,7 @@ function rooms_booking_manager_deposit_config_form_submit($form, &$form_state) {
     $form_state['values']['rooms_booking_manager_deposit_fixed'] != $form['rooms_checkout_settings']['rooms_booking_manager_deposit_fieldset']['rooms_booking_manager_deposit_fixed']['#default_value'] ||
     $form_state['values']['rooms_booking_manager_deposit_multiply'] != $form['rooms_checkout_settings']['rooms_booking_manager_deposit_fieldset']['rooms_booking_manager_deposit_multiply']['#default_value']) {
 
+    // "Rooms deposit payment" rule.
     $rule = rules_config_load('rooms_booking_manager_deposit');
 
     if (!$form_state['values']['rooms_booking_manager_deposit_enabled']) {
@@ -2764,6 +2768,17 @@ function rooms_booking_manager_deposit_config_form_submit($form, &$form_state) {
 
     $rule->save();
 
+    // "Adjust line item price following checkout with deposit" rule.
+    $rule = rules_config_load('rules_rooms_booking_manager_deposit_checkout');
+
+    if (!$form_state['values']['rooms_booking_manager_deposit_enabled']) {
+      $rule->active = FALSE;
+    }
+    else {
+      $rule->active = TRUE;
+    }
+
+    $rule->save();
   }
 }
 
@@ -2924,6 +2939,41 @@ function rooms_booking_manager_create_order($start_date, $end_date, $booking_par
 
 function rooms_booking_cancel_order_booking() {
 
+}
+
+/**
+ * Rules action: set the line item price to the booked price.
+ */
+function rooms_booking_manager_booked_price($line_item) {
+  if ($line_item->type == 'rooms_booking') {
+    $wrapper = entity_metadata_wrapper('commerce_line_item', $line_item);
+
+    $amount = $wrapper->rooms_booked_price->value();
+
+    if (is_numeric($amount)) {
+      $unit_price = commerce_price_wrapper_value($wrapper, 'commerce_unit_price', TRUE);
+
+      // Calculate the updated amount and create a price array representing the
+      // difference between it and the current amount.
+      $current_amount = $unit_price['amount'];
+
+      $difference = array(
+        'amount' => $amount - $current_amount,
+        'currency_code' => $unit_price['currency_code'],
+        'data' => array(),
+      );
+
+      // Set the amount of the unit price and add the difference as a component.
+      $wrapper->commerce_unit_price->amount = $amount;
+
+      $wrapper->commerce_unit_price->data = commerce_price_component_add(
+        $wrapper->commerce_unit_price->value(),
+        'base_price',
+        $difference,
+        TRUE
+      );
+    }
+  }
 }
 
 /**
@@ -3131,14 +3181,19 @@ function rooms_booking_manager_menu_title_callback($argument) {
  * Checks if deposit is active and returns deposit amount.
  *
  * @param $price
+ *
  * @return bool|float|null
  */
-function rooms_booking_manager_check_for_deposit($price){
+function rooms_booking_manager_check_for_deposit($price) {
   $deposit_amount = FALSE;
+
   $rule = rules_config_load('rooms_booking_manager_deposit');
+
   if (!empty($rule) && $rule->active) {
     $deposit_type = variable_get('rooms_booking_manager_deposit_type');
+
     $deposit_amount = ($deposit_type == 'commerce_line_item_unit_price_amount') ? variable_get('rooms_booking_manager_deposit_fixed') : variable_get('rooms_booking_manager_deposit_multiply') * $price / 100 ;
   }
+
   return $deposit_amount;
 }

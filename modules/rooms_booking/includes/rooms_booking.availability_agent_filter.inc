@@ -246,7 +246,7 @@ class AvailabilityAgentDateFilter extends AvailabilityAgentFilterBase {
       $states = $rc->getStates($start_date, $end_date, $confirmed);
       $state_diff = array_diff($states, $valid_states);
 
-      if ($this->parameters['revert_valid_states']){
+      if ($this->parameters['revert_valid_states']) {
         // $valid_states match completely with existing states so remove if we are looking
         // for the opposite.
         if (count($state_diff) == 0) {

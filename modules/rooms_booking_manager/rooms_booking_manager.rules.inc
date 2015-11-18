@@ -39,5 +39,19 @@ function rooms_booking_manager_rules_action_info() {
     ),
   );
 
+  $actions['rooms_booking_manager_booked_price'] = array(
+    'label' => t('Set the line item price to the booked price'),
+    'parameter' => array(
+      'commerce_line_item' => array(
+        'type' => 'commerce_line_item',
+        'label' => t('Line item'),
+      ),
+    ),
+    'group' => t('Rooms'),
+    'callbacks' => array(
+      'execute' => 'rooms_booking_manager_booked_price',
+    ),
+  );
+
   return $actions;
 }

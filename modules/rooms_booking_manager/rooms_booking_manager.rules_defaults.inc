@@ -53,5 +53,43 @@ function rooms_booking_manager_default_rules_configuration() {
 
   $rules['rooms_booking_manager_deposit'] = rules_import($rule);
 
+  $rule = '{ "rules_rooms_booking_manager_deposit_checkout" : {
+    "LABEL" : "Adjust line item price following checkout with deposit",
+    "PLUGIN" : "reaction rule",
+    "ACTIVE" : "0",
+    "WEIGHT" : "10",
+    "OWNER" : "rules",
+    "REQUIRES" : [
+      "commerce_order",
+      "rooms_booking_manager",
+      "rules",
+      "commerce_checkout"
+    ],
+    "ON" : { "commerce_checkout_complete" : [] },
+    "IF" : [
+      { "commerce_order_contains_product" : {
+          "commerce_order" : [ "commerce_order" ],
+          "product_id" : "ROOMS-BASIC-BOOKING",
+          "operator" : "\u003E=",
+          "value" : "1"
+        }
+      }
+    ],
+    "DO" : [
+      { "LOOP" : {
+          "USING" : { "list" : [ "commerce-order:commerce-line-items" ] },
+          "ITEM" : { "list_item" : "Current list item" },
+          "DO" : [
+            { "rooms_booking_manager_booked_price" : { "commerce_line_item" : [ "list-item" ] } },
+            { "entity_save" : { "data" : [ "list-item" ], "immediate" : "1" } }
+          ]
+        }
+      },
+      { "entity_save" : { "data" : [ "commerce-order" ], "immediate" : "1" } }
+    ]
+  }}';
+
+  $rules['rules_rooms_booking_manager_deposit_checkout'] = rules_import($rule);
+
   return $rules;
 }

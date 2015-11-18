@@ -121,7 +121,7 @@ function rooms_update_7001() {
     'not null' => FALSE,
   );
 
-  $fields = array_filter(field_info_fields(), function($item){
+  $fields = array_filter(field_info_fields(), function($item) {
     return $item['type'] == 'rooms_options';
   });
 

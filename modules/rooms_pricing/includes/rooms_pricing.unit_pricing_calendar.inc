@@ -399,7 +399,7 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
         // The start date.
         $i = substr(key($days['days']), 1);
         while ($j <= count($days['days'])) {
-          if ($days['days']['d' . $i] == -1){
+          if ($days['days']['d' . $i] == -1) {
             $results[$this->unit_id][$year][$mid]['days']['d' . $i] = commerce_currency_decimal_to_amount($this->default_price, commerce_default_currency());
           }
           $i++;
