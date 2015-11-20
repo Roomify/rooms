@@ -347,17 +347,19 @@ class AvailabilityAgentCommerceFilter extends AvailabilityAgentFilterBase {
           if (in_array($line_item->type->value(), commerce_product_line_item_types())) {
             // Need to check if commerce_product_type = 'rooms_product'.
             if ($line_item->commerce_product->value()->type == 'rooms_product') {
-              $line_item_values = $line_item->value();
+              if (isset($line_item->rooms_booking_dates)) {
+                $rooms_booking_dates = $line_item->rooms_booking_dates->value();
 
-              // Current line_item start_date and end_date values.
-              $s_date = new DateTime($line_item_values->rooms_booking_dates[LANGUAGE_NONE][0]['value']);
-              $e_date = new DateTime($line_item_values->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
+                // Current line_item start_date and end_date values.
+                $s_date = new DateTime($rooms_booking_dates['value']);
+                $e_date = new DateTime($rooms_booking_dates['value2']);
 
-              // If current line_item date interval overlap parameters interval
-              // remove unit from results.
-              if ($this->checkInRange($s_date, $e_date, $start_date, $end_date)) {
-                if (isset($results[$line_item_values->rooms_booked_unit_id[LANGUAGE_NONE][0]['value']])) {
-                  unset($results[$line_item_values->rooms_booked_unit_id[LANGUAGE_NONE][0]['value']]);
+                // If current line_item date interval overlap parameters interval
+                // remove unit from results.
+                if ($this->checkInRange($s_date, $e_date, $start_date, $end_date)) {
+                  if (isset($results[$line_item->rooms_booked_unit_id->value()])) {
+                    unset($results[$line_item->rooms_booked_unit_id->value()]);
+                  }
                 }
               }
             }
