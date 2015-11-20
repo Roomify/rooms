@@ -639,6 +639,33 @@ function rooms_unit_form_rooms_unit_type_operation_form_alter(&$form, &$form_sta
 }
 
 /**
+ * Implements hook_module_implements_alter()
+ *
+ * This ensures that this hook is called after entity translation's alter hook.
+ */
+function rooms_unit_module_implements_alter(&$implementations, $hook) {
+  if ($hook == 'form_alter' && isset($implementations['rooms_unit'])) {
+    $group = $implementations['rooms_unit'];
+    unset($implementations['rooms_unit']);
+    $implementations['rooms_unit'] = $group;
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * FORM_ID = rooms_unit_edit_form
+ */
+function rooms_unit_form_rooms_unit_edit_form_alter(&$form, &$form_state) {
+  if (module_exists('entity_translation')) {
+    if (isset($form['translation'])) {
+      // "Translation" fieldset as a vertical tab.
+      $form['translation']['#group'] = 'additional_settings';
+    }
+  }
+}
+
+/**
  * Helper function to generate a list of available unit states for select lists.
  *
  * @return array
