@@ -569,17 +569,6 @@ function rooms_module_implements_alter(&$implementations, $hook) {
   }
 }
 
-/**
- * Implements hook_form_FORM_ID_alter().
- *
- * Force 'rooms_options' field as non translatable since we wrap them in a t().
- */
-function rooms_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
-  if ($form['#field']['type'] == 'rooms_options') {
-    $form['field']['translatable']['#access'] = FALSE;
-    $form['instance']['settings']['entity_translation_sync']['#access'] = FALSE;
-  }
-}
 
 /**
  * Implements hook_field_info().
