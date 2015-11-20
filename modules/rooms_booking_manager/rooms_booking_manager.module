@@ -1949,16 +1949,16 @@ function book_units_per_type_form_submit(&$form, &$form_state) {
           // Convert Price options in Price modifiers.
           $price_modifiers = array();
           foreach (rooms_unit_get_unit_options($unit['unit']) as $option) {
-            if (isset($form_state['values'][$type][$price_level]['fieldset'][$i][strtolower(str_replace(array(':', ' '), '_', $option['name']))])) {
-              if ($form_state['values'][$type][$price_level]['fieldset'][$i][strtolower(str_replace(array(':', ' '), '_', $option['name']))] == 1) {
+            if (isset($form_state['values'][$type][$price_level]['fieldset'][$i][rooms_options_machine_name($option['name'])])) {
+              if ($form_state['values'][$type][$price_level]['fieldset'][$i][rooms_options_machine_name($option['name'])] == 1) {
                 $quantity = 1;
-                if (isset($form_state['values'][$type][$price_level]['fieldset'][$i][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
-                  $quantity = $form_state['values'][$type][$price_level]['fieldset'][$i][strtolower(str_replace(array(':', ' '), '_', $option['name'])) . ':quantity'] + 1;
+                if (isset($form_state['values'][$type][$price_level]['fieldset'][$i][rooms_options_machine_name($option['name']) . ':quantity']) && $option['operation'] != ROOMS_REPLACE) {
+                  $quantity = $form_state['values'][$type][$price_level]['fieldset'][$i][rooms_options_machine_name($option['name']) . ':quantity'] + 1;
                 }
                 if ($option['type'] == ROOMS_OPTION_ONREQUEST) {
                   $option['value'] = 0;
                 }
-                $price_modifiers[strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
+                $price_modifiers[rooms_options_machine_name($option['name'])] = array(
                   '#name' => $option['name'],
                   '#type' => ROOMS_DYNAMIC_MODIFIER,
                   '#op_type' => $option['operation'],
@@ -2873,7 +2873,7 @@ function rooms_booking_manager_create_order($start_date, $end_date, $booking_par
   $price_modifiers = array();
   // Convert Price options to Price modifiers.
   foreach (rooms_unit_get_unit_options($unit) as $option) {
-    $opt_name = strtolower(str_replace(array(':', ' '), '_', $option['name']));
+    $opt_name = rooms_options_machine_name($option['name']);
     if (isset($booking->$opt_name) && $booking->$opt_name) {
       $price_modifiers[$opt_name] = array(
         '#name' => $option['name'],
@@ -3003,7 +3003,7 @@ function rooms_booking_manager_price_apply($line_item) {
 
     // Convert Price options in Price modifiers.
     foreach ($price_options as $option) {
-      $price_modifiers[strtolower(str_replace(array(':', ' '), '_', $option['name']))] = array(
+      $price_modifiers[rooms_options_machine_name($option['name'])] = array(
         '#name' => $option['name'],
         '#type' => ROOMS_DYNAMIC_MODIFIER,
         '#op_type' => $option['operation'],
