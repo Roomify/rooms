@@ -863,7 +863,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
   $nights = $end_date->diff($start_date)->days;
 
   // Check for a deposit.
-  $deposit_amount = rooms_booking_manager_check_for_deposit($price);
+  $deposit_amount = rooms_booking_manager_check_for_deposit($price, $start_date);
 
   if (empty($deposit_amount)) {
     $form['price'] = array(
@@ -1141,7 +1141,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     }
 
     // Check for a deposit.
-    $deposit_amount = rooms_booking_manager_check_for_deposit($new_price['full_price']);
+    $deposit_amount = rooms_booking_manager_check_for_deposit($new_price['full_price'], $start_date);
 
     if (empty($deposit_amount)) {
       $form['new_price'] = array(
@@ -1564,7 +1564,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
           }
 
           // Check for a deposit.
-          $deposit_amount = rooms_booking_manager_check_for_deposit($price);
+          $deposit_amount = rooms_booking_manager_check_for_deposit($price, $start_date);
           if (empty($deposit_amount)) {
             $form[$type][$price]['fieldset'][$c]['price'] = array(
               '#prefix' => '<div class="rooms-search-result__unit-price" id="' . $type . '_' . $price . '_' . $c . '_price"><label>' . $label . ':</label> <span class="rooms-search-result__unit-price-amount">',
@@ -1696,7 +1696,7 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
           }
 
           $new_price = $new_price['full_price'];
-          $deposit_amount = rooms_booking_manager_check_for_deposit($new_price);
+          $deposit_amount = rooms_booking_manager_check_for_deposit($new_price, $start_date);
 
           if (empty($deposit_amount)) {
             // Replace old price with the new calculated value.
@@ -2713,6 +2713,26 @@ function rooms_booking_manager_deposit_config_form(&$form, $form_state) {
       ),
     );
 
+    $form['rooms_checkout_settings']['rooms_booking_manager_deposit_fieldset']['rooms_booking_manager_full_payment'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Require full payment for close-in bookings'),
+      '#default_value' => variable_get('rooms_booking_manager_full_payment', 0),
+    );
+
+    $form['rooms_checkout_settings']['rooms_booking_manager_deposit_fieldset']['rooms_booking_manager_full_payment_period'] = array(
+      '#type' => 'container',
+      '#states' => array(
+        'visible' => array(
+          '#edit-rooms-booking-manager-full-payment' => array('checked' => TRUE),
+        ),
+      ),
+    );    
+
+    $form['rooms_checkout_settings']['rooms_booking_manager_deposit_fieldset']['rooms_booking_manager_full_payment_period']['rooms_booking_manager_full_payment_duration'] = array(
+      '#type' => 'rules_duration',
+      '#default_value' => variable_get('rooms_booking_manager_full_payment_duration', 86400),
+    );
+
   }
 
   $form['#validate'][] = 'rooms_booking_manager_deposit_config_form_validate';
@@ -2739,7 +2759,9 @@ function rooms_booking_manager_deposit_config_form_submit($form, &$form_state) {
   if ($form_state['values']['rooms_booking_manager_deposit_enabled'] != $form['rooms_checkout_settings']['rooms_booking_manager_deposit_enabled']['#default_value'] ||
     $form_state['values']['rooms_booking_manager_deposit_type'] != $form['rooms_checkout_settings']['rooms_booking_manager_deposit_fieldset']['rooms_booking_manager_deposit_type']['#default_value'] ||
     $form_state['values']['rooms_booking_manager_deposit_fixed'] != $form['rooms_checkout_settings']['rooms_booking_manager_deposit_fieldset']['rooms_booking_manager_deposit_fixed']['#default_value'] ||
-    $form_state['values']['rooms_booking_manager_deposit_multiply'] != $form['rooms_checkout_settings']['rooms_booking_manager_deposit_fieldset']['rooms_booking_manager_deposit_multiply']['#default_value']) {
+    $form_state['values']['rooms_booking_manager_deposit_multiply'] != $form['rooms_checkout_settings']['rooms_booking_manager_deposit_fieldset']['rooms_booking_manager_deposit_multiply']['#default_value'] ||
+    $form_state['values']['rooms_booking_manager_full_payment_duration'] != $form['rooms_checkout_settings']['rooms_booking_manager_deposit_fieldset']['rooms_booking_manager_full_payment_period']['rooms_booking_manager_full_payment_duration']['#default_value'] ||
+    $form_state['values']['rooms_booking_manager_full_payment'] != $form['rooms_checkout_settings']['rooms_booking_manager_deposit_fieldset']['rooms_booking_manager_full_payment']['#default_value']) {
 
     // "Rooms deposit payment" rule.
     $rule = rules_config_load('rooms_booking_manager_deposit');
@@ -2749,6 +2771,29 @@ function rooms_booking_manager_deposit_config_form_submit($form, &$form_state) {
     }
     else {
       $rule->active = TRUE;
+
+      foreach ($rule->conditions() as $condition) {
+        $condition->delete();
+      }
+
+      $rule->condition('entity_is_of_bundle', array(
+        'entity:select' => 'commerce-line-item',
+        'type' => 'commerce_line_item',
+        'bundle' => array('rooms_booking'),
+      ));
+
+      $rule->condition('data_is', array(
+        'data:select' => 'commerce-line-item:commerce-product:type',
+        'value' => 'rooms_product',
+      ));
+
+      if ($form_state['values']['rooms_booking_manager_full_payment']) {
+        $rule->condition('data_is', array(
+          'data:select' => 'commerce-line-item:rooms-booking-dates:value',
+          'op' => '>',
+          'value' => '+ ' . format_interval($form_state['values']['rooms_booking_manager_full_payment_duration']),
+        ));
+      }
 
       foreach ($rule as $action) {
         if ($action instanceof RulesAction) {
@@ -3181,11 +3226,19 @@ function rooms_booking_manager_menu_title_callback($argument) {
  * Checks if deposit is active and returns deposit amount.
  *
  * @param $price
+ * @param $start_date
  *
  * @return bool|float|null
  */
-function rooms_booking_manager_check_for_deposit($price) {
+function rooms_booking_manager_check_for_deposit($price, $start_date) {
   $deposit_amount = FALSE;
+
+  if (variable_get('rooms_booking_manager_full_payment', 0)) {
+    $interval = '+ ' . format_interval(variable_get('rooms_booking_manager_full_payment_duration', 86400));
+    if ($start_date <= (new DateTime())->modify($interval)) {
+      return $deposit_amount;
+    }
+  }
 
   $rule = rules_config_load('rooms_booking_manager_deposit');
 
