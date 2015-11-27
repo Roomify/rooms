@@ -75,11 +75,29 @@
             width_event = element.children('.fc-content').width();
 
             // Add a margin left to the top triangle.
-            element.children().closest('.event-end').css('margin-left', width_event-16);
+            element.children().closest('.event-end').css('margin-left', width_event-14);
 
-            if (element.parent().index('td.fc-event-container') == 0 || element.parent().index() == 0) {
-              element.css('margin-left', 0);
+            if (element.parent().index() == 0) {
+              if (element.hasClass('fc-start')) {
+                var row_index = element.closest('.fc-row').index('.fc-row');
+                if (row_index >= 2) {
+                  var event_color = $(view.dayGrid.rowEls[row_index - 2]).find('.fc-day-grid-event').last().css('background-color');
+                  var event_text = $(view.dayGrid.rowEls[row_index - 2]).find('.fc-day-grid-event').last().find('.fc-title').text();
+
+                  var new_event = $('<a class="fc-day-grid-event fc-event" style="background-color: ' + event_color + '; width: ' + (half_cell_width-3) + 'px; margin: -16px 0 0 0;"><div class="fc-content"><span class="fc-title">' + event_text + '</span></div></a>');
+                  element.parent().append(new_event);
+
+                  var event_end = $(view.dayGrid.rowEls[row_index - 2]).find('.fc-day-grid-event').last().find('.event-end').prop('outerHTML');
+                  if (event_end != undefined) {
+                    $(view.dayGrid.rowEls[row_index - 2]).find('.fc-day-grid-event').last().find('.event-end').remove();
+
+                    new_event.append(event_end);
+                    new_event.find('.event-end').css('margin-left', half_cell_width - 16);
+                  }
+                }
+              }
             }
+
             if (element.parent().index() == element.parent().parent().children('td.fc-event-container').length - 1) {
               element.css('margin-right', 0);
             }
