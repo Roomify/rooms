@@ -15,7 +15,7 @@ function rooms_booking_menu() {
   $items['admin/rooms/bookings/customers'] = array(
     'title' => 'Customers',
     'page callback' => 'rooms_booking_get_client_profiles',
-    'access arguments' => array('bypass rooms_booking entities access'),
+    'access callback' => 'rooms_booking_list_customer_profiles_access',
     'type' => MENU_CALLBACK,
   );
 
@@ -29,7 +29,7 @@ function rooms_booking_menu() {
   $items['admin/rooms/add_customers'] = array(
     'title' => 'Add customer profile',
     'page callback' => 'rooms_booking_add_customer_profile',
-    'access arguments' => array('bypass rooms_booking entities access'),
+    'access arguments' => array('create customer profiles on bookings'),
     'type' => MENU_CALLBACK,
   );
 
@@ -37,7 +37,7 @@ function rooms_booking_menu() {
     'title' => 'Edit customer profile',
     'page callback' => 'rooms_booking_edit_customer_profile',
     'page arguments' => array(3),
-    'access arguments' => array('bypass rooms_booking entities access'),
+    'access arguments' => array('create customer profiles on bookings'),
     'type' => MENU_CALLBACK,
   );
 
@@ -60,6 +60,16 @@ function rooms_booking_menu() {
   );
 
   return $items;
+}
+
+/**
+ * Check if current user can create or update a booking.
+ */
+function rooms_booking_list_customer_profiles_access() {
+  if (rooms_entity_access('create', 'rooms_booking', NULL, 'rooms_booking') ||
+      rooms_entity_access('update', 'rooms_booking', NULL, 'rooms_booking')) {
+    return TRUE;
+  }
 }
 
 /**
@@ -425,6 +435,10 @@ function rooms_booking_permission() {
       'title' => t('Administer booking types'),
       'description' => t('Allows users to add booking types and configure their fields.'),
       'restrict access' => TRUE,
+    ),
+    'create customer profiles on bookings' => array(
+      'title' => t('Create customer profiles on bookings'),
+      'description' => t('Allows users to add or edit customer profiles on bookings.'),
     ),
   );
   return $permissions + rooms_entity_access_permissions('rooms_booking');

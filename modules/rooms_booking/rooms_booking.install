@@ -394,3 +394,22 @@ function rooms_booking_update_7006() {
     }
   }
 }
+
+/**
+ * Give the new permission 'create customer profiles on bookings'
+ * to all roles with 'bypass rooms_booking entities access' permission.
+ */
+function rooms_booking_update_7007() {
+  $roles = db_select('role_permission', 'r')
+            ->fields('r', array('rid', 'permission'))
+            ->condition('permission', 'bypass rooms_booking entities access')
+            ->execute()
+            ->fetchAllKeyed();
+
+  foreach (array_keys($roles) as $rid) {
+    db_merge('role_permission')
+      ->key(array('rid' => $rid, 'permission' => 'create customer profiles on bookings'))
+      ->fields(array('rid' => $rid, 'permission' => 'create customer profiles on bookings', 'module' => 'rooms_booking'))
+      ->execute();
+  }
+}
