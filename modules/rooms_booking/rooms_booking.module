@@ -502,6 +502,21 @@ function rooms_booking_form_views_exposed_form_alter(&$form, &$form_state, $form
 }
 
 /**
+ * Implements hook_views_pre_render().
+ */
+function rooms_booking_views_pre_render(&$view) {
+  // Use "Rooms PHP Date Format" for booking start date and end date.
+  if ($view->base_table == 'rooms_bookings') {
+    if (isset($view->field['start_date']->options['custom_date_format'])) {
+      $view->field['start_date']->options['custom_date_format'] = variable_get('rooms_date_format', 'd-m-Y');
+    }
+    if (isset($view->field['end_date']->options['custom_date_format'])) {
+      $view->field['end_date']->options['custom_date_format'] = variable_get('rooms_date_format', 'd-m-Y');
+    }
+  }
+}
+
+/**
  * Implements hook_rules_action_info_alter().
  */
 function rooms_booking_rules_action_info_alter(&$actions) {
