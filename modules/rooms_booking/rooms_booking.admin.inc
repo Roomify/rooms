@@ -892,16 +892,10 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     );
   }
 
-  // Depending on whether the form is in a popup or a normal page we need to change
-  // the behavior of the cancel button
+  // When the form is in a modal window display a cancel button.
   if (isset($form_state['ajax']) && $form_state['ajax'] == TRUE) {
     $form['actions']['cancel'] = array(
-      '#markup' => l(t('Cancel'), 'admin/rooms/bookings', array('attributes' => array('class' => array('ctools-close-modal')))),
-      '#weight' => 50,
-    );
-  } else {
-    $form['actions']['cancel'] = array(
-      '#markup' => l(t('Cancel'), 'admin/rooms/bookings'),
+      '#markup' => l(t('Cancel'), '', array('attributes' => array('class' => array('ctools-close-modal')))),
       '#weight' => 50,
     );
   }
