@@ -283,7 +283,9 @@ function _rooms_booking_manager_get_unit_type_labels($unit_type_ids) {
 
   $unit_type_labels = array();
   foreach ($unit_type_ids as $label) {
-    $unit_type_labels[$label] = $unit_types[$label]->label;
+    if (isset($unit_types[$label])) {
+      $unit_type_labels[$label] = $unit_types[$label]->label;
+    }
   }
 
   return $unit_type_labels;
