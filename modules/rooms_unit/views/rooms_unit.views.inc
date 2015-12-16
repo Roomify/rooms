@@ -114,50 +114,73 @@ function rooms_unit_views_default_views() {
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['columns'] = array(
     'unit_id' => 'unit_id',
+    'type' => 'type',
+    'name' => 'name',
     'base_price' => 'base_price',
     'bookable' => 'bookable',
-    'unit_id_1' => 'unit_id_1',
-    'edit_unit' => 'edit_unit',
-    'delete_unit' => 'delete_unit',
+    'status' => 'status',
+    'name_1' => 'name_1',
+    'link_unit' => 'link_unit',
     'operations' => 'operations',
   );
   $handler->display->display_options['style_options']['default'] = '-1';
   $handler->display->display_options['style_options']['info'] = array(
     'unit_id' => array(
-      'sortable' => 0,
+      'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
+      'empty_column' => 0,
+    ),
+    'type' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'name' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
     ),
     'base_price' => array(
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
+      'empty_column' => 0,
     ),
     'bookable' => array(
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
+      'empty_column' => 0,
     ),
-    'unit_id_1' => array(
+    'status' => array(
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
+      'empty_column' => 0,
     ),
-    'edit_unit' => array(
+    'name_1' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
+      'empty_column' => 0,
     ),
-    'delete_unit' => array(
+    'link_unit' => array(
       'align' => '',
       'separator' => '',
+      'empty_column' => 0,
     ),
     'operations' => array(
       'align' => '',
       'separator' => '',
+      'empty_column' => 0,
     ),
   );
   /* No results behavior: Global: Text area */
