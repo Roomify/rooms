@@ -1,0 +1,15 @@
+<?php
+
+/**
+ * @file
+ *
+ * Installation for rooms_listing
+ */
+
+/**
+ * Implementation of hook_install
+ */
+function rooms_listing_install() {
+  //Create a listing type
+  rooms_listing_create_listing_type();
+}

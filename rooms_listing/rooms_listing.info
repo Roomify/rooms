@@ -1,0 +1,8 @@
+name = Rooms Listing
+description = Provides a listing type that is ideal for single vacation rentals or a site with multiple properties (like AirBnB)
+core = 7.x
+php = 5.3.9
+
+package = Rooms
+
+dependencies[] = rooms

@@ -1,0 +1,54 @@
+<?php
+
+/**
+ * @file
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function rooms_listing_menu() {
+  $items = array();
+
+  return $items;
+}
+
+/**
+ * Creates the listing type
+ */
+function rooms_listing_create_listing_type() {
+  $listing_type = bat_unit_unit_type_new();
+
+  $listing_type['type'] = 'listing';
+  $listing_type['label'] = 'Listing';
+  $listing_type['data'] = array (
+    'hourly_availability' => 0,
+    'pricing_field' => 'listing_nightly_price',
+    'pricing_weekly_field' => 'listing_weekly_price',
+    'pricing_monthly_field' => 'listing_monthly_price',
+
+  );
+
+  $op = drupal_write_record('bat_unit_type', $listing_type);
+
+  /**
+   * If insert succeeded
+   */
+  if ($op !==FALSE) {
+    field_attach_create_bundle('bat_unit', $listing_type['type']);
+
+    // Create nightly pricing
+    $description = t("This is the default nightly price for your listing");
+    bat_unit_add_price_field('listing_nightly_price', 'bat_unit', $listing_type['type'], 'Nightly Price', $description, $weight = 0, $locked = true, $calculation = false, $display = array());
+    // Create weekly pricing
+    $description = t("This is the default weekly price for your listing");
+    bat_unit_add_price_field('listing_weekly_price', 'bat_unit', $listing_type['type'], 'Weekly Price', $description, $weight = 1, $locked = true, $calculation = false, $display = array());
+    // Create monthly pricing
+    $description = t("This is the default monthly price for your listing");
+    bat_unit_add_price_field('listing_monthly_price', 'bat_unit', $listing_type['type'], 'Monthly Price', $description, $weight = 2, $locked = true, $calculation = false, $display = array());
+
+  }
+
+  return $op;
+}
+
