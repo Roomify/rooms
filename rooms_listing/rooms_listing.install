@@ -7,9 +7,19 @@
  */
 
 /**
- * Implementation of hook_install
+ * Implementation of hook_install().
  */
 function rooms_listing_install() {
-  //Create a listing type
+  // Create a listing type
   rooms_listing_create_listing_type();
+}
+
+/**
+ * Implementation of hook_uninstall() 
+ */
+function rooms_listing_uninstall() {
+	// Delete listing type
+	if ($listing_type = bat_unit_type_load('listing')) {
+		$listing_type->delete();
+	}
 }

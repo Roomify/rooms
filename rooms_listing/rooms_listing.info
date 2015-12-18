@@ -5,4 +5,8 @@ php = 5.3.9
 
 package = Rooms
 
+dependencies[] = bat_availability_reference
+dependencies[] = field_group
+dependencies[] = geofield
+dependencies[] = geofield_gmap
 dependencies[] = rooms
