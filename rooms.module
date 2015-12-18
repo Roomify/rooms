@@ -556,19 +556,6 @@ function rooms_entity_access_query_alter($query, $entity_type, $base_table = NUL
   }
 }
 
-/**
- * Implements hook_module_implements_alter()
- *
- * This ensures that this hook is called after entity translation's alter hook.
- */
-function rooms_module_implements_alter(&$implementations, $hook) {
-  if ($hook == 'form_alter' && isset($implementations['rooms'])) {
-    $group = $implementations['rooms'];
-    unset($implementations['rooms']);
-    $implementations['rooms'] = $group;
-  }
-}
-
 
 /**
  * Implements hook_field_info().
