@@ -1091,6 +1091,21 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     }
   }
 
+  $form['price_amount'] = array(
+    '#type' => 'hidden',
+    '#value' => $price,
+  );
+
+  // Check for a deposit.
+  $deposit_amount = rooms_booking_manager_check_for_deposit($price, $start_date);
+
+  if (!empty($deposit_amount)) {
+    $form['deposit_amount'] = array(
+      '#type' => 'hidden',
+      '#value' => $deposit_amount,
+    );
+  }
+
   $unit_options = rooms_unit_get_unit_options($unit);
   if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON || !empty($unit_options)) {
     if (isset($form_state['values']['persons'])) {
@@ -1143,10 +1158,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     // Check for a deposit.
     $deposit_amount = rooms_booking_manager_check_for_deposit($new_price['full_price'], $start_date);
 
-    $form['price_amount'] = array(
-      '#type' => 'hidden',
-      '#value' => $new_price['full_price'],
-    );
+    $form['price_amount']['#value'] = $new_price['full_price'];
 
     if (empty($deposit_amount)) {
       $form['new_price'] = array(
@@ -1161,10 +1173,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     }
     // A deposit is set. Show user the amount of the deposit.
     else {
-      $form['deposit_amount'] = array(
-        '#type' => 'hidden',
-        '#value' => $deposit_amount,
-      );
+      $form['deposit_amount']['#value'] = $deposit_amount;
 
       $form['new_price'] = array(
         '#prefix' => '<div class="rooms-search-result__new-price" id="unit_' . $unit->unit_id . '_price">',
