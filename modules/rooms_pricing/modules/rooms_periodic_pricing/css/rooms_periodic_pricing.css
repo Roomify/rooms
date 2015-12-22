@@ -1,16 +1,16 @@
-.rooms-unit-edit-form .form-item-weekly-price,
-.rooms-unit-edit-form .form-item-monthly-price {
+.rooms-unit-edit-form .form-item-weekly-discount,
+.rooms-unit-edit-form .form-item-monthly-discount {
   float: left;
   width: 15em;
   margin-right: 20px;
 }
 
-.rooms-unit-edit-form #edit-weekly-monthly-price {
+.rooms-unit-edit-form #edit-weekly-monthly-discount {
   max-width: 100%;
 }
 
-.rooms-unit-edit-form .form-item-weekly-price .form-text,
-.rooms-unit-edit-form .form-item-monthly-price .form-text {
+.rooms-unit-edit-form .form-item-weekly-discount .form-text,
+.rooms-unit-edit-form .form-item-monthly-discount .form-text {
   width: 6em;
   text-align: right;
 }

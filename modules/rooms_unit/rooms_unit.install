@@ -87,16 +87,16 @@ function rooms_unit_schema() {
         'scale' => 2,
         'default' => 0,
       ),
-      'weekly_price' => array(
-        'description' => 'The default cost per week for the unit',
+      'weekly_discount' => array(
+        'description' => 'The default weekly discount for the unit',
         'type' => 'numeric',
         'not null' => TRUE,
         'precision' => 10,
         'scale' => 2,
         'default' => 0,
       ),
-      'monthly_price' => array(
-        'description' => 'The default cost per month for the unit',
+      'monthly_discount' => array(
+        'description' => 'The default monthly discount for the unit',
         'type' => 'numeric',
         'not null' => TRUE,
         'precision' => 10,
@@ -719,4 +719,28 @@ function rooms_unit_update_7013() {
       $view->save();
     }
   }
+}
+
+/**
+ * Rename columns 'weekly_price' in 'weekly_discount'
+ * and 'monthly_price' in 'monthly_discount'.
+ */
+function rooms_unit_update_7014() {
+  db_change_field('rooms_units', 'weekly_price', 'weekly_discount', array(
+    'description' => 'The default weekly discount for the unit',
+    'type' => 'numeric',
+    'not null' => TRUE,
+    'precision' => 10,
+    'scale' => 2,
+    'default' => 0,
+  ));
+
+  db_change_field('rooms_units', 'monthly_price', 'monthly_discount', array(
+    'description' => 'The default monthly discount for the unit',
+    'type' => 'numeric',
+    'not null' => TRUE,
+    'precision' => 10,
+    'scale' => 2,
+    'default' => 0,
+  ));
 }

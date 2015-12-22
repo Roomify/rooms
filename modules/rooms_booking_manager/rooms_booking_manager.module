@@ -766,7 +766,7 @@ function rooms_booking_manager_present_individual_rooms($units_per_type, $conten
 
         // Add purchase form.
         $form = 'book_unit_form_' . $unit_id;
-        $content['units_per_type'][$type][$price][$unit_id]['book_unit_form'] = drupal_get_form($form, $unit_obj, $start_date, $end_date, $booking_parameters, $unit['state'], $unit['price']);
+        $content['units_per_type'][$type][$price][$unit_id]['book_unit_form'] = drupal_get_form($form, $unit_obj, $start_date, $end_date, $booking_parameters, $unit['state'], $unit['price'], $unit['price_log']);
       }
     }
   }
@@ -820,7 +820,7 @@ function rooms_booking_manager_forms($form_id, $args) {
  * The available units have already been identified by
  * rooms_booking_manager_results_page.
  */
-function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_date, $booking_parameters, $status, $price) {
+function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_date, $booking_parameters, $status, $price, $price_log) {
   // Add classes.
   $form['#attributes']['class'][] = 'rooms-book-unit-form';
 
@@ -883,6 +883,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
           'nights' => $nights,
           'arrival' => $start_date,
           'departure' => $end_date,
+          'price_log' => $price_log,
         ),
       )),
       '#suffix' => '</div>',
@@ -910,6 +911,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
           'nights' => $nights,
           'arrival' => $start_date,
           'departure' => $end_date,
+          'price_log' => $price_log,
         ),
       )),
       '#suffix' => '</div>',

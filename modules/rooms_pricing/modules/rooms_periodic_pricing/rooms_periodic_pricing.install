@@ -9,7 +9,7 @@ function rooms_periodic_pricing_requirements($phase) {
   $t = get_t();
 
   if ($phase == 'runtime') {
-    if (!db_field_exists('rooms_units', 'weekly_price') || !db_field_exists('rooms_units', 'monthly_price')) {
+    if (!db_field_exists('rooms_units', 'weekly_discount') || !db_field_exists('rooms_units', 'monthly_discount')) {
       $requirements['rooms_periodic_pricing'] = array(
         'title' => $t('Rooms periodic Pricing'),
         'description' => $t('You need to run <a href="@url">@url</a>', array('@url' => 'update.php')),
