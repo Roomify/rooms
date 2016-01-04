@@ -42,7 +42,7 @@ function rooms_booking_manager_override_confirmation_page(DateTime $start_date, 
     'path' => 'booking/' . $start_date->format('Y-m-d') . '/' . $end_date->format('Y-m-d') . '/' . $booking_units,
     'query' => array('rooms_group_size1' => $booking_parameters['group_size']),
   );
-  $content['confirm_form'] = drupal_get_form('rooms_booking_manager_override_confirmation_form', $start_date, $end_date, $booking_parameters, 'You have a booking request with overlapping dates, continuing will replace it.', $current_path, '', t('Continue'), ('Go Back To Search'));
+  $content['confirm_form'] = drupal_get_form('rooms_booking_manager_override_confirmation_form', $start_date, $end_date, $booking_parameters, t('You have a previous booking request in your cart, continuing will replace it.'), $current_path, '', t('Continue'), t('Go Back To Search'));
 
   return theme('rooms_booking_override_confirmation_page', $content);
 }
