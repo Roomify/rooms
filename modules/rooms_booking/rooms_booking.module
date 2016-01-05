@@ -487,11 +487,11 @@ function rooms_booking_form_views_exposed_form_alter(&$form, &$form_state, $form
   // Bookings admin view exposed filters.
   if ($form['#id'] == 'views-exposed-form-bookings-page-1') {
     $form['start_date']['#type'] = 'date_popup';
-    $form['start_date']['#date_format'] = 'd/m/Y';
+    $form['start_date']['#date_format'] = variable_get('rooms_date_format', 'd-m-Y');
     $form['start_date']['#date_label_position'] = 'before';
 
     $form['end_date']['#type'] = 'date_popup';
-    $form['end_date']['#date_format'] = 'd/m/Y';
+    $form['end_date']['#date_format'] = variable_get('rooms_date_format', 'd-m-Y');
     $form['end_date']['#date_label_position'] = 'before';
 
     $form['#attached']['css'][] = array(
