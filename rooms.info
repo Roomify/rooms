@@ -6,3 +6,5 @@ php = 5.3.9
 package = Rooms
 
 dependencies[] = bat
+dependencies[] = bat_event
+dependencies[] = bat_unit

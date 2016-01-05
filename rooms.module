@@ -5,3 +5,10 @@
  * Provides basic underlying functionality and configuration options used
  * by all Rooms modules
  */
+
+
+/**
+ * Defining some unit availability states that will be used throughout.
+ */
+define ('ROOMS_NOT_AVAILABLE', 1);
+define ('ROOMS_AVAILABLE', 2);
