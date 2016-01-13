@@ -83,7 +83,7 @@ function rooms_create_rooms_fields() {
       'label' => 'Default State',
       'required' => 0,
       'settings' => array(
-        'event_type' => 'availability_event',
+        'event_type' => 'availability',
         'user_register_form' => FALSE,
       ),
       'widget' => array(

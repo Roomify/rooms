@@ -24,8 +24,8 @@ function rooms_create_rooms_type() {
     'label' => 'Rooms',
     'type' => 'rooms',
     'default_event_value_field_ids' => array(
-      'availability_event' => 'field_rooms_default_state',
-      'pricing_event' => 'field_rooms_default_price',
+      'availability' => 'field_rooms_default_state',
+      'pricing' => 'field_rooms_default_price',
     ),
   ));
 
