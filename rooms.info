@@ -8,3 +8,4 @@ package = Rooms
 dependencies[] = bat
 dependencies[] = bat_event
 dependencies[] = bat_unit
+dependencies[] = commerce_price

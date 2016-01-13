@@ -12,3 +12,96 @@
  */
 define ('ROOMS_NOT_AVAILABLE', 1);
 define ('ROOMS_AVAILABLE', 2);
+
+/**
+ * Creates  Bat Types and some example unit.
+ */
+function rooms_create_rooms_type() {
+  module_load_include('inc', 'rooms', 'rooms.fields');
+
+  // Creates A Bat Type Bundle: Rooms.
+  $bat_type_bundle = new BatTypeBundle(array(
+    'label' => 'Rooms',
+    'type' => 'rooms',
+    'default_event_value_field_ids' => array(
+      'availability_event' => 'field_rooms_default_state',
+      'pricing_event' => 'field_rooms_default_price',
+    ),
+  ));
+
+  bat_type_bundle_save($bat_type_bundle);
+
+  // Add 2 Bat Types. 
+  $standard_bat_type = array(
+    'type_id' => 1,
+    'type' => 'rooms',
+    'name' => 'Standard',
+    'status' => 1,
+    'bookable' => 1,
+    'created' => REQUEST_TIME,
+  );
+
+  bat_type_save(bat_type_create($standard_bat_type));
+
+  $deluxe_bat_type = array(
+    'type_id' => 2,
+    'type' => 'rooms',
+    'name' => 'Deluxe',
+    'status' => 1,
+    'bookable' => 1,
+    'created' => REQUEST_TIME,
+  );
+
+  bat_type_save(bat_type_create($deluxe_bat_type));
+
+  // Add Default availability state and price fields.
+  rooms_create_rooms_fields();
+
+  // Create some example unit.
+  rooms_create_example_units();
+}
+
+/**
+ * Creates 2 Standard and 2 Deluxe example rooms.
+ */
+function rooms_create_example_units() {
+  $su1 = array(
+    'unit_id' => 1,
+    'type_id' => 1,
+    'type' => 'default',
+    'name' => 'Standard 1',
+    'status' => 1,
+  );
+
+  bat_unit_save(bat_unit_create($su1));
+
+  $su2 = array(
+    'unit_id' => 2,
+    'type_id' => 1,
+    'type' => 'default',
+    'name' => 'Standard 2',
+    'status' => 1,
+  );
+
+  bat_unit_save(bat_unit_create($su2));
+
+  $du1 = array(
+    'unit_id' => 3,
+    'type_id' => 2,
+    'type' => 'default',
+    'name' => 'Deluxe 1',
+    'status' => 1,
+  );
+
+  bat_unit_save(bat_unit_create($du1));
+
+  $du2 = array(
+    'unit_id' => 4,
+    'type_id' => 2,
+    'type' => 'default',
+    'name' => 'Deluxe 2',
+    'status' => 1,
+  );
+
+  bat_unit_save(bat_unit_create($du2));
+}
