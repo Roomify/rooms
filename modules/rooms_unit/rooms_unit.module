@@ -54,6 +54,7 @@ function rooms_unit_entity_info() {
     'entity keys' => array(
       'id' => 'unit_id',
       'bundle' => 'type',
+      'label' => 'name',
     ),
     // Bundles are defined by the unit types below.
     'bundles' => array(),
