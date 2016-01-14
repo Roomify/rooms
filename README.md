@@ -23,7 +23,7 @@ Follow the steps below to install Rooms.
 1. To display interactive calendars, Rooms depends on the FullCalendar
 (http://fullcalendar.io) library.
 
-The required version of FullCalendar is 2.4.0 and you can download
+The required version of FullCalendar is 2.6.0 and you can download
 the specific version from the FullCalendar Github repo[1].
 
 The FullCalendar library should be placed in sites/all/libraries so
@@ -101,7 +101,7 @@ If you wish to uninstall Rooms, you must disable and uninstall the modules
 it provides in reverse order of dependencies. After disabling each module
 that is available to be disabled, visit the 'uninstall' tab and uninstall it.
 
-   [1]: https://github.com/fullcalendar/fullcalendar/releases/download/v2.4.0/fullcalendar-2.4.0.zip
+   [1]: https://github.com/fullcalendar/fullcalendar/releases/download/v2.6.0/fullcalendar-2.6.0.zip
    [2]: http://momentjs.com/downloads/moment.min.js *Moment JS Library*
    [3]: http://drupal.org/project/drush "Drush, the Drupal shell"
    [4]: http://drupal.org/project/issues/rooms "Rooms issue queue on Drupal.org"

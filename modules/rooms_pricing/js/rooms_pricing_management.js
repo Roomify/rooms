@@ -58,13 +58,13 @@ Drupal.behaviors.roomsPricing = {
       var unit_id = Drupal.settings.roomsUnitManagement.roomsId[c];
 
       $(value[0]).once().fullCalendar({
-        editable:false,
+        editable: false,
         dayNamesShort:[Drupal.t("Sun"), Drupal.t("Mon"), Drupal.t("Tue"), Drupal.t("Wed"), Drupal.t("Thu"), Drupal.t("Fri"), Drupal.t("Sat")],
         monthNames:[Drupal.t("January"), Drupal.t("February"), Drupal.t("March"), Drupal.t("April"), Drupal.t("May"), Drupal.t("June"), Drupal.t("July"), Drupal.t("August"), Drupal.t("September"), Drupal.t("October"), Drupal.t("November"), Drupal.t("December")],
         defaultView:'singleRowMonth',
         defaultDate: moment([value[2],value[1]]),
-        header:{
-          left: 'title',
+        header: {
+          left: '',
           center: '',
           right: ''
         },

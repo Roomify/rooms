@@ -17,12 +17,10 @@
       this.dayGrid.numbersVisible = true;
       this.dayGrid.colHeadFormat = 'ddd';
 
-      this.el.addClass('fc-basic-view').html(this.renderHtml());
-
-      this.headRowEl = this.el.find('thead .fc-row');
+      this.el.addClass('fc-basic-view').html(this.renderSkeletonHtml());
+      this.renderHead();
 
       this.scrollerEl = this.el.find('.fc-day-grid-container');
-      this.dayGrid.coordMap.containerEl = this.scrollerEl;
 
       this.dayGrid.setElement(this.el.find('.fc-day-grid'));
       this.dayGrid.renderDates(this.hasRigidRows());
