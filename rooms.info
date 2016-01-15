@@ -13,5 +13,5 @@ dependencies[] = bat_facets
 dependencies[] = search_api_views
 dependencies[] = search_api_db
 
-files[] = rooms.facetapi_default.inc
+files[] = rooms.facetapi_defaults.inc
 files[] = rooms.search_api.inc
