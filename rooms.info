@@ -9,3 +9,9 @@ dependencies[] = bat
 dependencies[] = bat_event
 dependencies[] = bat_unit
 dependencies[] = commerce_price
+dependencies[] = bat_facets
+dependencies[] = search_api_views
+dependencies[] = search_api_db
+
+files[] = rooms.facetapi_default.inc
+files[] = rooms.search_api.inc

@@ -14,6 +14,25 @@ define ('ROOMS_NOT_AVAILABLE', 1);
 define ('ROOMS_AVAILABLE', 2);
 
 /**
+ * Implements hook_ctools_plugin_api().
+ */
+function rooms_ctools_plugin_api($module = NULL, $api = NULL) {
+  if ($module == "facetapi" && $api == "facetapi_defaults") {
+    return array("version" => "1");
+  }
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function rooms_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'rooms') . '/views',
+  );
+}
+
+/**
  * Creates  Bat Types and some example unit.
  */
 function rooms_create_rooms_type() {
@@ -31,31 +50,13 @@ function rooms_create_rooms_type() {
 
   bat_type_bundle_save($bat_type_bundle);
 
-  // Add 2 Bat Types. 
-  $standard_bat_type = array(
-    'type_id' => 1,
-    'type' => 'rooms',
-    'name' => 'Standard',
-    'status' => 1,
-    'bookable' => 1,
-    'created' => REQUEST_TIME,
-  );
-
-  bat_type_save(bat_type_create($standard_bat_type));
-
-  $deluxe_bat_type = array(
-    'type_id' => 2,
-    'type' => 'rooms',
-    'name' => 'Deluxe',
-    'status' => 1,
-    'bookable' => 1,
-    'created' => REQUEST_TIME,
-  );
-
-  bat_type_save(bat_type_create($deluxe_bat_type));
-
   // Add Default availability state and price fields.
   rooms_create_rooms_fields();
+
+  // Add a Standard Example Room type.
+  rooms_create_example_rooms_type(1, 'rooms', 'Standard', '2', 3, array('1','2','3','4','5','8','9'));
+  // Add a Deluxe Example Room type.
+  rooms_create_example_rooms_type(2, 'rooms', 'Deluxe', '2', 5, array('1','2','3','4','5','6','7','8','9','10','11','12','13','14','15'));
 
   // Create some example unit.
   rooms_create_example_units();
@@ -105,3 +106,112 @@ function rooms_create_example_units() {
 
   bat_unit_save(bat_unit_create($du2));
 }
+
+/**
+ * Creates an Amenities vocabulary.
+ */
+function rooms_create_amenities_vocabulary() {
+  $amenites_vocabulary = (object) array(
+    'name' => 'Amenities',
+    'description' => 'A vocabulary used by the Rooms module to describe amenities',
+    'machine_name' => 'amenities',
+  );
+
+  taxonomy_vocabulary_save($amenites_vocabulary);
+  rooms_create_example_amenities_terms();
+}
+
+/**
+ * A List of example amenities.
+ */
+function rooms_example_amenities() {
+  return array(
+    t('TV'),
+    t('Cable TV'),
+    t('Air Conditioning'),
+    t('Heating'),
+    t('Kitchen'),
+    t('Internet'),
+    t('Wireless Internet'),
+    t('Breakfast'),
+    t('Smoke Detector'),
+    t('Carbon Monoxide Detector '),
+    t('Doorman'),
+    t('Elevator'),
+    t('Suitable for Events'),
+    t('Family/Kid friendy'),
+    t('Fire Extinguisher'),
+    t('First aid kit'),
+    t('Free Parking on Premises'),
+    t('Gym'),
+    t('Hot tub'),
+    t('Indoor Fireplace'),
+    t('Minibar'),
+    t('Pets Allowed'),
+    t('Pool'),
+    t('Shampoo'),
+    t('Smoking Allowed'),
+    t('Washer'),
+    t('Wireless Intercom'),
+    t('Dryer'),
+    t('Towels'),
+  );
+}
+
+/**
+ * Creates Amenities example terms.
+ */
+function rooms_create_example_amenities_terms() {
+  foreach (rooms_example_amenities() as $name) {
+    $vocabulary = taxonomy_vocabulary_machine_name_load('amenities');
+    $term = new stdClass();
+    $term->name = $name;
+    $term->vid = $vocabulary->vid;
+    taxonomy_term_save($term);
+  }
+}
+
+
+function rooms_create_example_rooms_type($type_id, $type, $name, $default_state = NULL, $sleeps = 2, $amenities = array()) {
+
+  $module_path = drupal_get_path('module', 'rooms');
+
+  $bat_type = bat_type_create(array(
+    'type_id' => $type_id,
+    'type' => $type,
+    'name' => $name,
+    'status' => 1,
+    'bookable' => 1,
+    'created' => REQUEST_TIME,
+    )
+  );
+
+  $bat_type->field_rooms_sleeps[LANGUAGE_NONE][0]['value'] = $sleeps;
+  if ($default_state) {
+    $bat_type->field_rooms_default_state[LANGUAGE_NONE][0]['state_id'] = $default_state;
+  }
+  if (!empty($amenities)) {
+    $i = 0;
+    foreach($amenities as $amenity) {
+      $bat_type->field_rooms_amenities[LANGUAGE_NONE][$i]['tid'] = $amenity;
+      $i++;
+    }
+  }
+
+  $default = drupal_realpath($module_path . '/default_images/default.jpg');
+  // Create managed File object and associate with Image field.
+  $default_image = (object) array(
+    'uid' => 1,
+    'uri' => $default,
+    'filemime' => file_get_mimetype($default),
+    'status' => 1,
+  );
+
+  // save the file to the root of the files directory.
+  $default_image = file_copy($default_image, 'public://');
+  $bat_type->field_rooms_image[LANGUAGE_NONE][0] = (array)$default_image;
+
+  bat_type_save($bat_type);
+}
+
+

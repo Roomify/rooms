@@ -18,6 +18,9 @@ function rooms_install() {
   // Create default event states.
   rooms_create_standard_event_states();
 
+  // Create Amenities Vocabulary
+  rooms_create_amenities_vocabulary();
+
   // Create Rooms types.
   rooms_create_rooms_type();
 }
