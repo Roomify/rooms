@@ -254,7 +254,7 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
 
     // If search across the same year do a single query.
     if ($s->sameYear()) {
-      $query = db_select('rooms_pricing', 'a');
+      $query = db_select($this->base_table, 'a');
       $query->fields('a');
       $query->condition('a.unit_id', $this->unit_id);
       $query->condition('a.year', $s->startYear());
@@ -277,7 +277,7 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
     // For multiple years do a query for each year.
     else {
       for ($j = $s->startYear(); $j <= $s->endYear(); $j++) {
-        $query = db_select('rooms_pricing', 'a');
+        $query = db_select($this->base_table, 'a');
         $query->fields('a');
         $query->condition('a.unit_id', $this->unit_id);
         $query->condition('a.year', $j);
@@ -354,6 +354,9 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
     // from having to worry about it.
     foreach ($results[$this->unit_id] as $year => $months) {
       foreach ($months as $mid => $days) {
+        // Get the end of month values again to make sure we have the right year
+        // because it might change for queries spanning years.
+        $eod = rooms_end_of_month_dates($year);
         // There is undoubtetly a smarter way to do this.
         if (count($days['days']) != $eod[$mid]) {
           switch ($eod[$mid]) {
