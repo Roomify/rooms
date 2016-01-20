@@ -300,58 +300,60 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     $persons = $form_state['values']['data']['group_size'];
   }
 
-  $form['data']['group_size_children'] = array(
-    '#type' => 'select',
-    '#title' => t('Children'),
-    '#options' => rooms_range(0, $persons),
-    '#default_value' => isset($booking->data['group_size_children']) ? $booking->data['group_size_children'] : '0',
-    '#description' => t('The number of children staying in this unit.'),
-    '#prefix' => '<div class="rooms-booking-group-size-children-container" id="rooms_booking_group_size_children_container">',
-    '#suffix' => '</div>',
-  );
-
-  // If price calculation is set to 'Price per person per night'.
-  if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
-    // Show fields for enter children ages.
-    $form['data']['group_size_children']['#ajax'] = array(
-      'callback' => 'rooms_booking_children_change_callback',
-      'wrapper' => 'rooms_booking_childrensage',
-    );
-
-    $form['data']['childrens_age'] = array(
-      '#prefix' => '<div class="container-inline rooms-booking-childrensage" id="rooms_booking_childrensage">',
+  if (variable_get('rooms_booking_display_children', ROOMS_DISPLAY_CHILDREN) == ROOMS_DISPLAY_CHILDREN) {
+    $form['data']['group_size_children'] = array(
+      '#type' => 'select',
+      '#title' => t('Children'),
+      '#options' => rooms_range(0, $persons),
+      '#default_value' => isset($booking->data['group_size_children']) ? $booking->data['group_size_children'] : '0',
+      '#description' => t('The number of children staying in this unit.'),
+      '#prefix' => '<div class="rooms-booking-group-size-children-container" id="rooms_booking_group_size_children_container">',
       '#suffix' => '</div>',
     );
 
-    if (isset($form_state['values']['data']['group_size_children'])) {
-      if ($persons >= $form_state['values']['data']['group_size_children']) {
-        for ($t = 1; $t <= $form_state['values']['data']['group_size_children']; $t++) {
-          $form['data']['childrens_age'][$t] = array(
+    // If price calculation is set to 'Price per person per night'.
+    if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
+      // Show fields for enter children ages.
+      $form['data']['group_size_children']['#ajax'] = array(
+        'callback' => 'rooms_booking_children_change_callback',
+        'wrapper' => 'rooms_booking_childrensage',
+      );
+
+      $form['data']['childrens_age'] = array(
+        '#prefix' => '<div class="container-inline rooms-booking-childrensage" id="rooms_booking_childrensage">',
+        '#suffix' => '</div>',
+      );
+
+      if (isset($form_state['values']['data']['group_size_children'])) {
+        if ($persons >= $form_state['values']['data']['group_size_children']) {
+          for ($t = 1; $t <= $form_state['values']['data']['group_size_children']; $t++) {
+            $form['data']['childrens_age'][$t] = array(
+              '#type' => 'textfield',
+              '#title' => t('Age of child @num', array('@num' => $t)),
+              '#size' => 5,
+              '#maxlength' => 5,
+              '#ajax' => array(
+                'callback' => 'rooms_booking_childrens_age_ajax_callback',
+                'event' => 'blur',
+              ),
+            );
+          }
+        }
+      }
+      elseif (!empty($booking->data['childrens_age'])) {
+        foreach ($booking->data['childrens_age'] as $key => $age) {
+          $form['data']['childrens_age'][$key] = array(
             '#type' => 'textfield',
-            '#title' => t('Age of child @num', array('@num' => $t)),
+            '#title' => t('Age of child @num', array('@num' => $key)),
             '#size' => 5,
             '#maxlength' => 5,
+            '#default_value' => $age,
             '#ajax' => array(
               'callback' => 'rooms_booking_childrens_age_ajax_callback',
               'event' => 'blur',
             ),
           );
         }
-      }
-    }
-    elseif (!empty($booking->data['childrens_age'])) {
-      foreach ($booking->data['childrens_age'] as $key => $age) {
-        $form['data']['childrens_age'][$key] = array(
-          '#type' => 'textfield',
-          '#title' => t('Age of child @num', array('@num' => $key)),
-          '#size' => 5,
-          '#maxlength' => 5,
-          '#default_value' => $age,
-          '#ajax' => array(
-            'callback' => 'rooms_booking_childrens_age_ajax_callback',
-            'event' => 'blur',
-          ),
-        );
       }
     }
   }
@@ -724,8 +726,15 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
               list($start_date, $end_date) = rooms_form_values_get_start_end_dates($form_state);
 
               $group_size = isset($form_state['values']['data']['group_size']) ? $form_state['values']['data']['group_size'] : $form_state['input']['data']['group_size'];
-              $group_size_children = isset($form_state['values']['data']['group_size']) ? $form_state['values']['data']['group_size_children'] : $form_state['input']['data']['group_size_children'];
-              $childrens_age = isset($form_state['values']['data']['childrens_age']) ? $form_state['values']['data']['childrens_age'] : array();
+
+              if (variable_get('rooms_booking_display_children', ROOMS_DISPLAY_CHILDREN) == ROOMS_DISPLAY_CHILDREN) {
+                $group_size_children = isset($form_state['values']['data']['group_size']) ? $form_state['values']['data']['group_size_children'] : $form_state['input']['data']['group_size_children'];
+                $childrens_age = isset($form_state['values']['data']['childrens_age']) ? $form_state['values']['data']['childrens_age'] : array();
+              }
+              else {
+                $group_size_children = 0;
+                $childrens_age = array();
+              }
 
               $booking_info = array(
                 'start_date' => clone($start_date),

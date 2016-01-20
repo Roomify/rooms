@@ -476,6 +476,14 @@ function rooms_booking_form_rooms_booking_settings_alter(&$form, &$form_state, $
     '#description' => t('Set the time after the carts will expire.'),
     '#weight' => 50,
   );
+
+  $form['rooms_booking_settings']['rooms_booking_display_children'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Display children choice in booking form'),
+    '#description' => t('Select whether both group size and children can be shown.'),
+    '#default_value' => variable_get('rooms_booking_display_children', ROOMS_DISPLAY_CHILDREN),
+    '#weight' => 50,
+  );
 }
 
 /**

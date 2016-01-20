@@ -2895,7 +2895,10 @@ function rooms_booking_manager_rooms_booking_edit_form_submit(&$form, &$form_sta
 
   if ($booking->order_id == '') {
     if (variable_get('rooms_manually_booking_create_order', '1')) {
-      $booking_parameters = array('adults' => $form_state['values']['data']['group_size'], 'children' => $form_state['values']['data']['group_size_children']);
+      $booking_parameters = array(
+        'adults' => $form_state['values']['data']['group_size'],
+        'children' => (isset($form_state['values']['data']['group_size_children'])) ? $form_state['values']['data']['group_size_children'] : 0,
+      );
 
       $order = rooms_booking_manager_create_order($start_date, $end_date, $booking_parameters, $unit, $booking, $commerce_customer_id);
 
