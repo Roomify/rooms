@@ -23,6 +23,11 @@ function rooms_install() {
 
   // Create Rooms types.
   rooms_create_rooms_type();
+
+  drupal_flush_all_caches();
+
+  // Index Search Api indexes.
+  rooms_index_search_api_indexes('search_types');
 }
 
 /**

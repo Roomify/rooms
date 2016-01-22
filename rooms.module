@@ -126,6 +126,19 @@ function rooms_booking_edit_form_submit(&$form, &$form_state) {
 }
 
 /**
+ * Index Search Api indexes for Rooms Types.
+ */
+function rooms_index_search_api_indexes($index) {
+  $search_api_index = search_api_index_load($index);
+
+  // Clear the index.
+  $search_api_index->clear();
+
+  // Run the index!
+  search_api_index_items($search_api_index, -1);
+}
+
+/**
  * Creates  Bat Types and some example unit.
  */
 function rooms_create_rooms_type() {
