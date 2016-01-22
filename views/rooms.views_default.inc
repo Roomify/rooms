@@ -57,6 +57,8 @@ function rooms_views_default_views() {
 
   $views['search_rooms_types'] = $view;
 
+  $view = new view();
+
   $view->name = 'rooms_types';
   $view->description = '';
   $view->tag = 'default';
