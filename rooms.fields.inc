@@ -53,6 +53,27 @@ function rooms_create_rooms_fields() {
     );
   }
 
+  if (field_read_field('field_rooms_pricing_event_price') === FALSE) {
+    $field_bases['field_rooms_pricing_event_price'] = array(
+      'active' => 1,
+      'cardinality' => 1,
+      'deleted' => 0,
+      'entity_types' => array(),
+      'field_name' => 'field_rooms_pricing_event_price',
+      'indexes' => array(
+        'currency_price' => array(
+          0 => 'amount',
+          1 => 'currency_code',
+        ),
+      ),
+      'locked' => 0,
+      'module' => 'commerce_price',
+      'settings' => array(),
+      'translatable' => 0,
+      'type' => 'commerce_price',
+    );
+  }
+
   if (field_read_field('field_rooms_amenities') === FALSE) {
     $field_bases['field_rooms_amenities'] = array(
       'active' => 1,
@@ -201,6 +222,43 @@ function rooms_create_rooms_fields() {
       ),
     );
   }
+
+  if (field_read_instance('bat_event', 'field_rooms_pricing_event_price', 'pricing') === FALSE) {
+    $field_instances['bat_event-pricing-field_rooms_pricing_event_price'] = array(
+      'bundle' => 'pricing',
+      'default_value' => NULL,
+      'deleted' => 0,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'commerce_price',
+          'settings' => array(
+            'calculation' => FALSE,
+          ),
+          'type' => 'commerce_price_formatted_amount',
+          'weight' => 1,
+        ),
+      ),
+      'entity_type' => 'bat_event',
+      'field_name' => 'field_rooms_pricing_event_price',
+      'label' => 'Price',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'commerce_price',
+        'settings' => array(
+          'currency_code' => 'default',
+        ),
+        'type' => 'commerce_price_simple',
+        'weight' => 1,
+      ),
+    );
+  }
+
 
   if (field_read_instance('bat_type', 'field_rooms_amenities', 'rooms') === FALSE) {
     $field_instances['bat_type-rooms-field_rooms_amenities'] = array(
