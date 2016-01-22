@@ -33,6 +33,7 @@ function rooms_create_availability_event_type() {
     'label' => 'Availability',
     'type' => 'availability',
     'fixed_event_states' => 1,
+    'event_granularity' => 'bat_daily',
   ));
 
   bat_event_type_save($event);
@@ -46,6 +47,7 @@ function rooms_create_pricing_event_type() {
     'label' => 'Pricing',
     'type' => 'pricing',
     'fixed_event_states' => 0,
+    'event_granularity' => 'bat_daily',
     'default_event_value_field_ids' => array(
       'pricing' => 'field_rooms_pricing_event_price',
     ),
