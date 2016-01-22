@@ -114,6 +114,8 @@ function rooms_views_default_views() {
   $handler->display->display_options['menu']['context'] = 0;
   $handler->display->display_options['menu']['context_only_inline'] = 0;
 
+  $views['rooms_types'] = $view;
+
   $view = new view();
   $view->name = 'rooms_bookings';
   $view->description = 'A list of all events';
@@ -396,6 +398,7 @@ function rooms_views_default_views() {
   $handler->display->display_options['tab_options']['weight'] = '0';
   $handler->display->display_options['tab_options']['name'] = 'management';
 
-  
+  $views['rooms_bookings'] = $view;
+
   return $views;
 }
