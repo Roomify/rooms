@@ -1,0 +1,88 @@
+<?php
+
+/**
+ * @file
+ * Manages events for Units and displaying dates on the jquery
+ * FullCalendar plugin.
+ */
+
+define('ROOMS_EVENT_CALENDAR_ADMIN_STYLE', 1);
+define('ROOMS_EVENT_CALENDAR_GENERIC_STYLE', 2);
+
+/**
+ * Implements hook_menu().
+ */
+function rooms_event_ui_menu() {
+  $items = array();
+
+  $items['admin/rooms/calendar'] = array(
+    'title' => 'Rooms Calendar',
+    'page callback' => 'rooms_event_ui_calendar_page',
+    'page arguments' => array(3, 4),
+    'access arguments' => array('administer calendar events'),
+    'type' => MENU_CALLBACK,
+    'weight' => 20,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function rooms_event_ui_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'rooms_event_ui') . '/views',
+  );
+}
+
+/**
+ * Callback for admin/bat/events/
+ */
+function rooms_event_ui_calendar_page($unit_type, $event_type) {
+  if (isset($unit_type) && isset($event_type)) {
+    $type = bat_type_load($unit_type);
+    drupal_set_title(t('View @rooms_type @event_type events', array('@rooms_type' => $type->name, '@event_type' => $event_type)));
+  }
+  else {
+    drupal_set_title(t('View data events'));
+  }
+
+  // Pick what modal style to use
+  $calendar_settings['modal_style'] = 'default';
+
+  if ($type = bat_event_type_load($event_type)) {
+    $event_granularity = $type->event_granularity;
+  }
+  else {
+    $event_granularity = 'both';
+  }
+
+  $event_types = bat_event_get_types();
+  $ev_type = reset($event_types);
+  $event_type = $ev_type->type;
+
+  // All Drupal JS settings inside the batCalendar object.
+  $fc_user_settings = array(
+    'batCalendar' => array(
+      array(
+        'unitType' => $unit_type,
+        'eventType' => $event_type,
+        'eventGranularity' =>  $event_granularity,
+      ),
+    ),
+  );
+
+  $calendar_settings['user_settings'] = $fc_user_settings;
+  $calendar_settings['calendar_id'] = 'fullcalendar-scheduler';
+
+  $render_array = array(
+    'calendar' => array(
+      '#theme' => 'bat_fullcalendar',
+      '#calendar_settings' => $calendar_settings,
+    ),
+  );
+
+  return $render_array;
+}

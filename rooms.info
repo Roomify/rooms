@@ -7,13 +7,14 @@ package = Rooms
 
 dependencies[] = bat
 dependencies[] = bat_event
-dependencies[] = bat_unit
-dependencies[] = bat_event_ui
-dependencies[] = bat_fullcalendar
-dependencies[] = commerce_price
 dependencies[] = bat_facets
-dependencies[] = search_api_views
+dependencies[] = bat_fullcalendar
+dependencies[] = bat_unit
+dependencies[] = commerce_price
+dependencies[] = rooms_event_ui
 dependencies[] = search_api_db
+dependencies[] = search_api_views
+
 
 files[] = rooms.facetapi_defaults.inc
 files[] = rooms.search_api.inc
