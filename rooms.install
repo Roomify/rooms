@@ -80,4 +80,15 @@ function rooms_create_standard_event_states() {
     'default' => 1,
   );
   drupal_write_record('bat_event_state', $available_state);
+
+  $booked_states = array(
+    'id' => ROOMS_BOOKED,
+    'event_type' => 'availability',
+    'label' => 'Booked',
+    'color' => '#1A1A73',
+    'calendar_label' => 'Booked',
+    'locked' => 1,
+    'blocking' => 1,
+  );
+  drupal_write_record('bat_event_state', $booked_states);
 }

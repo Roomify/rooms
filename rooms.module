@@ -12,6 +12,8 @@
  */
 define ('ROOMS_NOT_AVAILABLE', 1);
 define ('ROOMS_AVAILABLE', 2);
+define ('ROOMS_BOOKED', 3);
+
 
 /**
  * Implements hook_ctools_plugin_api().
