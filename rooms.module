@@ -67,6 +67,17 @@ function rooms_menu_local_tasks_alter(&$data, $router_item, $root_path) {
       );
     }
   }
+  // Create an action link on the Rooms Bookings admin page for adding a new event.
+  if ($root_path == 'admin/rooms/bookings') {
+    $item = menu_get_item('admin/bat/events/add/availability');
+    if ($item['access']) {
+      $item['title'] = t('Add Booking');
+      $data['actions']['output'][] = array(
+        '#theme' => 'menu_local_action',
+        '#link' => $item,
+      );
+    }
+  }
 }
 
 /**
@@ -88,6 +99,28 @@ function rooms_form_bat_type_edit_form_alter(&$form, &$form_state, $form_id) {
  */
 function rooms_type_edit_form_submit(&$form, &$form_state) {
   $form_state['redirect'] = '/admin/rooms/rooms-types';
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * FORM_ID = bat_event_edit_form
+ */
+function rooms_form_bat_event_edit_form_alter(&$form, &$form_state, $form_id) {
+
+  if (isset($form['type']['#value']) && $form['type']['#value'] == 'availability') {
+    // Add a custom submit function.
+    $form['actions']['submit']['#submit'][] = 'rooms_booking_edit_form_submit';
+    $form['actions']['delete']['#submit'][] = 'rooms_booking_edit_form_submit';
+    $form['actions']['cancel']['#markup'] = l(t('Cancel'), 'admin/rooms/bookings');
+  }
+}
+
+/**
+ * Custom submit function to redirct users to Bookings page.
+ */
+function rooms_booking_edit_form_submit(&$form, &$form_state) {
+  $form_state['redirect'] = '/admin/rooms/bookings';
 }
 
 /**
