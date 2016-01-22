@@ -59,7 +59,7 @@ function rooms_menu() {
 function rooms_menu_local_tasks_alter(&$data, $router_item, $root_path) {
   // Create an action link on the Rooms Units admin page for adding new units.
   if ($root_path == 'admin/rooms/rooms-types') {
-    $item = menu_get_item('admin/bat/config/types/add/rooms?destination=admin/rooms');
+    $item = menu_get_item('admin/bat/config/types/add/rooms');
     if ($item['access']) {
       $data['actions']['output'][] = array(
         '#theme' => 'menu_local_action',
@@ -78,6 +78,8 @@ function rooms_form_bat_type_edit_form_alter(&$form, &$form_state, $form_id) {
   if (isset($form['type']['#value']) && $form['type']['#value'] == 'rooms') {
     // Add a custom submit function.
     $form['actions']['submit']['#submit'][] = 'rooms_type_edit_form_submit';
+    $form['actions']['delete']['#submit'][] = 'rooms_type_edit_form_submit';
+    $form['actions']['delete']['#suffix'] = l(t('Cancel'), 'admin/rooms/rooms-types');
   }
 }
 
