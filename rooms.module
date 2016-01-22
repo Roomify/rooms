@@ -32,6 +32,62 @@ function rooms_views_api() {
   );
 }
 
+
+/**
+ * Implements hook_menu().
+ */
+function rooms_menu() {
+  $items = array();
+
+  // Top level "Rooms" container.
+  $items['admin/rooms'] = array(
+    'title' => 'Rooms',
+    'description' => 'Administer Rooms.',
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('access administration pages'),
+    'file path' => drupal_get_path('module', 'system'),
+    'file' => 'system.admin.inc',
+    'weight' => -7,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_menu_local_tasks_alter().
+ */
+function rooms_menu_local_tasks_alter(&$data, $router_item, $root_path) {
+  // Create an action link on the Rooms Units admin page for adding new units.
+  if ($root_path == 'admin/rooms/rooms-types') {
+    $item = menu_get_item('admin/bat/config/types/add/rooms?destination=admin/rooms');
+    if ($item['access']) {
+      $data['actions']['output'][] = array(
+        '#theme' => 'menu_local_action',
+        '#link' => $item,
+      );
+    }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * FORM_ID = type_edit_form
+ */
+function rooms_form_bat_type_edit_form_alter(&$form, &$form_state, $form_id) {
+  if (isset($form['type']['#value']) && $form['type']['#value'] == 'rooms') {
+    // Add a custom submit function.
+    $form['actions']['submit']['#submit'][] = 'rooms_type_edit_form_submit';
+  }
+}
+
+/**
+ * Custom submit function to redirct users to Rooms Types page.
+ */
+function rooms_type_edit_form_submit(&$form, &$form_state) {
+  $form_state['redirect'] = '/admin/rooms/rooms-types';
+}
+
 /**
  * Creates  Bat Types and some example unit.
  */
@@ -213,5 +269,3 @@ function rooms_create_example_rooms_type($type_id, $type, $name, $default_state 
 
   bat_type_save($bat_type);
 }
-
-
