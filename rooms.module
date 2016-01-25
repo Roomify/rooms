@@ -223,8 +223,10 @@ function rooms_create_amenities_vocabulary() {
     'machine_name' => 'amenities',
   );
 
-  taxonomy_vocabulary_save($amenites_vocabulary);
-  rooms_create_example_amenities_terms();
+  if (!taxonomy_vocabulary_machine_name_load('amenities')) {
+    taxonomy_vocabulary_save($amenites_vocabulary);
+    roomify_listing_create_example_amenities_terms();
+  }
 }
 
 /**
