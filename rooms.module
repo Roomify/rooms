@@ -85,7 +85,7 @@ function rooms_menu_local_tasks_alter(&$data, $router_item, $root_path) {
 /**
  * Implements hook_form_FORM_ID_alter().
  *
- * FORM_ID = type_edit_form
+ * FORM_ID = bat_type_edit_form
  */
 function rooms_form_bat_type_edit_form_alter(&$form, &$form_state, $form_id) {
   if (isset($form['type']['#value']) && $form['type']['#value'] == 'rooms') {
