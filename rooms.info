@@ -15,6 +15,5 @@ dependencies[] = rooms_event_ui
 dependencies[] = search_api_db
 dependencies[] = search_api_views
 
-
 files[] = rooms.facetapi_defaults.inc
 files[] = rooms.search_api.inc

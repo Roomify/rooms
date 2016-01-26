@@ -10,7 +10,6 @@
  * Implements hook_views_data_alter().
  */
 function rooms_event_ui_views_data_alter(&$data) {
-
   $data['bat_types']['calendars'] = array(
     'field' => array(
       'title' => t('Calendar links'),

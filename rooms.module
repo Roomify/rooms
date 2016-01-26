@@ -34,7 +34,6 @@ function rooms_views_api() {
   );
 }
 
-
 /**
  * Implements hook_menu().
  */
@@ -69,6 +68,7 @@ function rooms_menu_local_tasks_alter(&$data, $router_item, $root_path) {
       );
     }
   }
+
   // Create an action link on the Rooms Bookings admin page for adding a new event.
   if ($root_path == 'admin/rooms/bookings') {
     $item = menu_get_item('admin/bat/events/add/availability');
@@ -225,7 +225,7 @@ function rooms_create_amenities_vocabulary() {
 
   if (!taxonomy_vocabulary_machine_name_load('amenities')) {
     taxonomy_vocabulary_save($amenites_vocabulary);
-    roomify_listing_create_example_amenities_terms();
+    rooms_create_example_amenities_terms();
   }
 }
 
@@ -279,9 +279,15 @@ function rooms_create_example_amenities_terms() {
   }
 }
 
-
+/**
+ * @param $type_id
+ * @param $type
+ * @param $name
+ * @param $default_state
+ * @param $sleeps
+ * @param $amenities
+ */
 function rooms_create_example_rooms_type($type_id, $type, $name, $default_state = NULL, $sleeps = 2, $amenities = array()) {
-
   $module_path = drupal_get_path('module', 'rooms');
 
   $bat_type = bat_type_create(array(
@@ -331,11 +337,11 @@ function rooms_form_views_exposed_form_alter(&$form, &$form_state) {
   // Events admin view exposed filters.
   if ($form['#id'] == 'views-exposed-form-rooms-bookings-page-1') {
     $form['start_date']['#type'] = 'date_popup';
-    $form['start_date']['#date_format'] = 'd/m/Y';
+    $form['start_date']['#date_format'] = variable_get('bat_daily_date_format', 'Y-m-d');
     $form['start_date']['#date_label_position'] = 'before';
 
     $form['end_date']['#type'] = 'date_popup';
-    $form['end_date']['#date_format'] = 'd/m/Y';
+    $form['end_date']['#date_format'] = variable_get('bat_daily_date_format', 'Y-m-d');
     $form['end_date']['#date_label_position'] = 'before';
 
     $form['#attached']['css'][] = array(

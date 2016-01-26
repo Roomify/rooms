@@ -57,4 +57,5 @@ class rooms_event_ui_handler_type_calendars_field extends bat_type_handler_type_
       }
     }
   }
+
 }

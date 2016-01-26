@@ -31,6 +31,41 @@ function rooms_install() {
 }
 
 /**
+ * Implements hook_uninstall().
+ */
+function rooms_uninstall() {
+  // Delete "Availability" event type.
+  if ($event_type = bat_event_type_load('availability')) {
+    bat_event_type_delete($event_type);
+    bat_event_delete_event_type_schema('availability');
+  }
+
+  // Delete "Pricing" event type.
+  if ($event_type = bat_event_type_load('pricing')) {
+    bat_event_type_delete($event_type);
+    bat_event_delete_event_type_schema('pricing');
+  }
+
+  // Delete example rooms.
+  bat_unit_delete_multiple(array(1, 2, 3, 4));
+
+  // Delete "Standard" rooms type.
+  if ($type = bat_type_load(1)) {
+    bat_type_delete($type);
+  }
+
+  // Delete "Deluxe" rooms type.
+  if ($type = bat_type_load(2)) {
+    bat_type_delete($type);
+  }
+
+  // Delete "Rooms" type bundle.
+  if ($type_bundle = bat_type_bundle_load('rooms')) {
+    bat_type_bundle_delete($type_bundle);
+  }
+}
+
+/**
  * Creates the default Availability event type.
  */
 function rooms_create_availability_event_type() {
