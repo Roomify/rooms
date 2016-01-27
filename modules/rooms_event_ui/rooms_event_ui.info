@@ -1,11 +1,11 @@
 name = Rooms Event UI
-description = Interface support Rooms events.
+description = Interface support for Rooms.
 core = 7.x
 
 package = Rooms
 
-dependencies[] = rooms
 dependencies[] = bat_fullcalendar
+dependencies[] = rooms
 
 files[] = views/rooms_event_ui.views.inc
 files[] = views/rooms_event_ui_handler_type_calendars_field.inc

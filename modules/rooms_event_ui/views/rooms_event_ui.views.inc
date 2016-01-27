@@ -12,7 +12,7 @@
 function rooms_event_ui_views_data_alter(&$data) {
   $data['bat_types']['calendars'] = array(
     'field' => array(
-      'title' => t('Calendar links'),
+      'title' => t('Availability and Price Management'),
       'help' => t('Display links to manage all calendars for Rooms Type.'),
       'handler' => 'rooms_event_ui_handler_type_calendars_field',
     ),

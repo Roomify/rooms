@@ -43,7 +43,7 @@ function rooms_menu() {
   // Top level "Rooms" container.
   $items['admin/rooms'] = array(
     'title' => 'Rooms',
-    'description' => 'Administer Rooms.',
+    'description' => 'Administer Your Property',
     'page callback' => 'system_admin_menu_block_page',
     'access arguments' => array('access administration pages'),
     'file path' => drupal_get_path('module', 'system'),
@@ -59,7 +59,7 @@ function rooms_menu() {
  */
 function rooms_menu_local_tasks_alter(&$data, $router_item, $root_path) {
   // Create an action link on the Rooms Units admin page for adding new units.
-  if ($root_path == 'admin/rooms/rooms-types') {
+  if ($root_path == 'admin/rooms/property-management') {
     $item = menu_get_item('admin/bat/config/types/add/rooms');
     if ($item['access']) {
       $data['actions']['output'][] = array(
@@ -92,7 +92,7 @@ function rooms_form_bat_type_edit_form_alter(&$form, &$form_state, $form_id) {
     // Add a custom submit function.
     $form['actions']['submit']['#submit'][] = 'rooms_type_edit_form_submit';
     $form['actions']['delete']['#submit'][] = 'rooms_type_edit_form_submit';
-    $form['actions']['delete']['#suffix'] = l(t('Cancel'), 'admin/rooms/rooms-types');
+    $form['actions']['delete']['#suffix'] = l(t('Cancel'), 'admin/rooms/property-management');
   }
 }
 
@@ -100,7 +100,7 @@ function rooms_form_bat_type_edit_form_alter(&$form, &$form_state, $form_id) {
  * Custom submit function to redirct users to Rooms Types page.
  */
 function rooms_type_edit_form_submit(&$form, &$form_state) {
-  $form_state['redirect'] = '/admin/rooms/rooms-types';
+  $form_state['redirect'] = '/admin/rooms/property-management';
 }
 
 /**

@@ -59,18 +59,18 @@ function rooms_views_default_views() {
 
   $view = new view();
 
-  $view->name = 'rooms_types';
+  $view->name = 'property_management';
   $view->description = '';
   $view->tag = 'default';
   $view->base_table = 'bat_types';
-  $view->human_name = 'Rooms Types';
+  $view->human_name = 'Property Management';
   $view->core = 7;
   $view->api_version = '3.0';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
 
   /* Display: Master */
   $handler = $view->new_display('default', 'Master', 'default');
-  $handler->display->display_options['title'] = 'Rooms Types';
+  $handler->display->display_options['title'] = 'Property Management';
   $handler->display->display_options['use_more_always'] = FALSE;
   $handler->display->display_options['access']['type'] = 'perm';
   $handler->display->display_options['access']['perm'] = 'update any bat_type entity of bundle rooms';
@@ -94,7 +94,7 @@ function rooms_views_default_views() {
   $handler->display->display_options['fields']['status']['field'] = 'status';
   $handler->display->display_options['fields']['status']['label'] = 'Published';
   $handler->display->display_options['fields']['status']['separator'] = '';
-  /* Field: Type: Calendar links */
+  /* Field: Type: Calendar Links */
   $handler->display->display_options['fields']['calendars']['id'] = 'calendars';
   $handler->display->display_options['fields']['calendars']['table'] = 'bat_types';
   $handler->display->display_options['fields']['calendars']['field'] = 'calendars';
@@ -107,16 +107,16 @@ function rooms_views_default_views() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
-  $handler->display->display_options['path'] = 'admin/rooms/rooms-types';
+  $handler->display->display_options['path'] = 'admin/rooms/property-management';
   $handler->display->display_options['menu']['type'] = 'normal';
-  $handler->display->display_options['menu']['title'] = 'Rooms Types';
-  $handler->display->display_options['menu']['description'] = 'Manage Rooms Types and their Units';
+  $handler->display->display_options['menu']['title'] = 'Property Management';
+  $handler->display->display_options['menu']['description'] = 'Manage Room Types and associated Rooms';
   $handler->display->display_options['menu']['weight'] = '0';
   $handler->display->display_options['menu']['name'] = 'management';
   $handler->display->display_options['menu']['context'] = 0;
   $handler->display->display_options['menu']['context_only_inline'] = 0;
 
-  $views['rooms_types'] = $view;
+  $views['property_management'] = $view;
 
   $view = new view();
   $view->name = 'rooms_bookings';
