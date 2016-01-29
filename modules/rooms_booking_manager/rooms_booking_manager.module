@@ -3258,8 +3258,11 @@ function rooms_booking_manager_check_for_deposit($price, $start_date) {
   $deposit_amount = FALSE;
 
   if (variable_get('rooms_booking_manager_full_payment', 0)) {
+    $now = new DateTime();
     $interval = '+ ' . format_interval(variable_get('rooms_booking_manager_full_payment_duration', 86400));
-    if ($start_date <= (new DateTime())->modify($interval)) {
+    $now->modify($interval);
+
+    if ($start_date <= $now) {
       return $deposit_amount;
     }
   }
