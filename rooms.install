@@ -100,35 +100,35 @@ function rooms_create_pricing_event_type() {
  * Creates the default event states.
  */
 function rooms_create_standard_event_states() {
-  $not_available_state = array(
-    'id' => ROOMS_NOT_AVAILABLE,
-    'event_type' => 'availability',
-    'label' => 'Not Available',
-    'color' => '#CC2727',
-    'calendar_label' => 'N/A',
-    'locked' => 1,
-  );
-  drupal_write_record('bat_event_state', $not_available_state);
-
-  $available_state = array(
-    'id' => ROOMS_AVAILABLE,
-    'event_type' => 'availability',
+  $event_state = array(
+    'machine_name' => ROOMS_AVAILABLE,
     'label' => 'Available',
     'color' => '#8BA175',
     'calendar_label' => 'AV',
     'locked' => 1,
     'default' => 1,
   );
-  drupal_write_record('bat_event_state', $available_state);
 
-  $booked_states = array(
-    'id' => ROOMS_BOOKED,
-    'event_type' => 'availability',
+  bat_event_save_state($event_state, 'availability');
+
+  $event_state = array(
+    'machine_name' => ROOMS_NOT_AVAILABLE,
+    'label' => 'Not Available',
+    'color' => '#CC2727',
+    'calendar_label' => 'N/A',
+    'locked' => 1,
+  );
+
+  bat_event_save_state($event_state, 'availability');
+
+  $event_state = array(
+    'machine_name' => ROOMS_BOOKED,
     'label' => 'Booked',
     'color' => '#1A1A73',
     'calendar_label' => 'Booked',
     'locked' => 1,
     'blocking' => 1,
   );
-  drupal_write_record('bat_event_state', $booked_states);
+
+  bat_event_save_state($event_state, 'availability');
 }

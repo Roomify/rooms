@@ -10,9 +10,9 @@
 /**
  * Defining some unit availability states that will be used throughout.
  */
-define ('ROOMS_NOT_AVAILABLE', 1);
-define ('ROOMS_AVAILABLE', 2);
-define ('ROOMS_BOOKED', 3);
+define ('ROOMS_NOT_AVAILABLE', 'rooms_not_available');
+define ('ROOMS_AVAILABLE', 'rooms_available');
+define ('ROOMS_BOOKED', 'rooms_booked');
 
 
 /**
@@ -172,45 +172,49 @@ function rooms_create_rooms_type() {
  * Creates 2 Standard and 2 Deluxe example rooms.
  */
 function rooms_create_example_units() {
-  $su1 = array(
-    'unit_id' => 1,
-    'type_id' => 1,
-    'type' => 'default',
-    'name' => 'Standard 1',
-    'status' => 1,
+  $standard_unit_1 = bat_unit_create(
+    array(
+      'type_id' => 1,
+      'type' => 'default',
+      'name' => 'Standard 1',
+      'status' => 1,
+    )
   );
 
-  bat_unit_save(bat_unit_create($su1));
+  bat_unit_save($standard_unit_1);
 
-  $su2 = array(
-    'unit_id' => 2,
-    'type_id' => 1,
-    'type' => 'default',
-    'name' => 'Standard 2',
-    'status' => 1,
+  $standard_unit_2 = bat_unit_create(
+    array(
+      'type_id' => 1,
+      'type' => 'default',
+      'name' => 'Standard 2',
+      'status' => 1,
+    )
   );
 
-  bat_unit_save(bat_unit_create($su2));
+  bat_unit_save($standard_unit_2);
 
-  $du1 = array(
-    'unit_id' => 3,
-    'type_id' => 2,
-    'type' => 'default',
-    'name' => 'Deluxe 1',
-    'status' => 1,
+  $deluxe_unit_1 = bat_unit_create(
+    array(
+      'type_id' => 2,
+      'type' => 'default',
+      'name' => 'Deluxe 1',
+      'status' => 1,
+    )
   );
 
-  bat_unit_save(bat_unit_create($du1));
+  bat_unit_save($deluxe_unit_1);
 
-  $du2 = array(
-    'unit_id' => 4,
-    'type_id' => 2,
-    'type' => 'default',
-    'name' => 'Deluxe 2',
-    'status' => 1,
+  $deluxe_unit_2 = bat_unit_create(
+    array(
+      'type_id' => 2,
+      'type' => 'default',
+      'name' => 'Deluxe 2',
+      'status' => 1,
+    )
   );
 
-  bat_unit_save(bat_unit_create($du2));
+  bat_unit_save($deluxe_unit_2);
 }
 
 /**
