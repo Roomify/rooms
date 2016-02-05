@@ -85,38 +85,6 @@ function rooms_menu() {
  * Implements hook_libraries_info().
  */
 function rooms_libraries_info() {
-  $libraries['moment'] = array(
-    'name' => 'Moment',
-    'vendor url' => 'http://momentjs.com',
-    'download url' => 'http://momentjs.com/downloads/moment.min.js',
-    'version arguments' => array(
-      'file' => 'moment.min.js',
-      // 2.8.3
-      'pattern' => '/(\d+\.\d+\.\d)/',
-    ),
-    'files' => array(
-      'js' => array(
-        'moment.min.js',
-      ),
-    ),
-    'variants' => array(
-      'minified' => array(
-        'files' => array(
-          'js' => array(
-            'moment.min.js',
-          ),
-        ),
-      ),
-      'source' => array(
-        'files' => array(
-          'js' => array(
-            'moment.js',
-          ),
-        ),
-      ),
-    ),
-  );
-
   $libraries['fullcalendar'] = array(
     'name' => 'FullCalendar',
     'vendor url' => 'http://fullcalendar.io',
@@ -130,6 +98,7 @@ function rooms_libraries_info() {
    // 'path' => 'dist',
     'files' => array(
       'js' => array(
+        'lib/moment.min.js',
         'fullcalendar.js',
         'gcal.js',
       ),
@@ -148,7 +117,6 @@ function rooms_libraries_info() {
             'fullcalendar.min.css',
           ),
         ),
-        'dependencies' => array('moment (>=2.8.3)'),
       ),
       'source' => array(
         'files' => array(
@@ -160,7 +128,6 @@ function rooms_libraries_info() {
             'fullcalendar.css',
           ),
         ),
-        'dependencies' => array('moment (>=2.8.3)'),
       ),
     ),
   );

@@ -7,13 +7,13 @@ If you are looking to create a fully customized booking solution for scenarios s
 
 If instead you are looking to get a head start checkout out roomify.us for access to our open-source ready made solutions for:
 
-Vacation Rentals - [Casa](https://roomify.us/roomifycasa)
+Vacation Rentals - [Casa](https://roomify.us/casa-vacation-rental-websites)
 
-Hotels and B&Bs - [Locanda](https://roomify.us/roomifylocanda)
+Hotels and B&Bs - [Locanda](https://roomify.us/locanda-hotel-website)
 
-Multiple Properties - [Agency](https://roomify.us/roomifyagency)
+Multiple Properties - [Agency](https://roomify.us/roomify-agency-for-multiple-property-rentals)
 
-[General Documentation](http://roomify.us/documentation) 
+[General Documentation](http://docs.roomify.us) 
 
 
 QUICK INSTALLATION
@@ -24,17 +24,13 @@ Follow the steps below to install Rooms.
 (http://fullcalendar.io) library.
 
 The required version of FullCalendar is 2.6.0 and you can download
-the specific version from the FullCalendar Github repo[1].
+the specific version from the FullCalendar Github repo[1]. 
 
 The FullCalendar library should be placed in sites/all/libraries so
 that you end up with the file located here:
 sites/all/libraries/fullcalendar/fullcalendar.js
 
-This version of FullCalendar depends on moment.js library minified version
-(http://momentjs.com). You can download moment.js from this link[2]. The moment.js
-library should be placed in sites/all/libraries so that you end up with the
-file located here: sites/all/libraries/moment/moment.min.js
-
+There is also a drush make bundled with rooms that will download it for you.
 
 2. Activate all the Rooms modules and their dependencies. Dependencies will
 be automatically downloaded if using [drush][3] to enable the Rooms modules.
