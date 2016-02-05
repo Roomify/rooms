@@ -89,8 +89,8 @@ class PricingEvent extends RoomsEvent implements PricingEventInterface {
 
     $event = array(
       "id" => $amount,
-      "start" => $this->startYear() . '-' . $this->startMonth('m') . '-' . $this->startDay('d') . 'T13:00:00Z',
-      "end" => $this->endYear() . '-' . $this->endMonth('m') . '-' . $this->endDay('d') . 'T13:00:00Z',
+      "start" => $this->startYear() . '-' . $this->startMonth('m') . '-' . $this->startDay('d') . 'T13:00:00',
+      "end" => $this->endYear() . '-' . $this->endMonth('m') . '-' . $this->endDay('d') . 'T13:00:00',
     );
 
     // Set the color.

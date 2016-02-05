@@ -84,8 +84,8 @@ class BookingEvent extends RoomsEvent implements BookingEventInterface {
   public function formatJson($style = ROOMS_AVAILABILITY_ADMIN_STYLE, $unit_name = '') {
     $event = array(
       'id' => $this->id,
-      'start' => $this->startYear() . '-' . $this->startMonth('m') . '-' . $this->startDay('d') . 'T13:00:00Z',
-      'end' => $this->endYear() . '-' . $this->endMonth('m') . '-' . $this->endDay('d') . 'T13:00:00Z',
+      'start' => $this->startYear() . '-' . $this->startMonth('m') . '-' . $this->startDay('d') . 'T13:00:00',
+      'end' => $this->endYear() . '-' . $this->endMonth('m') . '-' . $this->endDay('d') . 'T13:00:00',
       'title' => $this->id,
     );
 
