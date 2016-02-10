@@ -46,16 +46,13 @@ function rooms_uninstall() {
     bat_event_delete_event_type_schema('pricing');
   }
 
-  // Delete example rooms.
-  bat_unit_delete_multiple(array(1, 2, 3, 4));
+  // Delete all rooms types.
+  $types = bat_type_load_multiple(FALSE, array('type' => 'rooms'));
 
-  // Delete "Standard" rooms type.
-  if ($type = bat_type_load(1)) {
-    bat_type_delete($type);
-  }
+  foreach ($types as $type) {
+    $units = bat_unit_load_multiple(FALSE, array('type_id' => $type->type_id));
+    bat_unit_delete_multiple(array_keys($units));
 
-  // Delete "Deluxe" rooms type.
-  if ($type = bat_type_load(2)) {
     bat_type_delete($type);
   }
 

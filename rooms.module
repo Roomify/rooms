@@ -160,61 +160,31 @@ function rooms_create_rooms_type() {
   rooms_create_rooms_fields();
 
   // Add a Standard Example Room type.
-  rooms_create_example_rooms_type(1, 'rooms', 'Standard', '2', 3, array('1','2','3','4','5','8','9'));
+  rooms_create_example_rooms_type('rooms', 'Standard', '2', 3, array('1','2','3','4','5','8','9'));
   // Add a Deluxe Example Room type.
-  rooms_create_example_rooms_type(2, 'rooms', 'Deluxe', '2', 5, array('1','2','3','4','5','6','7','8','9','10','11','12','13','14','15'));
-
-  // Create some example unit.
-  rooms_create_example_units();
+  rooms_create_example_rooms_type('rooms', 'Deluxe', '2', 5, array('1','2','3','4','5','6','7','8','9','10','11','12','13','14','15'));
 }
 
 /**
- * Creates 2 Standard and 2 Deluxe example rooms.
+ * Creates example rooms.
+ *
+ * @param $type_id
+ * @param $type_name
+ * @param $number_units
  */
-function rooms_create_example_units() {
-  $standard_unit_1 = bat_unit_create(
-    array(
-      'type_id' => 1,
-      'type' => 'default',
-      'name' => 'Standard 1',
-      'status' => 1,
-    )
-  );
+function rooms_create_example_units($type_id, $type_name, $number_units) {
+  for ($i=1; $i<=$number_units; $i++) {
+    $unit = bat_unit_create(
+      array(
+        'type_id' => $type_id,
+        'type' => 'default',
+        'name' => $type_name . ' ' . $i,
+        'status' => 1,
+      )
+    );
 
-  bat_unit_save($standard_unit_1);
-
-  $standard_unit_2 = bat_unit_create(
-    array(
-      'type_id' => 1,
-      'type' => 'default',
-      'name' => 'Standard 2',
-      'status' => 1,
-    )
-  );
-
-  bat_unit_save($standard_unit_2);
-
-  $deluxe_unit_1 = bat_unit_create(
-    array(
-      'type_id' => 2,
-      'type' => 'default',
-      'name' => 'Deluxe 1',
-      'status' => 1,
-    )
-  );
-
-  bat_unit_save($deluxe_unit_1);
-
-  $deluxe_unit_2 = bat_unit_create(
-    array(
-      'type_id' => 2,
-      'type' => 'default',
-      'name' => 'Deluxe 2',
-      'status' => 1,
-    )
-  );
-
-  bat_unit_save($deluxe_unit_2);
+    bat_unit_save($unit);
+  }
 }
 
 /**
@@ -291,11 +261,10 @@ function rooms_create_example_amenities_terms() {
  * @param $sleeps
  * @param $amenities
  */
-function rooms_create_example_rooms_type($type_id, $type, $name, $default_state = NULL, $sleeps = 2, $amenities = array()) {
+function rooms_create_example_rooms_type($type, $name, $default_state = NULL, $sleeps = 2, $amenities = array()) {
   $module_path = drupal_get_path('module', 'rooms');
 
   $bat_type = bat_type_create(array(
-    'type_id' => $type_id,
     'type' => $type,
     'name' => $name,
     'status' => 1,
@@ -330,6 +299,9 @@ function rooms_create_example_rooms_type($type_id, $type, $name, $default_state 
   $bat_type->field_rooms_image[LANGUAGE_NONE][0] = (array)$default_image;
 
   bat_type_save($bat_type);
+
+  // Create 2 example units.
+  rooms_create_example_units($bat_type->type_id, $bat_type->name, 2);
 }
 
 /**
