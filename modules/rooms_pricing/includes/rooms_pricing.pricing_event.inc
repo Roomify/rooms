@@ -94,13 +94,13 @@ class PricingEvent extends RoomsEvent implements PricingEventInterface {
     );
 
     // Set the color.
-    if ($this->amount < 100) {
-      $event['color']  = "orange";
-      $event['title'] = "$this->amount";
+    if ($amount < 100) {
+      $event['color']  = variable_get('rooms_price_low_value_color', '#F3C776');
+      $event['title'] = $amount;
     }
-    elseif ($this->amount >= 100) {
-      $event['color'] = "green";
-      $event['title'] = "$amount";
+    elseif ($amount >= 100) {
+      $event['color'] = variable_get('rooms_price_high_value_color', '#9DDC9D');
+      $event['title'] = $amount;
     }
 
     return $event;
