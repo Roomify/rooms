@@ -223,6 +223,13 @@ function rooms_booking_edit_profile_callback(&$form, $form_state) {
  *     with only a booking type defined.
  */
 function rooms_booking_edit_form($form, &$form_state, $booking) {
+  if (isset($booking->unit_id)) {
+    if (rooms_unit_load($booking->unit_id) === FALSE) {
+      drupal_set_message(t('Associated unit no longer exist'), 'error');
+      return $form;
+    }
+  }
+
   $form['#attributes']['class'][] = 'rooms-management-form rooms-booking-form';
   $form['#attached'] = array(
     'css' => array(drupal_get_path('module', 'rooms_booking') . '/css/rooms_booking.css'),

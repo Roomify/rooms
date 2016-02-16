@@ -2335,7 +2335,6 @@ function rooms_booking_manager_commerce_checkout_form_cancel_submit($form, &$for
  * Implements hook_form_alter().
  */
 function rooms_booking_manager_form_alter(&$form, &$form_state, $form_id) {
-
   // Commerce checkout form alters.
   if ($form_id == 'commerce_checkout_form_checkout') {
     rooms_booking_manager_alter_commerce_checkout_form_checkout($form, $form_state, $form_id);

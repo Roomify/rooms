@@ -491,7 +491,7 @@ function rooms_booking_form_rooms_booking_settings_alter(&$form, &$form_state, $
  *
  * FORM_ID = views_exposed_form
  */
-function rooms_booking_form_views_exposed_form_alter(&$form, &$form_state, $form_id) {
+function rooms_booking_form_views_exposed_form_alter(&$form, &$form_state) {
   // Bookings admin view exposed filters.
   if ($form['#id'] == 'views-exposed-form-bookings-page-1') {
     $form['start_date']['#type'] = 'date_popup';
@@ -506,6 +506,25 @@ function rooms_booking_form_views_exposed_form_alter(&$form, &$form_state, $form
       'data' => '.views-exposed-form .views-exposed-widget { height: 70px; }',
       'type' => 'inline',
     );
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * FORM_ID = rooms_unit_delete_form
+ */
+function rooms_booking_form_rooms_unit_delete_form_alter(&$form, &$form_state) {
+  $unit = $form_state['rooms_unit'];
+  $bookings = rooms_booking_load_multiple(FALSE, array('unit_id' => $unit->unit_id));
+
+  if (count($bookings) > 0) {
+    // This unit has associated bookings, don't allow deletion.
+    form_set_error('confirm', t('This unit has associated bookings. Please delete all associated bookings before attempting to delete this unit.'));
+
+    unset($form['description']);
+    unset($form['actions']);
+    unset($form['confirm']);
   }
 }
 
