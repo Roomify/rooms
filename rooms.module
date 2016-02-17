@@ -829,6 +829,8 @@ function rooms_end_of_month_dates($year) {
 function rooms_date_range_fields($year = NULL, $month = NULL) {
   $date_range_fields = array();
 
+  $date_format = variable_get('rooms_date_format', 'd-m-Y');
+
   // Create unique ids and selectors for each picker.
   $start_date_id = drupal_html_id('datepicker-start-date');
   $start_date_selector = '#' . $start_date_id . ' .form-text';
@@ -838,7 +840,7 @@ function rooms_date_range_fields($year = NULL, $month = NULL) {
 
   // Specify the default datepicker parameters (see date_popup_element_info())
   $datepicker_options = array(
-    'dateFormat' => date_popup_format_to_popup(variable_get('rooms_date_format', 'd-m-Y')),
+    'dateFormat' => date_popup_format_to_popup($date_format),
     // Limit bookings to X days in advance, depending on the
     // chosen configuration in your Rooms installation, defaults
     // to one day in advance.
@@ -849,9 +851,9 @@ function rooms_date_range_fields($year = NULL, $month = NULL) {
     // Calculate min and max dates of the specified year/month.
     $date = new DateTime();
     $date->setDate($year, $month, 01);
-    $min_date = $date->format('d/m/Y');
+    $min_date = $date->format($date_format);
     $date->modify('last day of this month');
-    $max_date = $date->format('d/m/Y');
+    $max_date = $date->format($date_format);
     $datepicker_options += array(
       'minDate' => $min_date,
       'maxDate' => $max_date,
@@ -871,7 +873,7 @@ function rooms_date_range_fields($year = NULL, $month = NULL) {
     '#type' => 'date_popup',
     '#title' => variable_get_value('rooms_arrival_date'),
     '#date_type' => DATE_DATETIME,
-    '#date_format' => variable_get('rooms_date_format', 'd-m-Y'),
+    '#date_format' => $date_format,
     '#date_increment' => 1,
     '#date_year_range' => '-1:+3',
     // Default parameters defined above, with an additional parameter
@@ -886,7 +888,7 @@ function rooms_date_range_fields($year = NULL, $month = NULL) {
     '#type' => 'date_popup',
     '#title' => variable_get_value('rooms_departure_date'),
     '#date_type' => DATE_DATETIME,
-    '#date_format' => variable_get('rooms_date_format', 'd-m-Y'),
+    '#date_format' => $date_format,
     '#date_increment' => 1,
     '#date_year_range' => '-1:+3',
     // Default parameters defined above, with an additional parameter
@@ -905,7 +907,7 @@ function rooms_date_range_fields($year = NULL, $month = NULL) {
               'roomsStartYear' => $year,
               'roomsStartMonth' => $month,
               'roomsBookingStartDay' => variable_get('rooms_booking_start_date', 1),
-              'roomsDateFormat' => date_popup_format_to_popup(variable_get('rooms_date_format', 'd-m-Y')),
+              'roomsDateFormat' => date_popup_format_to_popup($date_format),
 
               // Here we create a listing of all datepickers registered on the
               // current page. This is available for use in your own custom
