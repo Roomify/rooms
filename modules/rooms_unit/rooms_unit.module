@@ -682,7 +682,7 @@ function rooms_unit_state_options() {
 }
 
 /**
- * Returns tha available room options given a bookable unit.
+ * Returns the available room options given a bookable unit.
  *
  * @param RoomsUnit $unit
  *   The bookable unit to get options.
