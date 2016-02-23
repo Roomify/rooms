@@ -440,6 +440,11 @@ function rooms_booking_permission() {
       'title' => t('Create customer profiles on bookings'),
       'description' => t('Allows users to add or edit customer profiles on bookings.'),
     ),
+    'manage room bookings' => array(
+      'title' => t('Manage Room Bookings'),
+      'description' => t('Allows access to the Rooms Booking Admin'),
+      'restrict access' => TRUE,
+    ),
   );
   return $permissions + rooms_entity_access_permissions('rooms_booking');
 }

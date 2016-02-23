@@ -171,7 +171,7 @@ function rooms_unit_permission() {
       'title' => t('Manage Room Units'),
       'description' => t('Allows access to the Rooms Unit Admin'),
       'restrict access' => TRUE,
-    )
+    ),
   );
 
   $permissions += rooms_entity_access_permissions('rooms_unit');
