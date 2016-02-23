@@ -89,15 +89,15 @@ Drupal.behaviors.rooms_availability = {
           }
 
           calEvent.end.subtract(1, 'days');
-          var sd = calEvent.start.unix();
-          var ed = calEvent.end.unix();
+          var sd = calEvent.start.format('YYYY-MM-DD');
+          var ed = calEvent.end.format('YYYY-MM-DD');
           // Open the modal for edit
           Drupal.RoomsAvailability.Modal(view, calEvent.id, sd, ed);
         },
         select: function(start, end, allDay) {
           var ed = end.subtract(1, 'days');
-          var sd = start.unix();
-          ed = end.unix();
+          var sd = start.format('YYYY-MM-DD');
+          ed = end.format('YYYY-MM-DD');
           // Open the modal for edit
           Drupal.RoomsAvailability.Modal(this, -2, sd, ed);
           $(value[0]).fullCalendar('unselect');

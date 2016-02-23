@@ -70,6 +70,7 @@ Drupal.behaviors.roomsAvailability = {
         monthNames:[Drupal.t("January"), Drupal.t("February"), Drupal.t("March"), Drupal.t("April"), Drupal.t("May"), Drupal.t("June"), Drupal.t("July"), Drupal.t("August"), Drupal.t("September"), Drupal.t("October"), Drupal.t("November"), Drupal.t("December")],
         defaultView:'singleRowMonth',
         defaultDate: moment([value[2],phpmonth-1]),
+        height: 125,
         header: {
           left: '',
           center: '',
@@ -87,22 +88,22 @@ Drupal.behaviors.roomsAvailability = {
             //We are probably dealing with a single day event
             calEvent.end = calEvent.start;
           }
-          var sd = calEvent.start.unix();
-          var ed = calEvent.end.unix();
+          var sd = calEvent.start.format('YYYY-MM-DD');
+          var ed = calEvent.end.format('YYYY-MM-DD');
           // Open the modal for edit
           Drupal.RoomsAvailability.Modal(view, unit_id, calEvent.id, sd, ed);
         },
         select: function(start, end, allDay) {
           var ed = end.subtract(1, 'days');
-          var sd = start.unix();
-          var ed = end.unix();
+          var sd = start.format('YYYY-MM-DD');
+          var ed = end.format('YYYY-MM-DD');
           // Open the modal for edit
           Drupal.RoomsAvailability.Modal(this, unit_id, -2, sd, ed);
           $(value[0]).fullCalendar('unselect');
         },
 
         eventRender: function(event, el) {
-          //Remove Time from events
+          // Remove Time from events
           el.find('.fc-time').remove();
         },
       });

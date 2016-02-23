@@ -16,10 +16,10 @@
   display: inline;
   margin-right: 4px;
 }
-.rooms-bulk-availability-form .fc-day-grid-container {
-  overflow-y: hidden;
-  height:60px;
+.rooms-bulk-availability-form .fc-row:first-child .fc-content-skeleton table {
+  margin-bottom: 0;
 }
+
 .fc-title {
   color: white;
 }

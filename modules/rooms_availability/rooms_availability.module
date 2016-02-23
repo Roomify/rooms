@@ -614,11 +614,8 @@ function rooms_availability_event_manager_page($unit, $event_id = NULL, $start_d
   $end_date = check_plain($end_date);
 
   // Process start and end date.
-  $sd = new DateTime();
-  $sd->setTimezone(new DateTimeZone('UTC'))->setTimestamp($start_date);
-
-  $ed = new DateTime();
-  $ed->setTimezone(new DateTimeZone('UTC'))->setTimestamp($end_date);
+  $sd = new DateTime($start_date);
+  $ed = new DateTime($end_date);
 
   $booked = FALSE;
   if ($event_id > 10 || $event_id < -10) {
