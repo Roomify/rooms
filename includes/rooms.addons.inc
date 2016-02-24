@@ -38,7 +38,11 @@ function rooms_addons() {
     $product['installed_version'] = FALSE;
     if (module_exists($module)) {
       $info = system_get_info('module', $module);
-      $product['installed_version'] = $info['version'];
+      if (isset($info['version'])) {
+        $product['installed_version'] = $info['version'];
+      } else {
+        $product['installed_version'] = $info['core'];
+      }
     }
 
     // Output license key if present.
