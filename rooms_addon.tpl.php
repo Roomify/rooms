@@ -1,4 +1,4 @@
-<div class="rooms-addon">
+<div class="rooms-addon clearfix">
   <div class="rooms-addon-thumbnail"><img src="<?php print $thumbnail; ?>" /></div>
   <div class="rooms-addon-info">
     <h2><?php print $name; ?></h2>
