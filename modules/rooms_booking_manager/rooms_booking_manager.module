@@ -3070,6 +3070,7 @@ function rooms_booking_manager_price_apply($line_item) {
     $price_options = is_array(field_get_items('commerce_line_item', $line_item, 'rooms_booking_options')) ? field_get_items('commerce_line_item', $line_item, 'rooms_booking_options') : array();
 
     // Convert Price options in Price modifiers.
+    $price_modifiers = array();
     foreach ($price_options as $option) {
       $price_modifiers[rooms_options_machine_name($option['name'])] = array(
         '#name' => $option['name'],
