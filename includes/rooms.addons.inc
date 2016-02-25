@@ -29,6 +29,13 @@ function rooms_addons() {
   // Retrieve the available add-ons.
   $request = drupal_http_request(ROOMIFY_STORE_URI . '/roomify/products/addons?module=rooms&version=1');
   $products = drupal_json_decode($request->data);
+
+  // Bail out if we couldn't retrieve product info.
+  if (empty($products)) {
+    drupal_set_message('Oh no! We were temporarily unable to retrieve available add-ons! Please try again in a few minutes.', 'warning');
+    return $output;
+  }
+
   $license_keys = variable_get('rooms_addons_licenses', array());
 
   foreach ($products as $id => $product) {
