@@ -66,11 +66,14 @@ function rooms_ui_menu() {
  */
 function rooms_ui_forms($form_id, $args) {
   $forms = array();
-  if (isset($args[0]) && $form_id == 'roomify_addon_license_' . $args[0]) {
-    $forms[$form_id] = array(
-      'callback' => 'roomify_addon_license',
-      'callback arguments' => array($args[0]),
-    );
+  // Make sure args is set AND is a string before attempting to add to form_id
+  if (isset($args[0]) && is_string($args[0])) {
+    if ($form_id == 'roomify_addon_license_' . $args[0]) {
+      $forms[$form_id] = array(
+        'callback' => 'roomify_addon_license',
+        'callback arguments' => array($args[0]),
+      );
+    }
   }
   return $forms;
 }
