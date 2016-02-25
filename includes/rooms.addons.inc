@@ -46,10 +46,8 @@ function rooms_addons() {
     }
 
     // Output license key if present.
-    $product['license_key'] = 'UNLICENSED';
-    if (isset($license_keys[$module])) {
-      $product['license_key'] = $license_keys[$module];
-    }
+    $form = drupal_get_form('roomify_addon_license_' . $module, $module);
+    $product['license_key'] = render($form);
 
     // Build updates link.
     $product['update_available'] = FALSE;
@@ -69,4 +67,48 @@ function rooms_addons() {
   }
 
   return $output;
+}
+
+/**
+ * License form callback.
+ */
+function roomify_addon_license($form, &$form_state, $module) {
+  $license_keys = variable_get('rooms_addons_licenses', array());
+  $form = array(
+    'container' => array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array('container-inline'),
+      ),
+      'module' => array(
+        '#type' => 'value',
+        '#value' => $module,
+      ),
+      'license_key' => array(
+        '#type' => 'textfield',
+        '#size' => 25,
+        '#default_value' => isset($license_keys[$module]) ? $license_keys[$module] : '',
+      ),
+      'submit' => array(
+        '#type' => 'submit',
+        '#value' => empty($license_keys[$module]) ? t('Add license key') : t('Update license key'),
+      ),
+    ),
+    '#submit' => array(
+      'roomify_addon_license_submit',
+    ),
+  );
+
+  return $form;
+}
+
+/**
+ * License form submit handler.
+ */
+function roomify_addon_license_submit($form, $form_state) {
+  if (isset($form_state['values']['module']) && isset($form_state['values']['license_key'])) {
+    $license_keys = variable_get('rooms_addons_licenses', array());
+    $license_keys[$form_state['values']['module']] = $form_state['values']['license_key'];
+    variable_set('rooms_addons_licenses', $license_keys);
+  }
 }

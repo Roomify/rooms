@@ -62,6 +62,20 @@ function rooms_ui_menu() {
 }
 
 /**
+ * Implements hook_forms().
+ */
+function rooms_ui_forms($form_id, $args) {
+  $forms = array();
+  if (isset($args[0]) && $form_id == 'roomify_addon_license_' . $args[0]) {
+    $forms[$form_id] = array(
+      'callback' => 'roomify_addon_license',
+      'callback arguments' => array($args[0]),
+    );
+  }
+  return $forms;
+}
+
+/**
  * Implements hook_page_build().
  */
 function rooms_ui_page_build(&$page) {
