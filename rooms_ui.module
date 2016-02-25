@@ -22,6 +22,16 @@ function rooms_ui_menu() {
     'file' => 'system.admin.inc',
     'weight' => -7,
   );
+  $items['admin/rooms/addons'] = array(
+    'title' => 'Roomify Add-Ons',
+    'description' => 'View and manage Add-Ons from Roomify.',
+    'page callback' => 'rooms_addons',
+    'access arguments' => array('configure room settings'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 0,
+    'file path' => drupal_get_path('module', 'rooms'),
+    'file' => 'includes/rooms.addons.inc',
+  );
   $items['admin/rooms/config'] = array(
     'title' => 'Configuration',
     'description' => 'Configure settings and business rules for Rooms management.',
@@ -49,6 +59,20 @@ function rooms_ui_menu() {
   );
 
   return $items;
+}
+
+/**
+ * Implements hook_forms().
+ */
+function rooms_ui_forms($form_id, $args) {
+  $forms = array();
+  if (isset($args[0]) && $form_id == 'roomify_addon_license_' . $args[0]) {
+    $forms[$form_id] = array(
+      'callback' => 'roomify_addon_license',
+      'callback arguments' => array($args[0]),
+    );
+  }
+  return $forms;
 }
 
 /**
@@ -101,7 +125,6 @@ function rooms_booking_settings($form, &$form_state) {
   return system_settings_form($form);
 }
 
-
 /**
  * Implements hook_variable_info_alter().
  *
@@ -114,4 +137,15 @@ function rooms_ui_variable_info_alter(&$info) {
       $info[$name]['group'] = 'rooms';
     }
   }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function rooms_ui_theme() {
+  return array(
+    'rooms_addon' => array(
+      'template' => 'rooms_addon',
+    ),
+  );
 }
