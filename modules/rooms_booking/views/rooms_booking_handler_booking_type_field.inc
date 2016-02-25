@@ -6,14 +6,14 @@
  * for unit types.
  */
 
-
 class rooms_booking_handler_booking_type_field extends views_handler_field {
+
   function construct() {
     parent::construct();
   }
 
   function render($values) {
-    $booking_type = rooms_booking_type_load($values->rooms_bookings_type);
+    $booking_type = rooms_booking_type_load($this->get_value($values));
     return $booking_type->label;
   }
 

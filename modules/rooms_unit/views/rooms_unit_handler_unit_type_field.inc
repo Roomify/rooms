@@ -6,14 +6,14 @@
  * for unit types.
  */
 
-
 class rooms_unit_handler_unit_type_field extends views_handler_field {
+
   function construct() {
     parent::construct();
   }
 
   function render($values) {
-    $unit_type = rooms_unit_type_load($values->rooms_units_type);
+    $unit_type = rooms_unit_type_load($this->get_value($values));
     return $unit_type->label;
   }
 
