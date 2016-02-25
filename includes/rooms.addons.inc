@@ -6,7 +6,6 @@
  * Display and manage available add-ons.
  */
 
-define ('ROOMIFY_STORE_URI', 'https://store.roomify.us');
 
 /**
  * Callback for /admin/rooms/addons

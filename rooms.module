@@ -47,6 +47,7 @@ define('ROOMS_DISPLAY_TYPE_SELECTOR_NO', 0);
 define('ROOMS_OPTION_OPTIONAL', 'optional');
 define('ROOMS_OPTION_MANDATORY', 'mandatory');
 define('ROOMS_OPTION_ONREQUEST', 'on_request');
+define('ROOMIFY_STORE_URI', 'https://store.roomify.us');
 
 /**
  * Implements hook_permission().
@@ -172,6 +173,47 @@ function rooms_theme() {
       ),
     ),
   );
+}
+
+/**
+ * Implements hook_cron().
+ */
+function rooms_cron() {
+  // Only run once a day.
+  $rooms_last_cron = variable_get('rooms_last_cron', 0);
+  if ($rooms_last_cron < (time() - 86400)) {
+    $license_keys = variable_get('rooms_addons_licenses', array());
+    if (count($license_keys)) {
+      $queue = DrupalQueue::get('rooms_license_status');
+      foreach ($license_keys as $module => $license_key) {
+        $data = array(
+          'module' => $module,
+          'license_key' => $license_key,
+        );
+        $queue->createItem($data);
+      }
+    }
+  }
+  variable_set('rooms_last_cron', time());
+}
+
+/**
+ * Implements hook_cron_queue_info().
+ */
+function rooms_cron_queue_info() {
+  $queues['rooms_license_status'] = array (
+    'worker callback' => 'rooms_check_license_status',
+    'time' => 15,
+  );
+  return $queues;
+}
+
+/**
+ * Callback for rooms_license_status queue.
+ */
+function rooms_check_license_status($data) {
+  $url = url(ROOMIFY_STORE_URI . '/roomify/products/license', array('query' => array('product' => $data['module'], 'key' => $data['license_key'])));
+  drupal_http_request($url);
 }
 
 /**
