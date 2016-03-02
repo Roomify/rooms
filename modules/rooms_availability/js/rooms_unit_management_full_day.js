@@ -71,6 +71,7 @@ Drupal.behaviors.roomsAvailability = {
         defaultView:'singleRowMonth',
         defaultDate: moment([value[2],phpmonth-1]),
         height: 125,
+        displayEventTime: false,
         header: {
           left: '',
           center: '',
@@ -100,12 +101,7 @@ Drupal.behaviors.roomsAvailability = {
           // Open the modal for edit
           Drupal.RoomsAvailability.Modal(this, unit_id, -2, sd, ed);
           $(value[0]).fullCalendar('unselect');
-        },
-
-        eventRender: function(event, el) {
-          // Remove Time from events
-          el.find('.fc-time').remove();
-        },
+        }
       });
 
       c++;

@@ -71,6 +71,7 @@ Drupal.behaviors.roomsAvailability = {
         defaultView:'singleRowMonth',
         defaultDate: moment([value[2],phpmonth-1]),
         height: 125,
+        displayEventTime: false,
         header: {
           left: '',
           center: '',
@@ -102,10 +103,7 @@ Drupal.behaviors.roomsAvailability = {
           Drupal.RoomsAvailability.Modal(this, unit_id, -2, sd, ed);
           $(value[0]).fullCalendar('unselect');
         },
-
         eventRender: function(event, el) {
-          // Remove Time from events
-          el.find('.fc-time').remove();
           // Add a class if the event start it is not "AV" or "N/A".
           if (el.hasClass('fc-start') && this.id != 1 && this.id != 0) {
             el.append('<div class="event-start"/>');

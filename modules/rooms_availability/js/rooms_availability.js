@@ -66,6 +66,7 @@ Drupal.behaviors.rooms_availability = {
         selectable: true,
         handleWindowResize: true,
         height: 400,
+        displayEventTime: false,
         dayNamesShort:[Drupal.t("Sun"), Drupal.t("Mon"), Drupal.t("Tue"), Drupal.t("Wed"), Drupal.t("Thu"), Drupal.t("Fri"), Drupal.t("Sat")],
         monthNames:[Drupal.t("January"), Drupal.t("February"), Drupal.t("March"), Drupal.t("April"), Drupal.t("May"), Drupal.t("June"), Drupal.t("July"), Drupal.t("August"), Drupal.t("September"), Drupal.t("October"), Drupal.t("November"), Drupal.t("December")],
         firstDay: firstDay,
@@ -103,9 +104,6 @@ Drupal.behaviors.rooms_availability = {
           $(value[0]).fullCalendar('unselect');
         },
         eventRender: function(event, el) {
-          // Remove Time from events.
-          el.find('.fc-time').remove();
-
           // Add a class if the event start it is not "AV" or "N/A".
           if (el.hasClass('fc-start') && this.id != 1 && this.id != 0) {
             el.append('<div class="event-start"/>');

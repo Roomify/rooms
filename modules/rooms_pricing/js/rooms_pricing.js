@@ -61,6 +61,7 @@ Drupal.behaviors.rooms_availability = {
       $(value[0]).once().fullCalendar({
         editable: false,
         height: 400,
+        displayEventTime: false,
         dayNamesShort:[Drupal.t("Sun"), Drupal.t("Mon"), Drupal.t("Tue"), Drupal.t("Wed"), Drupal.t("Thu"), Drupal.t("Fri"), Drupal.t("Sat")],
         monthNames:[Drupal.t("January"), Drupal.t("February"), Drupal.t("March"), Drupal.t("April"), Drupal.t("May"), Drupal.t("June"), Drupal.t("July"), Drupal.t("August"), Drupal.t("September"), Drupal.t("October"), Drupal.t("November"), Drupal.t("December")],
         firstDay: firstDay,
@@ -72,10 +73,6 @@ Drupal.behaviors.rooms_availability = {
         },
         events: function(start, end, timezone, callback) {
           callback(events[unit_id]);
-        },
-        // Remove Time from events
-        eventRender: function(event, el) {
-          el.find('.fc-time').remove();
         },
         eventAfterRender: function(event, element, view) {
           // Hide events that are outside this month.

@@ -70,10 +70,6 @@ Drupal.behaviors.roomsPricing = {
         },
         events: function(start, end, timezone, callback) {
           callback(events[unit_id]);
-        },
-        // Remove Time from events
-        eventRender: function(event, el) {
-          el.find('.fc-time').remove();
         }
       });
 
