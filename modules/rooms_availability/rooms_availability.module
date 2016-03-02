@@ -387,9 +387,9 @@ function rooms_availability_page(RoomsUnit $rooms_unit, $year = '', $month = '')
   // Add styles.
   rooms_availability_modal_style();
 
-  // Get the current page's URL, striped of the year and month args.
+  // Get the current page's URL, stripped of the year and month args.
   // This allows us to place this page anywhere, including at
-  // unit/%/availability  or  admin/rooms/units/unit/%/availability
+  // unit/%/availability or admin/rooms/units/unit/%/availability
   list($url) = explode('/' . $year . '/' . $month, current_path());
 
   $js_file = drupal_get_path('module', 'rooms_availability') . '/js/rooms_availability.js';
