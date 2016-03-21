@@ -63,6 +63,12 @@ function rooms_unit_entity_info() {
     'bundle keys' => array(
       'bundle' => 'type',
     ),
+    'view modes' => array(
+      'display' => array(
+        'label' => t('Display'),
+        'custom settings' => FALSE,
+      ),
+    ),
     'label callback' => 'entity_class_label',
     'uri callback' => 'entity_class_uri',
     'creation callback' => 'rooms_unit_create',
