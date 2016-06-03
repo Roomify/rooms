@@ -238,8 +238,12 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
 
   $client = '';
 
-  $currency_setting = commerce_currency_load(commerce_default_currency());
-  $currency_symbol = $currency_setting['symbol'];
+  if (module_exists('commerce_multicurrency')) {
+    $currency_code = commerce_multicurrency_get_user_currency_code();
+  }
+  else {
+    $currency_code = commerce_default_currency();
+  }
 
   // Check to see if we are loading an existing booking (existing bookings
   // have customer ids set).
@@ -463,11 +467,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
     $unit_selected .= ' ' . t('(Options: !options)', array('!options' => substr($options_list, 0, strlen($options_list) - 2)));
   }
   if (isset($booking->price)) {
-    $unit_selected .= '<br />' . t('Price') . ': ' .
-    t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
-      '@currency_symbol' => $currency_symbol,
-      '@amount' => number_format($booking->price / 100, 2, '.', ''),
-    ));
+    $unit_selected .= '<br />' . t('Price') . ': ' . commerce_currency_format($booking->price, $currency_code);
   }
 
   $form['availability_fieldset'] = array(
@@ -610,11 +610,7 @@ function rooms_booking_edit_form($form, &$form_state, $booking) {
             // Create elements based on type/price categorisation.
             foreach ($units_per_price as $price => $units) {
               foreach ($units as $unit) {
-                $options[$unit['unit']->unit_id] = $unit['unit']->name . ' - ' . t('Cost') . ': ' .
-                  t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
-                      '@currency_symbol' => $currency_symbol,
-                      '@amount' => $units[key($units)]['price'])
-                  );
+                $options[$unit['unit']->unit_id] = $unit['unit']->name . ' - ' . t('Cost') . ': ' . commerce_currency_format($units[key($units)]['price'] * 100, $currency_code);
               }
             }
 

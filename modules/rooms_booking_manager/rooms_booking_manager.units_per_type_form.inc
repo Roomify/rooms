@@ -90,13 +90,15 @@ function _rooms_booking_manager_load_description($form, $type_obj, $type, $price
  * @param $type_obj
  * @param $type
  * @param $price
- * @param $currency_symbol
+ * @param $currency_code
  * @param $units_per_price
  * @param $units
  *
  * @return mixed
  */
-function _rooms_booking_manager_load_price_info($form, $type_obj, $type, $price, $currency_symbol, $units_per_price, $units) {
+function _rooms_booking_manager_load_price_info($form, $type_obj, $type, $price, $currency_code, $units_per_price, $units) {
+  $currency_setting = commerce_currency_load($currency_code);
+  $currency_symbol = $currency_setting['symbol'];
 
   // Calculate the period.
   $nights = $form['end_date']['#value']->diff($form['start_date']['#value'])->days;
@@ -111,11 +113,7 @@ function _rooms_booking_manager_load_price_info($form, $type_obj, $type, $price,
         . ' @price',
         array(
           '@unit_type' => $type_obj->label,
-          '@price' => t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
-              '@currency_symbol' => $currency_symbol,
-              '@amount' => $price,
-            )
-          )
+          '@price' => commerce_currency_format($price * 100, $currency_code),
         )
       ),
       $context = array(
@@ -125,6 +123,7 @@ function _rooms_booking_manager_load_price_info($form, $type_obj, $type, $price,
           'unit_type' => $type_obj->label,
           'price' => $price,
           'currency_symbol' => $currency_symbol,
+          'currency_code' => $currency_code,
           'amount' => $price,
           'units' => $units_per_price,
           'nights' => $nights,
@@ -144,9 +143,7 @@ function _rooms_booking_manager_load_price_info($form, $type_obj, $type, $price,
     ($units), '1 @unit_type unit available starting at @price per
         person', '@count @unit_type units available starting at @price per person', array(
         '@unit_type' => $type_obj->label,
-        '@price' => t('@currency_symbol @amount', array( // TODO: replace with a proper currency formatter
-          '@currency_symbol' => $currency_symbol,
-          '@amount' => $base_price))
+        '@price' => commerce_currency_format($base_price * 100, $currency_code),
       )
     );
   }

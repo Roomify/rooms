@@ -705,14 +705,15 @@ function rooms_field_formatter_view($entity_type, $entity, $field, $instance, $l
       break;
 
     case 'rooms_options_price':
-      $currency_setting = commerce_currency_load(commerce_default_currency());
-      $currency_symbol = $currency_setting['symbol'];
+      if (module_exists('commerce_multicurrency')) {
+        $currency_code = commerce_multicurrency_get_user_currency_code();
+      }
+      else {
+        $currency_code = commerce_default_currency();
+      }
 
       foreach ($items as $delta => $item) {
-        $price = t('@currency_symbol@amount', array(
-          '@currency_symbol' => $currency_symbol,
-          '@amount' => number_format($item['value'], 2, '.', ''),
-        ));
+        $price = commerce_currency_format($item['value'], $currency_code);
 
         if ($item['value'] > 0) {
           $element[$delta] = array('#markup' => "{$item['quantity']} x {$item['name']} - {$price}");

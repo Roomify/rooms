@@ -83,8 +83,12 @@ function rooms_periodic_pricing_rooms_string_alter(&$string_suggestions, $contex
   if ($context['#purpose'] == 'display_base_price') {
     $string_suggestion = reset($string_suggestions);
 
-    $currency_setting = commerce_currency_load(commerce_default_currency());
-    $currency_symbol = $currency_setting['symbol'];
+    if (module_exists('commerce_multicurrency')) {
+      $currency_code = commerce_multicurrency_get_user_currency_code();
+    }
+    else {
+      $currency_code = commerce_default_currency();
+    }
 
     $price = $context['#data']['price'];
 
