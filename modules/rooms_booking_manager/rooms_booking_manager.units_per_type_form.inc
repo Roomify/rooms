@@ -138,12 +138,17 @@ function _rooms_booking_manager_load_price_info($form, $type_obj, $type, $price,
     $units_keys = array_keys($units);
 
     // Calculate the price per person for the booking period.
-    $base_price = $units[$units_keys[0]]['price'] / $units[$units_keys[0]]['unit']->max_sleeps;
+    $base_price = $units[$units_keys[0]]['price'] / $units[$units_keys[0]]['unit']->max_sleeps * 100;
+
+    if (module_exists('commerce_multicurrency')) {
+      $base_price = commerce_currency_convert($base_price, commerce_default_currency(), $currency_code);
+    }
+
     $form[$type][$price]['price']['#markup'] = format_plural(count
     ($units), '1 @unit_type unit available starting at @price per
         person', '@count @unit_type units available starting at @price per person', array(
         '@unit_type' => $type_obj->label,
-        '@price' => commerce_currency_format($base_price * 100, $currency_code),
+        '@price' => commerce_currency_format($base_price, $currency_code),
       )
     );
   }

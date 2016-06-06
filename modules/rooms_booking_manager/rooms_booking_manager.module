@@ -872,10 +872,15 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
   $deposit_amount = rooms_booking_manager_check_for_deposit($price, $start_date);
 
   if (empty($deposit_amount)) {
+    $price_amount = $price * 100;
+    if (module_exists('commerce_multicurrency')) {
+      $price_amount = commerce_currency_convert($price_amount, commerce_default_currency(), $currency_code);
+    }
+
     $form['price'] = array(
       '#prefix' => '<div class="rooms-search-result__unit-base-price" id="unit_' . $unit->unit_id . '_base_price">',
       '#markup' => rooms_string('<label>' . t('Base price') . ':</label> <span class="rooms-search-result__base-price-amount">' .
-        commerce_currency_format($price * 100, $currency_code) . '</span>', array(
+        commerce_currency_format($price_amount, $currency_code) . '</span>', array(
         '#component' => 'book_unit_form_builder',
         '#purpose' => 'display_base_price',
         '#data' => array(
@@ -893,11 +898,20 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     );
   }
   else {
+    $deposit_amount = $deposit_amount * 100;
+    if (module_exists('commerce_multicurrency')) {
+      $deposit_amount = commerce_currency_convert($deposit_amount, commerce_default_currency(), $currency_code);
+    }
+    $price_amount = $price * 100;
+    if (module_exists('commerce_multicurrency')) {
+      $price_amount = commerce_currency_convert($price_amount, commerce_default_currency(), $currency_code);
+    }
+
     $form['price'] = array(
       '#prefix' => '<div class="rooms-search-result__unit-base-price" id="unit_' . $unit->unit_id . '_base_price">',
       '#markup' => rooms_string('<label>' . t('Base price') . ':</label> <span class="rooms-search-result__base-price-amount">' .
-        commerce_currency_format($price * 100, $currency_code) . '</span>' . '<label>' . ' - '. t('Payable now') . ':</label> <span class="rooms-search-result__base-price-amount">' . 
-        commerce_currency_format($deposit_amount * 100, $currency_code) . '</span>', array(
+        commerce_currency_format($price, $currency_code) . '</span>' . '<label>' . ' - '. t('Payable now') . ':</label> <span class="rooms-search-result__base-price-amount">' . 
+        commerce_currency_format($deposit_amount, $currency_code) . '</span>', array(
         '#component' => 'book_unit_form_builder',
         '#purpose' => 'display_base_price',
         '#data' => array(
@@ -917,14 +931,19 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
   if (variable_get('rooms_price_calculation', ROOMS_PER_NIGHT) == ROOMS_PER_PERSON) {
 
     // Calculate the price per person for the period.
-    $price_per_person = $price / $unit->max_sleeps;
+    $price_per_person = $price / $unit->max_sleeps * 100;
 
     // Calculate the price per person per night, too.
     $base_price = $price_per_person / $nights;
 
+    if (module_exists('commerce_multicurrency')) {
+      $price_per_person = commerce_currency_convert($price_per_person, commerce_default_currency(), $currency_code);
+      $base_price = commerce_currency_convert($base_price, commerce_default_currency(), $currency_code);
+    }
+
     $form['price']['#markup'] = rooms_string(format_plural($nights, t('Book this unit for 1 night at <b>@price per person</b> (@base_price per person per night)'), t('Book this unit for @count nights at <b>@price per person</b> (@base_price per person per night)'), array(
-      '@price' => commerce_currency_format($price_per_person * 100, $currency_code),
-      '@base_price' => commerce_currency_format($base_price * 100, $currency_code),
+      '@price' => commerce_currency_format($price_per_person, $currency_code),
+      '@base_price' => commerce_currency_format($base_price, $currency_code),
     )), array(
       '#component' => 'book_unit_form_builder',
       '#purpose' => 'display_base_price_per_person',
@@ -1155,11 +1174,16 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
 
     $form['price_amount']['#value'] = $new_price['full_price'];
 
+    $new_price['full_price'] = $new_price['full_price'] * 100;
+    if (module_exists('commerce_multicurrency')) {
+      $new_price['full_price'] = commerce_currency_convert($new_price['full_price'], commerce_default_currency(), $currency_code);
+    }
+
     if (empty($deposit_amount)) {
       $form['new_price'] = array(
         '#prefix' => '<div class="rooms-search-result__new-price" id="unit_' . $unit->unit_id . '_price">',
         '#markup' => '<label>' . t('Cost') . ':</label> <span class="rooms-search-result__new-price-amount">' .
-          commerce_currency_format($new_price['full_price'] * 100, $currency_code) . '</span>',
+          commerce_currency_format($new_price['full_price'], $currency_code) . '</span>',
         '#suffix' => '</div>',
       );
     }
@@ -1170,7 +1194,7 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
       $form['new_price'] = array(
         '#prefix' => '<div class="rooms-search-result__new-price" id="unit_' . $unit->unit_id . '_price">',
         '#markup' => '<label>' . t('Cost') . ':</label> <span class="rooms-search-result__new-price-amount">' .
-          commerce_currency_format($new_price['full_price'] * 100, $currency_code) . '</span>' . '<label>' . ' - ' . t('Payable Now') . ':</label> <span class="rooms-search-result__new-price-deposit">' . commerce_currency_format($deposit_amount * 100, $currency_code) . '</span>',
+          commerce_currency_format($new_price['full_price'], $currency_code) . '</span>' . '<label>' . ' - ' . t('Payable Now') . ':</label> <span class="rooms-search-result__new-price-deposit">' . commerce_currency_format($deposit_amount * 100, $currency_code) . '</span>',
         '#suffix' => '</div>',
       );
     }
@@ -1575,20 +1599,34 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
           // Check for a deposit.
           $deposit_amount = rooms_booking_manager_check_for_deposit($price, $start_date);
           if (empty($deposit_amount)) {
+            $price_amount = $price * 100;
+            if (module_exists('commerce_multicurrency')) {
+              $price_amount = commerce_currency_convert($price_amount, commerce_default_currency(), $currency_code);
+            }
+
             $form[$type][$price]['fieldset'][$c]['price'] = array(
               '#prefix' => '<div class="rooms-search-result__unit-price" id="' . $type . '_' . $price . '_' . $c . '_price"><label>' . $label . ':</label> <span class="rooms-search-result__unit-price-amount">',
-              '#markup' => commerce_currency_format($price * 100, $currency_code),
+              '#markup' => commerce_currency_format($price_amount, $currency_code),
               '#suffix' => '</span></div>',
             );
           }
           // A deposit is set. Show to user the amount of the deposit.
           else {
+            $deposit_amount = $deposit_amount * 100;
+            if (module_exists('commerce_multicurrency')) {
+              $deposit_amount = commerce_currency_convert($deposit_amount, commerce_default_currency(), $currency_code);
+            }
+            $price_amount = $price * 100;
+            if (module_exists('commerce_multicurrency')) {
+              $price_amount = commerce_currency_convert($price_amount, commerce_default_currency(), $currency_code);
+            }
+
             $form[$type][$price]['fieldset'][$c]['price'] = array(
               '#prefix' => '<div class="rooms-search-result__unit-price" id="' . $type . '_' . $price . '_' . $c . '_price"><label>' . $label . ':</label> <span class="rooms-search-result__unit-price-amount">',
 
               '#markup' => t('@@amount - Payable now: @deposit', array(
-                '@amount' => commerce_currency_format($price * 100, $currency_code),
-                '@deposit' => commerce_currency_format($deposit_amount * 100, $currency_code),
+                '@amount' => commerce_currency_format($price_amount, $currency_code),
+                '@deposit' => commerce_currency_format($deposit_amount, $currency_code),
               )),
               '#suffix' => '</span></div>',
             );
@@ -1703,10 +1741,15 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
           $deposit_amount = rooms_booking_manager_check_for_deposit($new_price, $start_date);
 
           if (empty($deposit_amount)) {
+            $new_price_amount = $new_price * 100;
+            if (module_exists('commerce_multicurrency')) {
+              $new_price_amount = commerce_currency_convert($new_price_amount, commerce_default_currency(), $currency_code);
+            }
+
             // Replace old price with the new calculated value.
             $form[$type][$price]['fieldset'][$c]['price']['#markup'] =
               rooms_string(
-                commerce_currency_format($new_price * 100, $currency_code),
+                commerce_currency_format($new_price_amount, $currency_code),
                 $context = array(
                   '#component' => 'units_per_type_form',
                   '#purpose' => 'display_room_recalculated_price',
@@ -1723,12 +1766,21 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
               );
           }
           else {
+            $new_price_amount = $new_price * 100;
+            if (module_exists('commerce_multicurrency')) {
+              $new_price_amount = commerce_currency_convert($new_price_amount, commerce_default_currency(), $currency_code);
+            }
+            $deposit_amount = $deposit_amount * 100;
+            if (module_exists('commerce_multicurrency')) {
+              $deposit_amount = commerce_currency_convert($deposit_amount, commerce_default_currency(), $currency_code);
+            }
+
             // Replace old price with the new calculated value.
             $form[$type][$price]['fieldset'][$c]['price']['#markup'] =
               rooms_string(
                 t('@amount - Payable now: @deposit', array(
-                  '@amount' => commerce_currency_format($new_price * 100, $currency_code),
-                  '@deposit' => commerce_currency_format($deposit_amount * 100, $currency_code),
+                  '@amount' => commerce_currency_format($new_price_amount, $currency_code),
+                  '@deposit' => commerce_currency_format($deposit_amount, $currency_code),
                 )),
                 $context = array(
                   '#component' => 'units_per_type_form',

@@ -110,7 +110,12 @@ function rooms_periodic_pricing_rooms_string_alter(&$string_suggestions, $contex
       $pre_price = $price_log['modifiers']['rooms_periodic_pricing']['dynamic_modifier']['pre'];
       $post_price = $price_log['modifiers']['rooms_periodic_pricing']['dynamic_modifier']['post'];
 
-      $string_suggestion .= ' ' . t('(Reduction of @currency_symbol @amount)', array('@currency_symbol' => $currency_symbol, '@amount' => $pre_price - $post_price));
+      $price_amount = ($pre_price - $post_price) * 100;
+      if (module_exists('commerce_multicurrency')) {
+        $price_amount = commerce_currency_convert($price_amount, commerce_default_currency(), $currency_code);
+      }
+
+      $string_suggestion .= ' ' . t('(Reduction of @amount)', array('@amount' => commerce_currency_format($price_amount, $currency_code)));
     }
 
     $string_suggestions[] = $string_suggestion;

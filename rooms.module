@@ -713,7 +713,12 @@ function rooms_field_formatter_view($entity_type, $entity, $field, $instance, $l
       }
 
       foreach ($items as $delta => $item) {
-        $price = commerce_currency_format($item['value'], $currency_code);
+        $item_price = $item['value'] * 100;
+        if (module_exists('commerce_multicurrency')) {
+          $item_price = commerce_currency_convert($item_price, commerce_default_currency(), $currency_code);
+        }
+
+        $price = commerce_currency_format($item_price, $currency_code);
 
         if ($item['value'] > 0) {
           $element[$delta] = array('#markup' => "{$item['quantity']} x {$item['name']} - {$price}");
