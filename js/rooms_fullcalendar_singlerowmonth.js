@@ -20,9 +20,12 @@
       this.el.addClass('fc-basic-view').html(this.renderSkeletonHtml());
       this.renderHead();
 
-      this.scrollerEl = this.el.find('.fc-day-grid-container');
+      this.scroller.render();
+      var dayGridContainerEl = this.scroller.el.addClass('fc-day-grid-container');
+      var dayGridEl = $('<div class="fc-day-grid" />').appendTo(dayGridContainerEl);
+      this.el.find('.fc-body > tr > td').append(dayGridContainerEl);
 
-      this.dayGrid.setElement(this.el.find('.fc-day-grid'));
+      this.dayGrid.setElement(dayGridEl);
       this.dayGrid.renderDates(this.hasRigidRows());
     },
   });
