@@ -50,6 +50,9 @@ function rooms_booking_views_data_alter(&$data) {
     'filter' => array(
       'handler' => 'rooms_booking_handler_date_filter',
     ),
+    'sort' => array(
+      'handler' => 'views_handler_sort_date',
+    ),
   );
   $data['rooms_bookings']['end_date'] = array(
     'title' => t('End Date'),
@@ -61,6 +64,9 @@ function rooms_booking_views_data_alter(&$data) {
     ),
     'filter' => array(
       'handler' => 'rooms_booking_handler_date_filter',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort_date',
     ),
   );
   $data['rooms_bookings']['unit_id'] = array(
