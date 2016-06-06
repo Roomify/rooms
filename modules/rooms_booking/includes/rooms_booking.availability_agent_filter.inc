@@ -285,7 +285,7 @@ class AvailabilityAgentSingleUnitFilter extends AvailabilityAgentFilterBase {
         }
       }
       if (empty($this->units)) {
-        drupal_set_message('Unfortunately ' . $requested_unit->name . ' is not available - try other dates if possible', 'warning');
+        drupal_set_message(t('Unfortunately @unit_name is not available - try other dates if possible', array('@unit_name' => $requested_unit->name)), 'warning');
       }
 
     }

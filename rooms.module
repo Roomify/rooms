@@ -200,7 +200,7 @@ function rooms_cron() {
  * Implements hook_cron_queue_info().
  */
 function rooms_cron_queue_info() {
-  $queues['rooms_license_status'] = array (
+  $queues['rooms_license_status'] = array(
     'worker callback' => 'rooms_check_license_status',
     'time' => 15,
   );
@@ -513,12 +513,12 @@ function rooms_entity_access_query_alter($query, $entity_type, $base_table = NUL
   // Loop over every possible bundle for the given entity type.
   foreach ($entity_info['bundles'] as $bundle_name => $bundle_info) {
     // If the user has access to operation entities of the current bundle...
-    if (user_access($op  . ' any ' . $entity_type . ' entity of bundle ' . $bundle_name, $account)) {
+    if (user_access($op . ' any ' . $entity_type . ' entity of bundle ' . $bundle_name, $account)) {
       // Add a condition granting access if the entity specified by the view
       // query is of the same bundle.
       $conditions->condition($base_table . '.' . $entity_info['entity keys']['bundle'], $bundle_name);
     }
-    elseif ($account->uid && !empty($entity_info['access arguments']['user key']) && user_access($op  . ' own ' . $entity_type . ' entities of bundle ' . $bundle_name, $account)) {
+    elseif ($account->uid && !empty($entity_info['access arguments']['user key']) && user_access($op . ' own ' . $entity_type . ' entities of bundle ' . $bundle_name, $account)) {
       // Add an AND condition group that grants access if the entity specified
       // by the view query matches the same bundle and belongs to the user.
       $conditions->condition(db_and()
@@ -532,7 +532,7 @@ function rooms_entity_access_query_alter($query, $entity_type, $base_table = NUL
   if (!empty($entity_info['access arguments']['user key'])) {
     // Perform 'operation own' access control for the entity in the query if the
     // user is authenticated.
-    if ($account->uid && user_access($op  . ' own ' . $entity_type . ' entities', $account)) {
+    if ($account->uid && user_access($op . ' own ' . $entity_type . ' entities', $account)) {
       $conditions->condition($base_table . '.' . $entity_info['access arguments']['user key'], $account->uid);
     }
   }
@@ -1040,7 +1040,8 @@ function rooms_form_start_end_dates_validate($form, &$form_state) {
   // In case that this value is set trigger the today greater validation.
   if (isset($form_state['single_day_bookings'])) {
     $single_day_bookings = TRUE;
-  } else {
+  }
+  else {
     // Set the form state so that we can carry the value over to the results page
     $form_state['single_day_bookings'] = $single_day_bookings;
   }
@@ -1103,7 +1104,7 @@ function rooms_check_dates_validity(DateTime $start_date, DateTime $end_date, $t
   // just seconds
   $d1 = new DateTime();
   $d2 = new DateTime();
-  $d2->add(new DateInterval('PT'.variable_get('rooms_advance_bookings_period', 15552000).'S'));
+  $d2->add(new DateInterval('PT' . variable_get('rooms_advance_bookings_period', 15552000) . 'S'));
   $advanced_bookings_interval = $d2->diff($d1);
 
   if (($booking_interval->format('%a') > $advanced_bookings_interval->format('%a')) && (!user_access('book in advance without limitation'))) {

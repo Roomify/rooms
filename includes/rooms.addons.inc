@@ -31,7 +31,7 @@ function rooms_addons() {
 
   // Bail out if we couldn't retrieve product info.
   if (empty($products)) {
-    drupal_set_message('Oh no! We were temporarily unable to retrieve available add-ons! Please try again in a few minutes.', 'warning');
+    drupal_set_message(t('Oh no! We were temporarily unable to retrieve available add-ons! Please try again in a few minutes.'), 'warning');
     return $output;
   }
 
@@ -46,7 +46,8 @@ function rooms_addons() {
       $info = system_get_info('module', $module);
       if (isset($info['version'])) {
         $product['installed_version'] = $info['version'];
-      } else {
+      }
+      else {
         $product['installed_version'] = $info['core'];
       }
     }

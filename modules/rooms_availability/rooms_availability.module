@@ -1029,7 +1029,7 @@ function rooms_availability_form_rooms_booking_settings_alter(&$form, &$form_sta
     '#title' => t('Calendar Events Display Mode'),
     '#description' => t('Select how to display events on calendars.'),
     '#default_value' => variable_get('rooms_calendar_events_view', '0'),
-    '#options' => array (
+    '#options' => array(
       '0' => t('Display events as starting at middle of day (check-in day) and ending at middle of check-out day'),
       '1' => t('Display events occupying full day box at start and ending on day of last night (day before check-out date)'),
     )
