@@ -98,7 +98,12 @@ function rooms_booking_manager_override_confirmation_form_submit($form, &$form_s
   $unit_id = $form_state['values']['unit_id'];
   $start_date = $form_state['values']['start_date'];
   $end_date = $form_state['values']['end_date'];
-  $group_size = (isset($form_state['values']['persons'])) ? $form_state['values']['persons'] : $form_state['values']['rooms_group_size'];
+  $group_size = $form_state['values']['rooms_group_size'];
+
+  $booking_parameters = array(
+    'adults' => $group_size,
+    'children' => 0,
+  );
 
   // This is very inefficient right now but we need to create date objects
   // reconvert them back to strings to recreate them in the Availability Agent.
@@ -106,7 +111,7 @@ function rooms_booking_manager_override_confirmation_form_submit($form, &$form_s
   $ed = end_date_load($end_date);
 
   // Let us get available rooms again and match the order against actual rooms.
-  $agent = new AvailabilityAgent($sd, $ed, $group_size);
+  $agent = new AvailabilityAgent($sd, $ed, $booking_parameters);
   $agent->setValidStates(array_keys(array_filter(variable_get('rooms_valid_availability_states', drupal_map_assoc(array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST))))));
 
   // Let us make sure our bookable unit is still available.
