@@ -833,6 +833,9 @@ function book_unit_form_builder($form_id, $form_state, $unit, $start_date, $end_
     $currency_code = commerce_default_currency();
   }
 
+  $currency_setting = commerce_currency_load($currency_code);
+  $currency_symbol = $currency_setting['symbol'];
+
   $form['unit_id'] = array(
     '#type' => 'hidden',
     '#value' => $unit->unit_id,
@@ -1420,6 +1423,9 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
     $currency_code = commerce_default_currency();
   }
 
+  $currency_setting = commerce_currency_load($currency_code);
+  $currency_symbol = $currency_setting['symbol'];
+
   // Check if there are multiple units chosen, and keep a running tally of
   // the number of elements chosen.
   $multiple_chosen = FALSE;
@@ -1676,7 +1682,12 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             $group_size = $tmp_unit->max_sleeps;
           }
 
-          $group_size_children = $form_state['values'][$type][$price]['fieldset'][$c]['children'] + $tmp_unit->min_children;
+          if (isset($form_state['values'][$type][$price]['fieldset'][$c]['children'])) {
+            $group_size_children = $form_state['values'][$type][$price]['fieldset'][$c]['children'] + $tmp_unit->min_children;
+          }
+          else {
+            $group_size_children = $tmp_unit->min_children;
+          }
 
           $childrens_age = array();
           if (isset($form_state['values'][$type][$price]['fieldset'][$c]['persons'])) {
@@ -1691,8 +1702,8 @@ function book_units_per_type_form($form, $form_state, $units_per_type, $start_da
             'unit' => $units[$units_keys[$c - 1]]['unit'],
             'booking_parameters' => array(
               'group_size' => $group_size,
-                'group_size_children' => $group_size_children,
-                'childrens_age' => $childrens_age,
+              'group_size_children' => $group_size_children,
+              'childrens_age' => $childrens_age,
             ),
           );
 
