@@ -3160,6 +3160,7 @@ function rooms_booking_manager_price_apply($line_item) {
 
     foreach ($line_item->commerce_unit_price[LANGUAGE_NONE][0]['data']['components'] as $key => $component) {
       $line_item->commerce_unit_price[LANGUAGE_NONE][0]['data']['components'][$key]['price']['amount'] = $full_price / $amount * $component['price']['amount'];
+      $line_item->commerce_unit_price[LANGUAGE_NONE][0]['data']['components'][$key]['price']['currency_code'] = commerce_default_currency();
     }
   }
 }
