@@ -782,7 +782,7 @@ function rooms_field_widget_form(&$form, &$form_state, $field, $instance, $langc
       '#title' => t('Value'),
       '#size' => 10,
       '#default_value' => isset($items[$delta]['value']) ? $items[$delta]['value'] : NULL,
-      '#element_validate' => array('element_validate_integer_positive'),
+      '#element_validate' => array('element_validate_number'),
       '#attributes' => array(
         'class' => array('rooms-option--value'),
       ),
