@@ -3071,6 +3071,10 @@ function rooms_booking_manager_booked_price($line_item) {
       // difference between it and the current amount.
       $current_amount = $unit_price['amount'];
 
+      if (module_exists('commerce_multicurrency')) {
+        $amount = commerce_currency_convert($amount, commerce_default_currency(), $unit_price['currency_code']);
+      }
+
       $difference = array(
         'amount' => $amount - $current_amount,
         'currency_code' => $unit_price['currency_code'],
