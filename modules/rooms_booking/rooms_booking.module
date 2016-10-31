@@ -765,7 +765,7 @@ function rooms_booking_commerce_order_delete($order) {
  *   Flag indicating if the associated line_item should be deleted or not.
  */
 function rooms_booking_delete_multiple(array $booking_ids, $delete_line_item = TRUE) {
-  entity_get_controller('rooms_booking')->delete($booking_ids);
+  entity_get_controller('rooms_booking')->delete($booking_ids, $delete_line_item);
 }
 
 /**
