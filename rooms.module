@@ -89,10 +89,10 @@ function rooms_libraries_info() {
   $libraries['fullcalendar'] = array(
     'name' => 'FullCalendar',
     'vendor url' => 'http://fullcalendar.io',
-    'download url' => 'https://github.com/arshaw/fullcalendar/releases/download/v2.9.0/fullcalendar-2.9.0.zip',
+    'download url' => 'https://github.com/arshaw/fullcalendar/releases/download/v3.1.0/fullcalendar-3.1.0.zip',
     'version arguments' => array(
       'file' => 'fullcalendar.js',
-      // 2.9.0
+      // 3.1.0
       'pattern' => '/v(\d+\.\d+\.\d)/',
       'lines' => 3,
     ),
