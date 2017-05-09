@@ -437,8 +437,8 @@ function rooms_booking_manager_results_page(DateTime $start_date, DateTime $end_
       if ($_GET['type'] == 'all') {
         $types = variable_get('rooms_unit_type_selector', array());
 
-        foreach ($types as $element) {
-          $unit_types[] = $element;
+        foreach ($types as $machine_name => $element) {
+          $unit_types[] = $machine_name;
         }
       }
       else {
