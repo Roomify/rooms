@@ -7,6 +7,23 @@
 
 
 /**
+ * Implements hook_views_data_alter().
+ */
+function rooms_booking_manager_views_data_alter(&$data) {
+  if (isset($data['field_data_rooms_booked_unit_id']['rooms_booked_unit_id_value'])) {
+    $data['field_data_rooms_booked_unit_id']['rooms_booked_unit_id_value']['relationship'] = array(
+      'title' => t('Booked Unit'),
+      'help' => t("Relate this field to its bookable unit"),
+      'handler' => 'views_handler_relationship',
+      'base' => 'rooms_units',
+      'base field' => 'unit_id',
+      'field' => 'rooms_booked_unit_id_value',
+      'label' => t('Booking unit'),
+    );
+  }
+}
+
+/**
  * Implements hook_views_default_views().
  */
 function rooms_booking_manager_views_default_views() {
