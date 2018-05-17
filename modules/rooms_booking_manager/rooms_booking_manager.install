@@ -387,3 +387,20 @@ function rooms_booking_manager_update_7006() {
   variable_set_value('rooms_booking_manager_enquiry_form_confirmation', variable_get_value('rooms_enquiry_form_confirmation'));
   variable_delete('rooms_enquiry_form_confirmation');
 }
+
+/**
+ * Update line item "Booking Dates" value to include time.
+ */
+function rooms_booking_manager_update_7007() {
+  foreach (commerce_line_item_load_multiple(FALSE, array('type' => 'rooms_booking')) as $line_item) {
+    if (isset($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value'])) {
+      $value = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value']);
+      $value2 = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
+
+      $line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value'] = $value->format('Y-m-d') . 'T00:00:00';
+      $line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2'] = $value2->format('Y-m-d') . 'T00:00:00';
+
+      field_attach_update('commerce_line_item', $line_item);
+    }
+  }
+}

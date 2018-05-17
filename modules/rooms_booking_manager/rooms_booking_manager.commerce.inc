@@ -85,8 +85,8 @@ function rooms_create_line_item($unit_to_book, AvailabilityAgent $agent, $bookin
     $commerce_dates = array(
       LANGUAGE_NONE => array(
         array(
-          'value' => $agent->start_date->format('Y-m-d'),
-          'value2' => $dd->format('Y-m-d'),
+          'value' => $agent->start_date->format('Y-m-d') . 'T00:00:00',
+          'value2' => $dd->format('Y-m-d') . 'T00:00:00',
         ),
       ),
     );

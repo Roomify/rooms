@@ -2228,8 +2228,8 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
       $line_item = commerce_line_item_load($item_id['line_item_id']);
       if ($line_item->type == 'rooms_booking') {
         $uc = new \UnitCalendar($line_item->rooms_booked_unit_id[LANGUAGE_NONE][0]['value']);
-        $start_date = \DateTime::createFromFormat('Y-m-d', $line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value']);
-        $end_date = \DateTime::createFromFormat('Y-m-d', $line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
+        $start_date = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value']);
+        $end_date = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
         $adjusted_end_date = clone($end_date);
         $adjusted_end_date->modify('-1 day');
         $states_confirmed = $uc->getStates($start_date, $adjusted_end_date);
@@ -2253,8 +2253,8 @@ function rooms_booking_manager_commerce_checkout_complete($order) {
         $booking_type = variable_get('rooms_booking_type', 'standard_booking');
         $booking = rooms_booking_create(array('type' => $booking_type));
         $booking->created = time();
-        $booking->start_date = $line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value'];
-        $booking->end_date = $line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2'];
+        $booking->start_date = substr($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value'], 0, 10);
+        $booking->end_date = substr($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2'], 0, 10);
 
         // Associate it with this order.
         $booking->order_id = $order->order_number;

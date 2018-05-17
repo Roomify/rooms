@@ -200,8 +200,8 @@ function rooms_booking_manager_find_overlapping_line_items($start_date, $end_dat
 
         if ($line_item->type == 'rooms_booking') {
 
-          $line_item_start_date = DateTime::createFromFormat('Y-m-d', $line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value']);
-          $line_item_end_date = DateTime::createFromFormat('Y-m-d', $line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
+          $line_item_start_date = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value']);
+          $line_item_end_date = new DateTime($line_item->rooms_booking_dates[LANGUAGE_NONE][0]['value2']);
 
           if ($line_item_start_date < $end_date && $line_item_end_date > $start_date &&
               $line_item->rooms_booked_unit_id[LANGUAGE_NONE][0]['value'] == $unit_id) {
