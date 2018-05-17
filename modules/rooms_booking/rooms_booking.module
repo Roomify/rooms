@@ -1074,7 +1074,7 @@ class RoomsBookingController extends EntityAPIController {
   /**
    * {@inheritdoc}
    */
-  public function save($entity) {
+  public function save($entity, DatabaseTransaction $transaction = NULL) {
     $entity->original = entity_load_unchanged($this->entityType, $entity->{$this->idKey});
     $corrected_end_date = new DateTime($entity->end_date);
     $corrected_end_date->sub(new DateInterval('P1D'));
