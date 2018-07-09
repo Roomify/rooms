@@ -844,13 +844,20 @@ function rooms_date_range_fields($year = NULL, $month = NULL) {
   $end_date_id = drupal_html_id('datepicker-end-date');
   $end_date_selector = '#' . $start_date_id . ' .form-text';
 
+  $days_in_advance = '+' . variable_get('rooms_booking_start_date', 1) . 'd';
+  // Allow users with the "make same-day bookings" permission to make
+  // bookings starting on any day.
+  if (user_access('make same-day bookings')) {
+    $days_in_advance = '+0d';
+  }
+
   // Specify the default datepicker parameters (see date_popup_element_info())
   $datepicker_options = array(
     'dateFormat' => date_popup_format_to_popup($date_format),
     // Limit bookings to X days in advance, depending on the
     // chosen configuration in your Rooms installation, defaults
     // to one day in advance.
-    'minDate' => '+' . variable_get('rooms_booking_start_date', 1) . 'd',
+    'minDate' => $days_in_advance,
   );
 
   if ($year && $month) {
@@ -869,7 +876,7 @@ function rooms_date_range_fields($year = NULL, $month = NULL) {
   }
   else {
     $datepicker_options += array(
-      'minDate' => '+' . variable_get('rooms_booking_start_date', 1) . 'd',
+      'minDate' => $days_in_advance,
     );
   }
 
@@ -888,6 +895,12 @@ function rooms_date_range_fields($year = NULL, $month = NULL) {
     '#required' => TRUE,
   );
 
+  $start_day = variable_get('rooms_booking_start_date', 1);
+  // Allow users with the "make same-day bookings" permission to make
+  // bookings starting on any day.
+  if (user_access('make same-day bookings')) {
+    $start_day = '0';
+  }
   $date_range_fields['rooms_end_date'] = array(
     '#prefix' => '<div class="end-date" id="' . $end_date_id . '">',
     '#suffix' => '</div></div>',
@@ -907,12 +920,13 @@ function rooms_date_range_fields($year = NULL, $month = NULL) {
       ),
       'js' => array(
         drupal_get_path('module', 'rooms') . '/js/rooms_date_popup.js',
+
         array(
           'data' => array(
             'rooms' => array(
               'roomsStartYear' => $year,
               'roomsStartMonth' => $month,
-              'roomsBookingStartDay' => variable_get('rooms_booking_start_date', 1),
+              'roomsBookingStartDay' => $start_day,
               'roomsDateFormat' => date_popup_format_to_popup($date_format),
 
               // Here we create a listing of all datepickers registered on the

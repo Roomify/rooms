@@ -85,6 +85,7 @@ function rooms_booking_settings($form, &$form_state) {
   $form['rooms_booking_settings']['rooms_booking_start_date'] = array(
     '#type' => 'select',
     '#title' => t('How soon a booking can start'),
+    '#description' => t('Users with the "Make same-day bookings" permission will not be affected by this setting.'),
     '#options' => array(
       '0' => t('Same day bookings'),
       '1' => t('1 day in advance'),

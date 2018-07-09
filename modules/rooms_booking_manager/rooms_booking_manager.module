@@ -19,6 +19,10 @@ function rooms_booking_manager_permission() {
       'title' => t('Book in advance without time limitation'),
       'description' => t('Disregards any time limitations for advance bookings'),
     ),
+    'make same-day bookings' => array(
+      'title' => t('Make same-day bookings'),
+      'description' => t('Disregards the rooms booking start date limitations'),
+    ),
   );
   return $permissions;
 }
