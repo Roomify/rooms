@@ -68,7 +68,7 @@ class UnitPricingCalendar extends RoomsCalendar implements UnitPricingCalendarIn
     $reply = array(
       'full_price' => $price,
       'booking_price' => $booking_price,
-      'log' => '',
+      'log' => array(),
     );
 
     // Get settings to add to log
