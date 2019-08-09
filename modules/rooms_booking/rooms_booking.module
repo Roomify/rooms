@@ -88,8 +88,8 @@ function rooms_booking_edit_customer_profile($customer_id) {
     'build_info' => array(
       'args' => array(commerce_customer_profile_load($customer_id)),
       'files' => array(
-        'commmerce_customer' => array(
-          'module' => 'commmerce_customer',
+        'commerce_customer' => array(
+          'module' => 'commerce_customer',
           'name' => 'includes/commerce_customer_profile.forms',
           'type' => 'inc',
         ),
@@ -280,8 +280,8 @@ function rooms_booking_add_customer_profile() {
     'build_info' => array(
       'args' => array(commerce_customer_profile_new('billing', 1)),
       'files' => array(
-        'commmerce_customer' => array(
-          'module' => 'commmerce_customer',
+        'commerce_customer' => array(
+          'module' => 'commerce_customer',
           'name' => 'includes/commerce_customer_profile.forms',
           'type' => 'inc',
         ),
